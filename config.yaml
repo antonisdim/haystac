@@ -1,15 +1,12 @@
 
-verbose_output: 1
-
 entrez:
-  # query to send to NCBI for retrieving the species tp
-  query: NZ_CP019458.1[Accession] OR NZ_CP021748.1[Accession] OR NZ_LT670818.1[Accession]
+  queries:
+    # query to send to NCBI for retrieving the species tp
+    example1: NZ_CP019458.1[Accession] OR NZ_CP021748.1[Accession] OR NZ_LT670818.1[Accession]
+    example2: NZ_CP022415.1[Accession] OR NZ_FOYO01000001.1[Accession] OR NZ_CP020121.1[Accession]
 
   # email used to identify the user making an Entrez request
   email: evangelos-antonios.dimopoulos@hertford.ox.ac.uk
-
-  # the NCBI database to access
-  db: nuccore
 
   # maximum size of the result set
   retmax: 1000000000

@@ -1,0 +1,9 @@
+.snakemake
+*tmp*
+~*
+*Rproj*
+*Rhist*
+nohup*
+
+
+entrez*

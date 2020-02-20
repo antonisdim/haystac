@@ -1,23 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from snakemake.utils import format
-
 configfile: "config.yaml"
 
 ##### Modules #####
 
-include: "rules/example.smk"
-
-##### Wildcards #####
-
-wildcard_constraints:
-    reference="[\w.]+",
-    n='\d+'
-
+include: "rules/entrez.smk"
 
 ##### Target rules #####
 
 rule all:
     input:
-        "report/{reference}/file.txt"
+        "entrez/example1/example1-nuccore.tsv",
+        "entrez/example2/example2-nuccore.tsv"
