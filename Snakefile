@@ -12,4 +12,4 @@ include: "rules/entrez.smk"
 rule all:
     input:
         "entrez/example1/example1-nuccore.tsv",
-        "entrez/example2/example2-nuccore.tsv"
+        "entrez/example1/example1-taxa.tsv"

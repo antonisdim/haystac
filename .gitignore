@@ -6,4 +6,5 @@
 nohup*
 
 
-entrez*
+entrez/*
+__pycache__

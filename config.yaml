@@ -14,7 +14,7 @@ entrez:
   # return response as XML
   retmode: xml
 
-  # records as XML
+  # records as FASTA
   rettype: fasta
 
   # fetch results in batches

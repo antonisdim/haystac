@@ -11,4 +11,14 @@ rule entrez_nuccore_query:
     log:
         "entrez/{query}/{query}-nuccore.log"
     script:
-        "../scripts/get_nuccore_query.py"
+        "../scripts/entrez_nuccore_query.py"
+
+rule entrez_taxa_query:
+    input:
+        "entrez/{query}/{query}-nuccore.tsv"
+    output:
+        "entrez/{query}/{query}-taxa.tsv"
+    log:
+        "entrez/{query}/{query}-taxa.log"
+    script:
+        "../scripts/entrez_taxonomy_query.py"
