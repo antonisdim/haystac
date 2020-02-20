@@ -1,18 +1,24 @@
-# a file with some data in it
-some_file: the/path/to/the/file.txt
 
-# a number that means something
-some_number: 10000
+verbose_output: 1
 
-# a dictionary of items
-bins:
-  # a number
-  width: 500
+entrez:
+  # query to send to NCBI for retrieving the species tp
+  query: NZ_CP019458.1[Accession] OR NZ_CP021748.1[Accession] OR NZ_LT670818.1[Accession]
 
-  # and another number
-  min_bins: 3
+  # email used to identify the user making an Entrez request
+  email: evangelos-antonios.dimopoulos@hertford.ox.ac.uk
 
-  # we can also nest another dictionary in here
-  model:
-    a: 0
-    b: 1
+  # the NCBI database to access
+  db: nuccore
+
+  # maximum size of the result set
+  retmax: 1000000000
+
+  # return response as XML
+  retmode: xml
+
+  # records as XML
+  rettype: fasta
+
+  # fetch results in batches
+  batchSize: 10
