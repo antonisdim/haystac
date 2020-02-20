@@ -1,0 +1,2 @@
+# rip
+New Clean Code
