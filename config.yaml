@@ -1,0 +1,18 @@
+# a file with some data in it
+some_file: the/path/to/the/file.txt
+
+# a number that means something
+some_number: 10000
+
+# a dictionary of items
+bins:
+  # a number
+  width: 500
+
+  # and another number
+  min_bins: 3
+
+  # we can also nest another dictionary in here
+  model:
+    a: 0
+    b: 1
