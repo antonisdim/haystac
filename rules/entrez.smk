@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 
-
 ##### Target rules #####
 
 rule entrez_nuccore_query:

@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
 import http.client
 import sys
 import time
 import urllib.error
 from datetime import datetime
 from socket import error as socketerror
-
 
 from Bio import Entrez
 

@@ -1,11 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
 import csv
+import os
 import sys
 
 import pandas as pd
 from Bio import Entrez
-from entrez_utils import chunker, guts_of_entrez
+
+sys.path.append(os.getcwd())
+
+from scripts.entrez_utils import chunker, guts_of_entrez
 
 
 def entrez_taxonomy_query(config, nuccore_file, output_file):
