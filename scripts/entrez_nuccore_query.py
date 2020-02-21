@@ -1,14 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import csv
-import http.client
 import sys
-import urllib.error
-from datetime import datetime
-from socket import error as socketerror
 
 from Bio import Entrez
-from entrez_utils import chunker, entrez_efetch
+from entrez_utils import chunker, guts_of_entrez
 
 
 def entrez_nuccore_query(config, query, output_file):
@@ -30,43 +26,14 @@ def entrez_nuccore_query(config, query, output_file):
         w.writeheader()
 
         for acc_num in chunker(accessions, 100):
-            print(acc_num, file=sys.stderr)
 
-            # print info about number of proteins
-            print("Downloading {} entries from NCBI {} database in batches of {} entries...\n"
-                  .format(len(acc_num), 'nuccore', config['entrez']['batchSize']), file=sys.stderr)
+            records = guts_of_entrez('nuccore', acc_num, config)
 
-            # post NCBI query
-            search_handle = Entrez.epost('nuccore', id=",".join(acc_num))
-            search_results = Entrez.read(search_handle)
+            for node in records:
+                print("iterating on node", file=sys.stderr)
+                w.writerow(node)
 
-            for start in range(0, len(acc_num), config['entrez']['batchSize']):
-                # print info
-                tnow = datetime.now()
-                print("\t{}\t{} / {}\n".format(datetime.ctime(tnow), start, len(acc_num)), file=sys.stderr)
-
-                handle = entrez_efetch(config, 'nuccore', start, search_results["WebEnv"], search_results["QueryKey"])
-
-                if not handle:
-                    continue
-
-                print("got the handle", file=sys.stderr)
-
-                try:
-                    # records = Entrez.read(handle)
-                    records = Entrez.read(handle)
-                    print("got the records", file=sys.stderr)
-
-                except (http.client.HTTPException, urllib.error.HTTPError, urllib.error.URLError,
-                        RuntimeError, Entrez.Parser.ValidationError, socketerror) as e:
-                    print("Ditching that batch", file=sys.stderr)
-                    continue
-
-                for node in records:
-                    print("iterating on node", file=sys.stderr)
-                    w.writerow(node)
-
-                print("done for this slice", file=sys.stderr)
+            print("done for this slice", file=sys.stderr)
 
     print("COMPLETE", file=sys.stderr)
 
