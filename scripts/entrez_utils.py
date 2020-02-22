@@ -22,7 +22,6 @@ def chunker(seq, size):
 
 
 def entrez_efetch(config, db, retstart, webenv, query_key, attempt=1):
-
     try:
         return Entrez.efetch(db=db,
                              retmode=config['entrez']['retmode'],
@@ -52,7 +51,6 @@ def entrez_efetch(config, db, retstart, webenv, query_key, attempt=1):
 
 
 def guts_of_entrez(db, chunk, config):
-
     # print info about number of records
     print("Downloading {} entries from NCBI {} database in batches of {} entries...\n"
           .format(len(chunk), db, config['entrez']['batchSize']), file=sys.stderr)
@@ -71,16 +69,18 @@ def guts_of_entrez(db, chunk, config):
         if not handle:
             continue
 
+        if config['entrez']['retmode'] == 'text':
+            return handle
+
         print("got the handle", file=sys.stderr)
 
         try:
-            # records = Entrez.read(handle)
             records = Entrez.read(handle)
             print("got the records", file=sys.stderr)
 
         except (http.client.HTTPException, urllib.error.HTTPError, urllib.error.URLError,
-                RuntimeError, Entrez.Parser.ValidationError, socketerror) as e:
-            print("Ditching that batch", file=sys.stderr)
+                RuntimeError, Entrez.Parser.ValidationError, socketerror):
+            print("Ditching that batch of records", file=sys.stderr)
             continue
 
         # print(records)
