@@ -35,7 +35,7 @@ rule entrez_pick_sequences:
 
 # TODO Can I not have just a folder as an output, do I need a wildcard ?
 
-rule entrez_dowload_sequenes:
+rule entrez_download_sequences:
     input:
          "entrez/{query}/{query}-selected-seqs.tsv"
     log:

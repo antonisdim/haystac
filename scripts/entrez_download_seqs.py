@@ -1,35 +1,30 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import os
-import pandas as pd
 import sys
 import time
+
+import pandas as pd
+
 from Bio import Entrez
 
 sys.path.append(os.getcwd())
-from scripts.entrez_utils import chunker, guts_of_entrez
 
-def make_refseq_database(input_file):
-    # make the folder that will contain the taxonomic info
-    # if not os.path.exists(REFSEQ_DATABASE):
-    #     os.makedirs(REFSEQ_DATABASE)
+from scripts.entrez_utils import guts_of_entrez
 
-    refseq_database = snakemake.output[0]
 
-    result = {}
-    with open(input_file) as selected:
-        for line in selected:
-            line = line.rstrip()
-            (key, val) = line.split('\t')
-            result[key] = val
+def make_refseq_database(sequences_file, refseq_database):
 
-    for species, accessions in result.items():
-        species = species.replace(" ", ".")
+    sequences = pd.read_csv(sequences_file, sep='\t')
 
-        if not os.path.exists(refseq_database + species):
-            os.makedirs(refseq_database + species)
+    for key in sequences:
+        orgname = sequences[key]['TSeq_orgname'].replace(" ", ".")
+        accession = sequences[key]['TSeq_accver']
 
-        fetch_refseq_acc(refseq_database, species, accessions)
+        if not os.path.exists(refseq_database + orgname):
+            os.makedirs(refseq_database + orgname)
+
+        fetch_refseq_acc(refseq_database, orgname, accession)
 
 
 def fetch_refseq_acc(path_to_store, folder, acc):
@@ -61,5 +56,6 @@ if __name__ == '__main__':
     print("The sequences for the database are being selected ...", file=sys.stderr)
 
     make_refseq_database(
-        input_file=snakemake.input[0]
+        sequences_file=snakemake.input[0],
+        refseq_database=snakemake.output[0]
     )
