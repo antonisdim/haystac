@@ -17,9 +17,9 @@ def make_refseq_database(sequences_file, refseq_database):
 
     sequences = pd.read_csv(sequences_file, sep='\t')
 
-    for key in sequences:
-        orgname = sequences[key]['TSeq_orgname'].replace(" ", ".")
-        accession = sequences[key]['TSeq_accver']
+    for key, seq in sequences.iterrows():
+        orgname = seq['TSeq_orgname'].replace(" ", ".")
+        accession = seq['TSeq_accver']
 
         if not os.path.exists(refseq_database + orgname):
             os.makedirs(refseq_database + orgname)
