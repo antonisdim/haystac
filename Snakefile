@@ -12,7 +12,7 @@ include: "rules/bowtie.smk"
 
 rule all:
     input:
-        # "entrez/example1/example1-nuccore.tsv",
-        # "entrez/example1/example1-taxa.tsv",
-        # "entrez/example1/example1-selected-seqs.tsv",
-        "bowtie/example1/example1.fasta"
+        # "example1/entrez/example1-nuccore.tsv",
+        # "example1/entrez/example1-taxa.tsv",
+        # "example1/entrez/example1-selected-seqs.tsv",
+        "example1/bowtie/example1.fasta"

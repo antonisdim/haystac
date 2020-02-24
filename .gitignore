@@ -9,8 +9,8 @@ nohup*
 __pycache__
 
 
-entrez/*
-bowtie/*
+*/entrez/*
+*/bowtie/*
 database/*
 
 

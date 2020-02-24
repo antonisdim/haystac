@@ -6,7 +6,7 @@ import sys
 import pandas as pd
 
 
-def entrez_select_taxa_seqs(nuccore_file, taxa_file, output_file):
+def entrez_pick_sequences(nuccore_file, taxa_file, output_file):
 
     accessions = pd.read_csv(nuccore_file, sep='\t')
     taxa = pd.read_csv(taxa_file, sep='\t')
@@ -32,9 +32,9 @@ def entrez_select_taxa_seqs(nuccore_file, taxa_file, output_file):
 
 if __name__ == '__main__':
     # redirect all output to the log
-    sys.stderr = open(snakemake.log[0], 'w')
+    # sys.stderr = open(snakemake.log[0], 'w')
 
-    entrez_select_taxa_seqs(
+    entrez_pick_sequences(
         nuccore_file=snakemake.input[0],
         taxa_file=snakemake.input[1],
         output_file=snakemake.output[0]

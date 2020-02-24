@@ -5,38 +5,38 @@
 
 rule entrez_nuccore_query:
     output:
-        "entrez/{query}/{query}-nuccore.tsv"
+        "{query}/entrez/{query}-nuccore.tsv"
     log:
-        "entrez/{query}/{query}-nuccore.log"
+        "{query}/entrez/{query}-nuccore.log"
     script:
         "../scripts/entrez_nuccore_query.py"
 
 rule entrez_taxa_query:
     input:
-        "entrez/{query}/{query}-nuccore.tsv"
+        "{query}/entrez/{query}-nuccore.tsv"
     output:
-        "entrez/{query}/{query}-taxa.tsv"
+        "{query}/entrez/{query}-taxa.tsv"
     log:
-        "entrez/{query}/{query}-taxa.log"
+        "{query}/entrez/{query}-taxa.log"
     script:
         "../scripts/entrez_taxonomy_query.py"
 
 checkpoint entrez_pick_sequences:
     input:
-         "entrez/{query}/{query}-nuccore.tsv",
-         "entrez/{query}/{query}-taxa.tsv"
+         "{query}/entrez/{query}-nuccore.tsv",
+         "{query}/entrez/{query}-taxa.tsv"
     output:
-         "entrez/{query}/{query}-selected-seqs.tsv"
+         "{query}/entrez/{query}-selected-seqs.tsv"
     log:
-         "entrez/{query}/{query}-selected-seqs.log"
+         "{query}/entrez/{query}-selected-seqs.log"
     script:
-        "../scripts/entrez_select_seqs.py"
+        "../scripts/entrez_pick_sequences.py"
 
 rule entrez_download_sequence:
     log:
-         "database/{orgname}/{accession}.log"
+         "sequences/{orgname}/{accession}.log"
     output:
-         "database/{orgname}/{accession}.fasta"
+         "sequences/{orgname}/{accession}.fasta"
     script:
          "../scripts/entrez_download_sequence.py"
 

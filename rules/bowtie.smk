@@ -25,9 +25,9 @@ rule bowtie_multifasta:
     input:
          get_fasta_sequences
     log:
-         "bowtie/{query}/{query}.log"
+         "{query}/bowtie/{query}.log"
     output:
-         "bowtie/{query}/{query}.fasta"
+         "{query}/bowtie/{query}.fasta"
     script:
           "../scripts/bowtie_multifasta.py"
 

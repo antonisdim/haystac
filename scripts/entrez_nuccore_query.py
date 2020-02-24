@@ -32,6 +32,7 @@ def entrez_nuccore_query(config, query, output_file):
 
         for acc_num in chunker(accessions, 100):
 
+            # TODO can we not download the FASTA sequence, as this can be many MB for each result
             records = guts_of_entrez('nuccore', acc_num, config)
 
             for node in records:
