@@ -59,6 +59,8 @@ def guts_of_entrez(db, chunk, config):
     search_handle = Entrez.epost(db, id=",".join(map(str, chunk)))
     search_results = Entrez.read(search_handle)
 
+    # FIXME the batch processing should start here, using the "usehistory=Y" flag
+
     for start in range(0, len(chunk), config['entrez']['batchSize']):
         # print info
         tnow = datetime.now()
@@ -85,4 +87,5 @@ def guts_of_entrez(db, chunk, config):
 
         # print(records)
 
-        return records
+        for rec in records:
+            yield rec
