@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import pandas as pd
 
 ##### Target rules #####
 
@@ -22,7 +23,7 @@ rule entrez_taxa_query:
     script:
         "../scripts/entrez_taxonomy_query.py"
 
-rule entrez_pick_sequences:
+checkpoint entrez_pick_sequences:
     input:
          "entrez/{query}/{query}-nuccore.tsv",
          "entrez/{query}/{query}-taxa.tsv"
@@ -33,25 +34,39 @@ rule entrez_pick_sequences:
     script:
         "../scripts/entrez_select_seqs.py"
 
-# TODO Can I not have just a folder as an output, do I need a wildcard ?
-
-rule entrez_download_sequences:
-    input:
-         "entrez/{query}/{query}-selected-seqs.tsv"
+rule entrez_download_sequence:
     log:
-         "pipeline_files/{query}-selected-seqs.log"
+         "database/{orgname}/{accession}.log"
     output:
-         directory("pipeline_files/{query}/refseq/")
+         "database/{orgname}/{accession}.fasta"
     script:
-         "../scripts/entrez_download_seqs.py"
+         "../scripts/entrez_download_sequence.py"
+
+
+def get_fasta_sequences(wildcards):
+
+    seqs = checkpoints.entrez_pick_sequences.get(query=wildcards.query)
+
+    sequences = pd.read_csv(seqs.output[0], sep='\t')
+
+    inputs = []
+
+    for key, seq in sequences.iterrows():
+        orgname = seq['TSeq_orgname'].replace(" ", ".")
+        accession = seq['TSeq_accver']
+
+        inputs.append('database/{orgname}/{accession}.fasta'.format(orgname=orgname, accession=accession))
+
+    return inputs
+
 
 rule make_bowtie_general_profile:
     input:
-         directory("pipeline_files/{query}/refseq/")
+         get_fasta_sequences
     log:
-         "pipeline_files/{query}-bowtie2-seqs.log"
+         "bowtie/{query}/{query}.log"
     output:
-          "pipeline_files/{query}/reference_genome/{query}.fasta"
+         "bowtie/{query}/{query}.fasta"
     script:
           "../scripts/entrez_bowtie_multifasta.py"
 

@@ -6,5 +6,11 @@
 nohup*
 
 .idea
-entrez/*
 __pycache__
+
+
+entrez/*
+bowtie/*
+database/*
+
+
