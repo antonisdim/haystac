@@ -49,9 +49,10 @@ def fetch_refseq_acc(path_to_store, folder, acc):
 
 
 # todo check with how I can see if the query has been executed before - as Evan wrote as a comment on the google doc
-#  todo can I individually check every folder that has been dowloaded, in order to sometimes just add missing taxa
-#   instead of redowloading them todo REFSEQ_DATABASE is something that was previously in the config file. I'll try
-#    and move it there in this version too
+# todo can I individually check every folder that has been dowloaded, in order to sometimes just add missing taxa
+#  instead of redowloading them
+# todo REFSEQ_DATABASE is something that was previously in the config file. I'll try
+#  and move it there in this version too
 
 if __name__ == '__main__':
     # redirect all output to the log
