@@ -24,7 +24,7 @@ def entrez_taxonomy_query(config, nuccore_file, output_file):
     accessions = pd.read_csv(nuccore_file, sep='\t', usecols=['TSeq_taxid'], squeeze=True).unique()
 
     with open(output_file, 'w') as fout:
-        fieldnames = ['TaxId', 'genus', 'family', 'species', 'subspecies']
+        fieldnames = ['TaxId', 'superkingdom', 'phylum', 'class', 'order', 'family', 'genus', 'species', 'subspecies']
         w = csv.DictWriter(fout, fieldnames, delimiter='\t', extrasaction="ignore")
         w.writeheader()
 
@@ -39,11 +39,8 @@ def entrez_taxonomy_query(config, nuccore_file, output_file):
                     if item["Rank"] in fieldnames:
                         taxon[item["Rank"]] = item['ScientificName']
 
-                if 'species' not in taxon.keys():
-                    if node['Rank'] == 'species':
-                        taxon['species'] = node['ScientificName']
-
-                # print(taxon)
+                if node['Rank'] in fieldnames:
+                    taxon[node['Rank']] = node['ScientificName']
 
                 w.writerow(taxon)
 
