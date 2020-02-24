@@ -6,7 +6,7 @@ import shutil
 import sys
 
 
-def entrez_bowtie_multifasta(fasta_files, output_file):
+def bowtie_multifasta(fasta_files, output_file):
 
     print("We're creating the bowtie2 multifasta file for the filtering ...", file=sys.stderr)
 
@@ -22,7 +22,7 @@ if __name__ == '__main__':
     # redirect all output to the log
     sys.stderr = open(snakemake.log[0], 'w')
 
-    entrez_bowtie_multifasta(
+    bowtie_multifasta(
         fasta_files=snakemake.input,
         output_file=snakemake.output[0]
     )
