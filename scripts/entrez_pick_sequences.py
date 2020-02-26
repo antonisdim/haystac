@@ -32,7 +32,7 @@ def entrez_pick_sequences(nuccore_file, taxa_file, output_file):
 
 if __name__ == '__main__':
     # redirect all output to the log
-    # sys.stderr = open(snakemake.log[0], 'w')
+    sys.stderr = open(snakemake.log[0], 'w')
 
     entrez_pick_sequences(
         nuccore_file=snakemake.input[0],
