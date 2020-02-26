@@ -32,3 +32,13 @@ rule bowtie_multifasta:
           "../scripts/bowtie_multifasta.py"
 
 
+rule bowtie_index:
+    input:
+         "{query}/bowtie/{query}.fasta"
+    log:
+         "{query}/bowtie/{query}.bt2.log"
+    output:
+         expand("{query}/bowtie/{query}.{n}.bt2", n=[1, 2, 3, 4]),
+         expand("{query}/bowtie/{query}.rev.{n}.bt2", n=[1, 2])
+    shell:
+          "bowtie2-build {input} {wildcards.query}/bowtie/{wildcards.query} &> {log}"
