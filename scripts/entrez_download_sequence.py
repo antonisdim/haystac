@@ -22,10 +22,7 @@ def entrez_download_sequence(accession, config, output_file):
 
     Entrez.email = config['entrez']['email']
 
-    # TODO tidy up the settings for retmode
-    config['entrez']['retmode'] = 'text'
-
-    record = guts_of_entrez('nuccore', [accession], config)
+    record = guts_of_entrez('nuccore', 'text', [accession], config)
 
     with open(output_file, 'w') as fout:
         fout.write(record.read())

@@ -8,14 +8,7 @@ entrez:
   # email used to identify the user making an Entrez request
   email: evangelos-antonios.dimopoulos@hertford.ox.ac.uk
 
-  # maximum size of the result set
-  retmax: 1000000000
-
-  # return response as XML
-  retmode: xml
-
-  # records as FASTA
-  rettype: fasta
-
   # fetch results in batches
   batchSize: 10
+
+rank: 'species'

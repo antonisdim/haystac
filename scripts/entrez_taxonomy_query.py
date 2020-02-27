@@ -12,6 +12,7 @@ sys.path.append(os.getcwd())
 
 from scripts.entrez_utils import chunker, guts_of_entrez
 
+RETMODE = 'xml'
 
 def entrez_taxonomy_query(config, nuccore_file, output_file):
     """
@@ -30,7 +31,7 @@ def entrez_taxonomy_query(config, nuccore_file, output_file):
 
         for chunk in chunker(accessions, 100):
 
-            records = guts_of_entrez('taxonomy', chunk, config)
+            records = guts_of_entrez('taxonomy', RETMODE, chunk, config)
 
             for node in records:
                 taxon = dict()
@@ -41,6 +42,9 @@ def entrez_taxonomy_query(config, nuccore_file, output_file):
 
                 if node['Rank'] in fieldnames:
                     taxon[node['Rank']] = node['ScientificName']
+
+                if taxon['species'] and 'subspecies' not in taxon.keys():
+                    taxon['subspecies'] = taxon['species'] + ' sp'
 
                 w.writerow(taxon)
 

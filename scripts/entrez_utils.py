@@ -16,17 +16,21 @@ MAX_RETRY_ATTEMPTS = 2
 # time to wait in seconds before repeating a failed query
 RETRY_WAIT_TIME = 2
 
+# static constants for Entrez
+RETMODE = 'xml'
+RETTYPE = 'fasta'
+RETMAX = 100000
 
 def chunker(seq, size):
     return (seq[pos:pos + size] for pos in range(0, len(seq), size))
 
 
-def entrez_efetch(config, db, retstart, webenv, query_key, attempt=1):
+def entrez_efetch(db, retmode, retstart, webenv, query_key, attempt=1):
     try:
         return Entrez.efetch(db=db,
-                             retmode=config['entrez']['retmode'],
-                             rettype=config['entrez']['rettype'],
-                             retmax=config['entrez']['batchSize'],
+                             retmode=RETMODE,
+                             rettype=RETTYPE,
+                             retmax=RETMAX,
                              retstart=retstart,
                              webenv=webenv,
                              query_key=query_key)
@@ -42,7 +46,7 @@ def entrez_efetch(config, db, retstart, webenv, query_key, attempt=1):
         else:
             time.sleep(RETRY_WAIT_TIME)
             print("Starting attempt {}...".format(attempt), file=sys.stderr)
-            return entrez_efetch(config, db, retstart, webenv, query_key, attempt)
+            return entrez_efetch(db, retmode, retstart, webenv, query_key, attempt)
 
     except (http.client.IncompleteRead, urllib.error.URLError) as e:
         print("Ditching that batch", file=sys.stderr)
@@ -50,7 +54,7 @@ def entrez_efetch(config, db, retstart, webenv, query_key, attempt=1):
         return None
 
 
-def guts_of_entrez(db, chunk, config):
+def guts_of_entrez(db, retmode, chunk, config):
     # print info about number of records
     print("Downloading {} entries from NCBI {} database in batches of {} entries...\n"
           .format(len(chunk), db, config['entrez']['batchSize']), file=sys.stderr)
@@ -64,12 +68,12 @@ def guts_of_entrez(db, chunk, config):
         tnow = datetime.now()
         print("\t{}\t{} / {}\n".format(datetime.ctime(tnow), start, len(chunk)), file=sys.stderr)
 
-        handle = entrez_efetch(config, db, start, search_results["WebEnv"], search_results["QueryKey"])
+        handle = entrez_efetch(db, retmode, start, search_results["WebEnv"], search_results["QueryKey"])
 
         if not handle:
             continue
 
-        if config['entrez']['retmode'] == 'text':
+        if retmode == 'text':
             return handle
 
         print("got the handle", file=sys.stderr)
@@ -85,4 +89,7 @@ def guts_of_entrez(db, chunk, config):
 
         # print(records)
 
-        return records
+        # return records
+
+        for rec in records:
+            yield rec

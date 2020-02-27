@@ -12,6 +12,9 @@ sys.path.append(os.getcwd())
 from scripts.entrez_utils import chunker, guts_of_entrez
 
 
+RETMAX = 1000000000
+RETMODE = 'xml'
+
 def entrez_nuccore_query(config, query, output_file):
     """
     Query the NCBI nuccore database to get a list of sequence accessions and their metadata.
@@ -22,7 +25,7 @@ def entrez_nuccore_query(config, query, output_file):
     # get list of entries for given query
     print("Getting list of GIs for term={} ...\n".format(entrez_query), file=sys.stderr)
 
-    handle = Entrez.esearch(db='nuccore', term=entrez_query, retmax=config['entrez']['retmax'], idtype="acc")
+    handle = Entrez.esearch(db='nuccore', term=entrez_query, retmax=RETMAX, idtype="acc", usehistory='y')
     accessions = Entrez.read(handle)['IdList']
 
     with open(output_file, 'w') as fout:
@@ -33,7 +36,7 @@ def entrez_nuccore_query(config, query, output_file):
         for acc_num in chunker(accessions, 100):
 
             # TODO can we not download the FASTA sequence, as this can be many MB for each result
-            records = guts_of_entrez('nuccore', acc_num, config)
+            records = guts_of_entrez('nuccore', RETMODE, acc_num, config)
 
             for node in records:
                 print("iterating on node", file=sys.stderr)
