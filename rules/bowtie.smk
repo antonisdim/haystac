@@ -42,3 +42,15 @@ rule bowtie_index:
          expand("{{query}}/bowtie/{{query}}.rev.{n}.bt2", n=[1, 2])
     shell:
           "bowtie2-build {input} {wildcards.query}/bowtie/{wildcards.query} &> {log}"
+
+
+rule count_fastq_length:
+    input:
+         lambda wildcards: config['samples'][wildcards.sample]
+    log:
+         "fastq/{sample}.log"
+    output:
+         "fastq/{sample}.size"
+    shell:
+          "expr $(gunzip -c {input} | wc -l) / 4 1> {output} 2> {log}"
+

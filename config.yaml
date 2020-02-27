@@ -12,3 +12,6 @@ entrez:
   batchSize: 10
 
   rank: 'species'
+
+samples:
+  sample1: fastq/CSL.all.fastq.gz
