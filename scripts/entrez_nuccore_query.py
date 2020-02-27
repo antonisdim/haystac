@@ -33,7 +33,7 @@ def entrez_nuccore_query(config, query, output_file):
         for acc_num in chunker(accessions, 100):
 
             # TODO can we not download the FASTA sequence, as this can be many MB for each result
-            records = guts_of_entrez(ENTREZ_DB_NUCCORE, ENTREZ_RETMODE_XML, acc_num, config)
+            records = guts_of_entrez(ENTREZ_DB_NUCCORE, ENTREZ_RETMODE_XML, acc_num, config['entrez']['batchSize'])
 
             for node in records:
                 print("iterating on node", file=sys.stderr)

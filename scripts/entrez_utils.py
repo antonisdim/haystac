@@ -61,16 +61,16 @@ def entrez_efetch(db, retmode, retstart, webenv, query_key, attempt=1):
         return None
 
 
-def guts_of_entrez(db, retmode, chunk, config):
+def guts_of_entrez(db, retmode, chunk, batch_size):
     # print info about number of records
     print("Downloading {} entries from NCBI {} database in batches of {} entries...\n"
-          .format(len(chunk), db, config['entrez']['batchSize']), file=sys.stderr)
+          .format(len(chunk), db, batch_size), file=sys.stderr)
 
     # post NCBI query
     search_handle = Entrez.epost(db, id=",".join(map(str, chunk)))
     search_results = Entrez.read(search_handle)
 
-    for start in range(0, len(chunk), config['entrez']['batchSize']):
+    for start in range(0, len(chunk), batch_size):
         # print info
         now = datetime.ctime(datetime.now())
         print("\t{}\t{} / {}\n".format(now, start, len(chunk)), file=sys.stderr)

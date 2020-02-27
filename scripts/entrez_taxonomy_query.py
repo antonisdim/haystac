@@ -30,7 +30,7 @@ def entrez_taxonomy_query(config, nuccore_file, output_file):
 
         for chunk in chunker(accessions, 100):
 
-            records = guts_of_entrez(ENTREZ_DB_TAXA, ENTREZ_RETMODE_XML, chunk, config)
+            records = guts_of_entrez(ENTREZ_DB_TAXA, ENTREZ_RETMODE_XML, chunk, config['entrez']['batchSize'])
 
             for node in records:
                 taxon = dict()
