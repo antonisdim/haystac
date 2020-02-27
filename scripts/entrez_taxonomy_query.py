@@ -10,7 +10,7 @@ from Bio import Entrez
 
 sys.path.append(os.getcwd())
 
-from scripts.entrez_utils import chunker, guts_of_entrez, ENTREZ_DB_TAXA, ENTREZ_RETMODE_XML
+from scripts.entrez_utils import chunker, guts_of_entrez, ENTREZ_DB_TAXA, ENTREZ_RETMODE_XML, ENTREZ_RETTYPE_FASTA
 
 
 def entrez_taxonomy_query(config, nuccore_file, output_file):
@@ -30,7 +30,8 @@ def entrez_taxonomy_query(config, nuccore_file, output_file):
 
         for chunk in chunker(accessions, 100):
 
-            records = guts_of_entrez(ENTREZ_DB_TAXA, ENTREZ_RETMODE_XML, chunk, config['entrez']['batchSize'])
+            records = guts_of_entrez(ENTREZ_DB_TAXA, ENTREZ_RETMODE_XML, ENTREZ_RETTYPE_FASTA,
+                                     chunk, config['entrez']['batchSize'])
 
             for node in records:
                 taxon = dict()

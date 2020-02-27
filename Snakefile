@@ -12,8 +12,9 @@ include: "rules/bowtie.smk"
 
 rule all:
     input:
-        "example1/entrez/example1-nuccore.tsv",
+        # todo find out why when they're are not comemnted out the rule from bowtie.smk doesn't work
+        # "example1/entrez/example1-nuccore.tsv",
         # "example1/entrez/example1-taxa.tsv",
         # "example1/entrez/example1-selected-seqs.tsv",
-        # "example1/bowtie/example1.fasta",
-        # "fastq/sample1.size"
+        "example1/bowtie/example1.fasta",
+         "example1/bam_outputs/CSL.all.bam"

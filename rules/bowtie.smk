@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import pandas as pd
+import os
 
 ##### Target rules #####
 
@@ -31,7 +32,7 @@ rule bowtie_multifasta:
     script:
           "../scripts/bowtie_multifasta.py"
 
-
+# todo don't know how to run rules with multiple outputs
 rule bowtie_index:
     input:
          "{query}/bowtie/{query}.fasta"
@@ -42,6 +43,28 @@ rule bowtie_index:
          expand("{{query}}/bowtie/{{query}}.rev.{n}.bt2", n=[1, 2])
     shell:
           "bowtie2-build {input} {wildcards.query}/bowtie/{wildcards.query} &> {log}"
+
+
+def trim_ext(fullpath, n=1):
+    return ('.').join(fullpath.split('.')[:-n])
+
+def trim_path_ext(fullpath, N=1):
+    return trim_ext(os.path.basename(fullpath), n=N)
+
+
+rule bowtie_alignment:
+    input:
+         # todo if i use just {sample} as a wildcard I get and error of it being unresovled, why ? Why does the query wildcard just work ?
+         lambda wildcards: config['samples'][wildcards.sample]
+    log:
+       # todo is there a way to trim the sample name from the sample wildcord on the fly ?
+         "{query}/bam_outputs/{trim_sample}.log"
+    output:
+        "{query}/bam_outputs/{trim_sample}.bam"
+    shell:
+          "bowtie2 -q --very-fast-local -p 20 -x {wildcards.query}/bowtie/{wildcards.query} -U {input} " \
+          "| samtools view -Shu > {output}"
+
 
 
 rule count_fastq_length:

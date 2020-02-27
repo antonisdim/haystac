@@ -7,3 +7,6 @@ dependencies:
   - snakemake=5.4.5
   - pysam=0.15.3
   - biopython=1.76
+  - #todo do not know if this is the correct notation
+  - bowtie2=2.3
+  - samtools=1.9

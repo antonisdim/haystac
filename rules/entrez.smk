@@ -21,6 +21,7 @@ rule entrez_taxa_query:
     script:
         "../scripts/entrez_taxonomy_query.py"
 
+# TODO it doesn't work as a checkpoint
 checkpoint entrez_pick_sequences:
     input:
          "{query}/entrez/{query}-nuccore.tsv",
@@ -32,11 +33,12 @@ checkpoint entrez_pick_sequences:
     script:
         "../scripts/entrez_pick_sequences.py"
 
+#TODO I don't know how this works
 rule entrez_download_sequence:
     log:
-         "sequences/{orgname}/{accession}.log"
+        "database/{orgname}/{accession}.fasta"
     output:
-         "sequences/{orgname}/{accession}.fasta"
+        "database/{orgname}/{accession}.fasta"
     script:
          "../scripts/entrez_download_sequence.py"
 
