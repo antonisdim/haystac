@@ -49,6 +49,7 @@ def entrez_efetch(db, retmode, retstart, webenv, query_key, attempt=1):
             return entrez_efetch(db, retmode, retstart, webenv, query_key, attempt)
 
     except (http.client.IncompleteRead, urllib.error.URLError) as e:
+        # TODO refactor this error handling
         print("Ditching that batch", file=sys.stderr)
         print(e)
         return None
