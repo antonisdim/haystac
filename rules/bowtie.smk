@@ -38,7 +38,7 @@ rule bowtie_index:
     log:
          "{query}/bowtie/{query}.bt2.log"
     output:
-         expand("{query}/bowtie/{query}.{n}.bt2", n=[1, 2, 3, 4]),
-         expand("{query}/bowtie/{query}.rev.{n}.bt2", n=[1, 2])
+         expand("{{query}}/bowtie/{{query}}.{n}.bt2", n=[1, 2, 3, 4]),
+         expand("{{query}}/bowtie/{{query}}.rev.{n}.bt2", n=[1, 2])
     shell:
           "bowtie2-build {input} {wildcards.query}/bowtie/{wildcards.query} &> {log}"
