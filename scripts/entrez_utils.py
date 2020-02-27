@@ -19,7 +19,7 @@ RETRY_WAIT_TIME = 2
 # static constants for Entrez
 RETMODE = 'xml'
 RETTYPE = 'fasta'
-RETMAX = 100000
+RETMAX = 1000000000
 
 def chunker(seq, size):
     return (seq[pos:pos + size] for pos in range(0, len(seq), size))

@@ -12,7 +12,7 @@ include: "rules/entrez.smk"
 
 rule all:
     input:
-        # "example1/entrez/example1-nuccore.tsv",
-        # "example1/entrez/example1-taxa.tsv",
-        "example1/entrez/example1-selected-seqs.tsv",
+        "example1/entrez/example1-nuccore.tsv",
+        "example1/entrez/example1-taxa.tsv",
+        "example1/entrez/example1-selected-seqs.tsv"
         # "example1/bowtie/example1.fasta"
