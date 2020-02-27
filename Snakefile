@@ -6,7 +6,7 @@ configfile: "config.yaml"
 ##### Modules #####
 
 include: "rules/entrez.smk"
-# include: "rules/bowtie.smk"
+include: "rules/bowtie.smk"
 
 ##### Target rules #####
 

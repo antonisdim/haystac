@@ -11,4 +11,4 @@ entrez:
   # fetch results in batches
   batchSize: 10
 
-rank: 'species'
+  rank: 'species'

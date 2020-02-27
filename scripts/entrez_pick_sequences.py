@@ -10,15 +10,16 @@ def entrez_pick_sequences(config, nuccore_file, taxa_file, output_file):
 
     accessions = pd.read_csv(nuccore_file, sep='\t')
     taxa = pd.read_csv(taxa_file, sep='\t')
+    rank = config['entrez']['rank']
 
     print("read the accessions and the taxa", file=sys.stderr)
 
-    taxaccessions = pd.merge(accessions, taxa, on=['TSeq_taxid'], how='outer')
+    sequences = pd.merge(accessions, taxa, on=['TSeq_taxid'], how='outer')
 
-    taxaccessions = taxaccessions[~taxaccessions[config['rank']].isnull()]
+    sequences = sequences[~sequences[rank].isnull()]
 
-    selected_sequences = taxaccessions.loc[
-        taxaccessions.groupby(config['rank'])['TSeq_length'].idxmax(), ['TSeq_orgname', 'TSeq_accver']]
+    selected_sequences = sequences.loc[
+        sequences.groupby(rank)['TSeq_length'].idxmax(), ['TSeq_orgname', 'TSeq_accver']]
 
     print("selected the longest sequence per species, writing it to a file", file=sys.stderr)
 

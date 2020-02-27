@@ -9,11 +9,8 @@ from Bio import Entrez
 
 sys.path.append(os.getcwd())
 
-from scripts.entrez_utils import chunker, guts_of_entrez
+from scripts.entrez_utils import chunker, guts_of_entrez, ENTREZ_DB_NUCCORE, ENTREZ_RETMAX, ENTREZ_RETMODE_XML
 
-
-RETMAX = 1000000000
-RETMODE = 'xml'
 
 def entrez_nuccore_query(config, query, output_file):
     """
@@ -25,7 +22,7 @@ def entrez_nuccore_query(config, query, output_file):
     # get list of entries for given query
     print("Getting list of GIs for term={} ...\n".format(entrez_query), file=sys.stderr)
 
-    handle = Entrez.esearch(db='nuccore', term=entrez_query, retmax=RETMAX, idtype="acc", usehistory='y')
+    handle = Entrez.esearch(db=ENTREZ_DB_NUCCORE, term=entrez_query, retmax=ENTREZ_RETMAX, idtype="acc", usehistory='y')
     accessions = Entrez.read(handle)['IdList']
 
     with open(output_file, 'w') as fout:
@@ -36,7 +33,7 @@ def entrez_nuccore_query(config, query, output_file):
         for acc_num in chunker(accessions, 100):
 
             # TODO can we not download the FASTA sequence, as this can be many MB for each result
-            records = guts_of_entrez('nuccore', RETMODE, acc_num, config)
+            records = guts_of_entrez(ENTREZ_DB_NUCCORE, ENTREZ_RETMODE_XML, acc_num, config)
 
             for node in records:
                 print("iterating on node", file=sys.stderr)
