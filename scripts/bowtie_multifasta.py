@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import glob
 import shutil
 import sys
 
@@ -15,7 +14,7 @@ def bowtie_multifasta(fasta_files, output_file):
             with open(fasta_file, 'rb') as fin:
                 shutil.copyfileobj(fin, fout)
 
-    print("Mulitfasta file created", file=sys.stderr)
+    print("Multifasta file created", file=sys.stderr)
 
 
 if __name__ == '__main__':

@@ -10,9 +10,8 @@ from Bio import Entrez
 
 sys.path.append(os.getcwd())
 
-from scripts.entrez_utils import chunker, guts_of_entrez
+from scripts.entrez_utils import chunker, guts_of_entrez, ENTREZ_DB_TAXA, ENTREZ_RETMODE_XML
 
-RETMODE = 'xml'
 
 def entrez_taxonomy_query(config, nuccore_file, output_file):
     """
@@ -25,26 +24,26 @@ def entrez_taxonomy_query(config, nuccore_file, output_file):
     accessions = pd.read_csv(nuccore_file, sep='\t', usecols=['TSeq_taxid'], squeeze=True).unique()
 
     with open(output_file, 'w') as fout:
-        fieldnames = ['TSeq_taxid', 'superkingdom', 'phylum', 'class', 'order', 'family', 'genus', 'species', 'subspecies']
-        w = csv.DictWriter(fout, fieldnames, delimiter='\t', extrasaction="ignore")
+        columns = ['TSeq_taxid', 'superkingdom', 'phylum', 'class', 'order', 'family', 'genus', 'species', 'subspecies']
+        w = csv.DictWriter(fout, columns, delimiter='\t', extrasaction="ignore")
         w.writeheader()
 
         for chunk in chunker(accessions, 100):
 
-            records = guts_of_entrez('taxonomy', RETMODE, chunk, config)
+            records = guts_of_entrez(ENTREZ_DB_TAXA, ENTREZ_RETMODE_XML, chunk, config['entrez']['batchSize'])
 
             for node in records:
                 taxon = dict()
                 taxon['TSeq_taxid'] = node['TaxId']
                 for item in node['LineageEx']:
-                    if item["Rank"] in fieldnames:
+                    if item["Rank"] in columns:
                         taxon[item["Rank"]] = item['ScientificName']
 
-                if node['Rank'] in fieldnames:
+                if node['Rank'] in columns:
                     taxon[node['Rank']] = node['ScientificName']
 
-                if taxon['species'] and 'subspecies' not in taxon.keys():
-                    taxon['subspecies'] = taxon['species'] + ' sp'
+                if taxon['species'] and not taxon.get('subspecies'):
+                    taxon['subspecies'] = taxon['species'] + ' ssp.'
 
                 w.writerow(taxon)
 

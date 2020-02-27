@@ -11,4 +11,7 @@ entrez:
   # fetch results in batches
   batchSize: 10
 
-rank: 'species'
+  rank: 'species'
+
+samples:
+  sample1: fastq/CSL.all.fastq.gz

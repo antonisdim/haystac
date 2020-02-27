@@ -16,10 +16,16 @@ MAX_RETRY_ATTEMPTS = 2
 # time to wait in seconds before repeating a failed query
 RETRY_WAIT_TIME = 2
 
-# static constants for Entrez
-RETMODE = 'xml'
-RETTYPE = 'fasta'
-RETMAX = 1000000000
+ENTREZ_DB_NUCCORE = 'nuccore'
+ENTREZ_DB_TAXA = 'taxonomy'
+
+ENTREZ_RETMODE_XML = 'xml'
+ENTREZ_RETMODE_TEXT = 'text'
+
+ENTREZ_RETTYPE_FASTA = 'fasta'
+
+ENTREZ_RETMAX = 10**9
+
 
 def chunker(seq, size):
     return (seq[pos:pos + size] for pos in range(0, len(seq), size))
@@ -28,9 +34,9 @@ def chunker(seq, size):
 def entrez_efetch(db, retmode, retstart, webenv, query_key, attempt=1):
     try:
         return Entrez.efetch(db=db,
-                             retmode=RETMODE,
-                             rettype=RETTYPE,
-                             retmax=RETMAX,
+                             retmode=ENTREZ_RETMODE_XML,
+                             rettype=ENTREZ_RETTYPE_FASTA,
+                             retmax=ENTREZ_RETMAX,
                              retstart=retstart,
                              webenv=webenv,
                              query_key=query_key)
@@ -55,19 +61,19 @@ def entrez_efetch(db, retmode, retstart, webenv, query_key, attempt=1):
         return None
 
 
-def guts_of_entrez(db, retmode, chunk, config):
+def guts_of_entrez(db, retmode, chunk, batch_size):
     # print info about number of records
     print("Downloading {} entries from NCBI {} database in batches of {} entries...\n"
-          .format(len(chunk), db, config['entrez']['batchSize']), file=sys.stderr)
+          .format(len(chunk), db, batch_size), file=sys.stderr)
 
     # post NCBI query
     search_handle = Entrez.epost(db, id=",".join(map(str, chunk)))
     search_results = Entrez.read(search_handle)
 
-    for start in range(0, len(chunk), config['entrez']['batchSize']):
+    for start in range(0, len(chunk), batch_size):
         # print info
-        tnow = datetime.now()
-        print("\t{}\t{} / {}\n".format(datetime.ctime(tnow), start, len(chunk)), file=sys.stderr)
+        now = datetime.ctime(datetime.now())
+        print("\t{}\t{} / {}\n".format(now, start, len(chunk)), file=sys.stderr)
 
         handle = entrez_efetch(db, retmode, start, search_results["WebEnv"], search_results["QueryKey"])
 
@@ -85,12 +91,9 @@ def guts_of_entrez(db, retmode, chunk, config):
 
         except (http.client.HTTPException, urllib.error.HTTPError, urllib.error.URLError,
                 RuntimeError, Entrez.Parser.ValidationError, socketerror):
+            # TODO refactor this error handling
             print("Ditching that batch of records", file=sys.stderr)
             continue
-
-        # print(records)
-
-        # return records
 
         for rec in records:
             yield rec
