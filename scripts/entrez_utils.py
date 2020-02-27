@@ -23,6 +23,7 @@ ENTREZ_RETMODE_XML = 'xml'
 ENTREZ_RETMODE_TEXT = 'text'
 
 ENTREZ_RETTYPE_FASTA = 'fasta'
+ENTREZ_RETTYPE_GB = 'gb'
 
 ENTREZ_RETMAX = 10**9
 
@@ -31,11 +32,11 @@ def chunker(seq, size):
     return (seq[pos:pos + size] for pos in range(0, len(seq), size))
 
 
-def entrez_efetch(db, retmode, retstart, webenv, query_key, attempt=1):
+def entrez_efetch(db, retmode, rettype, retstart, webenv, query_key, attempt=1):
     try:
         return Entrez.efetch(db=db,
-                             retmode=ENTREZ_RETMODE_XML,
-                             rettype=ENTREZ_RETTYPE_FASTA,
+                             retmode=retmode,
+                             rettype=rettype,
                              retmax=ENTREZ_RETMAX,
                              retstart=retstart,
                              webenv=webenv,
@@ -52,7 +53,7 @@ def entrez_efetch(db, retmode, retstart, webenv, query_key, attempt=1):
         else:
             time.sleep(RETRY_WAIT_TIME)
             print("Starting attempt {}...".format(attempt), file=sys.stderr)
-            return entrez_efetch(db, retmode, retstart, webenv, query_key, attempt)
+            return entrez_efetch(db, retmode, rettype, retstart, webenv, query_key, attempt)
 
     except (http.client.IncompleteRead, urllib.error.URLError) as e:
         # TODO refactor this error handling
@@ -61,7 +62,7 @@ def entrez_efetch(db, retmode, retstart, webenv, query_key, attempt=1):
         return None
 
 
-def guts_of_entrez(db, retmode, chunk, batch_size):
+def guts_of_entrez(db, retmode, rettype, chunk, batch_size):
     # print info about number of records
     print("Downloading {} entries from NCBI {} database in batches of {} entries...\n"
           .format(len(chunk), db, batch_size), file=sys.stderr)
@@ -75,7 +76,7 @@ def guts_of_entrez(db, retmode, chunk, batch_size):
         now = datetime.ctime(datetime.now())
         print("\t{}\t{} / {}\n".format(now, start, len(chunk)), file=sys.stderr)
 
-        handle = entrez_efetch(db, retmode, start, search_results["WebEnv"], search_results["QueryKey"])
+        handle = entrez_efetch(db, retmode, rettype, start, search_results["WebEnv"], search_results["QueryKey"])
 
         if not handle:
             continue

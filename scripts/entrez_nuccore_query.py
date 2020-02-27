@@ -9,7 +9,7 @@ from Bio import Entrez
 
 sys.path.append(os.getcwd())
 
-from scripts.entrez_utils import chunker, guts_of_entrez, ENTREZ_DB_NUCCORE, ENTREZ_RETMAX, ENTREZ_RETMODE_XML
+from scripts.entrez_utils import guts_of_entrez, ENTREZ_DB_NUCCORE, ENTREZ_RETMODE_XML, ENTREZ_RETTYPE_FASTA
 
 
 def entrez_nuccore_query(config, query, output_file):
@@ -22,18 +22,26 @@ def entrez_nuccore_query(config, query, output_file):
     # get list of entries for given query
     print("Getting list of GIs for term={} ...\n".format(entrez_query), file=sys.stderr)
 
-    handle = Entrez.esearch(db=ENTREZ_DB_NUCCORE, term=entrez_query, retmax=ENTREZ_RETMAX, idtype="acc", usehistory='y')
-    accessions = Entrez.read(handle)['IdList']
+    retmax = config['entrez']['batchSize']
+    counter = 0
 
-    with open(output_file, 'w') as fout:
-        fieldnames = ['TSeq_accver', 'TSeq_taxid', 'TSeq_orgname', 'TSeq_defline', 'TSeq_length']
-        w = csv.DictWriter(fout, fieldnames, delimiter='\t', extrasaction="ignore")
-        w.writeheader()
+    while True:
+        handle = Entrez.esearch(db=ENTREZ_DB_NUCCORE, term=entrez_query, retmax=retmax, idtype="acc",
+                                usehistory='y', retstart=retmax*counter)
+        accessions = Entrez.read(handle)['IdList']
 
-        for acc_num in chunker(accessions, 100):
+        if not accessions:
+            # stop iterating when we get an empty resultset
+            break
+
+        with open(output_file, 'w') as fout:
+            fieldnames = ['TSeq_accver', 'TSeq_taxid', 'TSeq_orgname', 'TSeq_defline', 'TSeq_length']
+            w = csv.DictWriter(fout, fieldnames, delimiter='\t', extrasaction="ignore")
+            w.writeheader()
 
             # TODO can we not download the FASTA sequence, as this can be many MB for each result
-            records = guts_of_entrez(ENTREZ_DB_NUCCORE, ENTREZ_RETMODE_XML, acc_num, config['entrez']['batchSize'])
+            records = guts_of_entrez(ENTREZ_DB_NUCCORE, ENTREZ_RETMODE_XML, ENTREZ_RETTYPE_FASTA,
+                                     accessions, retmax)
 
             for node in records:
                 print("iterating on node", file=sys.stderr)
@@ -41,7 +49,9 @@ def entrez_nuccore_query(config, query, output_file):
 
             print("done for this slice", file=sys.stderr)
 
-    print("COMPLETE", file=sys.stderr)
+        counter += 1
+
+        print("COMPLETE", file=sys.stderr)
 
 
 if __name__ == '__main__':
