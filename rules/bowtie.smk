@@ -54,7 +54,7 @@ rule bowtie_alignment:
     params:
         index="{query}/bowtie/{query}"
     output:
-        "{query}/bam_outputs/{sample}.bam"
+        "{query}/bam_outputs/{sample}_sorted.bam"
     threads:
         cpu_count()
     shell:
@@ -64,13 +64,13 @@ rule bowtie_alignment:
 
 rule remove_duplicates:
     input:
-        "{query}/bam_outputs/{sample}.bam"
+        "{query}/bam_outputs/{sample}_sorted.bam"
     log:
         "{query}/bam_outputs/{sample}_rmdup.log"
     output:
         "{query}/bam_outputs/{sample}_rmdup.bam"
     shell:
-        "samtools view -h {input} | python ./scripts/rmdup_collapsed.py | samtools view -Shu > {output}"
+        "samtools view -h {input} | python ./scripts/rmdup_collapsed.py | samtools view -hu > {output} &> {log}"
 
 
 rule extract_fastq:
@@ -83,7 +83,7 @@ rule extract_fastq:
     params:
         config['alignment_qscore']
     shell:
-        "samtools view -h -q {params} {input} | samtools fastq - > {output}"
+        "samtools view -h -q {params} {input} | samtools fastq - > {output} &> {log}"
 
 
 rule count_fastq_length:
