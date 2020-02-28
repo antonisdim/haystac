@@ -32,7 +32,7 @@ rule bowtie_multifasta:
     script:
           "../scripts/bowtie_multifasta.py"
 
-# todo don't know how to run rules with multiple outputs
+
 rule bowtie_index:
     input:
          "{query}/bowtie/{query}.fasta"
@@ -45,26 +45,54 @@ rule bowtie_index:
           "bowtie2-build {input} {wildcards.query}/bowtie/{wildcards.query} &> {log}"
 
 
-def trim_ext(fullpath, n=1):
-    return ('.').join(fullpath.split('.')[:-n])
-
-def trim_path_ext(fullpath, N=1):
-    return trim_ext(os.path.basename(fullpath), n=N)
-
-
 rule bowtie_alignment:
     input:
          # todo if i use just {sample} as a wildcard I get and error of it being unresovled, why ? Why does the query wildcard just work ?
          lambda wildcards: config['samples'][wildcards.sample]
     log:
-       # todo is there a way to trim the sample name from the sample wildcord on the fly ?
-         "{query}/bam_outputs/{trim_sample}.log"
+        "{query}/bam_outputs/{sample}.log"
     output:
-        "{query}/bam_outputs/{trim_sample}.bam"
+        "{query}/bam_outputs/{sample}.bam"
+    threads:
+        8
     shell:
-          "bowtie2 -q --very-fast-local -p 20 -x {wildcards.query}/bowtie/{wildcards.query} -U {input} " \
+          "bowtie2 -q --very-fast-local -p {threads} -x {wildcards.query}/bowtie/{wildcards.query} -U {input} " \
           "| samtools view -Shu > {output}"
 
+
+rule sort_bams:
+    input:
+        "{query}/bam_outputs/{sample}.bam"
+    log:
+        "{query}/bam_outputs/{sample}_sorted.log"
+    output:
+        "{query}/bam_outputs/{sample}_sorted.bam"
+    shell:
+        "samtools sort -o {output} {input}"
+
+
+rule remove_duplicates:
+    input:
+        "{query}/bam_outputs/{sample}_sorted.bam"
+    log:
+        "{query}/bam_outputs/{sample}_rmdup.log"
+    output:
+        "{query}/bam_outputs/{sample}_rmdup.bam"
+    shell:
+        "samtools view -h {input} | python ./scripts/rmdup_collapsed.py | samtools view -Shu > {output}"
+
+
+rule extract_fastq:
+    input:
+        "{query}/bam_outputs/{sample}_rmdup.bam"
+    log:
+        "{query}/bam_outputs/{sample}_fastq.log"
+    output:
+        "{query}/bam_outputs/{sample}.fastq"
+    params:
+        config['alignment_qscore']
+    shell:
+        "samtools view -h -q {params} {input} | samtools fastq - > {output}"
 
 
 rule count_fastq_length:
