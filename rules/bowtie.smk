@@ -62,6 +62,41 @@ rule bowtie_alignment:
          "| samtools view -Shu > {output}"  # TODO update the samtools flags, none of these are necessary
 
 
+rule sort_bams:
+    input:
+        "{query}/bam_outputs/{sample}.bam"
+    log:
+        "{query}/bam_outputs/{sample}_sorted.log"
+    output:
+        "{query}/bam_outputs/{sample}_sorted.bam"
+    shell:
+        "samtools sort -o {output} {input}"
+
+
+rule remove_duplicates:
+    input:
+        "{query}/bam_outputs/{sample}_sorted.bam"
+    log:
+        "{query}/bam_outputs/{sample}_rmdup.log"
+    output:
+        "{query}/bam_outputs/{sample}_rmdup.bam"
+    shell:
+        "samtools view -h {input} | python ./scripts/rmdup_collapsed.py | samtools view -Shu > {output}"
+
+
+rule extract_fastq:
+    input:
+        "{query}/bam_outputs/{sample}_rmdup.bam"
+    log:
+        "{query}/bam_outputs/{sample}_fastq.log"
+    output:
+        "{query}/bam_outputs/{sample}.fastq"
+    params:
+        config['alignment_qscore']
+    shell:
+        "samtools view -h -q {params} {input} | samtools fastq - > {output}"
+
+
 rule count_fastq_length:
     input:
          fastq=lambda wildcards: config['samples'][wildcards.sample]

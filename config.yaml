@@ -14,4 +14,7 @@ entrez:
   rank: 'species'
 
 samples:
-  sample1: fastq/CSL.all.fastq.gz
+  CSL.all: fastq/CSL.all.fastq.gz
+
+alignment_qscore:
+  20
