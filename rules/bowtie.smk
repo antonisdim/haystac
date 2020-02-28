@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import pandas as pd
-import os
+from multiprocessing import cpu_count
 
 ##### Target rules #####
 
@@ -16,8 +16,8 @@ def get_fasta_sequences(wildcards):
     inputs = []
 
     for key, seq in sequences.iterrows():
-        inputs.append('database/{orgname}/{accession}.fasta'.format(orgname=seq['TSeq_orgname'].replace(" ", "."),
-                                                                    accession=seq['TSeq_accver']))
+        orgname, accession = seq['TSeq_orgname'].replace(" ", "_"), seq['TSeq_accver']
+        inputs.append('database/{orgname}/{accession}.fasta'.format(orgname=orgname, accession=accession))
 
     return inputs
 
@@ -32,7 +32,7 @@ rule bowtie_multifasta:
     script:
           "../scripts/bowtie_multifasta.py"
 
-# todo don't know how to run rules with multiple outputs
+
 rule bowtie_index:
     input:
          "{query}/bowtie/{query}.fasta"
@@ -45,35 +45,30 @@ rule bowtie_index:
           "bowtie2-build {input} {wildcards.query}/bowtie/{wildcards.query} &> {log}"
 
 
-def trim_ext(fullpath, n=1):
-    return ('.').join(fullpath.split('.')[:-n])
-
-def trim_path_ext(fullpath, N=1):
-    return trim_ext(os.path.basename(fullpath), n=N)
-
-
 rule bowtie_alignment:
     input:
-         # todo if i use just {sample} as a wildcard I get and error of it being unresovled, why ? Why does the query wildcard just work ?
-         lambda wildcards: config['samples'][wildcards.sample]
+        fastq=lambda wildcards: config['samples'][wildcards.sample],
+        bt2idx="{query}/bowtie/{query}.1.bt2"
     log:
-       # todo is there a way to trim the sample name from the sample wildcord on the fly ?
-         "{query}/bam_outputs/{trim_sample}.log"
+        "{query}/bam_outputs/{sample}.log"
+    params:
+        index="{query}/bowtie/{query}"
     output:
-        "{query}/bam_outputs/{trim_sample}.bam"
+        "{query}/bam_outputs/{sample}.bam"
+    threads:
+        cpu_count()
     shell:
-          "bowtie2 -q --very-fast-local -p 20 -x {wildcards.query}/bowtie/{wildcards.query} -U {input} " \
-          "| samtools view -Shu > {output}"
-
+         "bowtie2 -q --very-fast-local --threads {threads} -x {params.index} -U {input.fastq} "
+         "| samtools view -Shu > {output}"  # TODO update the samtools flags, none of these are necessary
 
 
 rule count_fastq_length:
     input:
-         lambda wildcards: config['samples'][wildcards.sample]
+         fastq=lambda wildcards: config['samples'][wildcards.sample]
     log:
          "fastq/{sample}.log"
     output:
          "fastq/{sample}.size"
     shell:
-          "expr $(gunzip -c {input} | wc -l) / 4 1> {output} 2> {log}"
+          "expr $(gunzip -c {input.fastq} | wc -l) / 4 1> {output} 2> {log}"
 
