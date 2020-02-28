@@ -58,24 +58,13 @@ rule bowtie_alignment:
     threads:
         cpu_count()
     shell:
-         "bowtie2 -q --very-fast-local --threads {threads} -x {params.index} -U {input.fastq} "
-         "| samtools view -Shu > {output}"  # TODO update the samtools flags, none of these are necessary
-
-
-rule sort_bams:
-    input:
-        "{query}/bam_outputs/{sample}.bam"
-    log:
-        "{query}/bam_outputs/{sample}_sorted.log"
-    output:
-        "{query}/bam_outputs/{sample}_sorted.bam"
-    shell:
-        "samtools sort -o {output} {input}"
+         "( bowtie2 -q --very-fast-local --threads {threads} -x {params.index} -U {input.fastq} "
+         "| samtools samtools sort -O bam -o {output} ) &> {log}"
 
 
 rule remove_duplicates:
     input:
-        "{query}/bam_outputs/{sample}_sorted.bam"
+        "{query}/bam_outputs/{sample}.bam"
     log:
         "{query}/bam_outputs/{sample}_rmdup.log"
     output:
