@@ -19,11 +19,12 @@ def entrez_download_sequence(accession, config, output_file):
 
     Entrez.email = config['entrez']['email']
 
-    record = guts_of_entrez(ENTREZ_DB_NUCCORE, ENTREZ_RETMODE_TEXT, ENTREZ_RETTYPE_FASTA, [accession],
+    records = guts_of_entrez(ENTREZ_DB_NUCCORE, ENTREZ_RETMODE_TEXT, ENTREZ_RETTYPE_FASTA, [accession],
                             config['entrez']['batchSize'])
 
     with open(output_file, 'w') as fout:
-        fout.write(record.read())
+        for record in records:
+            fout.write(record)
 
 
 if __name__ == '__main__':

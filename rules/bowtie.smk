@@ -52,14 +52,14 @@ rule bowtie_alignment:
     log:
         "{query}/bam_outputs/{sample}.log"
     params:
-        index="{query}/bowtie/{query}"
+        index="{query}/bowtie/{query}",
     output:
         "{query}/bam_outputs/{sample}_sorted.bam"
     threads:
         cpu_count()
     shell:
          "( bowtie2 -q --very-fast-local --threads {threads} -x {params.index} -U {input.fastq} "
-         "| samtools samtools sort -O bam -o {output} ) &> {log}"
+         "| samtools samtools sort -O bam -o {output} ) 2> {log}"
 
 
 rule remove_duplicates:
@@ -70,7 +70,7 @@ rule remove_duplicates:
     output:
         "{query}/bam_outputs/{sample}_rmdup.bam"
     shell:
-        "samtools view -h {input} | python ./scripts/rmdup_collapsed.py | samtools view -hu > {output} &> {log}"
+        "dedup --merged --input {input} --output {output} &> {log}"
 
 
 rule extract_fastq:

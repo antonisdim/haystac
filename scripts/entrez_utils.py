@@ -84,11 +84,11 @@ def guts_of_entrez(db, retmode, rettype, chunk, batch_size):
         if retmode == 'text':
             return handle
 
-        print("got the handle", file=sys.stderr)
+        # print("got the handle", file=sys.stderr)
 
         try:
             records = Entrez.read(handle)
-            print("got the records", file=sys.stderr)
+            # print("got the records", file=sys.stderr)
 
         except (http.client.HTTPException, urllib.error.HTTPError, urllib.error.URLError,
                 RuntimeError, Entrez.Parser.ValidationError, socketerror):

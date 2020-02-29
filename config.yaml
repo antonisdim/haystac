@@ -9,12 +9,15 @@ entrez:
   email: evangelos-antonios.dimopoulos@hertford.ox.ac.uk
 
   # fetch results in batches
-  batchSize: 10
+  batchSize: 2
 
   rank: 'species'
 
 samples:
   CSL.all: fastq/CSL.all.fastq.gz
+  # single: [fastq/CSL.all.fastq.gz]
+  # paired: [(fastq/CSL.all_r1.fastq.gz, fastq/CSL.all_r2.fastq.gz)]
+
 
 alignment_qscore:
   20

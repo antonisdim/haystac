@@ -3,7 +3,6 @@
 
 import os
 import sys
-from pprint import pprint
 
 from Bio import Entrez
 
@@ -51,12 +50,17 @@ while True:
     records = list(guts_of_entrez(ENTREZ_DB_NUCCORE, ENTREZ_RETMODE_XML, ENTREZ_RETTYPE_GB, handle['IdList'], retmax))
 
     for record in records:
+
+        # print(record)
+        # quit()
+
         # extract the taxon id from the overly complicated nesting in the GBSeq XML format
         record['TSeq_taxid'] = [val.replace('taxon:', '')
                                 for val in gen_dict_extract('GBQualifier_value', record) if 'taxon:' in val].pop()
 
-    pprint(records)
+        print(record['TSeq_taxid'])
+    # pprint(records)
 
     counter += 1
 
-    break
+    # break

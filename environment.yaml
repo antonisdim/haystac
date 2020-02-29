@@ -9,3 +9,4 @@ dependencies:
   - biopython=1.76
   - bowtie2=2.3.5.1
   - samtools=1.9
+  - dedup=0.12.5
