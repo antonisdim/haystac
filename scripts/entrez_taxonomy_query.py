@@ -28,8 +28,10 @@ def entrez_taxonomy_query(config, nuccore_file, output_file):
         w = csv.DictWriter(fout, columns, delimiter='\t', extrasaction="ignore")
         w.writeheader()
 
-        for chunk in chunker(accessions, 100):
+        resultset = len(accessions)
 
+        for chunk in chunker(accessions, config['entrez']['batchSize']):
+            print('Remaining sequences to have their taxids downloaded {}\n'.format(resultset), file=sys.stderr)
             records = guts_of_entrez(ENTREZ_DB_TAXA, ENTREZ_RETMODE_XML, ENTREZ_RETTYPE_FASTA,
                                      chunk, config['entrez']['batchSize'])
 
@@ -48,7 +50,8 @@ def entrez_taxonomy_query(config, nuccore_file, output_file):
 
                 w.writerow(taxon)
 
-                print("done for this slice", file=sys.stderr)
+            resultset -= config['entrez']['batchSize']
+            print("done for this slice\n", file=sys.stderr)
 
     print("COMPLETE", file=sys.stderr)
 
