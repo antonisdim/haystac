@@ -19,7 +19,9 @@ def entrez_pick_sequences(config, nuccore_file, taxa_file, output_file):
     sequences = sequences[~sequences[rank].isnull()]
 
     selected_sequences = sequences.loc[
-        sequences.groupby(rank)['TSeq_length'].idxmax(), ['TSeq_orgname', 'TSeq_accver']]
+        sequences.groupby(rank)['GBSeq_length'].idxmax(), ['GBSeq_organism', 'GBSeq_accession-version']]
+
+    print(selected_sequences)
 
     print("selected the longest sequence per species, writing it to a file", file=sys.stderr)
 

@@ -66,7 +66,6 @@ def guts_of_entrez(db, retmode, rettype, chunk, batch_size):
     # print info about number of records
     print("Downloading {} entries from NCBI {} database in batches of {} entries...\n"
           .format(len(chunk), db, batch_size), file=sys.stderr)
-
     # post NCBI query
     search_handle = Entrez.epost(db, id=",".join(map(str, chunk)))
     search_results = Entrez.read(search_handle)

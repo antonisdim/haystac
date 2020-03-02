@@ -11,6 +11,7 @@ rule entrez_nuccore_query:
     script:
         "../scripts/entrez_nuccore_query.py"
 
+
 rule entrez_taxa_query:
     input:
         "{query}/entrez/{query}-nuccore.tsv"
@@ -21,7 +22,7 @@ rule entrez_taxa_query:
     script:
         "../scripts/entrez_taxonomy_query.py"
 
-
+# todo it doesn't work as a checkpoint, even when I call a top level rule like the bowtie2_multifasta one
 checkpoint entrez_pick_sequences:
     input:
          "{query}/entrez/{query}-nuccore.tsv",
@@ -33,7 +34,7 @@ checkpoint entrez_pick_sequences:
     script:
         "../scripts/entrez_pick_sequences.py"
 
-#todo improve logging
+# todo doesn't work
 rule entrez_download_sequence:
     output:
         "database/{orgname}/{accession}.fasta"

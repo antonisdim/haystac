@@ -16,7 +16,7 @@ def get_fasta_sequences(wildcards):
     inputs = []
 
     for key, seq in sequences.iterrows():
-        orgname, accession = seq['TSeq_orgname'].replace(" ", "_"), seq['TSeq_accver']
+        orgname, accession = seq['GBSeq_organism'].replace(" ", "."), seq['GBSeq_accession-version']
         inputs.append('database/{orgname}/{accession}.fasta'.format(orgname=orgname, accession=accession))
 
     return inputs
@@ -37,7 +37,7 @@ rule bowtie_index:
     input:
          "{query}/bowtie/{query}.fasta"
     log:
-         "{query}/bowtie/{query}.bt2.log"
+         "{query}/bowtie/{query}.index.log"
     output:
          expand("{{query}}/bowtie/{{query}}.{n}.bt2", n=[1, 2, 3, 4]),
          expand("{{query}}/bowtie/{{query}}.rev.{n}.bt2", n=[1, 2])
@@ -59,7 +59,7 @@ rule bowtie_alignment:
         cpu_count()
     shell:
          "( bowtie2 -q --very-fast-local --threads {threads} -x {params.index} -U {input.fastq} "
-         "| samtools samtools sort -O bam -o {output} ) 2> {log}"
+         "| samtools sort -O bam -o {output} ) 2> {log}"
 
 
 rule remove_duplicates:
@@ -69,8 +69,12 @@ rule remove_duplicates:
         "{query}/bam_outputs/{sample}_rmdup.log"
     output:
         "{query}/bam_outputs/{sample}_rmdup.bam"
+    params:
+        folder=directory("{query}/bam_outputs/"),
+        intermediate_file="{query}/bam_outputs/{sample}_sorted_rmdup.bam"
     shell:
-        "dedup --merged --input {input} --output {output} &> {log}"
+        "dedup --merged --input {input} --output {params.folder}; "
+        "mv {params.intermediate_file} {output} &> {log}"
 
 
 rule extract_fastq:
