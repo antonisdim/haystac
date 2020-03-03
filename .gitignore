@@ -9,7 +9,8 @@ nohup*
 __pycache__
 
 
-*/entrez/*
+*/bam/*
 */bowtie/*
+*/entrez/*
 database/*
 fastq/*

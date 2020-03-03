@@ -23,11 +23,11 @@ rule bowtie_alignment:
         fastq=lambda wildcards: config['samples'][wildcards.sample],
         bt2idx="{query}/bowtie/{query}.1.bt2"
     log:
-        "{query}/bam_outputs/{sample}.log"
+        "{query}/bam/{sample}.log"
     params:
         index="{query}/bowtie/{query}",
     output:
-        "{query}/bam_outputs/{sample}_sorted.bam"
+        "{query}/bam/{sample}_sorted.bam"
     threads:
         cpu_count()
     shell:
@@ -37,26 +37,24 @@ rule bowtie_alignment:
 
 rule remove_duplicates:
     input:
-        "{query}/bam_outputs/{sample}_sorted.bam"
+        "{query}/bam/{sample}_sorted.bam"
     log:
-        "{query}/bam_outputs/{sample}_rmdup.log"
+        "{query}/bam/{sample}_sorted_rmdup.log"
     output:
-        "{query}/bam_outputs/{sample}_rmdup.bam"
+        "{query}/bam/{sample}_sorted_rmdup.bam"
     params:
-        folder=directory("{query}/bam_outputs/"),
-        intermediate_file="{query}/bam_outputs/{sample}_sorted_rmdup.bam"
+        output="{query}/bam/"
     shell:
-        "dedup --merged --input {input} --output {params.folder}; "
-        "mv {params.intermediate_file} {output} &> {log}"
+        "dedup --merged --input {input} --output {params.output} &> {log}"
 
 
 rule extract_fastq:
     input:
-        "{query}/bam_outputs/{sample}_rmdup.bam"
+        "{query}/bam/{sample}_sorted_rmdup.bam"
     log:
-        "{query}/bam_outputs/{sample}_fastq.log"
+        "{query}/bam/{sample}_fastq.log"
     output:
-        "{query}/bam_outputs/{sample}.fastq"
+        "{query}/bam/{sample}.fastq"
     params:
         config['alignment_qscore']
     shell:
