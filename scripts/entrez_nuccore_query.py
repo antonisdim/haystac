@@ -41,6 +41,7 @@ def entrez_nuccore_query(config, query, output_file):
     # get list of entries for given query
     print("Getting list of Accessions for term={} ...\n".format(entrez_query), file=sys.stderr)
 
+    # TODO stop fetching the first resutset just to get the count (use "print_count = False" inside the while loop)
     resultset = int(Entrez.read(Entrez.esearch(db=ENTREZ_DB_NUCCORE, term=entrez_query, retmax=ENTREZ_RETMAX,
                                                idtype="acc", usehistory='y', rettype=ENTREZ_RETTYPE_GB,
                                                retmode=ENTREZ_RETMODE_XML))['Count'])
@@ -65,6 +66,7 @@ def entrez_nuccore_query(config, query, output_file):
 
             if not accessions:
                 # stop iterating when we get an empty resultset
+                # TODO check that the number of records written to the DictWriter matches the query count
                 break
 
             records = guts_of_entrez(ENTREZ_DB_NUCCORE, ENTREZ_RETMODE_XML, ENTREZ_RETTYPE_GB,

@@ -46,7 +46,6 @@ while True:
         # stop iterating when we get an empty resultset
         break
 
-    # TODO set the following to save downloading the full sequence each time
     records = list(guts_of_entrez(ENTREZ_DB_NUCCORE, ENTREZ_RETMODE_XML, ENTREZ_RETTYPE_GB, handle['IdList'], retmax))
 
     for record in records:
