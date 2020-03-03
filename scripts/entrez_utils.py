@@ -6,7 +6,7 @@ import sys
 import time
 import urllib.error
 from datetime import datetime
-from socket import error as socketerror
+import socket
 
 from Bio import Entrez
 
@@ -77,23 +77,23 @@ def guts_of_entrez(db, retmode, rettype, chunk, batch_size):
 
         handle = entrez_efetch(db, retmode, rettype, start, search_results["WebEnv"], search_results["QueryKey"])
 
+        # print("got the handle", file=sys.stderr)
         if not handle:
+            # TODO this needs to be handled better, we shouldn't just quietly skip queries that don't work
             continue
 
-        if retmode == 'text':
-            return handle
-
-        # print("got the handle", file=sys.stderr)
-
         try:
-            records = Entrez.read(handle)
-            # print("got the records", file=sys.stderr)
+            if retmode == ENTREZ_RETMODE_TEXT:
+                yield handle.read()
+            else:
+                records = Entrez.read(handle)
+                # print("got the records", file=sys.stderr)
+
+                for rec in records:
+                    yield rec
 
         except (http.client.HTTPException, urllib.error.HTTPError, urllib.error.URLError,
-                RuntimeError, Entrez.Parser.ValidationError, socketerror):
+                RuntimeError, Entrez.Parser.ValidationError, socket.error):
             # TODO refactor this error handling
             print("Ditching that batch of records", file=sys.stderr)
             continue
-
-        for rec in records:
-            yield rec

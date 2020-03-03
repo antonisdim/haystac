@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import pandas as pd
+
 ##### Target rules #####
 
 rule entrez_nuccore_query:
@@ -22,7 +24,7 @@ rule entrez_taxa_query:
     script:
         "../scripts/entrez_taxonomy_query.py"
 
-# todo it doesn't work as a checkpoint, even when I call a top level rule like the bowtie2_multifasta one
+
 checkpoint entrez_pick_sequences:
     input:
          "{query}/entrez/{query}-nuccore.tsv",
@@ -34,7 +36,7 @@ checkpoint entrez_pick_sequences:
     script:
         "../scripts/entrez_pick_sequences.py"
 
-# todo doesn't work
+
 rule entrez_download_sequence:
     output:
         "database/{orgname}/{accession}.fasta"
@@ -43,3 +45,29 @@ rule entrez_download_sequence:
     script:
          "../scripts/entrez_download_sequence.py"
 
+
+def get_fasta_sequences(wildcards):
+    """
+    Get all the FASTA sequences for the multi-FASTA file.
+    """
+    pick_sequences = checkpoints.entrez_pick_sequences.get(query=wildcards.query)
+    sequences = pd.read_csv(pick_sequences.output[0], sep='\t')
+
+    inputs = []
+
+    for key, seq in sequences.iterrows():
+        orgname, accession = seq['GBSeq_organism'].replace(" ", "."), seq['GBSeq_accession-version']
+        inputs.append('database/{orgname}/{accession}.fasta'.format(orgname=orgname, accession=accession))
+
+    return inputs
+
+
+rule entrez_multifasta:
+    input:
+         get_fasta_sequences
+    log:
+         "{query}/bowtie/{query}.log"
+    output:
+         "{query}/bowtie/{query}.fasta"
+    script:
+          "../scripts/bowtie_multifasta.py"

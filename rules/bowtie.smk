@@ -1,36 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import pandas as pd
 from multiprocessing import cpu_count
 
 ##### Target rules #####
-
-def get_fasta_sequences(wildcards):
-    """
-    Get all the FASTA sequences for the multi-FASTA file.
-    """
-    pick_sequences = checkpoints.entrez_pick_sequences.get(query=wildcards.query)
-    sequences = pd.read_csv(pick_sequences.output[0], sep='\t')
-
-    inputs = []
-
-    for key, seq in sequences.iterrows():
-        orgname, accession = seq['GBSeq_organism'].replace(" ", "."), seq['GBSeq_accession-version']
-        inputs.append('database/{orgname}/{accession}.fasta'.format(orgname=orgname, accession=accession))
-
-    return inputs
-
-
-rule bowtie_multifasta:
-    input:
-         get_fasta_sequences
-    log:
-         "{query}/bowtie/{query}.log"
-    output:
-         "{query}/bowtie/{query}.fasta"
-    script:
-          "../scripts/bowtie_multifasta.py"
 
 
 rule bowtie_index:

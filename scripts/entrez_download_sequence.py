@@ -19,14 +19,11 @@ def entrez_download_sequence(accession, config, output_file):
 
     Entrez.email = config['entrez']['email']
 
-    batchsize = config['entrez']['batchSize']
-
-    # todo it doesn't work. The function runs but the line 'records' returns nothing.
-    #  Nothing from the guts of entrez logging gets printed either
-    records = guts_of_entrez(ENTREZ_DB_NUCCORE, ENTREZ_RETMODE_TEXT, ENTREZ_RETTYPE_FASTA, [accession], batchsize)
+    records = guts_of_entrez(ENTREZ_DB_NUCCORE, ENTREZ_RETMODE_TEXT, ENTREZ_RETTYPE_FASTA, [accession], batch_size=1)
 
     with open(output_file, 'w') as fout:
-        print(records.read(), file=fout)
+        for fasta in records:
+            fout.write(fasta)
 
 
 if __name__ == '__main__':
