@@ -19,6 +19,7 @@ def entrez_taxonomy_query(config, nuccore_file, output_file):
     """
 
     Entrez.email = config['entrez']['email']
+    retmax = config['entrez']['batchSize']
 
     # load the unique list of taxa from the nuccore resultset
     accessions = pd.read_csv(nuccore_file, sep='\t', usecols=['TSeq_taxid'], squeeze=True).unique()
@@ -30,10 +31,9 @@ def entrez_taxonomy_query(config, nuccore_file, output_file):
 
         resultset = len(accessions)
 
-        for chunk in chunker(accessions, config['entrez']['batchSize']):
+        for chunk in chunker(accessions, retmax):
             print('Remaining sequences to have their taxids downloaded {}\n'.format(resultset), file=sys.stderr)
-            records = guts_of_entrez(ENTREZ_DB_TAXA, ENTREZ_RETMODE_XML, ENTREZ_RETTYPE_FASTA,
-                                     chunk, config['entrez']['batchSize'])
+            records = guts_of_entrez(ENTREZ_DB_TAXA, ENTREZ_RETMODE_XML, ENTREZ_RETTYPE_FASTA, chunk, retmax)
 
             for node in records:
                 taxon = dict()
@@ -50,7 +50,7 @@ def entrez_taxonomy_query(config, nuccore_file, output_file):
 
                 w.writerow(taxon)
 
-            resultset -= config['entrez']['batchSize']
+            resultset -= retmax
             print("done for this slice\n", file=sys.stderr)
 
     print("COMPLETE", file=sys.stderr)

@@ -70,6 +70,7 @@ def guts_of_entrez(db, retmode, rettype, chunk, batch_size):
     search_handle = Entrez.epost(db, id=",".join(map(str, chunk)))
     search_results = Entrez.read(search_handle)
 
+    # TODO why do we still need this chunking here? isn't all the chunking being done now in the outer scope?
     for start in range(0, len(chunk), batch_size):
         # print info
         now = datetime.ctime(datetime.now())
@@ -79,6 +80,7 @@ def guts_of_entrez(db, retmode, rettype, chunk, batch_size):
 
         # print("got the handle", file=sys.stderr)
         if not handle:
+            # TODO raise a RuntimeError don't print a warning
             print("WARNING: The records from the following accessions could not be fetched: {}".format(','.join(chunk)),
                   file=sys.stderr)
             continue

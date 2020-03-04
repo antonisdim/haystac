@@ -7,7 +7,7 @@ configfile: "config.yaml"
 
 include: "rules/entrez.smk"
 include: "rules/bowtie.smk"
-include: "rules/sigma.smk"
+include: "rules/sigma.smk"  # TODO rename file now that we're not using sigma
 
 ##### Target rules #####
 
@@ -16,7 +16,7 @@ rule all:
         "example1/entrez/example1-nuccore.tsv",
         "example1/entrez/example1-taxa.tsv",
         "example1/bowtie/example1.fasta",
-        "example1/bowtie/example1.1.bt2",
+        "example1/bowtie/example1.1.bt2l",
         "example1/bam/CSL.all_sorted.bam",
         "example1/bam/CSL.all_sorted_rmdup.bam",
         "example1/bam/CSL.all.fastq",

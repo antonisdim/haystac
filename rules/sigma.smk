@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import os
+import pandas as pd
+
+
 ##### Target rules #####
 
-import pandas as pd
-import os
 
 rule index_database:
     input:
@@ -12,35 +14,38 @@ rule index_database:
     log:
         "database/{orgname}/{accession}_index.log"
     output:
-        # todo doing it in a dirty way and not as in the commented one,
-        #  cause otherwise I've got issues of wildcards not matching in this and the next rule.
-        #  If this alright I'll delete the commented lines.
-        # expand("database/{{orgname}}/{{orgname}}.{n}.bt2", n=[1, 2, 3, 4]),
-        # expand("database/{{orgname}}/{{orgname}}.rev.{n}.bt2", n=[1, 2])
+        # TODO go back to the old way of doing this, and use the {orgname}/{accession} wildcards, not {orgname}}/{orgname}
+        #      this is important because if a second search is run, then the longest sequence may have changed, in which
+        #      case the index needs to be rebuilt
+        # expand("database/{{orgname}}/{{orgname}}.{n}.bt2l", n=[1, 2, 3, 4]),
+        # expand("database/{{orgname}}/{{orgname}}.rev.{n}.bt2l", n=[1, 2])
         "database/{orgname}/{accession}_index.done"
     shell:
+         # TODO did you forget to tell bowtie2 to use a --large-index?
         "bowtie2-build {input} database/{wildcards.orgname}/{wildcards.orgname} &> {log}; touch {output}"
 
 
 rule alignments_per_taxon:
     input:
-        fastq="{query}/bam/{sample}.fastq",
-        bt2idx="database/{orgname}/{orgname}.1.bt2",
+        fastq="{query}/fastq/{sample}_mapq.fastq",
+        bt2idx="database/{orgname}/{orgname}.1.bt2l",
         readlen="{query}/bam/{sample}.readlen"
     log:
         "{query}/sigma/{sample}/{orgname}/{orgname}.log"
     output:
         "{query}/sigma/{sample}/{orgname}/{orgname}.bam",
     params:
-        min_score=lambda wildcards : (round(float(pd.read_csv(
+        # TODO use `lambda wildcards, input: ` to get the readlen file
+        min_score=lambda wildcards, input : (round(float(pd.read_csv(
             os.path.join(wildcards.query,'bam',wildcards.sample + '.readlen'), header=None, squeeze=True) *
             float(config['mismatch_probability']))))*(-6) ,
         # min_score=-get_max_mismatch_count()*(-6),
         index="database/{orgname}/{orgname}",
-        bowtie_threads_number=1,
-        minimum_fragment_length=15,
+        bowtie_threads_number=1,     # TODO use `threads` not `params` for this
+        minimum_fragment_length=15,  # TODO no magic numbers, use static constants
         maximum_fragment_length=150
     run:
+        # TODO split these into two separate rules
         if config['sequencing'] == 'single_end':
             shell("(bowtie2 --time --no-unal --no-discordant --no-mixed --ignore-quals --mp 6,6 --np 6 "
                   "--score-min L,{params.min_score},0.0 --gbar 1000 -q --threads {params.bowtie_threads_number} "

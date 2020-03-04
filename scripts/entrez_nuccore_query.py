@@ -70,13 +70,13 @@ def entrez_nuccore_query(config, query, output_file):
                     print("A total of {} records have been saved successfully.\n".format(total_records),
                           file=sys.stderr)
                 else:
+                    # TODO raise a RuntimeError don't print a warning
                     print("WARNING: A total of {} records have been saved successfully. "
                           "Please check the relevant log file to see which ones failed.\n".format(total_records),
                           file=sys.stderr)
                 break
 
-            records = guts_of_entrez(ENTREZ_DB_NUCCORE, ENTREZ_RETMODE_XML, ENTREZ_RETTYPE_GB,
-                                     accessions, retmax)
+            records = guts_of_entrez(ENTREZ_DB_NUCCORE, ENTREZ_RETMODE_XML, ENTREZ_RETTYPE_GB, accessions, retmax)
 
             for node in records:
                 # print(node)

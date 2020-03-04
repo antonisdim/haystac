@@ -19,7 +19,7 @@ samples:
   # paired: [(fastq/CSL.all_r1.fastq.gz, fastq/CSL.all_r2.fastq.gz)]
 
 
-alignment_qscore:
+min_mapq:
   20
 
 mismatch_probability:

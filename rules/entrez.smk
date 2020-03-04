@@ -39,6 +39,7 @@ checkpoint entrez_pick_sequences:
 
 rule entrez_download_sequence:
     output:
+        # TODO we should gzip the output and change the file extension to .fa.gz
         "database/{orgname}/{accession}.fasta"
     log:
         "database/{orgname}/{accession}.log"
@@ -69,6 +70,8 @@ rule entrez_multifasta:
     log:
          "{query}/bowtie/{query}.log"
     output:
+         # TODO we should gzip the output and change extension to .fa.gz
          "{query}/bowtie/{query}.fasta"
     script:
+          # TODO cat works with gzip, you can could do `cat {input} > {output}` as a shell command and drop the python file
           "../scripts/bowtie_multifasta.py"
