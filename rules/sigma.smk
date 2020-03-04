@@ -28,9 +28,9 @@ rule alignments_per_taxon:
         bt2idx="database/{orgname}/{orgname}.1.bt2",
         readlen="{query}/bam/{sample}.readlen"
     log:
-        "{query}/sigma_outputs/{sample}/{orgname}/{orgname}.log"
+        "{query}/sigma/{sample}/{orgname}/{orgname}.log"
     output:
-        "{query}/sigma_outputs/{sample}/{orgname}/{orgname}.bam",
+        "{query}/sigma/{sample}/{orgname}/{orgname}.bam",
     params:
         min_score=lambda wildcards : (round(float(pd.read_csv(
             os.path.join(wildcards.query,'bam',wildcards.sample + '.readlen'), header=None, squeeze=True) *
