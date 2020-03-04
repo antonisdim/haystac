@@ -22,9 +22,6 @@ rule index_database:
         "bowtie2-build {input} database/{wildcards.orgname}/{wildcards.orgname} &> {log}; touch {output}"
 
 
-# todo is there a reason we remove the '_outputs' suffix ? Just asking
-
-
 rule alignments_per_taxon:
     input:
         fastq="{query}/bam/{sample}.fastq",
