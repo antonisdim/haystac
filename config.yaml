@@ -21,3 +21,9 @@ samples:
 
 alignment_qscore:
   20
+
+mismatch_probability:
+  0.05
+
+sequencing:
+  'single_end'

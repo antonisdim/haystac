@@ -12,8 +12,8 @@ rule bowtie_index:
     log:
          "{query}/bowtie/{query}.index.log"
     output:
-         expand("{{query}}/bowtie/{{query}}.{n}.bt2", n=[1, 2, 3, 4]),
-         expand("{{query}}/bowtie/{{query}}.rev.{n}.bt2", n=[1, 2])
+         expand("{{query}}/bowtie/{{query}}.{n}.bt2l", n=[1, 2, 3, 4]),
+         expand("{{query}}/bowtie/{{query}}.rev.{n}.bt2l", n=[1, 2])
     shell:
           "bowtie2-build {input} {wildcards.query}/bowtie/{wildcards.query} &> {log}"
 
@@ -71,3 +71,14 @@ rule count_fastq_length:
     shell:
           "expr $(gunzip -c {input.fastq} | wc -l) / 4 1> {output} 2> {log}"
 
+
+rule average_fastq_read_len:
+    input:
+        "{query}/bam/{sample}.fastq"
+    log:
+        "{query}/bam/{sample}_av_readlen.log"
+    output:
+        "{query}/bam/{sample}.readlen"
+    shell:
+         """head -n 2000000 {input} | awk "{{if(NR%4==2) {{count++; bases += length}} }} END{{print bases/count}}" \
+         1> {output} 2> {log}"""

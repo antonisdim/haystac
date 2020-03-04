@@ -79,7 +79,8 @@ def guts_of_entrez(db, retmode, rettype, chunk, batch_size):
 
         # print("got the handle", file=sys.stderr)
         if not handle:
-            # TODO this needs to be handled better, we shouldn't just quietly skip queries that don't work
+            print("WARNING: The records from the following accessions could not be fetched: {}".format(','.join(chunk)),
+                  file=sys.stderr)
             continue
 
         try:

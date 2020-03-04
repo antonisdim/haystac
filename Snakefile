@@ -7,6 +7,7 @@ configfile: "config.yaml"
 
 include: "rules/entrez.smk"
 include: "rules/bowtie.smk"
+include: "rules/sigma.smk"
 
 ##### Target rules #####
 
@@ -19,4 +20,7 @@ rule all:
         "example1/bam/CSL.all_sorted.bam",
         "example1/bam/CSL.all_sorted_rmdup.bam",
         "example1/bam/CSL.all.fastq",
-        "fastq/CSL.all.size"
+        "fastq/CSL.all.size",
+        "example1/bam/CSL.all.readlen",
+        "database/Streptomyces.alboflavus/NZ_CP021748.1_index.done",
+        "example1/sigma_outputs/CSL.all/Streptomyces.alboflavus/Streptomyces.alboflavus.bam"
