@@ -13,14 +13,14 @@ include: "rules/sigma.smk"  # TODO rename file now that we're not using sigma
 
 rule all:
     input:
-        "example1/entrez/example1-nuccore.tsv",
-        "example1/entrez/example1-taxa.tsv",
-        "example1/bowtie/example1.fasta",
-        "example1/bowtie/example1.1.bt2l",
-        "example1/bam/CSL.all_sorted.bam",
-        "example1/bam/CSL.all_sorted_rmdup.bam",
-        "example1/bam/CSL.all.fastq",
-        "fastq/CSL.all.size",
-        "example1/bam/CSL.all.readlen",
-        "database/Streptomyces.alboflavus/NZ_CP021748.1_index.done",
-        "example1/sigma_outputs/CSL.all/Streptomyces.alboflavus/Streptomyces.alboflavus.bam"
+        "yersinia_test/entrez/yersinia_test-nuccore.tsv",
+        "yersinia_test/entrez/yersinia_test-taxa.tsv",
+        "yersinia_test/bowtie/yersinia_test.fasta",
+        "yersinia_test/bowtie/yersinia_test.1.bt2l",
+        "yersinia_test/bam/RISE00_sorted.bam",
+        "yersinia_test/bam/RISE00_sorted_rmdup.bam",
+        # "yersinia_test/bam/RISE00_mapq.fastq",
+        # "fastq/RISE00.size",
+        # "yersinia_test/bam/RISE00.readlen",
+        # "database/Streptomyces.alboflavus/NZ_CP021748.1_index.done",
+        # "example1/sigma_outputs/CSL.all/Streptomyces.alboflavus/Streptomyces.alboflavus.bam"

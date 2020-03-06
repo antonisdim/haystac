@@ -4,6 +4,7 @@
 import csv
 import os
 import sys
+import time
 
 from Bio import Entrez
 
@@ -91,6 +92,7 @@ def entrez_nuccore_query(config, query, output_file):
 
             print("done for this slice\n", file=sys.stderr)
 
+            time.sleep(5)
             counter += 1
             resultset -= retmax
             if resultset < 0:

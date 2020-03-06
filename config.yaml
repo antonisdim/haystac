@@ -4,17 +4,19 @@ entrez:
     # query to send to NCBI for retrieving the species tp
     example1: NZ_CP019458.1[Accession] OR NZ_CP021748.1[Accession] OR NZ_LT670818.1[Accession]
     example2: NZ_CP022415.1[Accession] OR NZ_FOYO01000001.1[Accession] OR NZ_CP020121.1[Accession]
+    yersinia_test: ("Yersinia"[Organism] OR "Yersinia"[Organism]) AND "complete genome"[All Fields]
 
   # email used to identify the user making an Entrez request
   email: evangelos-antonios.dimopoulos@hertford.ox.ac.uk
 
   # fetch results in batches
-  batchSize: 2
+  batchSize: 50
 
   rank: 'species'
 
 samples:
   CSL.all: fastq/CSL.all.fastq.gz
+  RISE00: fastq/RISE00_test.fastq
   # single: [fastq/CSL.all.fastq.gz]
   # paired: [(fastq/CSL.all_r1.fastq.gz, fastq/CSL.all_r2.fastq.gz)]
 
