@@ -16,7 +16,8 @@ entrez:
 
 samples:
   CSL.all: fastq/CSL.all.fastq.gz
-  RISE00: fastq/RISE00_test.fastq
+#  RISE00: fastq/RISE00_test.fastq.gz
+  RISE00: fastq/RISE00_rmdup.fastq.gz
   # single: [fastq/CSL.all.fastq.gz]
   # paired: [(fastq/CSL.all_r1.fastq.gz, fastq/CSL.all_r2.fastq.gz)]
 

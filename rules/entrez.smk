@@ -57,8 +57,7 @@ def get_fasta_sequences(wildcards):
     inputs = []
 
     for key, seq in sequences.iterrows():
-        # TODO stop using "." in filenames, use "_" instead
-        orgname, accession = seq['GBSeq_organism'].replace(" ", "."), seq['GBSeq_accession-version']
+        orgname, accession = seq['species'].replace(" ", "_"), seq['GBSeq_accession-version']
         inputs.append('database/{orgname}/{accession}.fasta'.format(orgname=orgname, accession=accession))
 
     return inputs

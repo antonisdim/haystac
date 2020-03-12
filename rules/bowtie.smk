@@ -16,7 +16,7 @@ rule bowtie_index:
          expand("{{query}}/bowtie/{{query}}.rev.{n}.bt2l", n=[1, 2])
     shell:
           # TODO did you forget to tell bowtie2 to use a --large-index?
-          "bowtie2-build {input} {wildcards.query}/bowtie/{wildcards.query} &> {log}"
+          "bowtie2-build --large-index {input} {wildcards.query}/bowtie/{wildcards.query} &> {log}"
 
 
 rule bowtie_alignment:
@@ -57,8 +57,10 @@ rule extract_fastq:
     output:
         # TODO gzip the output
         "{query}/fastq/{sample}_mapq.fastq"
+    params:
+        min_mapq = config['min_mapq']
     shell:
-        "( samtools view -h -q {config.min_mapq} {input} "
+        "( samtools view -h -q {params.min_mapq} {input} "
         "| samtools fastq - > {output} ) 2> {log}"
 
 

@@ -22,25 +22,25 @@ rule index_database:
         "database/{orgname}/{accession}_index.done"
     shell:
          # TODO did you forget to tell bowtie2 to use a --large-index?
-        "bowtie2-build {input} database/{wildcards.orgname}/{wildcards.orgname} &> {log}; touch {output}"
+        "bowtie2-build {input} database/{wildcards.orgname}/{wildcards.accession} &> {log}; touch {output}"
 
 
 rule alignments_per_taxon:
     input:
         fastq="{query}/fastq/{sample}_mapq.fastq",
-        bt2idx="database/{orgname}/{orgname}.1.bt2l",
-        readlen="{query}/bam/{sample}.readlen"
+        bt2idx="database/{orgname}/{accession}.1.bt2",
+        readlen="{query}/fastq/{sample}_mapq.readlen"
     log:
-        "{query}/sigma/{sample}/{orgname}/{orgname}.log"
+        "{query}/sigma/{sample}/{orgname}/{accession}.log"
     output:
-        "{query}/sigma/{sample}/{orgname}/{orgname}.bam",
+        "{query}/sigma/{sample}/{orgname}/{orgname}_{accession}.bam"
     params:
         # TODO use `lambda wildcards, input: ` to get the readlen file
         min_score=lambda wildcards, input : (round(float(pd.read_csv(
-            os.path.join(wildcards.query,'bam',wildcards.sample + '.readlen'), header=None, squeeze=True) *
+            os.path.join(wildcards.query,'fastq',wildcards.sample + '_mapq.readlen'), header=None, squeeze=True) *
             float(config['mismatch_probability']))))*(-6) ,
         # min_score=-get_max_mismatch_count()*(-6),
-        index="database/{orgname}/{orgname}",
+        index="database/{orgname}/{accession}",
         bowtie_threads_number=1,     # TODO use `threads` not `params` for this
         minimum_fragment_length=15,  # TODO no magic numbers, use static constants
         maximum_fragment_length=150
