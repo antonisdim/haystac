@@ -43,7 +43,8 @@ rule all:
         #  "yersinia_test/probabilities/RISE00/t_test_pvalues.txt",
         #  "yersinia_test/probabilities/RISE00/RISE00_posterior_abundance.tsv"
         "example1/entrez/example1-nuccore.tsv",
-        "example1/entrez/example1-taxa.tsv"
+        "example1/entrez/example1-taxa.tsv",
+        "example1/bowtie/example1.fasta.gz"
 
 
 

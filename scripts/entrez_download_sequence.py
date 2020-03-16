@@ -3,6 +3,7 @@
 
 import os
 import sys
+import gzip
 
 from Bio import Entrez
 
@@ -21,7 +22,7 @@ def entrez_download_sequence(accession, config, output_file):
 
     records = guts_of_entrez(ENTREZ_DB_NUCCORE, ENTREZ_RETMODE_TEXT, ENTREZ_RETTYPE_FASTA, [accession], batch_size=1)
 
-    with open(output_file, 'w') as fout:
+    with gzip.open(output_file, 'wt') as fout:
         for fasta in records:
             fout.write(fasta)
 

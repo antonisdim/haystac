@@ -39,8 +39,7 @@ checkpoint entrez_pick_sequences:
 
 rule entrez_download_sequence:
     output:
-        # TODO we should gzip the output and change the file extension to .fa.gz
-        "database/{orgname}/{accession}.fasta"
+        "database/{orgname}/{accession}.fasta.gz"
     log:
         "database/{orgname}/{accession}.log"
     script:
@@ -58,7 +57,7 @@ def get_fasta_sequences(wildcards):
 
     for key, seq in sequences.iterrows():
         orgname, accession = seq['species'].replace(" ", "_"), seq['GBSeq_accession-version']
-        inputs.append('database/{orgname}/{accession}.fasta'.format(orgname=orgname, accession=accession))
+        inputs.append('database/{orgname}/{accession}.fasta.gz'.format(orgname=orgname, accession=accession))
 
     return inputs
 
@@ -69,8 +68,6 @@ rule entrez_multifasta:
     log:
          "{query}/bowtie/{query}.log"
     output:
-         # TODO we should gzip the output and change extension to .fa.gz
-         "{query}/bowtie/{query}.fasta"
-    script:
-          # TODO cat works with gzip, you can could do `cat {input} > {output}` as a shell command and drop the python file
-          "../scripts/bowtie_multifasta.py"
+         "{query}/bowtie/{query}.fasta.gz"
+    shell:
+         "cat {input} > {output}"

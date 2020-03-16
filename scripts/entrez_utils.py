@@ -32,13 +32,12 @@ def chunker(seq, size):
     return (seq[pos:pos + size] for pos in range(0, len(seq), size))
 
 
-def entrez_efetch(db, retmode, rettype, retstart, webenv, query_key, attempt=1):
+def entrez_efetch(db, retmode, rettype, webenv, query_key, attempt=1):
     try:
         return Entrez.efetch(db=db,
                              retmode=retmode,
                              rettype=rettype,
                              retmax=ENTREZ_RETMAX,
-                             retstart=retstart,
                              webenv=webenv,
                              query_key=query_key)
 
@@ -53,7 +52,7 @@ def entrez_efetch(db, retmode, rettype, retstart, webenv, query_key, attempt=1):
         else:
             time.sleep(RETRY_WAIT_TIME)
             print("Starting attempt {}...".format(attempt), file=sys.stderr)
-            return entrez_efetch(db, retmode, rettype, retstart, webenv, query_key, attempt)
+            return entrez_efetch(db, retmode, rettype, webenv, query_key, attempt)
 
     except (http.client.IncompleteRead, urllib.error.URLError) as e:
         # TODO refactor this error handling
@@ -71,10 +70,11 @@ def guts_of_entrez(db, retmode, rettype, chunk, batch_size):
     search_results = Entrez.read(search_handle)
 
     now = datetime.ctime(datetime.now())
-    print("\t{} for a batch of {} records\n".format(now, len(chunk)), file=sys.stderr)
+    print("\t{} for a batch of {} records \n".format(now, len(chunk)), file=sys.stderr)
 
-    handle = entrez_efetch(db, retmode, rettype, start, search_results["WebEnv"], search_results["QueryKey"])
+    handle = entrez_efetch(db, retmode, rettype, search_results["WebEnv"], search_results["QueryKey"])
 
+    # print("got the handle", file=sys.stderr)
     if not handle:
         raise RuntimeError("The records from the following accessions could not be fetched: {}".format(','.join(chunk)))
 
