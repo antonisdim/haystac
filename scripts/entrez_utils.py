@@ -70,33 +70,25 @@ def guts_of_entrez(db, retmode, rettype, chunk, batch_size):
     search_handle = Entrez.epost(db, id=",".join(map(str, chunk)))
     search_results = Entrez.read(search_handle)
 
-    # TODO why do we still need this chunking here? isn't all the chunking being done now in the outer scope?
-    for start in range(0, len(chunk), batch_size):
-        # print info
-        now = datetime.ctime(datetime.now())
-        print("\t{}\t{} / {}\n".format(now, start, len(chunk)), file=sys.stderr)
+    now = datetime.ctime(datetime.now())
+    print("\t{} for a batch of {} records\n".format(now, len(chunk)), file=sys.stderr)
 
-        handle = entrez_efetch(db, retmode, rettype, start, search_results["WebEnv"], search_results["QueryKey"])
+    handle = entrez_efetch(db, retmode, rettype, start, search_results["WebEnv"], search_results["QueryKey"])
 
-        # print("got the handle", file=sys.stderr)
-        if not handle:
-            # TODO raise a RuntimeError don't print a warning
-            print("WARNING: The records from the following accessions could not be fetched: {}".format(','.join(chunk)),
-                  file=sys.stderr)
-            continue
+    if not handle:
+        raise RuntimeError("The records from the following accessions could not be fetched: {}".format(','.join(chunk)))
 
-        try:
-            if retmode == ENTREZ_RETMODE_TEXT:
-                yield handle.read()
-            else:
-                records = Entrez.read(handle)
-                # print("got the records", file=sys.stderr)
+    try:
+        if retmode == ENTREZ_RETMODE_TEXT:
+            yield handle.read()
+        else:
+            records = Entrez.read(handle)
+            # print("got the records", file=sys.stderr)
 
-                for rec in records:
-                    yield rec
+            for rec in records:
+                yield rec
 
-        except (http.client.HTTPException, urllib.error.HTTPError, urllib.error.URLError,
-                RuntimeError, Entrez.Parser.ValidationError, socket.error):
-            # TODO refactor this error handling
-            print("Ditching that batch of records", file=sys.stderr)
-            continue
+    except (http.client.HTTPException, urllib.error.HTTPError, urllib.error.URLError,
+            RuntimeError, Entrez.Parser.ValidationError, socket.error):
+        # TODO refactor this error handling
+        print("Ditching that batch of records", file=sys.stderr)
