@@ -18,7 +18,7 @@ def entrez_pick_sequences(config, nuccore_file, taxa_file, output_file):
 
     sequences = sequences[~sequences[rank].isnull()]
 
-    # todo configure the taxonomic rank from the config file
+    # todo I'm already configuring the taxonomic rank in config file, am I doing it wrong ?
     selected_sequences = sequences.loc[
         sequences.groupby(rank)['GBSeq_length'].idxmax(), ['species', 'GBSeq_accession-version']]
 
