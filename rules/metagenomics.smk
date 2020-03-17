@@ -4,6 +4,19 @@
 ##### Target rules #####
 
 
+rule count_fastq_length:
+    input:
+         fastq=lambda wildcards: config['samples'][wildcards.sample]
+    log:
+         "fastq/{sample}.log"
+    output:
+         "fastq/{sample}.size"
+    shell:
+          # TODO this should work for both gzipped and raw fastq input, maybe switch to using `seqtk`
+          "expr $(gunzip -c {input.fastq} | wc -l) / 4 1> {output} 2> {log}"
+
+
+
 rule parse_bams:
     input:
         "{query}/sigma/{sample}/{orgname}/{orgname}_{accession}.bam"

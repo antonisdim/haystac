@@ -44,7 +44,9 @@ rule all:
         #  "yersinia_test/probabilities/RISE00/RISE00_posterior_abundance.tsv"
         "example1/entrez/example1-nuccore.tsv",
         "example1/entrez/example1-taxa.tsv",
-        "example1/bowtie/example1.fasta.gz"
+        "example1/bowtie/example1.fasta.gz",
+        "example1/fastq/CSL.all_mapq.fastq.gz",
+        "example1/fastq/CSL.all_mapq.readlen"
 
 
 

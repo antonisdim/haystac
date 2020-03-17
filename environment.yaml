@@ -11,3 +11,4 @@ dependencies:
   - samtools=1.9
   - dedup=0.12.5
   - scipy=1.4.1
+  - seqtk=1.3

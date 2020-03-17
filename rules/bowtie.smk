@@ -15,7 +15,6 @@ rule bowtie_index:
          expand("{{query}}/bowtie/{{query}}.{n}.bt2l", n=[1, 2, 3, 4]),
          expand("{{query}}/bowtie/{{query}}.rev.{n}.bt2l", n=[1, 2])
     shell:
-          # TODO did you forget to tell bowtie2 to use a --large-index?
           "bowtie2-build --large-index {input} {wildcards.query}/bowtie/{wildcards.query} &> {log}"
 
 
@@ -55,39 +54,27 @@ rule extract_fastq:
     log:
         "{query}/fastq/{sample}_mapq.log"
     output:
-        # TODO gzip the output
-        "{query}/fastq/{sample}_mapq.fastq"
+        "{query}/fastq/{sample}_mapq.fastq.gz"
     params:
         min_mapq = config['min_mapq']
     shell:
         "( samtools view -h -q {params.min_mapq} {input} "
-        "| samtools fastq - > {output} ) 2> {log}"
+        "| samtools fastq -c 6 - > {output} ) 2> {log}"
 
 
-# TODO this rule has nothing to do with bowtie, so move it to another file where the output is actually used
-rule count_fastq_length:
-    input:
-         fastq=lambda wildcards: config['samples'][wildcards.sample]
-    log:
-         "fastq/{sample}.log"
-    output:
-         "fastq/{sample}.size"
-    shell:
-          # TODO this should work for both gzipped and raw fastq input, maybe switch to using `seqtk`
-          "expr $(gunzip -c {input.fastq} | wc -l) / 4 1> {output} 2> {log}"
-
+#todo maybe configure that from the config file ?
+# Or have a function to check the size of the file so that seqtk doesn't slow down ?
+SUBSAMPLE_FIXED_READS = 200000
 
 rule average_fastq_read_len:
     input:
-        "{query}/fastq/{sample}_mapq.fastq"
+        "{query}/fastq/{sample}_mapq.fastq.gz"
     log:
         "{query}/fastq/{sample}_mapq_readlen.log"
     output:
         "{query}/fastq/{sample}_mapq.readlen"
+    params:
+        size=SUBSAMPLE_FIXED_READS
     shell:
-         # TODO don't use magic numbers like 2000000, this should be a static constant
-         # TODO use `seqtk sample` to subsample rather than head, as this fastq is sorted by species name
-         #      e.g. `seqtk sample fastq/CSL.all.fastq.gz {size} | seqtk seq -A | grep -v '^>' | awk '{{count++; bases += length}} END{{print bases/count}}'`
-         #      but you should also threshold this, as `seqtk sample` will be slow if size is much larger than the file itself
-         """head -n 2000000 {input} | awk "{{if(NR%4==2) {{count++; bases += length}} }} END{{print bases/count}}" \
-         1> {output} 2> {log}"""
+         """seqtk sample {input} {params.size} | seqtk seq -A | grep -v '^>' | 
+         awk '{{count++; bases += length}} END{{print bases/count}}' 1> {output} 2> {log}"""
