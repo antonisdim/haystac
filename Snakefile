@@ -42,11 +42,19 @@ rule all:
         #        accession=["NZ_CP009781.1", "NZ_CP011975.1", "NZ_CP043727.1", "NZ_HF571988.1", "NZ_CP023962.1", "NZ_CP032487.1", "NZ_CP027397.1", "NZ_CP009997.1", "NZ_CP028487.1", "NZ_CP033699.1", "NZ_CP033713.1", "NZ_CP009787.1", "NZ_CP017236.1", "NZ_CP007230.1", "NZ_CP020409.2", "NZ_CP042173.1"]),
         #  "yersinia_test/probabilities/RISE00/t_test_pvalues.txt",
         #  "yersinia_test/probabilities/RISE00/RISE00_posterior_abundance.tsv"
-        "example1/entrez/example1-nuccore.tsv",
-        "example1/entrez/example1-taxa.tsv",
-        "example1/bowtie/example1.fasta.gz",
-        "example1/fastq/CSL.all_mapq.fastq.gz",
-        "example1/fastq/CSL.all_mapq.readlen"
+        # "example1/entrez/example1-nuccore.tsv",
+        # "example1/entrez/example1-taxa.tsv",
+        # "example1/bowtie/example1.fasta.gz",
+        # "example1/bam/CSL.all_sorted_rmdup.bam",
+        # "example1/fastq/CSL.all_mapq.fastq.gz",
+        # "example1/fastq/CSL.all_mapq.readlen",
+        expand("database/{taxon}/{accession}_index.done", zip,
+               taxon=["Bradyrhizobium_erythrophlei", "Streptomyces_alboflavus", "Streptomyces_autolyticus"],
+               accession=["NZ_LT670818.1", "NZ_CP021748.1", "NZ_CP019458.1"]),
+        expand("example1/sigma/CSL.all/{taxon}/{taxon}_{accession}.bam", zip,
+               taxon=["Bradyrhizobium_erythrophlei", "Streptomyces_alboflavus", "Streptomyces_autolyticus"],
+               accession=["NZ_LT670818.1", "NZ_CP021748.1", "NZ_CP019458.1"])
+
 
 
 
