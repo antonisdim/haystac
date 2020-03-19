@@ -1,14 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import pandas as pd
-import numpy as np
 import sys
+
+import pandas as pd
 import pysam
 from scipy.stats import fisher_exact
 
 
 def coverage_t_test(bam, selected_seqs_file, nuccore_file, taxon, outfile):
+    # TODO add a block comment explaining what this function does
+
     taxon_seqlen_dict = genome_sizes(selected_seqs_file, nuccore_file)
 
     # 86) Define function that calculates the pvalue for the coverage
@@ -35,6 +37,8 @@ def coverage_t_test(bam, selected_seqs_file, nuccore_file, taxon, outfile):
         print(taxon, pvalue, file=outhandle, sep='\t')
 
 
+# TODO this is a really inefficient way of getting the size of the sequences!!
+#      we shouldn't have to load either of these files!
 def genome_sizes(selected_seqs_file, nuccore_file):
     selected_seqs = pd.read_csv(selected_seqs_file, sep='\t')
 
@@ -56,5 +60,6 @@ if __name__ == '__main__':
         bam=snakemake.input[0],
         selected_seqs_file=snakemake.input[1],
         nuccore_file=snakemake.input[2],
-        taxon=snakemake.params[0],
-        outfile=snakemake.output[0])
+        taxon=snakemake.wildcards.orgname,
+        outfile=snakemake.output[0]
+    )

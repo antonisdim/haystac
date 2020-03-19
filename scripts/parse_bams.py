@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import pysam
 import sys
+
+import pysam
 
 
 def mutation_type(alleles):
@@ -13,14 +14,10 @@ def mutation_type(alleles):
 
 
 def count_ts_tv_init(bam_file, output_file, taxon):
-
-    pysam.index(bam_file)
-
+    pysam.index(bam_file)  # TODO if the bamfile needs indexing, that should be done externally
     bam = pysam.AlignmentFile(bam_file, 'rb')
 
     for read in bam.fetch():
-        # print(read.seq)
-        # print(read.get_reference_sequence())
         ts, tv = 0, 0
         for base_call, base_ref in zip(read.seq, read.get_reference_sequence()):
             if base_call != base_ref:
@@ -28,6 +25,7 @@ def count_ts_tv_init(bam_file, output_file, taxon):
                     ts += 1
                 else:
                     tv += 1
+
         with open(output_file, 'a') as fout:
             print(taxon, read.query_name, ts, tv, file=fout, sep=",")
 
@@ -39,5 +37,5 @@ if __name__ == '__main__':
     count_ts_tv_init(
         bam_file=snakemake.input[0],
         output_file=snakemake.output[0],
-        taxon=snakemake.params[0]
+        taxon=snakemake.wildcards.orgname
     )

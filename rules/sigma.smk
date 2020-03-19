@@ -35,6 +35,7 @@ rule alignments_per_taxon:
         "{query}/sigma/{sample}/{orgname}/{accession}.log"
     output:
         "{query}/sigma/{sample}/{orgname}/{orgname}_{accession}.bam"
+        # TODO index the BAM file here, rather than in the pysam code in parse_bams.py
     params:
         min_score=get_min_score,
         minimum_fragment_length=MIN_FRAG_LEN,

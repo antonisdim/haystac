@@ -1,13 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import pandas as pd
-import numpy as np
 import sys
+
+import numpy as np
+import pandas as pd
 from scipy.stats import beta
 
 
 def calculate_dirichlet_abundances(ts_tv_file, pvaluesfile, total_sample_fastq_reads, sample_abundance):
+    # TODO add a block comment explaining what this function does
+
     # 85) I calculate the coverage of each taxon from reads in its bam/pileup file. Let's go there
 
     t_test_vector = pd.read_csv(pvaluesfile, sep='\t', header=None).set_index(0).squeeze().rename('Taxon')
@@ -65,15 +68,10 @@ def calculate_dirichlet_abundances(ts_tv_file, pvaluesfile, total_sample_fastq_r
         print(len(a), file=sys.stderr)
 
         posterior_abundance.iloc[idx, 2] = ci[0]
-
         posterior_abundance.iloc[idx, 3] = ci[1]
-
         posterior_abundance.iloc[idx, 4] = round(ci[0] * b)
-
         posterior_abundance.iloc[idx, 5] = round(ci[1] * b)
-
         posterior_abundance.iloc[idx, 6] = a.loc[posterior_abundance.iloc[idx, 0]]
-
         posterior_abundance.iloc[idx, 7] = t_test_vector.loc[posterior_abundance.iloc[idx, 0]]
 
     # 95) Write the file into a file. Don't need to return anything. Back to anns_pipeline
@@ -90,4 +88,5 @@ if __name__ == '__main__':
         ts_tv_file=snakemake.input[0],
         pvaluesfile=snakemake.input[1],
         total_sample_fastq_reads=snakemake.input[2],
-        sample_abundance=snakemake.output[0])
+        sample_abundance=snakemake.output[0]
+    )

@@ -1,12 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import pandas as pd
-import numpy as np
 import sys
+
+import numpy as np
+import pandas as pd
 
 
 def calculate_prob_model_params(ts_tv_file, readlen_file, config):
+    # TODO add a block comment explaining what this function does
+
     print("Reading the initial Ts/Tv matrix.", file=sys.stderr)
     init_ts_tv = pd.read_csv(ts_tv_file, names=['Taxon', 'Read_ID', 'Ts', 'Tv'], sep=',')
 
@@ -16,7 +19,6 @@ def calculate_prob_model_params(ts_tv_file, readlen_file, config):
     v = init_ts_tv['Tv'].sum()
 
     aligned_read_count = len(init_ts_tv['Read_ID'].unique())
-
     average_read_length = float(open(readlen_file, 'r').read())
 
     max_mismatch = round(config['mismatch_probability'] * float(average_read_length))
@@ -64,6 +66,9 @@ def calculate_prob_model_params(ts_tv_file, readlen_file, config):
 
 
 def calculate_likelihoods(ts_tv_file, readlen_file, taxa_file, config, output_matrix, output_params):
+    # TODO why do we need two function here, rather than one larger one?
+    #      my concern is that you call `pd.read_csv(ts_tv_file)` in both, and this can be slow if the file is large
+
     param_dict = calculate_prob_model_params(ts_tv_file, readlen_file, config)
 
     data_ts_missing = pow(param_dict['delta_t'], param_dict['ts_missing_val'])
@@ -76,7 +81,7 @@ def calculate_likelihoods(ts_tv_file, readlen_file, taxa_file, config, output_ma
 
     print(init_ts_tv, file=sys.stderr)
 
-    total_taxa = pd.read_csv(taxa_file, sep=',')
+    total_taxa = pd.read_csv(taxa_file, sep=',')  # TODO sep has default value of ','
     total_taxa_count = len(total_taxa)
 
     print('calculating the proper likelihood', file=sys.stderr)
@@ -84,18 +89,21 @@ def calculate_likelihoods(ts_tv_file, readlen_file, taxa_file, config, output_ma
     init_ts_tv['Likelihood'] = np.nan
 
     for index, group in init_ts_tv.groupby('Read_ID'):
-        init_ts_tv['Likelihood'] = init_ts_tv['ll_nom'].transform(lambda x: x / sum(x) +
-                                ((total_taxa_count - len(group['Taxon'])) * data_ts_missing * data_tv_missing))
+        init_ts_tv['Likelihood'] = init_ts_tv['ll_nom'].transform(
+            lambda x: x / sum(x) + ((total_taxa_count - len(group['Taxon'])) * data_ts_missing * data_tv_missing)
+        )
 
     print(init_ts_tv, file=sys.stderr)
 
     # do the dirichlet assignment
-
     init_ts_tv['Dirichlet_Assignment'] = np.nan
     init_ts_tv['Dirichlet_Assignment'] = init_ts_tv.where(init_ts_tv['Likelihood'] >= 0.95, 0).astype('int')
 
     init_ts_tv.to_csv(output_matrix, sep=',', index=False)
 
+    # TODO make this a .json file rather than a CSV
+    # with open(output_params, 'w') as fout:
+    #     json.dump(param_dict, fout)
     pd.DataFrame.from_dict(param_dict, orient='index', columns=['Parameters']).to_csv(output_params, sep=',')
 
 
@@ -109,4 +117,5 @@ if __name__ == '__main__':
         taxa_file=snakemake.input[2],
         config=snakemake.config,
         output_matrix=snakemake.output[0],
-        output_params=snakemake.output[1])
+        output_params=snakemake.output[1]
+    )
