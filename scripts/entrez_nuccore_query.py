@@ -4,7 +4,6 @@
 import csv
 import os
 import sys
-import time
 
 from Bio import Entrez
 
@@ -55,6 +54,7 @@ def entrez_nuccore_query(config, query, output_file):
             handle = Entrez.esearch(db=ENTREZ_DB_NUCCORE, term=entrez_query, retmax=retmax, idtype="acc",
                                     usehistory='y', retstart=retmax * counter, rettype=ENTREZ_RETTYPE_GB,
                                     retmode=ENTREZ_RETMODE_XML)
+
             handle_reader = Entrez.read(handle)
             accessions = handle_reader['IdList']
 
@@ -62,8 +62,8 @@ def entrez_nuccore_query(config, query, output_file):
                 resultset = int(handle_reader['Count'])
                 total_records = resultset
                 print('Total number of sequences {}\n'.format(resultset), file=sys.stderr)
-
-            print('Remaining sequences to be downloaded {}\n'.format(resultset), file=sys.stderr)
+            else:
+                print('Remaining sequences to be downloaded {}\n'.format(resultset), file=sys.stderr)
 
             if not accessions:
                 # stop iterating when we get an empty resultset

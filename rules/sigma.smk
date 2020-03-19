@@ -4,6 +4,8 @@
 import os
 import pandas as pd
 
+MIN_FRAG_LEN = 15
+MAX_FRAG_LEN = 150
 
 ##### Target rules #####
 
@@ -14,15 +16,15 @@ rule index_database:
     log:
         "database/{orgname}/{accession}_index.log"
     output:
-        "database/{orgname}/{accession}_index.done"
+        expand("database/{{orgname}}/{{accession}}.{n}.bt2l", n=[1, 2, 3, 4]),
+        expand("database/{{orgname}}/{{accession}}.rev.{n}.bt2l", n=[1, 2])
     shell:
-        "bowtie2-build --large-index {input} database/{wildcards.orgname}/{wildcards.accession} &> "
-        "{log}; touch {output}"
+        "bowtie2-build --large-index {input} database/{wildcards.orgname}/{wildcards.accession} &> {log}"
 
 
+def get_min_score(wildcards, input):
+    return round(float(open(input.readlen).read()) * float(config['mismatch_probability'])) * -6  # TODO magic number -6
 
-MIN_FRAG_LEN = 15
-MAX_FRAG_LEN = 150
 
 rule alignments_per_taxon:
     input:
@@ -34,13 +36,7 @@ rule alignments_per_taxon:
     output:
         "{query}/sigma/{sample}/{orgname}/{orgname}_{accession}.bam"
     params:
-        # TODO use `lambda wildcards, input: ` to get the readlen file - Am I doing it wrong ?
-        #  I need to read the file and then calculate the min score for the edit distance that's why it is like that
-        min_score=lambda wildcards : (round(float(pd.read_csv(
-            os.path.join(wildcards.query,'fastq',wildcards.sample + '_mapq.readlen'), header=None, squeeze=True) *
-            float(config['mismatch_probability']))))*(-6) ,
-        # min_score=-get_max_mismatch_count()*(-6),
-        index="database/{orgname}/{accession}",
+        min_score=get_min_score,
         minimum_fragment_length=MIN_FRAG_LEN,
         maximum_fragment_length=MAX_FRAG_LEN
     threads:
@@ -52,11 +48,11 @@ rule alignments_per_taxon:
         if config['sequencing'] == 'single_end':
             shell("(bowtie2 --time --no-unal --no-discordant --no-mixed --ignore-quals --mp 6,6 --np 6 "
                   "--score-min L,{params.min_score},0.0 --gbar 1000 -q --threads {threads} "
-                  "-x {params.index} -U {input.fastq} | samtools sort -O bam -o {output} ) 2> {log}")
+                  "-x database/{wildcards.orgname}/{wildcards.accession} -U {input.fastq} | samtools sort -O bam -o {output} ) 2> {log}")
         elif config['sequencing'] == 'paired_end':
             #todo write the input files in the command correctly for paired end
             shell("(bowtie2 --time --no-unal --no-discordant --no-mixed --ignore-quals --mp 6,6 --np 6 "
                   "--score-min L,{params.min_score},0.0 --gbar 1000 -q --threads {threads} "
                   "-I {params.minimum_fragment_length} -X {params.maximum_fragment_length} "
-                  "-x {params.index} -U {input.fastq} | samtools sort -O bam -o {output} ) 2> {log}")
+                  "-x database/{wildcards.orgname}/{wildcards.accession} -U {input.fastq} | samtools sort -O bam -o {output} ) 2> {log}")
 

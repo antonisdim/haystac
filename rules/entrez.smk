@@ -5,6 +5,11 @@ import pandas as pd
 
 ##### Target rules #####
 
+# TODO this is so slow... what if we split this into three rules?
+#      1. run query - checkpoint rule, w/ temporary() output containing the
+#      2. fetch chunk - can be run in parallel, with delayed start to avoid 3 query per sec limit
+#                       e.g. if we pass in a chunk_num param, and use `sleep(chunk_num // 3)`
+#      3. join all chunks
 rule entrez_nuccore_query:
     output:
         "{query}/entrez/{query}-nuccore.tsv"
@@ -46,6 +51,7 @@ rule entrez_download_sequence:
          "../scripts/entrez_download_sequence.py"
 
 
+# noinspection PyUnresolvedReferences
 def get_fasta_sequences(wildcards):
     """
     Get all the FASTA sequences for the multi-FASTA file.

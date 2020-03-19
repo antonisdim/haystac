@@ -3,6 +3,8 @@
 
 from multiprocessing import cpu_count
 
+SUBSAMPLE_FIXED_READS = 200000
+
 ##### Target rules #####
 
 
@@ -10,7 +12,7 @@ rule bowtie_index:
     input:
          "{query}/bowtie/{query}.fasta"
     log:
-         "{query}/bowtie/{query}.index.log"
+         "{query}/bowtie/{query}_index.log"
     output:
          expand("{{query}}/bowtie/{{query}}.{n}.bt2l", n=[1, 2, 3, 4]),
          expand("{{query}}/bowtie/{{query}}.rev.{n}.bt2l", n=[1, 2])
@@ -62,10 +64,6 @@ rule extract_fastq:
         "| samtools fastq -c 6 - > {output} ) 2> {log}"
 
 
-#todo maybe configure that from the config file ?
-# Or have a function to check the size of the file so that seqtk doesn't slow down ?
-SUBSAMPLE_FIXED_READS = 200000
-
 rule average_fastq_read_len:
     input:
         "{query}/fastq/{sample}_mapq.fastq.gz"
@@ -74,7 +72,11 @@ rule average_fastq_read_len:
     output:
         "{query}/fastq/{sample}_mapq.readlen"
     params:
+        # TODO is it actually necessary to subsample?
+        #      the problem with using `head` is that the fastq is sorted, so the first N reads may provide a biased
+        #      estimate of the average read length, but using `seqtk sample` is going to be slow unless num_reads is a
+        #      lot greater than N
         size=SUBSAMPLE_FIXED_READS
     shell:
-         """seqtk sample {input} {params.size} | seqtk seq -A | grep -v '^>' | 
-         awk '{{count++; bases += length}} END{{print bases/count}}' 1> {output} 2> {log}"""
+         "seqtk sample {input} {params.size} | seqtk seq -A | grep -v '^>' | "
+         "awk '{{count++; bases += length}} END{{print bases/count}}' 1> {output} 2> {log}"
