@@ -7,28 +7,28 @@ configfile: "config.yaml"
 
 include: "rules/entrez.smk"
 include: "rules/bowtie.smk"
-include: "rules/sigma.smk"  # TODO rename file now that we're not using sigma
+include: "rules/bowtie_meta.smk"
 include: "rules/metagenomics.smk"
 
 ##### Target rules #####
 
 rule all:
     input:
-        # "yersinia_test/entrez/yersinia_test-nuccore.tsv",
-        # "yersinia_test/entrez/yersinia_test-taxa.tsv",
-        # "yersinia_test/bowtie/yersinia_test.fasta",
-        # "yersinia_test/bowtie/yersinia_test.1.bt2l",
-        # # "yersinia_test/bam/RISE00_sorted.bam",
-        # "yersinia_test/bam/RISE00_sorted_rmdup.bam",
-        # "yersinia_test/fastq/RISE00_mapq.fastq",
-        # "fastq/RISE00.size",
-        # "yersinia_test/fastq/RISE00_mapq.readlen",
-        # expand("database/{taxon}/{accession}_index.done", zip,
-        #         taxon=["Yersinia_aldovae", "Yersinia_aleksiciae", "Yersinia_canariae", "Yersinia_enterocolitica", "Yersinia_frederiksenii", "Yersinia_hibernica", "Yersinia_intermedia", "Yersinia_kristensenii", "Yersinia_massiliensis", "Yersinia_pestis", "Yersinia_pseudotuberculosis", "Yersinia_rohdei", "Yersinia_ruckeri", "Yersinia_similis", "Yersinia_sp._FDAARGOS_228", "Yersinia_sp._KBS0713"],
-        #         accession=["NZ_CP009781.1", "NZ_CP011975.1", "NZ_CP043727.1", "NZ_HF571988.1", "NZ_CP023962.1", "NZ_CP032487.1", "NZ_CP027397.1", "NZ_CP009997.1", "NZ_CP028487.1", "NZ_CP033699.1", "NZ_CP033713.1", "NZ_CP009787.1", "NZ_CP017236.1", "NZ_CP007230.1", "NZ_CP020409.2", "NZ_CP042173.1"]),
-        # expand("yersinia_test/sigma/RISE00/{taxon}/{taxon}_{accession}.bam", zip,
-        #        taxon=["Yersinia_aldovae", "Yersinia_aleksiciae", "Yersinia_canariae", "Yersinia_enterocolitica", "Yersinia_frederiksenii", "Yersinia_hibernica", "Yersinia_intermedia", "Yersinia_kristensenii", "Yersinia_massiliensis", "Yersinia_pestis", "Yersinia_pseudotuberculosis", "Yersinia_rohdei", "Yersinia_ruckeri", "Yersinia_similis", "Yersinia_sp._FDAARGOS_228", "Yersinia_sp._KBS0713"],
-        #        accession=["NZ_CP009781.1", "NZ_CP011975.1", "NZ_CP043727.1", "NZ_HF571988.1", "NZ_CP023962.1", "NZ_CP032487.1", "NZ_CP027397.1", "NZ_CP009997.1", "NZ_CP028487.1", "NZ_CP033699.1", "NZ_CP033713.1", "NZ_CP009787.1", "NZ_CP017236.1", "NZ_CP007230.1", "NZ_CP020409.2", "NZ_CP042173.1"]),
+        "yersinia_test/entrez/yersinia_test-nuccore.tsv",
+        "yersinia_test/entrez/yersinia_test-taxa.tsv",
+        "yersinia_test/bowtie/yersinia_test.fasta.gz",
+        "yersinia_test/bowtie/yersinia_test.1.bt2l",
+        "yersinia_test/bam/RISE00_sorted.bam",
+        "yersinia_test/bam/RISE00_sorted_rmdup.bam",
+        "yersinia_test/fastq/RISE00_mapq.fastq.gz",
+        "yersinia_test/fastq/RISE00_mapq.readlen",
+        expand("database/{taxon}/{accession}.1.bt2l", zip,
+                taxon=["Yersinia_aldovae", "Yersinia_aleksiciae", "Yersinia_canariae", "Yersinia_enterocolitica", "Yersinia_frederiksenii", "Yersinia_hibernica", "Yersinia_intermedia", "Yersinia_kristensenii", "Yersinia_massiliensis", "Yersinia_pestis", "Yersinia_pseudotuberculosis", "Yersinia_rohdei", "Yersinia_ruckeri", "Yersinia_similis", "Yersinia_sp._FDAARGOS_228", "Yersinia_sp._KBS0713"],
+                accession=["NZ_CP009781.1", "NZ_CP011975.1", "NZ_CP043727.1", "NZ_HF571988.1", "NZ_CP023962.1", "NZ_CP032487.1", "NZ_CP027397.1", "NZ_CP009997.1", "NZ_CP028487.1", "NZ_CP033699.1", "NZ_CP033713.1", "NZ_CP009787.1", "NZ_CP017236.1", "NZ_CP007230.1", "NZ_CP020409.2", "NZ_CP042173.1"]),
+        expand("yersinia_test/sigma/RISE00/{taxon}/{taxon}_{accession}.bam", zip,
+               taxon=["Yersinia_aldovae", "Yersinia_aleksiciae", "Yersinia_canariae", "Yersinia_enterocolitica", "Yersinia_frederiksenii", "Yersinia_hibernica", "Yersinia_intermedia", "Yersinia_kristensenii", "Yersinia_massiliensis", "Yersinia_pestis", "Yersinia_pseudotuberculosis", "Yersinia_rohdei", "Yersinia_ruckeri", "Yersinia_similis", "Yersinia_sp._FDAARGOS_228", "Yersinia_sp._KBS0713"],
+               accession=["NZ_CP009781.1", "NZ_CP011975.1", "NZ_CP043727.1", "NZ_HF571988.1", "NZ_CP023962.1", "NZ_CP032487.1", "NZ_CP027397.1", "NZ_CP009997.1", "NZ_CP028487.1", "NZ_CP033699.1", "NZ_CP033713.1", "NZ_CP009787.1", "NZ_CP017236.1", "NZ_CP007230.1", "NZ_CP020409.2", "NZ_CP042173.1"]),
+        "fastq/RISE00.size",
         # expand("yersinia_test/ts_tv_counts/RISE00/{taxon}_count_{accession}.csv", zip,
         #        taxon=["Yersinia_aldovae", "Yersinia_aleksiciae", "Yersinia_canariae", "Yersinia_enterocolitica", "Yersinia_frederiksenii", "Yersinia_hibernica", "Yersinia_intermedia", "Yersinia_kristensenii", "Yersinia_massiliensis", "Yersinia_pestis", "Yersinia_pseudotuberculosis", "Yersinia_rohdei", "Yersinia_ruckeri", "Yersinia_similis", "Yersinia_sp._FDAARGOS_228", "Yersinia_sp._KBS0713"],
         #        accession=["NZ_CP009781.1", "NZ_CP011975.1", "NZ_CP043727.1", "NZ_HF571988.1", "NZ_CP023962.1", "NZ_CP032487.1", "NZ_CP027397.1", "NZ_CP009997.1", "NZ_CP028487.1", "NZ_CP033699.1", "NZ_CP033713.1", "NZ_CP009787.1", "NZ_CP017236.1", "NZ_CP007230.1", "NZ_CP020409.2", "NZ_CP042173.1"]),
@@ -48,12 +48,12 @@ rule all:
         # "example1/bam/CSL.all_sorted_rmdup.bam",
         # "example1/fastq/CSL.all_mapq.fastq.gz",
         # "example1/fastq/CSL.all_mapq.readlen",
-        expand("database/{taxon}/{accession}_index.done", zip,
-               taxon=["Bradyrhizobium_erythrophlei", "Streptomyces_alboflavus", "Streptomyces_autolyticus"],
-               accession=["NZ_LT670818.1", "NZ_CP021748.1", "NZ_CP019458.1"]),
-        expand("example1/sigma/CSL.all/{taxon}/{taxon}_{accession}.bam", zip,
-               taxon=["Bradyrhizobium_erythrophlei", "Streptomyces_alboflavus", "Streptomyces_autolyticus"],
-               accession=["NZ_LT670818.1", "NZ_CP021748.1", "NZ_CP019458.1"])
+        # expand("database/{taxon}/{accession}_index.done", zip,
+        #        taxon=["Bradyrhizobium_erythrophlei", "Streptomyces_alboflavus", "Streptomyces_autolyticus"],
+        #        accession=["NZ_LT670818.1", "NZ_CP021748.1", "NZ_CP019458.1"]),
+        # expand("example1/sigma/CSL.all/{taxon}/{taxon}_{accession}.bam", zip,
+        #        taxon=["Bradyrhizobium_erythrophlei", "Streptomyces_alboflavus", "Streptomyces_autolyticus"],
+        #        accession=["NZ_LT670818.1", "NZ_CP021748.1", "NZ_CP019458.1"])
 
 
 

@@ -10,7 +10,7 @@ SUBSAMPLE_FIXED_READS = 200000
 
 rule bowtie_index:
     input:
-         "{query}/bowtie/{query}.fasta"
+         "{query}/bowtie/{query}.fasta.gz"
     log:
          "{query}/bowtie/{query}_index.log"
     output:
@@ -72,10 +72,8 @@ rule average_fastq_read_len:
     output:
         "{query}/fastq/{sample}_mapq.readlen"
     params:
-        # TODO is it actually necessary to subsample?
-        #      the problem with using `head` is that the fastq is sorted, so the first N reads may provide a biased
-        #      estimate of the average read length, but using `seqtk sample` is going to be slow unless num_reads is a
-        #      lot greater than N
+        # TODO you're right seqtk is a better option. Subsampling is required in case the fastq files are massive,
+        #  as above 200K reads the average read length doesn't change significantly and it takes far less time.
         size=SUBSAMPLE_FIXED_READS
     shell:
          "seqtk sample {input} {params.size} | seqtk seq -A | grep -v '^>' | "

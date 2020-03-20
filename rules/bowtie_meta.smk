@@ -34,8 +34,8 @@ rule alignments_per_taxon:
     log:
         "{query}/sigma/{sample}/{orgname}/{accession}.log"
     output:
-        "{query}/sigma/{sample}/{orgname}/{orgname}_{accession}.bam"
-        # TODO index the BAM file here, rather than in the pysam code in parse_bams.py
+        bam_file="{query}/sigma/{sample}/{orgname}/{orgname}_{accession}.bam",
+        bam_index="{query}/sigma/{sample}/{orgname}/{orgname}_{accession}.bam.bai"
     params:
         min_score=get_min_score,
         minimum_fragment_length=MIN_FRAG_LEN,
@@ -43,17 +43,18 @@ rule alignments_per_taxon:
     threads:
         1
     run:
-        # TODO split these into two separate rules -
-        #  How can I call the right rule every time depending the sequencing strategy ?
-        #  Shall I incorporate that in the output directories/names so that it knows what rule to use ?
+        # TODO split these into two separate rules - don't know how
         if config['sequencing'] == 'single_end':
             shell("(bowtie2 --time --no-unal --no-discordant --no-mixed --ignore-quals --mp 6,6 --np 6 "
                   "--score-min L,{params.min_score},0.0 --gbar 1000 -q --threads {threads} "
-                  "-x database/{wildcards.orgname}/{wildcards.accession} -U {input.fastq} | samtools sort -O bam -o {output} ) 2> {log}")
+                  "-x database/{wildcards.orgname}/{wildcards.accession} -U {input.fastq} | "
+                  "samtools sort -O bam -o {output.bam_file} ) 2> {log}; samtools index {output.bam_file}")
+
         elif config['sequencing'] == 'paired_end':
             #todo write the input files in the command correctly for paired end
             shell("(bowtie2 --time --no-unal --no-discordant --no-mixed --ignore-quals --mp 6,6 --np 6 "
                   "--score-min L,{params.min_score},0.0 --gbar 1000 -q --threads {threads} "
                   "-I {params.minimum_fragment_length} -X {params.maximum_fragment_length} "
-                  "-x database/{wildcards.orgname}/{wildcards.accession} -U {input.fastq} | samtools sort -O bam -o {output} ) 2> {log}")
+                  "-x database/{wildcards.orgname}/{wildcards.accession} -U {input.fastq} | "
+                  "samtools sort -O bam -o {output} ) 2> {log}")
 

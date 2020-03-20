@@ -14,7 +14,6 @@ def mutation_type(alleles):
 
 
 def count_ts_tv_init(bam_file, output_file, taxon):
-    pysam.index(bam_file)  # TODO if the bamfile needs indexing, that should be done externally
     bam = pysam.AlignmentFile(bam_file, 'rb')
 
     for read in bam.fetch():

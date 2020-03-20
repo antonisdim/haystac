@@ -16,7 +16,7 @@ rule count_fastq_length:
           "seqtk seq -A {input.fastq} | grep -v '^>' | wc -l 1> {output} 2> {log}"
 
 
-rule parse_bams:  # TODO this needs a more literal name (e.g. `count_accession_ts_tv`)
+rule count_accession_ts_tv:
     input:
         "{query}/sigma/{sample}/{orgname}/{orgname}_{accession}.bam"
     output:
@@ -24,7 +24,7 @@ rule parse_bams:  # TODO this needs a more literal name (e.g. `count_accession_t
     log:
         "{query}/ts_tv_counts/{sample}/{orgname}_count_{accession}.log"
     script:
-          "../scripts/parse_bams.py"  # TODO keep to the naming scheme of {rulefile}_{rulename} as uses elsewhere
+          "../scripts/count_accession_ts_tv.py"  # TODO keep to the naming scheme of {rulefile}_{rulename} as uses elsewhere
 
 
 rule initial_ts_tv:

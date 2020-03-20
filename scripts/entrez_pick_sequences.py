@@ -18,11 +18,10 @@ def entrez_pick_sequences(config, nuccore_file, taxa_file, output_file):
 
     sequences = sequences[~sequences[rank].isnull()]
 
-    # todo I'm already configuring the taxonomic rank in config file, am I doing it wrong ?
     selected_sequences = sequences.loc[
         sequences.groupby(rank)['GBSeq_length'].idxmax(), ['species', 'GBSeq_accession-version']]
 
-    print(selected_sequences)
+    print(selected_sequences, file=sys.stderr)
 
     print("selected the longest sequence per species, writing it to a file", file=sys.stderr)
 
