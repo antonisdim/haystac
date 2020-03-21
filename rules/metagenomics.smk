@@ -16,6 +16,7 @@ rule count_fastq_length:
           "seqtk seq -A {input.fastq} | grep -v '^>' | wc -l 1> {output} 2> {log}"
 
 
+
 rule count_accession_ts_tv:
     input:
         "{query}/sigma/{sample}/{orgname}/{orgname}_{accession}.bam"
@@ -24,50 +25,68 @@ rule count_accession_ts_tv:
     log:
         "{query}/ts_tv_counts/{sample}/{orgname}_count_{accession}.log"
     script:
-          "../scripts/count_accession_ts_tv.py"  # TODO keep to the naming scheme of {rulefile}_{rulename} as uses elsewhere
+          "../scripts/count_accession_ts_tv.py"
+
+
+
+# noinspection PyUnresolvedReferences
+def get_ts_tv_count_paths(wildcards):
+    """
+    Get all the individual cav file paths for the taxa in our database.
+    """
+    pick_sequences = checkpoints.entrez_pick_sequences.get(query=wildcards.query)
+    sequences = pd.read_csv(pick_sequences.output[0], sep='\t')
+
+    inputs = []
+
+    for key, seq in sequences.iterrows():
+        orgname, accession = seq['species'].replace(" ", "_"), seq['GBSeq_accession-version']
+
+        inputs.append('{query}/ts_tv_counts/{sample}/{orgname}_count_{accession}.csv'.
+                      format(query=wildcards.query, sample=wildcards.sample, orgname=orgname, accession=accession))
+
+    return inputs
+
 
 
 rule initial_ts_tv:
     input:
-        # TODO replace with an input function that returns all the files to concatenate
-        "{query}/ts_tv_counts/{sample}/{orgname}_count_{accession}.csv"
+       get_ts_tv_count_paths
     output:
-        # TODO don't use fake output names!
-        "{query}/ts_tv_counts/{sample}/{orgname}_count_{accession}_aggregating.done"
+        "{query}/ts_tv_counts/{sample}/all_ts_tv_counts.csv"
     log:
-        "{query}/ts_tv_counts/{sample}/{orgname}_count_{accession}_aggregating.log"
-    params:
-        query="{query}",  # TODO these are unnecesary, as you can access them with {wildcards.query}
-        sample="{sample}"
+        "{query}/ts_tv_counts/{sample}/all_ts_tv_counts.log"
     shell:
-        "cat {input} 1>> {params.query}/ts_tv_counts/{params.sample}/allTsTvCounts.csv 2> {log}; touch {output}"
+        "cat {input} 1> {output} 2> {log}"
 
 
-rule make_matrices_equal:  # TODO needs more literal name... I can't tell what this does from the current name
+
+rule calculate_likelihoods:
     input:
-        "{query}/ts_tv_counts/{sample}/allTsTvCounts.csv",  # TODO don't use CamelCase in filenames (be consistent!)
+        "{query}/ts_tv_counts/{sample}/all_ts_tv_counts.csv",
         "{query}/fastq/{sample}_mapq.readlen",
         "{query}/entrez/{query}-selected-seqs.tsv"
     output:
-        "{query}/probabilities/{sample}/TsTvMatrix.csv",
-        "{query}/probabilities/{sample}/Probability_Model_Params.csv"  # TODO make this a .json file
+        "{query}/probabilities/{sample}/likelihood_ts_tv_matrix.csv",
+        "{query}/probabilities/{sample}/probability_model_params.json"
     log:
-        "{query}/probabilities/{sample}/TsTvMatrix.log"
+        "{query}/probabilities/{sample}/likelihood_ts_tv_matrix.log"
     script:
-        "../scripts/make_matrices_equal.py"  # TODO keep to the naming scheme
+        "../scripts/calculate_likelihoods.py" #todo ask Evan to check if they are the same with the SQL commands
+
 
 
 rule calculate_probabilities:
     input:
-        "{query}/probabilities/{sample}/TsTvMatrix.csv",
-        "{query}/probabilities/{sample}/Probability_Model_Params.csv",
+        "{query}/probabilities/{sample}/likelihood_ts_tv_matrix.csv",
+        "{query}/probabilities/{sample}/probability_model_params.json",
         "fastq/{sample}.size"
     output:
-        "{query}/probabilities/{sample}/Posterior_Probabilities.csv"  # TODO keep to the naming scheme
+        "{query}/probabilities/{sample}/posterior_probabilities.csv"
     log:
-        "{query}/probabilities/{sample}/Posterior_Probabilities.log"
+        "{query}/probabilities/{sample}/posterior_probabilities.log"
     params:
-        submatrices=False  # TODO what is this?
+        submatrices=False  # TODO what is this? - I kinda explain it in the calculate_taxa_probabilities.py file
     script:
           "../scripts/calculate_taxa_probabilities.py"  # TODO keep to the naming scheme
 
@@ -75,7 +94,7 @@ rule calculate_probabilities:
 rule coverage_t_test:
     input:
         "{query}/sigma/{sample}/{orgname}/{orgname}_{accession}.bam",
-        "{query}/entrez/{query}-selected-seqs.tsv",  # TODO drop the dependencies on both these tsv files
+        "{query}/entrez/{query}-selected-seqs.tsv",  # TODO drop the dependencies on both these tsv files - how ? I need these files
         "{query}/entrez/{query}-nuccore.tsv"
     output:
         "{query}/probabilities/{sample}/{orgname}_t_test_pvalue_{accession}.txt"
@@ -85,24 +104,42 @@ rule coverage_t_test:
         "../scripts/coverage_t_test.py"
 
 
+
+# noinspection PyUnresolvedReferences
+def get_t_test_values_paths(wildcards):
+    """
+    Get all the individual cav file paths for the taxa in our database.
+    """
+    pick_sequences = checkpoints.entrez_pick_sequences.get(query=wildcards.query)
+    sequences = pd.read_csv(pick_sequences.output[0], sep='\t')
+
+    inputs = []
+
+    for key, seq in sequences.iterrows():
+        orgname, accession = seq['species'].replace(" ", "_"), seq['GBSeq_accession-version']
+
+        inputs.append('{query}/probabilities/{sample}/{orgname}_t_test_pvalue_{accession}.txt'.
+                      format(query=wildcards.query, sample=wildcards.sample, orgname=orgname, accession=accession))
+
+    return inputs
+
+
+
 rule cat_pvalues:
-    # TODO you must have an input: for this rule which contains all the outputs from coverage_t_test
+    input:
+        get_t_test_values_paths
     output:
         "{query}/probabilities/{sample}/t_test_pvalues.txt",
     log:
-        "{query}/probabilities/{sample}/t_test_pvalues_agg.log"
-    params:
-        query="{query}",  # TODO these are unnecessary
-        sample="{sample}"
+        "{query}/probabilities/{sample}/t_test_pvalues.log"
     shell:
-         # TODO it doesn't find all the files to concat because is has no inputs!!!
-         #      so the scheduler will try to run it before any files exists as it has no depedencies
-         "cat {params.query}/probabilities/{params.sample}/*_t_test_pvalue_*.txt 1>> {output} 2>> {log}"
+         "cat {input} 1> {output} 2> {log}"
+
 
 
 rule calculate_dirichlet_abundances:
     input:
-        "{query}/probabilities/{sample}/TsTvMatrix.csv",
+        "{query}/probabilities/{sample}/likelihood_ts_tv_matrix.csv",
         "{query}/probabilities/{sample}/t_test_pvalues.txt",
         "fastq/{sample}.size"
     output:

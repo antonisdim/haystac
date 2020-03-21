@@ -9,12 +9,13 @@ from scipy.stats import fisher_exact
 
 
 def coverage_t_test(bam, selected_seqs_file, nuccore_file, taxon, outfile):
-    # TODO add a block comment explaining what this function does
 
+    """
+    Function that calculates the pvalue of the coverage. Testing if there was clustering bias during the
+    sequencing/the reads that contribute to the identification/abundance of a species come only
+    from a specific genomic region
+    """
     taxon_seqlen_dict = genome_sizes(selected_seqs_file, nuccore_file)
-
-    # 86) Define function that calculates the pvalue for the coverage
-    #     (testing if there was clustering bias during the sequencing)
 
     pileup_dict = {}
 
@@ -38,7 +39,8 @@ def coverage_t_test(bam, selected_seqs_file, nuccore_file, taxon, outfile):
 
 
 # TODO this is a really inefficient way of getting the size of the sequences!!
-#      we shouldn't have to load either of these files!
+#      we shouldn't have to load either of these files! - I realise that but how else ?
+#      I need the genome size info for the above function
 def genome_sizes(selected_seqs_file, nuccore_file):
     selected_seqs = pd.read_csv(selected_seqs_file, sep='\t')
 

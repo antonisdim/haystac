@@ -9,9 +9,12 @@ from scipy.stats import beta
 
 
 def calculate_dirichlet_abundances(ts_tv_file, pvaluesfile, total_sample_fastq_reads, sample_abundance):
-    # TODO add a block comment explaining what this function does
 
-    # 85) I calculate the coverage of each taxon from reads in its bam/pileup file. Let's go there
+    """
+    Function that calculates the mean posterior abundances of species in metagenomic samples/libraries.
+    """
+
+    # I calculate the coverage of each taxon from reads in its bam/pileup file. Let's go there
 
     t_test_vector = pd.read_csv(pvaluesfile, sep='\t', header=None).set_index(0).squeeze().rename('Taxon')
     t_test_vector['Dark_Matter'] = np.nan
@@ -27,7 +30,7 @@ def calculate_dirichlet_abundances(ts_tv_file, pvaluesfile, total_sample_fastq_r
     a = ts_tv_matrix.groupby('Taxon').sum().squeeze().astype(float)
     a.loc['Dark_Matter'] = dark_matter.sum()
 
-    # 92) Add the non aligned filtered reads count in the Dark Matter category
+    # Add the non aligned filtered reads count in the Dark Matter category
 
     total_fastq_reads = float(open(total_sample_fastq_reads, 'r').read())
     reads_in_bams = len(ts_tv_matrix['Read_ID'].unique())
@@ -37,13 +40,13 @@ def calculate_dirichlet_abundances(ts_tv_file, pvaluesfile, total_sample_fastq_r
 
     print(a, file=sys.stderr)
 
-    # 93) Perform Alberto's formulas
+    # Perform Alberto's formulas
 
     b = a.sum()
 
     posterior_abundance_mean = a.add(1).divide(b + len(a)).sort_values(ascending=False)
 
-    # 94) Prepare the dataframe that is going to be outputted and calculate the rest of the output columns.
+    # Prepare the dataframe that is going to be outputted and calculate the rest of the output columns.
 
     posterior_abundance = posterior_abundance_mean.to_frame().reset_index()
 
@@ -74,7 +77,7 @@ def calculate_dirichlet_abundances(ts_tv_file, pvaluesfile, total_sample_fastq_r
         posterior_abundance.iloc[idx, 6] = a.loc[posterior_abundance.iloc[idx, 0]]
         posterior_abundance.iloc[idx, 7] = t_test_vector.loc[posterior_abundance.iloc[idx, 0]]
 
-    # 95) Write the file into a file. Don't need to return anything. Back to anns_pipeline
+    # Write the file into a file. Don't need to return anything. Back to anns_pipeline
 
     with open(sample_abundance, 'w') as output_handle:
         posterior_abundance.to_csv(path_or_buf=output_handle, sep='\t', index=False, header=True)

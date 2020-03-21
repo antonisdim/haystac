@@ -9,7 +9,13 @@ import pandas as pd
 
 def calculate_taxa_probabilities(ts_tv_matrix_file, params_file, sample_name, total_sample_fastq_reads, outputfile,
                                  submatrices):
-    # TODO add a block comment explaining what this function does
+    """
+    Function that calculates the species identification posterior probabilities.
+    This function acts as a wrapper around the calculate_probabilities function.
+    Function calculate_probabilities actually calculates the probabilities.
+    Function calculate_taxa_probabilities acts as a wrapper by providing the right dataset each time.
+    "If submatrices" subsample the ts_tv_matrix_file in a for loop way. Could we paralleise this step ?
+    """
 
     print('all taxa', '\t', sample_name, file=sys.stderr)
 
@@ -50,6 +56,7 @@ def calculate_taxa_probabilities(ts_tv_matrix_file, params_file, sample_name, to
 
 def calculate_probabilities(ts_tv_matrix_file, params_file, sample_name,
                             total_sample_fastq_reads, outputfile, submatrix):
+
     total_fastq_reads = float(open(total_sample_fastq_reads, 'r').read())
 
     read_count = len(pd.read_csv(ts_tv_matrix_file, sep=',', usecols=['Read_ID'])['Read_ID'].unique())
@@ -59,7 +66,7 @@ def calculate_probabilities(ts_tv_matrix_file, params_file, sample_name,
 
     ts_tv_matrix = pd.read_csv(ts_tv_matrix_file, sep=',', usecols=['Taxon', 'Ts', 'Tv'])
 
-    model_params = pd.read_csv(params_file, sep=',', index_col=0).squeeze()
+    model_params = pd.read_json(params_file, orient='index').squeeze()
 
     mismatch_df = ts_tv_matrix.groupby('Taxon').sum().astype({"Ts": float, "Tv": float})
 

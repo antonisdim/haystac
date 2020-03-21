@@ -22,8 +22,10 @@ rule index_database:
         "bowtie2-build --large-index {input} database/{wildcards.orgname}/{wildcards.accession} &> {log}"
 
 
+
 def get_min_score(wildcards, input):
     return round(float(open(input.readlen).read()) * float(config['mismatch_probability'])) * -6  # TODO magic number -6
+
 
 
 rule alignments_per_taxon:
@@ -58,3 +60,33 @@ rule alignments_per_taxon:
                   "-x database/{wildcards.orgname}/{wildcards.accession} -U {input.fastq} | "
                   "samtools sort -O bam -o {output} ) 2> {log}")
 
+
+# noinspection PyUnresolvedReferences
+def get_bamfile_paths(wildcards):
+    """
+    Get all the individual bam file paths for the taxa in our database.
+    """
+    pick_sequences = checkpoints.entrez_pick_sequences.get(query=wildcards.query)
+    sequences = pd.read_csv(pick_sequences.output[0], sep='\t')
+
+    inputs = []
+
+    for key, seq in sequences.iterrows():
+        orgname, accession = seq['species'].replace(" ", "_"), seq['GBSeq_accession-version']
+        inputs.append('{query}/sigma/{sample}/{orgname}/{orgname}_{accession}.bam'.
+                      format(query=wildcards.query, sample=wildcards.sample, orgname=orgname, accession=accession))
+
+    return inputs
+
+# todo it is a bit of vile way of doing it but it is the only way of doing it just by calling rule_all,
+#  happy to change it
+
+rule all_alignments:
+    input:
+        get_bamfile_paths
+    log:
+        "{query}/sigma/{sample}_alignments.log"
+    output:
+        "{query}/sigma/{sample}_alignments.done"
+    shell:
+         "touch {output}"
