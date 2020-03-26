@@ -16,17 +16,19 @@ def mutation_type(alleles):
 def count_ts_tv_init(bam_file, output_file, taxon):
     bam = pysam.AlignmentFile(bam_file, 'rb')
 
-    for read in bam.fetch():
-        ts, tv = 0, 0
-        for base_call, base_ref in zip(read.seq, read.get_reference_sequence()):
-            if base_call != base_ref:
-                if mutation_type([base_call, base_ref]) == 'ts':
-                    ts += 1
-                else:
-                    tv += 1
+    with open(output_file, 'w') as fout:
 
-        with open(output_file, 'a') as fout:
-            print(taxon, read.query_name, ts, tv, file=fout, sep=",")
+        for read in bam.fetch():
+            ts, tv = 0, 0
+
+            for base_call, base_ref in zip(read.seq, read.get_reference_sequence()):
+                if base_call != base_ref:
+                    if mutation_type([base_call, base_ref]) == 'ts':
+                        ts += 1
+                    else:
+                        tv += 1
+
+                print(taxon, read.query_name, ts, tv, file=fout, sep=",")
 
 
 if __name__ == '__main__':
