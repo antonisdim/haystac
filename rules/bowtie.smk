@@ -72,9 +72,7 @@ rule average_fastq_read_len:
     output:
         "{query}/fastq/{sample}_mapq.readlen"
     params:
-        # TODO you're right seqtk is a better option. Subsampling is required in case the fastq files are massive,
-        #  as above 200K reads the average read length doesn't change significantly and it takes far less time.
-        size=SUBSAMPLE_FIXED_READS
+        sample_size=SUBSAMPLE_FIXED_READS
     shell:
-         "seqtk sample {input} {params.size} | seqtk seq -A | grep -v '^>' | "
+         "seqtk sample {input} {params.sample_size} | seqtk seq -A | grep -v '^>' | "
          "awk '{{count++; bases += length}} END{{print bases/count}}' 1> {output} 2> {log}"

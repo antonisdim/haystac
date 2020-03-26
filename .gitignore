@@ -12,5 +12,9 @@ __pycache__
 */bam/*
 */bowtie/*
 */entrez/*
+*/fastq/*
+*/probabilities/*
+*/sigma/*
+*/ts_tv_counts/*
 database/*
 fastq/*
