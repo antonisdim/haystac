@@ -31,14 +31,9 @@ def calculate_likelihoods(ts_tv_file, readlen_file, taxa_file, config, output_ma
 
     # First part
 
-    if os.stat(ts_tv_file).st_size == 0:
-        raise RuntimeError("The ts_tv count file is empty. Go back and check why.")
-
-    if os.stat(readlen_file).st_size == 0:
-        raise RuntimeError("The read length is empty. Go back and check why.")
-
-    if os.stat(taxa_file).st_size == 0:
-        raise RuntimeError("The taxa list is empty. Go back and check why.")
+    assert os.stat(ts_tv_file).st_size, "The ts_tv count file is empty. Go back and check why."
+    assert os.stat(readlen_file).st_size, "The read length is empty. Go back and check why."
+    assert os.stat(taxa_file).st_size, "The taxa list is empty. Go back and check why."
 
     print("Reading the initial Ts/Tv matrix.", file=sys.stderr)
     init_ts_tv = pd.read_csv(ts_tv_file, names=['Taxon', 'Read_ID', 'Ts', 'Tv'], sep=',')

@@ -39,7 +39,8 @@ def coverage_t_test(bam, selected_seqs_file, nuccore_file, taxon, outfile):
 
 
 # TODO this is a really inefficient way of getting the size of the sequences!!
-#      we shouldn't have to load either of these files! - I realise that but how else ?
+#      we shouldn't have to load either of these files! -
+#      I realise that but how else ?
 #      I need the genome size info for the above function
 def genome_sizes(selected_seqs_file, nuccore_file):
     selected_seqs = pd.read_csv(selected_seqs_file, sep='\t')
