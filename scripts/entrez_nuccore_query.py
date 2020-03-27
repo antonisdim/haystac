@@ -4,6 +4,7 @@
 import csv
 import os
 import sys
+import pandas as pd
 
 from Bio import Entrez
 
@@ -11,6 +12,7 @@ sys.path.append(os.getcwd())
 
 from scripts.entrez_utils import guts_of_entrez, ENTREZ_DB_NUCCORE, ENTREZ_RETMODE_XML, ENTREZ_RETTYPE_GB
 
+CHUNKS = 50 # todo should it in the config ? 
 
 def gen_dict_extract(key, var):
     """Find keys in nested dictionaries"""
@@ -31,12 +33,21 @@ def gen_dict_extract(key, var):
                 yield result
 
 
-def entrez_nuccore_query(config, query, output_file):
+def chunker(seq, size):
+    return (seq[pos:pos + size] for pos in range(0, len(seq), size))
+
+
+def entrez_nuccore_query(input_file, config, query_chunk, output_file):
     """
     Query the NCBI nuccore database to get a list of sequence accessions and their metadata.
     """
     Entrez.email = config['entrez']['email']
-    entrez_query = config['entrez']['queries'][query]
+
+    accessions = pd.read_csv(input_file, sep='\t').squeeze().to_list()
+
+    entrez_query = next(itertools.islice(chunker(accessions, CHUNKS), query_chunk, None))
+
+    # entrez_query = config['entrez']['queries'][query_chunk]
 
     # get list of entries for given query
     print("Getting list of Accessions for term={} ...\n".format(entrez_query), file=sys.stderr)
@@ -103,7 +114,8 @@ if __name__ == '__main__':
     sys.stderr = open(snakemake.log[0], 'w')
 
     entrez_nuccore_query(
+        input_file=snakemake.input[0],
         config=snakemake.config,
-        query=snakemake.wildcards.query,
+        query_chunk=snakemake.wildcards.chunk,
         output_file=snakemake.output[0]
     )

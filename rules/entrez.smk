@@ -10,13 +10,58 @@ import pandas as pd
 #      2. fetch chunk - can be run in parallel, with delayed start to avoid 3 query per sec limit
 #                       e.g. if we pass in a chunk_num param, and use `sleep(chunk_num // 3)`
 #      3. join all chunks
+
+checkpoint entrez_find_accesions:
+    output:
+        temp("{query}/entrez/{query}-accessions.tsv")
+    log:
+        temp("{query}/entrez/{query}-accessions.log")
+    script:
+        "../scripts/entrez_find_accessions.py"
+
+
+
 rule entrez_nuccore_query:
+    input:
+        "{query}/entrez/{query}-accessions.tsv"
+    output:
+        temp("{query}/entrez/{chunk}-nuccore.tsv")
+    log:
+        temp("{query}/entrez/{chunk}-nuccore.log")
+    script:
+        "../scripts/entrez_nuccore_query.py"
+
+
+
+# noinspection PyUnresolvedReferences
+def get_nuccore_chunks(wildcards):
+    """
+    Get all the accession chunks for the {query}-nuccore.tsv file.
+    """
+
+    CHUNKS = 50 #todo maybe this should be in the cofig ?
+    pick_accessions = checkpoints.entrez_find_accesions.get(query=wildcards.query)
+    sequences = pd.read_csv(pick_accessions.output[0], sep='\t')
+
+    inputs = []
+
+    for chunk_num in range(CHUNKS):
+        inputs.append("{query}/entrez/{chunk}-nuccore.tsv".format(query=wildcards.query, chunk=chunk_num))
+
+    return inputs
+
+
+
+rule entrez_aggregate_nuccore:
+    input:
+        get_nuccore_chunks
     output:
         "{query}/entrez/{query}-nuccore.tsv"
     log:
         "{query}/entrez/{query}-nuccore.log"
-    script:
-        "../scripts/entrez_nuccore_query.py"
+    shell:
+        'cat {input} 1> {output} 2> {log}'
+
 
 
 rule entrez_taxa_query:
@@ -28,6 +73,7 @@ rule entrez_taxa_query:
         "{query}/entrez/{query}-taxa.log"
     script:
         "../scripts/entrez_taxonomy_query.py"
+
 
 
 checkpoint entrez_pick_sequences:
@@ -42,6 +88,7 @@ checkpoint entrez_pick_sequences:
         "../scripts/entrez_pick_sequences.py"
 
 
+
 rule entrez_download_sequence:
     output:
         "database/{orgname}/{accession}.fasta.gz"
@@ -49,6 +96,7 @@ rule entrez_download_sequence:
         "database/{orgname}/{accession}.log"
     script:
          "../scripts/entrez_download_sequence.py"
+
 
 
 # noinspection PyUnresolvedReferences
@@ -66,6 +114,7 @@ def get_fasta_sequences(wildcards):
         inputs.append('database/{orgname}/{accession}.fasta.gz'.format(orgname=orgname, accession=accession))
 
     return inputs
+
 
 
 rule entrez_multifasta:

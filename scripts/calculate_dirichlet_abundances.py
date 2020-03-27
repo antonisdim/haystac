@@ -50,7 +50,7 @@ def calculate_dirichlet_abundances(ts_tv_file, pvaluesfile, total_sample_fastq_r
 
     posterior_abundance = posterior_abundance_mean.to_frame().reset_index()
 
-    posterior_abundance.rename(columns={'Count': 'Mean_Posterior_Abundance'}, inplace=True)
+    posterior_abundance.rename(columns={'Dirichlet_Assignment': 'Mean_Posterior_Abundance'}, inplace=True)
 
     posterior_abundance['95.CI.lower'] = np.nan
     posterior_abundance['95.CI.upper'] = np.nan
