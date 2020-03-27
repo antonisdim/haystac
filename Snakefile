@@ -13,10 +13,11 @@ include: "rules/metagenomics.smk"
 ##### Wildcards #####
 
 wildcard_constraints:
-    query="[\w.]+",
-    sample="[\w.]+",
-    orgname="[\w.]+",
-    accession="[\w.]+",
+    query="[\w]+",
+    sample="[\w]+",
+    orgname="[\w]+",
+    accession="[\w]+",
+    chunk='\d+'
 
 ##### Target rules #####
 
