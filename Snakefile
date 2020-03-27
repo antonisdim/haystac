@@ -10,6 +10,14 @@ include: "rules/bowtie.smk"
 include: "rules/bowtie_meta.smk"
 include: "rules/metagenomics.smk"
 
+##### Wildcards #####
+
+wildcard_constraints:
+    query="[\w.]+",
+    sample="[\w.]+",
+    orgname="[\w.]+",
+    accession="[\w.]+",
+
 ##### Target rules #####
 
 rule all:

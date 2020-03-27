@@ -37,7 +37,7 @@ rule bowtie_alignment:
          "| samtools sort -O bam -o {output} ) 2> {log}"
 
 
-rule remove_duplicates:
+rule dedup_merged:
     input:
         "{query}/bam/{sample}_sorted.bam"
     log:
@@ -50,7 +50,7 @@ rule remove_duplicates:
         "dedup --merged --input {input} --output {params.output} &> {log}"
 
 
-rule extract_fastq:
+rule extract_fastq_single_end:
     input:
         "{query}/bam/{sample}_sorted_rmdup.bam"
     log:
@@ -64,8 +64,23 @@ rule extract_fastq:
         "| samtools fastq -c 6 - > {output} ) 2> {log}"
 
 
+rule extract_fastq_paired_end:
+    input:
+        "{query}/bam/{sample}_sorted_rmdup.bam"
+    log:
+        "{query}/fastq/{sample}_mapq.log"
+    output:
+        "{query}/fastq/{sample}_r1_mapq.fastq.gz",
+        "{query}/fastq/{sample}_r2_mapq.fastq.gz"
+    params:
+        min_mapq = config['min_mapq']
+    shell:
+        "( samtools view -h -q {params.min_mapq} {input} "
+        "| samtools fastq -c 6 -1 {output[0]} -2 {output[1]} -0 /dev/null -s /dev/null - ) 2> {log}"
+
 rule average_fastq_read_len:
     input:
+        # TODO what about paired end?
         "{query}/fastq/{sample}_mapq.fastq.gz"
     log:
         "{query}/fastq/{sample}_mapq_readlen.log"

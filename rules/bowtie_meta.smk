@@ -24,11 +24,11 @@ rule index_database:
 
 
 def get_min_score(wildcards, input):
+    # TODO needs block comment
     return round(float(open(input.readlen).read()) * float(config['mismatch_probability'])) * -6  # TODO magic number -6
 
 
-
-rule alignments_per_taxon:
+rule align_taxon_single_end:
     input:
         fastq="{query}/fastq/{sample}_mapq.fastq.gz",
         bt2idx="database/{orgname}/{accession}.1.bt2l",
@@ -37,28 +37,48 @@ rule alignments_per_taxon:
         "{query}/sigma/{sample}/{orgname}/{accession}.log"
     output:
         bam_file="{query}/sigma/{sample}/{orgname}/{orgname}_{accession}.bam",
-        bam_index="{query}/sigma/{sample}/{orgname}/{orgname}_{accession}.bam.bai"
+        bai_file="{query}/sigma/{sample}/{orgname}/{orgname}_{accession}.bam.bai"
     params:
         min_score=get_min_score,
-        minimum_fragment_length=MIN_FRAG_LEN,
-        maximum_fragment_length=MAX_FRAG_LEN
     threads:
-        1
-    run:
-        # TODO split these into two separate rules - don't know how
-        if config['sequencing'] == 'single_end':
-            shell("(bowtie2 --time --no-unal --no-discordant --no-mixed --ignore-quals --mp 6,6 --np 6 "
+        1  # TODO why single-threaded?
+    shell:
+        "( bowtie2 --time --no-unal --no-discordant --no-mixed --ignore-quals --mp 6,6 --np 6 "
                   "--score-min L,{params.min_score},0.0 --gbar 1000 -q --threads {threads} "
-                  "-x database/{wildcards.orgname}/{wildcards.accession} -U {input.fastq} | "
-                  "samtools sort -O bam -o {output.bam_file} ) 2> {log}; samtools index {output.bam_file}")
+                  "-x database/{wildcards.orgname}/{wildcards.accession} "
+                  "-U {input.fastq} "
+        "| samtools sort -O bam -o {output.bam_file} ) 2> {log} "
+        "; samtools index {output.bam_file}"
 
-        elif config['sequencing'] == 'paired_end':
-            #todo write the input files in the command correctly for paired end
-            shell("(bowtie2 --time --no-unal --no-discordant --no-mixed --ignore-quals --mp 6,6 --np 6 "
+
+rule align_taxon_paired_end:
+    input:
+        fastq_r1="{query}/fastq/{sample}_r1_mapq.fastq.gz",
+        fastq_r2="{query}/fastq/{sample}_r2_mapq.fastq.gz",
+        bt2idx="database/{orgname}/{accession}.1.bt2l",
+        readlen="{query}/fastq/{sample}_mapq.readlen"
+    log:
+        "{query}/sigma/{sample}/{orgname}/{accession}.log"
+    output:
+        bam_file="{query}/sigma/{sample}/{orgname}/{orgname}_{accession}.bam",
+        bai_file="{query}/sigma/{sample}/{orgname}/{orgname}_{accession}.bam.bai"
+    params:
+        min_score=get_min_score,
+        min_frag_length=MIN_FRAG_LEN,
+        max_frag_length=MAX_FRAG_LEN
+    threads:
+        1  # TODO why single-threaded?
+    shell:
+        "( bowtie2 --time --no-unal --no-discordant --no-mixed --ignore-quals --mp 6,6 --np 6 "
                   "--score-min L,{params.min_score},0.0 --gbar 1000 -q --threads {threads} "
-                  "-I {params.minimum_fragment_length} -X {params.maximum_fragment_length} "
-                  "-x database/{wildcards.orgname}/{wildcards.accession} -U {input.fastq} | "
-                  "samtools sort -O bam -o {output} ) 2> {log}")
+                  "-x database/{wildcards.orgname}/{wildcards.accession} "
+                  "-I {params.min_frag_length} -X {params.max_frag_length} "
+                  "-1 {input.fastq_r1} -2 {input.fastq_r2} "
+        "| samtools sort -O bam -o {output.bam_file} ) 2> {log} "
+        "; samtools index {output.bam_file}"
+
+
+ruleorder: align_taxon_single_end > align_taxon_paired_end
 
 
 # noinspection PyUnresolvedReferences
