@@ -6,6 +6,7 @@ import sys
 import numpy as np
 import pandas as pd
 import json
+import os
 
 
 class NpEncoder(json.JSONEncoder):
@@ -29,6 +30,15 @@ def calculate_likelihoods(ts_tv_file, readlen_file, taxa_file, config, output_ma
     """
 
     # First part
+
+    if os.stat(ts_tv_file).st_size == 0:
+        raise RuntimeError("The ts_tv count file is empty. Go back and check why.")
+
+    if os.stat(readlen_file).st_size == 0:
+        raise RuntimeError("The read length is empty. Go back and check why.")
+
+    if os.stat(taxa_file).st_size == 0:
+        raise RuntimeError("The taxa list is empty. Go back and check why.")
 
     print("Reading the initial Ts/Tv matrix.", file=sys.stderr)
     init_ts_tv = pd.read_csv(ts_tv_file, names=['Taxon', 'Read_ID', 'Ts', 'Tv'], sep=',')
@@ -57,6 +67,15 @@ def calculate_likelihoods(ts_tv_file, readlen_file, taxa_file, config, output_ma
         delta_v = 0
         ts_missing_val = max_mismatch
         tv_missing_val = 0
+    elif t == 0 and v == 0:
+        sigma_t = config['mismatch_probability'] / (float(2))
+        sigma_v = config['mismatch_probability'] / (float(2))
+
+        delta_v = sigma_v / float(1 - sigma_v - sigma_t)
+        delta_t = sigma_t / float(1 - sigma_v - sigma_t)
+
+        ts_missing_val = round(max_mismatch/float(2))
+        tv_missing_val = round(max_mismatch/float(2))
     else:
         ts_tv_ratio = t / float(v)
         fixed_mismatch_probability = config['mismatch_probability']
