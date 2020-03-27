@@ -11,7 +11,7 @@ import pandas as pd
 #                       e.g. if we pass in a chunk_num param, and use `sleep(chunk_num // 3)`
 #      3. join all chunks
 
-checkpoint entrez_find_accesions:
+checkpoint entrez_find_accessions:
     output:
         temp("{query}/entrez/{query}-accessions.tsv")
     log:
@@ -25,9 +25,9 @@ rule entrez_nuccore_query:
     input:
         "{query}/entrez/{query}-accessions.tsv"
     output:
-        temp("{query}/entrez/{chunk}-nuccore.tsv")
+        temp("{query}/entrez/{query}_{chunk}-nuccore.tsv")
     log:
-        temp("{query}/entrez/{chunk}-nuccore.log")
+        temp("{query}/entrez/{query}_{chunk}-nuccore.log")
     script:
         "../scripts/entrez_nuccore_query.py"
 
@@ -39,14 +39,18 @@ def get_nuccore_chunks(wildcards):
     Get all the accession chunks for the {query}-nuccore.tsv file.
     """
 
-    CHUNKS = 50 #todo maybe this should be in the cofig ?
-    pick_accessions = checkpoints.entrez_find_accesions.get(query=wildcards.query)
+    chunk_size = 20 # todo Is this acceptable way to chunk the query based on chunk size ? Feel like I can do it better
+    pick_accessions = checkpoints.entrez_find_accessions.get(query=wildcards.query)
     sequences = pd.read_csv(pick_accessions.output[0], sep='\t')
 
-    inputs = []
+    if len(sequences) % chunk_size == 0:
+        tot_chunks = len(sequences)/float(chunk_size)
+    else:
+        tot_chunks = (len(sequences)//float(chunk_size)) + 1
 
-    for chunk_num in range(CHUNKS):
-        inputs.append("{query}/entrez/{chunk}-nuccore.tsv".format(query=wildcards.query, chunk=chunk_num))
+    inputs = []
+    for chunk_num in range(int(tot_chunks)):
+        inputs.append("{query}/entrez/{query}_{chunk}-nuccore.tsv".format(query=wildcards.query, chunk=chunk_num))
 
     return inputs
 
@@ -60,7 +64,7 @@ rule entrez_aggregate_nuccore:
     log:
         "{query}/entrez/{query}-nuccore.log"
     shell:
-        'cat {input} 1> {output} 2> {log}'
+        "awk 'FNR>1 || NR==1' {input} 1> {output} 2> {log}"
 
 
 

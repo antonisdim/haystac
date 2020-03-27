@@ -12,7 +12,7 @@ entrez:
   email: evangelos-antonios.dimopoulos@hertford.ox.ac.uk
 
   # fetch results in batches
-  batchSize: 1
+  batchSize: 5
 
   rank: 'species'
 

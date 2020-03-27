@@ -25,14 +25,14 @@ def entrez_find_accessions(config, query, output_file):
 
     accessions = handle_reader['IdList']
 
-    with open(output_file, 'wb') as fout:
+    with open(output_file, 'w') as fout:
 
-        fieldnames = ['GBSeq_accession-version']
-        w = csv.DictWriter(fout, fieldnames, delimiter='\t', extrasaction="ignore")
-        w.writeheader()
+        acc_col = ['GBSeq_accession-version']
+        acc_col.extend(accessions)
 
-        for accession in accessions:
-            w.writerow(accession)
+        print('\n'.join(acc_col), file=fout)
+
+
 
 
 if __name__ == '__main__':
