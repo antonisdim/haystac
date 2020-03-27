@@ -25,7 +25,7 @@ ENTREZ_RETMODE_TEXT = 'text'
 ENTREZ_RETTYPE_FASTA = 'fasta'
 ENTREZ_RETTYPE_GB = 'gb'
 
-ENTREZ_RETMAX = 10**9
+ENTREZ_RETMAX = 10 ** 9
 
 
 def chunker(seq, size):
@@ -55,7 +55,8 @@ def entrez_efetch(db, retmode, rettype, webenv, query_key, attempt=1):
             return entrez_efetch(db, retmode, rettype, webenv, query_key, attempt)
 
     except (http.client.IncompleteRead, urllib.error.URLError) as e:
-        # TODO refactor this error handling
+        # TODO refactor this error handling -
+        #  that should be self fixing as it an error related to the try except block of guts_of_entrez
         print("Ditching that batch", file=sys.stderr)
         print(e)
         return None
@@ -90,5 +91,12 @@ def guts_of_entrez(db, retmode, rettype, chunk, batch_size):
 
     except (http.client.HTTPException, urllib.error.HTTPError, urllib.error.URLError,
             RuntimeError, Entrez.Parser.ValidationError, socket.error):
+
+        for accession in chunk:
+            try:
+                guts_of_entrez(db, retmode, rettype, accession, batch_size)
+            except (http.client.HTTPException, urllib.error.HTTPError, urllib.error.URLError,
+                    RuntimeError, Entrez.Parser.ValidationError, socket.error):
+                print("Ditching this accession as it is a bad record {}.".format(accession), file=sys.stderr)
+
         # TODO refactor this error handling
-        print("Ditching that batch of records", file=sys.stderr)
