@@ -8,14 +8,13 @@ import pysam
 from scipy.stats import fisher_exact
 
 
-def coverage_t_test(bam, selected_seqs_file, nuccore_file, taxon, outfile):
-
+def coverage_t_test(bam, taxon_fasta_idx, taxon, outfile):
     """
     Function that calculates the pvalue of the coverage. Testing if there was clustering bias during the
     sequencing/the reads that contribute to the identification/abundance of a species come only
     from a specific genomic region
     """
-    taxon_seqlen_dict = genome_sizes(selected_seqs_file, nuccore_file)
+    taxon_seqlen = genome_sizes(taxon_fasta_idx)
 
     pileup_dict = {}
 
@@ -30,7 +29,7 @@ def coverage_t_test(bam, selected_seqs_file, nuccore_file, taxon, outfile):
     contingency_first_row = [observed_coverage, expected_coverage]
     print("Observed and expected coverage are ", contingency_first_row, file=sys.stderr)
 
-    contingency_second_row = [taxon_seqlen_dict[taxon], taxon_seqlen_dict[taxon]]
+    contingency_second_row = [taxon_seqlen, taxon_seqlen]
 
     oddsratio, pvalue = fisher_exact([contingency_first_row, contingency_second_row])
 
@@ -38,21 +37,13 @@ def coverage_t_test(bam, selected_seqs_file, nuccore_file, taxon, outfile):
         print(taxon, pvalue, file=outhandle, sep='\t')
 
 
-# TODO this is a really inefficient way of getting the size of the sequences!!
-#      we shouldn't have to load either of these files! -
-#      I realise that but how else ?
-#      I need the genome size info for the above function
-def genome_sizes(selected_seqs_file, nuccore_file):
-    selected_seqs = pd.read_csv(selected_seqs_file, sep='\t')
+def genome_sizes(taxon_fasta_idx):
 
-    nuccore_seqs = pd.read_csv(nuccore_file, sep='\t')
+    faidx = pd.read_csv(taxon_fasta_idx, sep='\t', names=['Name', 'Length', 'Offset', 'Linebases', 'Linewidth'])
 
-    merge = pd.merge(selected_seqs, nuccore_seqs, on=['GBSeq_accession-version'])[['species', 'GBSeq_length']]. \
-        replace(' ', '_', regex=True)
+    taxon_seq_len = faidx['Length'].sum()
 
-    taxon_seqlen_dict = pd.Series(merge.GBSeq_length.values, index=merge.species).to_dict()
-
-    return taxon_seqlen_dict
+    return taxon_seq_len
 
 
 if __name__ == '__main__':
@@ -61,8 +52,7 @@ if __name__ == '__main__':
 
     coverage_t_test(
         bam=snakemake.input[0],
-        selected_seqs_file=snakemake.input[1],
-        nuccore_file=snakemake.input[2],
+        taxon_fasta_idx=snakemake.input[1],
         taxon=snakemake.wildcards.orgname,
         outfile=snakemake.output[0]
     )

@@ -91,11 +91,23 @@ rule calculate_probabilities:
           "../scripts/calculate_taxa_probabilities.py"  # TODO keep to the naming scheme
 
 
+
+rule fasta_idx:
+    input:
+        "database/{orgname}/{accession}.fasta.gz"
+    output:
+        "database/{orgname}/{accession}.fasta.gz.fai"
+    log:
+        "database/{orgname}/{accession}.fasta.gz.fai.log"
+    shell:
+        "samtools faidx {input} 2> {log}"
+
+
+
 rule coverage_t_test:
     input:
         "{query}/sigma/{sample}/{orgname}/{orgname}_{accession}.bam",
-        "{query}/entrez/{query}-selected-seqs.tsv",  # TODO drop the dependencies on both these tsv files - how ? I need these files
-        "{query}/entrez/{query}-nuccore.tsv"
+        "database/{orgname}/{accession}.fasta.gz.fai"
     output:
         "{query}/probabilities/{sample}/{orgname}_t_test_pvalue_{accession}.txt"
     log:

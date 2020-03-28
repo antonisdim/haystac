@@ -20,6 +20,7 @@ rule bowtie_index:
           "bowtie2-build --large-index {input} {wildcards.query}/bowtie/{wildcards.query} &> {log}"
 
 
+
 rule bowtie_alignment:
     input:
         fastq=lambda wildcards: config['samples'][wildcards.sample],
@@ -37,6 +38,7 @@ rule bowtie_alignment:
          "| samtools sort -O bam -o {output} ) 2> {log}"
 
 
+
 rule dedup_merged:
     input:
         "{query}/bam/{sample}_sorted.bam"
@@ -48,6 +50,7 @@ rule dedup_merged:
         output="{query}/bam/"
     shell:
         "dedup --merged --input {input} --output {params.output} &> {log}"
+
 
 
 rule extract_fastq_single_end:
@@ -64,6 +67,7 @@ rule extract_fastq_single_end:
         "| samtools fastq -c 6 - > {output} ) 2> {log}"
 
 
+
 rule extract_fastq_paired_end:
     input:
         "{query}/bam/{sample}_sorted_rmdup.bam"
@@ -77,6 +81,12 @@ rule extract_fastq_paired_end:
     shell:
         "( samtools view -h -q {params.min_mapq} {input} "
         "| samtools fastq -c 6 -1 {output[0]} -2 {output[1]} -0 /dev/null -s /dev/null - ) 2> {log}"
+
+
+
+ruleorder: extract_fastq_single_end > extract_fastq_paired_end
+
+
 
 rule average_fastq_read_len:
     input:
