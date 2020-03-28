@@ -8,6 +8,7 @@ import urllib.error
 import time
 
 from Bio import Entrez
+from Bio import bgzf
 
 sys.path.append(os.getcwd())
 
@@ -28,7 +29,7 @@ def entrez_download_sequence(accession, config, output_file, attempt=1):
     try:
         records = guts_of_entrez(ENTREZ_DB_NUCCORE, ENTREZ_RETMODE_TEXT, ENTREZ_RETTYPE_FASTA, [accession],
                                  batch_size=1)
-        with gzip.open(output_file, 'wt') as fout:
+        with bgzf.open(output_file, 'wt') as fout:
             for fasta in records:
                 fout.write(fasta)
 
