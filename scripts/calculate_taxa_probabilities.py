@@ -5,6 +5,7 @@ import sys
 
 import numpy as np
 import pandas as pd
+import os
 
 
 def calculate_taxa_probabilities(ts_tv_matrix_file, params_file, sample_name, total_sample_fastq_reads, outputfile,

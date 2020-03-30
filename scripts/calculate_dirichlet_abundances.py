@@ -6,6 +6,7 @@ import sys
 import numpy as np
 import pandas as pd
 from scipy.stats import beta
+import os
 
 
 def calculate_dirichlet_abundances(ts_tv_file, pvaluesfile, total_sample_fastq_reads, sample_abundance):
