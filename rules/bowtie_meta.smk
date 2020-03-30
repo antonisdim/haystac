@@ -27,7 +27,7 @@ def get_min_score(wildcards, input):
     """Get the min score dor the edit distance of the alignment."""
     return round(float(open(input.readlen).read()) * float(config['mismatch_probability'])) * -6  # TODO magic number -6
 
-
+#todo add the rest of the params from paired end -I=0 and -X=1000
 rule align_taxon_single_end:
     input:
         fastq="{query}/fastq/{sample}_mapq.fastq.gz",
@@ -49,6 +49,16 @@ rule align_taxon_single_end:
                   "-U {input.fastq} "
         "| samtools sort -O bam -o {output.bam_file} ) 2> {log} "
         "; samtools index {output.bam_file}"
+
+
+
+
+# todo if it is not commented out I get an error
+#  InputFunctionException in line 24 of /Users/edimopoulos/rip/rules/bowtie.smk:
+#   KeyError: 'RISE00_r1'
+#   Wildcards:
+#   query=yersinia_test
+#   sample=RISE00_r1
 
 
 # rule align_taxon_paired_end:
@@ -76,8 +86,8 @@ rule align_taxon_single_end:
 #                   "-1 {input.fastq_r1} -2 {input.fastq_r2} "
 #         "| samtools sort -O bam -o {output.bam_file} ) 2> {log} "
 #         "; samtools index {output.bam_file}"
-
-
+#
+#
 # ruleorder: align_taxon_single_end > align_taxon_paired_end
 
 

@@ -18,6 +18,8 @@ def entrez_taxonomy_query(config, nuccore_file, output_file):
     Query the NCBI taxonomy database to get a taxa details for all nuccore sequences.
     """
 
+    assert os.stat(nuccore_file).st_size, "The nuccore_query count file is empty {}".format(nuccore_file)
+
     Entrez.email = config['entrez']['email']
     retmax = config['entrez']['batchSize']
 

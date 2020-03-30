@@ -14,6 +14,11 @@ def calculate_dirichlet_abundances(ts_tv_file, pvaluesfile, total_sample_fastq_r
     Function that calculates the mean posterior abundances of species in metagenomic samples/libraries.
     """
 
+    assert os.stat(ts_tv_file).st_size, "The ts_tv count file is empty {}".format(ts_tv_file)
+    assert os.stat(pvaluesfile).st_size, "The t-test p values file is empty {}".format(pvaluesfile)
+    assert os.stat(total_sample_fastq_reads).st_size, "The total fastq reads file is empty {}".format(
+        total_sample_fastq_reads)
+
     # I calculate the coverage of each taxon from reads in its bam/pileup file. Let's go there
 
     t_test_vector = pd.read_csv(pvaluesfile, sep='\t', header=None).set_index(0).squeeze().rename('Taxon')

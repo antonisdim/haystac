@@ -14,8 +14,12 @@ def calculate_taxa_probabilities(ts_tv_matrix_file, params_file, sample_name, to
     This function acts as a wrapper around the calculate_probabilities function.
     Function calculate_probabilities actually calculates the probabilities.
     Function calculate_taxa_probabilities acts as a wrapper by providing the right dataset each time.
-    "If submatrices" subsample the ts_tv_matrix_file in a for loop way. Could we paralleise this step ?
+    "If submatrices" subsample the ts_tv_matrix_file in a for loop way. Could we parallelise this step ?
     """
+
+    assert os.stat(ts_tv_matrix_file).st_size, "The ts_tv count file is empty {}".format(ts_tv_file)
+
+    assert os.stat(params_file).st_size, "The probability model parameters file is empty {}".format(params_file)
 
     print('all taxa', '\t', sample_name, file=sys.stderr)
 

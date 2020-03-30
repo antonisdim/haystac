@@ -43,6 +43,9 @@ def get_nuccore_chunks(wildcards):
     pick_accessions = checkpoints.entrez_find_accessions.get(query=wildcards.query)
     sequences = pd.read_csv(pick_accessions.output[0], sep='\t')
 
+    if len(sequences) == 0:
+        raise RuntimeError("The entrez pick sequences file is empty.")
+
     if len(sequences) % chunk_size == 0:
         tot_chunks = len(sequences)/float(chunk_size)
     else:
@@ -110,6 +113,9 @@ def get_fasta_sequences(wildcards):
     """
     pick_sequences = checkpoints.entrez_pick_sequences.get(query=wildcards.query)
     sequences = pd.read_csv(pick_sequences.output[0], sep='\t')
+
+    if len(sequences) == 0:
+        raise RuntimeError("The entrez pick sequences file is empty.")
 
     inputs = []
 

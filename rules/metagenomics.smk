@@ -67,10 +67,10 @@ rule calculate_likelihoods:
         "{query}/fastq/{sample}_mapq.readlen",
         "{query}/entrez/{query}-selected-seqs.tsv"
     output:
-        "{query}/probabilities/{sample}/likelihood_ts_tv_matrix.csv",
-        "{query}/probabilities/{sample}/probability_model_params.json"
+        "{query}/probabilities/{sample}/{sample}_likelihood_ts_tv_matrix.csv",
+        "{query}/probabilities/{sample}/{sample}_probability_model_params.json"
     log:
-        "{query}/probabilities/{sample}/likelihood_ts_tv_matrix.log"
+        "{query}/probabilities/{sample}/{sample}_likelihood_ts_tv_matrix.log"
     script:
         "../scripts/calculate_likelihoods.py" #todo ask Evan to check if they are the same with the SQL commands
 
@@ -78,13 +78,13 @@ rule calculate_likelihoods:
 
 rule calculate_probabilities:
     input:
-        "{query}/probabilities/{sample}/likelihood_ts_tv_matrix.csv",
-        "{query}/probabilities/{sample}/probability_model_params.json",
+        "{query}/probabilities/{sample}/{sample}_likelihood_ts_tv_matrix.csv",
+        "{query}/probabilities/{sample}/{sample}_probability_model_params.json",
         "fastq/{sample}.size"
     output:
-        "{query}/probabilities/{sample}/posterior_probabilities.csv"
+        "{query}/probabilities/{sample}/{sample}_posterior_probabilities.csv"
     log:
-        "{query}/probabilities/{sample}/posterior_probabilities.log"
+        "{query}/probabilities/{sample}/{sample}_posterior_probabilities.log"
     params:
         submatrices=False  # TODO what is this? - I kinda explain it in the calculate_taxa_probabilities.py file
     script:
@@ -125,6 +125,9 @@ def get_t_test_values_paths(wildcards):
     pick_sequences = checkpoints.entrez_pick_sequences.get(query=wildcards.query)
     sequences = pd.read_csv(pick_sequences.output[0], sep='\t')
 
+    if len(sequences) == 0:
+        raise RuntimeError("The entrez pick sequences file is empty.")
+    
     inputs = []
 
     for key, seq in sequences.iterrows():
@@ -141,9 +144,9 @@ rule cat_pvalues:
     input:
         get_t_test_values_paths
     output:
-        "{query}/probabilities/{sample}/t_test_pvalues.txt",
+        "{query}/probabilities/{sample}/{sample}_t_test_pvalues.txt",
     log:
-        "{query}/probabilities/{sample}/t_test_pvalues.log"
+        "{query}/probabilities/{sample}/{sample}_t_test_pvalues.log"
     shell:
          "cat {input} 1> {output} 2> {log}"
 
@@ -151,8 +154,8 @@ rule cat_pvalues:
 
 rule calculate_dirichlet_abundances:
     input:
-        "{query}/probabilities/{sample}/likelihood_ts_tv_matrix.csv",
-        "{query}/probabilities/{sample}/t_test_pvalues.txt",
+        "{query}/probabilities/{sample}/{sample}_likelihood_ts_tv_matrix.csv",
+        "{query}/probabilities/{sample}/{sample}_t_test_pvalues.txt",
         "fastq/{sample}.size"
     output:
         "{query}/probabilities/{sample}/{sample}_posterior_abundance.tsv"
