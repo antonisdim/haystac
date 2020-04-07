@@ -88,9 +88,8 @@ ruleorder: extract_fastq_single_end > extract_fastq_paired_end
 
 
 
-rule average_fastq_read_len:
+rule average_fastq_read_len_single_end:
     input:
-        # TODO what about paired end?
         "{query}/fastq/{sample}_mapq.fastq.gz"
     log:
         "{query}/fastq/{sample}_mapq_readlen.log"
@@ -101,3 +100,29 @@ rule average_fastq_read_len:
     shell:
          "seqtk sample {input} {params.sample_size} | seqtk seq -A | grep -v '^>' | "
          "awk '{{count++; bases += length}} END{{print bases/count}}' 1> {output} 2> {log}"
+
+
+
+rule average_fastq_read_len_paired_end:
+    input:
+        mate1 = "{query}/fastq/{sample}_r1_mapq.fastq.gz",
+        mate2 = "{query}/fastq/{sample}_r2_mapq.fastq.gz"
+    log:
+        "{query}/fastq/{sample}_mapq_readlen.log"
+    output:
+        mate1 = temp("{query}/fastq/{sample}_mapq_mate1.readlen"),
+        mate2 = temp("{query}/fastq/{sample}_mapq_mate2.readlen"),
+        pair = "{query}/fastq/{sample}_mapq.readlen"
+    params:
+        sample_size=SUBSAMPLE_FIXED_READS
+    shell:
+         "seqtk sample {input.mate1} {params.sample_size} | seqtk seq -A | grep -v '^>' | "
+         "awk '{{count++; bases += length}} END{{print bases/count}}' 1> {output.mate1} 2> {log}; "
+         "seqtk sample {input.mate2} {params.sample_size} | seqtk seq -A | grep -v '^>' | "
+         "awk '{{count++; bases += length}} END{{print bases/count}}' 1> {output.mate2} 2> {log}; "
+         "cat {output.mate1} {output.mate2} | awk '{{sum += $1; n++ }} END {{if (n>0) print sum/n;}}' "
+         "1> {output.pair} 2> {log} "
+
+
+
+ruleorder: average_fastq_read_len_single_end > average_fastq_read_len_paired_end

@@ -106,16 +106,14 @@ def calculate_likelihoods(ts_tv_file, readlen_file, taxa_file, config, output_ma
     #  FROM ts_tv GROUP BY read_id) AS den
     #  ON ts_tv.read_id = den.read_id
     #  SET Likelihood = ll_nom / denominator;
-
-    # todo I needed to add some brackets in order to ensure the right order of the calculations.
+    #  I needed to add some brackets in order to ensure the right order of the calculations.
     #  Also it needed to change to group['Taxon'].unique().
     #  The only reason it is in a for loop is because I want to assign the likelihoods I calculate per read to
     #  the right rows. If there's a more straightforward way happy to change it
 
     for index, group in init_ts_tv.groupby('Read_ID'):
         init_ts_tv['Likelihood'] = init_ts_tv['ll_nom'].transform(lambda nom: nom / (
-                    sum(nom) + ((total_taxa_count - len(group['Taxon'].unique())) * data_ts_missing * data_tv_missing)))
-
+                sum(nom) + ((total_taxa_count - len(group['Taxon'].unique())) * data_ts_missing * data_tv_missing)))
 
     print(init_ts_tv, file=sys.stderr)
 

@@ -32,3 +32,6 @@ mismatch_probability:
 
 sequencing:
   'single_end'
+
+bowtie2_treads:
+  1

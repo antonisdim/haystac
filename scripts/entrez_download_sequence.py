@@ -49,7 +49,6 @@ def entrez_download_sequence(accession, config, output_file, attempt=1):
             raise RuntimeError("There was a urllib.error.HTTPError with code {}".format(e))
 
 
-
 if __name__ == '__main__':
     # redirect all output to the log
     sys.stderr = open(snakemake.log[0], 'w')

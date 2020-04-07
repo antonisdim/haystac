@@ -52,8 +52,8 @@ def calculate_taxa_probabilities(ts_tv_matrix_file, params_file, sample_name, to
     #         ts_submatrix = ts_matrix.loc[rows]
     #         tv_submatrix = tv_matrix.loc[rows]
     #
-    #         calculate_probabilities(ts_submatrix, tv_submatrix, sample, delta_v, delta_t, total_fastq_reads, submatrix= taxon)
-    #
+    #         calculate_probabilities(ts_submatrix, tv_submatrix, sample, delta_v, delta_t, total_fastq_reads,
+    #         submatrix= taxon)
     #     print "---------\n"
     #
     # print "Done with sample %s" % sample

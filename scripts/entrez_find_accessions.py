@@ -13,7 +13,6 @@ from scripts.entrez_utils import guts_of_entrez, ENTREZ_DB_NUCCORE, ENTREZ_RETMO
 
 
 def entrez_find_accessions(config, query, output_file):
-
     Entrez.email = config['entrez']['email']
 
     entrez_query = config['entrez']['queries'][query]
@@ -26,13 +25,10 @@ def entrez_find_accessions(config, query, output_file):
     accessions = handle_reader['IdList']
 
     with open(output_file, 'w') as fout:
-
         acc_col = ['GBSeq_accession-version']
         acc_col.extend(accessions)
 
         print('\n'.join(acc_col), file=fout)
-
-
 
 
 if __name__ == '__main__':

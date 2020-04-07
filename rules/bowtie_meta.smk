@@ -4,8 +4,9 @@
 import os
 import pandas as pd
 
-MIN_FRAG_LEN = 15
-MAX_FRAG_LEN = 150
+MIN_FRAG_LEN = 0 # I found them from the actual command that SIGMA runs
+MAX_FRAG_LEN = 1000
+SIGMA_MIN_SCORE_CONSTANT = -6 # it's from SIGMA, wouldn't want this changed unless the used is SUPER knowledgeable
 
 ##### Target rules #####
 
@@ -25,9 +26,9 @@ rule index_database:
 
 def get_min_score(wildcards, input):
     """Get the min score dor the edit distance of the alignment."""
-    return round(float(open(input.readlen).read()) * float(config['mismatch_probability'])) * -6  # TODO magic number -6
+    return round(float(open(input.readlen).read()) * float(config['mismatch_probability'])) * SIGMA_MIN_SCORE_CONSTANT
 
-#todo add the rest of the params from paired end -I=0 and -X=1000
+
 rule align_taxon_single_end:
     input:
         fastq="{query}/fastq/{sample}_mapq.fastq.gz",
@@ -40,12 +41,15 @@ rule align_taxon_single_end:
         bai_file="{query}/sigma/{sample}/{orgname}/{orgname}_{accession}.bam.bai"
     params:
         min_score=get_min_score,
+        min_frag_length=MIN_FRAG_LEN,
+        max_frag_length=MAX_FRAG_LEN
     threads:
-        1  # TODO why single-threaded?
+        config['bowtie2_treads']  # usually single threaded - the user can change it
     shell:
         "( bowtie2 --time --no-unal --no-discordant --no-mixed --ignore-quals --mp 6,6 --np 6 "
                   "--score-min L,{params.min_score},0.0 --gbar 1000 -q --threads {threads} "
                   "-x database/{wildcards.orgname}/{wildcards.accession} "
+                  "-I {params.min_frag_length} -X {params.max_frag_length} "
                   "-U {input.fastq} "
         "| samtools sort -O bam -o {output.bam_file} ) 2> {log} "
         "; samtools index {output.bam_file}"
@@ -77,7 +81,7 @@ rule align_taxon_single_end:
 #         min_frag_length=MIN_FRAG_LEN,
 #         max_frag_length=MAX_FRAG_LEN
 #     threads:
-#         1  # TODO why single-threaded?
+#         config['bowtie2_treads']
 #     shell:
 #         "( bowtie2 --time --no-unal --no-discordant --no-mixed --ignore-quals --mp 6,6 --np 6 "
 #                   "--score-min L,{params.min_score},0.0 --gbar 1000 -q --threads {threads} "

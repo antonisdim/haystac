@@ -76,7 +76,7 @@ rule calculate_likelihoods:
 
 
 
-rule calculate_probabilities:
+rule calculate_taxa_probabilities:
     input:
         "{query}/probabilities/{sample}/{sample}_likelihood_ts_tv_matrix.csv",
         "{query}/probabilities/{sample}/{sample}_probability_model_params.json",
@@ -86,9 +86,9 @@ rule calculate_probabilities:
     log:
         "{query}/probabilities/{sample}/{sample}_posterior_probabilities.log"
     params:
-        submatrices=False  # TODO what is this? - I kinda explain it in the calculate_taxa_probabilities.py file
+        submatrices=False
     script:
-          "../scripts/calculate_taxa_probabilities.py"  # TODO keep to the naming scheme
+          "../scripts/calculate_taxa_probabilities.py"
 
 
 

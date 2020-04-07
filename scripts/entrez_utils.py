@@ -98,5 +98,3 @@ def guts_of_entrez(db, retmode, rettype, chunk, batch_size):
             except (http.client.HTTPException, urllib.error.HTTPError, urllib.error.URLError,
                     RuntimeError, Entrez.Parser.ValidationError, socket.error):
                 print("Ditching this accession as it is a bad record {}.".format(accession), file=sys.stderr)
-
-        # TODO refactor this error handling
