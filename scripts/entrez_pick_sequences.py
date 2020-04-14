@@ -5,9 +5,10 @@ import sys
 
 import pandas as pd
 
+import os.path
 
-def entrez_pick_sequences(config, nuccore_file, taxa_file, output_file):
 
+def entrez_pick_sequences(config, nuccore_file, taxa_file, output_file, query):
     accessions = pd.read_csv(nuccore_file, sep='\t')
     taxa = pd.read_csv(taxa_file, sep='\t')
     rank = config['entrez']['rank']
@@ -23,6 +24,24 @@ def entrez_pick_sequences(config, nuccore_file, taxa_file, output_file):
 
     print(selected_sequences, file=sys.stderr)
 
+    if os.path.isfile("database_inputs/prok_representative_genomes.txt"):
+        refseq_genomes = pd.read_csv(
+            "{query}/entrez/{query}-refseq-genomes.tsv".format(query=config['entrez']['queries'][query]), sep='\t')
+        genbank_genomes = pd.read_csv(
+            "{query}/entrez/{query}-genbank-genomes.tsv".format(query=config['entrez']['queries'][query]), sep='\t')
+        assemblies = pd.read_csv(
+            "{query}/entrez/{query}-assemblies.tsv".format(query=config['entrez']['queries'][query]), sep='\t')
+        refseq_plasmids = pd.read_csv(
+            "{query}/entrez/{query}-refseq-plasmids.tsv".format(query=config['entrez']['queries'][query]), sep='\t')
+        genbank_plasmids = pd.read_csv(
+            "{query}/entrez/{query}-genbank-plasmids.tsv".format(query=config['entrez']['queries'][query]), sep='\t')
+
+        selected_sequences = selected_sequences[~selected_sequences.species.isin(refseq_genomes.species)]
+        selected_sequences = selected_sequences[~selected_sequences.species.isin(genbank_genomes.species)]
+        selected_sequences = selected_sequences[~selected_sequences.species.isin(assemblies.species)]
+        selected_sequences = selected_sequences[~selected_sequences.species.isin(refseq_plasmids.species)]
+        selected_sequences = selected_sequences[~selected_sequences.species.isin(genbank_plasmids.species)]
+
     print("selected the longest sequence per species, writing it to a file", file=sys.stderr)
 
     selected_sequences.to_csv(output_file, sep='\t', header=True, index=False)
@@ -36,5 +55,6 @@ if __name__ == '__main__':
         config=snakemake.config,
         nuccore_file=snakemake.input[0],
         taxa_file=snakemake.input[1],
-        output_file=snakemake.output[0]
+        output_file=snakemake.output[0],
+        query=snakemake.wildcards.query,
     )

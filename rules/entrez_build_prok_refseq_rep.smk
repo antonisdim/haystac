@@ -147,15 +147,6 @@ rule entrez_assembly_multifasta:
 
 
 
-# todo selected sequences tsv for later ? how can I create that taking into account that it can
-#  be created from two rules? - append the file if it exists, create it if not
-
-# todo database indexing for species with plasmids/multiple fasta files - have just the primary accession for it
-
-# todo check the refseq rep files if they're empty
-
-
-
 def get_refseq_genome_directories(wildcards):
     """
     Get all the species dir paths from the refseq directory.
@@ -222,3 +213,15 @@ rule softlink_assemblies_to_database:
         "database/{query}_softlink_assembly_to_database.log"
     shell:
         "for i in {input}; do ln -sfn refseq_assembly/`basename $i` database; done; touch {output}"
+
+
+
+
+# todo database indexing for species with plasmids/multiple fasta files - have just the primary accession for it
+
+# todo check the refseq rep files if they're empty
+
+# todo add a rule that specifies specific genera for analysis
+
+# todo connect the entrez_build_prok_refseq_rep.smk and entrez.smk:
+#  How can I essentlially run 2 NCBI queries with one query wild card?

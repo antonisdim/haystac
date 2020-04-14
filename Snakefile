@@ -35,7 +35,7 @@ rule all:
         "database/refseq_rep_softlink_assembly_to_database.done"
         # "yersinia_test/entrez_alt/sizes.txt",
         # "yersinia_test/entrez/yersinia_test-nuccore.tsv",
-        # "yersinia_test/bowtie/yersinia_test.fasta.gz",  # test entrez.smk
+        "yersinia_test/bowtie/yersinia_test.fasta.gz",  # test entrez.smk
         # "yersinia_test/fastq/RISE00_mapq.readlen",      # test bowtie.smk
         # "yersinia_test/sigma/RISE00_alignments.done",   # test bowtie_meta.smk
         # "yersinia_test/probabilities/RISE00/RISE00_posterior_probabilities.csv", #test metagenomics.smk - probabilities
