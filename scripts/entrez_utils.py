@@ -18,6 +18,7 @@ RETRY_WAIT_TIME = 2
 
 ENTREZ_DB_NUCCORE = 'nuccore'
 ENTREZ_DB_TAXA = 'taxonomy'
+ENTREZ_DB_ASSEMBLY = 'assembly'
 
 ENTREZ_RETMODE_XML = 'xml'
 ENTREZ_RETMODE_TEXT = 'text'
@@ -55,11 +56,19 @@ def entrez_efetch(db, retmode, rettype, webenv, query_key, attempt=1):
             return entrez_efetch(db, retmode, rettype, webenv, query_key, attempt)
 
     except (http.client.IncompleteRead, urllib.error.URLError) as e:
-        # TODO refactor this error handling -
-        #  that should be self fixing as it an error related to the try except block of guts_of_entrez
-        print("Ditching that batch", file=sys.stderr)
-        print(e)
-        return None
+        attempt += 1
+
+        if attempt > MAX_RETRY_ATTEMPTS:
+            print("Exceeded maximum attempts {}...".format(attempt), file=sys.stderr)
+            return None
+        elif e.code == 429:
+            time.sleep(RETRY_WAIT_TIME)
+            print("Starting attempt {}...".format(attempt), file=sys.stderr)
+            return entrez_efetch(db, retmode, rettype, webenv, query_key, attempt)
+        else:
+            print("Discarding that batch", file=sys.stderr)
+            print(e, file=sys.stderr)
+            return None
 
 
 def guts_of_entrez(db, retmode, rettype, chunk, batch_size):
@@ -97,4 +106,4 @@ def guts_of_entrez(db, retmode, rettype, chunk, batch_size):
                 guts_of_entrez(db, retmode, rettype, accession, batch_size)
             except (http.client.HTTPException, urllib.error.HTTPError, urllib.error.URLError,
                     RuntimeError, Entrez.Parser.ValidationError, socket.error):
-                print("Ditching this accession as it is a bad record {}.".format(accession), file=sys.stderr)
+                print("Discarding this accession as it is a bad record {}.".format(accession), file=sys.stderr)

@@ -6,7 +6,7 @@ import pandas as pd
 
 MIN_FRAG_LEN = 0 # I found them from the actual command that SIGMA runs
 MAX_FRAG_LEN = 1000
-SIGMA_MIN_SCORE_CONSTANT = -6 # it's from SIGMA, wouldn't want this changed unless the used is SUPER knowledgeable
+SIGMA_MIN_SCORE_CONSTANT = -6 # it's from SIGMA, wouldn't want this changed unless the user is SUPER knowledgeable
 
 ##### Target rules #####
 
@@ -19,6 +19,8 @@ rule index_database:
     output:
         expand("database/{{orgname}}/{{accession}}.{n}.bt2l", n=[1, 2, 3, 4]),
         expand("database/{{orgname}}/{{accession}}.rev.{n}.bt2l", n=[1, 2])
+    benchmark:
+        repeat("benchmarks/index_database_{orgname}_{accession}.benchmark.txt", 3)
     shell:
         "bowtie2-build --large-index {input} database/{wildcards.orgname}/{wildcards.accession} &> {log}"
 
@@ -39,6 +41,8 @@ rule align_taxon_single_end:
     output:
         bam_file="{query}/sigma/{sample}/{orgname}/{orgname}_{accession}.bam",
         bai_file="{query}/sigma/{sample}/{orgname}/{orgname}_{accession}.bam.bai"
+    benchmark:
+        repeat("benchmarks/align_taxon_single_end_{query}_{sample}_{orgname}_{accession}.benchmark.txt", 3)
     params:
         min_score=get_min_score,
         min_frag_length=MIN_FRAG_LEN,
@@ -64,7 +68,8 @@ rule align_taxon_single_end:
 #   query=yersinia_test
 #   sample=RISE00_r1
 
-
+# todo this shouldn't be needed as a rule as the reads aligned here come from a single fastq file, that results
+#  from a paired end alignment in the bowite.smk file. Unless we want to maintain the pairs
 # rule align_taxon_paired_end:
 #     input:
 #         fastq_r1="{query}/fastq/{sample}_r1_mapq.fastq.gz",
@@ -118,9 +123,9 @@ def get_bamfile_paths(wildcards):
 rule all_alignments:
     input:
         get_bamfile_paths
-    log:
-        "{query}/sigma/{sample}_alignments.log"
     output:
         "{query}/sigma/{sample}_alignments.done"
+    benchmark:
+        repeat("benchmarks/all_alignments_{query}_{sample}.benchmark.txt", 3)
     shell:
          "touch {output}"

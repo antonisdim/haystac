@@ -1,0 +1,158 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+import pandas as pd
+
+##### Target rules #####
+
+
+rule download_refseq_representative_table:
+    output:
+        "database_inputs/prok_representative_genomes.txt"
+    log:
+        "database_inputs/prok_representative_genomes.log"
+    benchmark:
+        repeat("benchmarks/prok_report_download.benchmark.txt", 3)
+    shell:
+        "wget -O {output} https://ftp.ncbi.nlm.nih.gov/genomes/GENOME_REPORTS/prok_representative_genomes.txt 2> {log}"
+
+
+
+checkpoint entrez_refseq_accessions:
+    input:
+        "database_inputs/prok_representative_genomes.txt"
+    log:
+        "{query}/entrez/{query}-refseq-seqs.log"
+    output:
+        refseq_genomes="{query}/entrez/{query}-refseq-genomes.tsv",
+        genbank_genomes="{query}/entrez/{query}-genbank-genomes.tsv",
+        assemblies="{query}/entrez/{query}-assemblies.tsv",
+        refseq_plasmids="{query}/entrez/{query}-refseq-plasmids.tsv",
+        genbank_plasmids="{query}/entrez/{query}-genbank-plasmids.tsv"
+    benchmark:
+        repeat("benchmarks/entrez_refseq_accessions_{query}.benchmark.txt", 3)
+    script:
+          "../scripts/entrez_refseq_create_files.py"
+
+
+# todo: Can I use the rule from entrez.smk as they are exactly the same, instead of writing a
+#  new one with a different name ?
+rule entrez_download_refseq_genbank_sequence:
+    output:
+        "database/refseq_genbank/{orgname}/{accession}.fasta.gz"
+    log:
+        "database/refseq_genbank/{orgname}/{accession}.log"
+    benchmark:
+        repeat("benchmarks/entrez_download_refseq_genbank_sequence_{orgname}_{accession}.benchmark.txt", 3)
+    params:
+        assembly=False
+    script:
+         "../scripts/entrez_download_sequence.py"
+
+
+
+ruleorder: entrez_download_refseq_genbank_sequence > entrez_download_sequence
+
+
+
+def get_refseq_genome_sequences(wildcards):
+    """
+    Get all the FASTA sequences for the multi-FASTA file.
+    """
+    pick_sequences = checkpoints.entrez_refseq_accessions.get(query=wildcards.query)
+    refseq_sequences = pd.read_csv(pick_sequences.output[0], sep='\t')
+    genbank_sequences = pd.read_csv(pick_sequences.output[1], sep='\t')
+    refseq_plasmids = pd.read_csv(pick_sequences.output[3], sep='\t')
+    genbank_plasmids = pd.read_csv(pick_sequences.output[4], sep='\t')
+    sequences = pd.concat([refseq_sequences, genbank_sequences, refseq_plasmids, genbank_plasmids],axis=0)
+
+
+    if len(sequences) == 0:
+        raise RuntimeError("The entrez pick sequences file is empty.")
+
+    inputs = []
+
+    for key, seq in sequences.iterrows():
+        orgname, accession = seq['species'].replace(" ", "_"), seq['GBSeq_accession-version']
+        inputs.append('database/refseq_genbank/{orgname}/{accession}.fasta.gz'.format(orgname=orgname,
+                                                                                      accession=accession))
+
+    return inputs
+
+
+rule entrez_refseq_genbank_multifasta:
+    input:
+         get_refseq_genome_sequences
+    log:
+         "{query}/bowtie/{query}_refseq_genbank.log"
+    output:
+         "{query}/bowtie/{query}_refseq_genbank.fasta.gz"
+    benchmark:
+        repeat("benchmarks/entrez_refseq_genbank_multifasta_{query}.benchmark.txt", 3)
+    shell:
+         "cat {input} > {output}"
+
+
+
+rule entrez_download_assembly_sequence:
+    output:
+        "database/refseq_assembly/{orgname}/{accession}.fasta.gz"
+    log:
+        "database/refseq_assembly/{orgname}/{accession}.log"
+    benchmark:
+        repeat("benchmarks/entrez_download_assembly_sequence_{orgname}_{accession}.benchmark.txt", 3)
+    params:
+        assembly=True
+    script:
+         "../scripts/entrez_download_sequence.py"
+
+
+# todo same problem as with the entrez_download_refseq_genbank_sequence rule
+ruleorder: entrez_download_assembly_sequence > entrez_download_sequence
+
+
+
+def get_assembly_genome_sequences(wildcards):
+    """
+    Get all the FASTA sequences for the multi-FASTA file.
+    """
+    pick_sequences = checkpoints.entrez_refseq_accessions.get(query=wildcards.query)
+    assembly_sequences = pd.read_csv(pick_sequences.output[2], sep='\t')
+
+    if len(assembly_sequences) == 0:
+        raise RuntimeError("The entrez pick sequences file is empty.")
+
+    inputs = []
+
+    for key, seq in assembly_sequences.iterrows():
+        orgname, accession = seq['species'].replace(" ", "_"), seq['GBSeq_accession-version']
+        inputs.append('database/refseq_assembly/{orgname}/{accession}.fasta.gz'.format(orgname=orgname,
+                                                                                       accession=accession))
+
+    return inputs
+
+
+
+rule entrez_assembly_multifasta:
+    input:
+         get_assembly_genome_sequences
+    log:
+         "{query}/bowtie/{query}_assemblies.log"
+    output:
+         "{query}/bowtie/{query}_assemblies.fasta.gz"
+    benchmark:
+        repeat("benchmarks/entrez_assembly_multifasta_{query}.benchmark.txt", 3)
+    shell:
+         "cat {input} > {output}"
+
+
+
+# todo selected sequences tsv for later ? how can I create that taking into account that it can
+#  be created from two rules? - append the file if it exists, create it if not
+
+# todo database indexing for species with plasmids/multiple fasta files - have just the primary accession for it
+
+# todo check the refseq rep files if they're empty
+
+
+

@@ -4,7 +4,7 @@
 
 ##### Target rules #####
 
-
+# todo add the read count for paired end with ruleorder
 rule count_fastq_length:
     input:
          fastq=lambda wildcards: config['samples'][wildcards.sample]
@@ -12,6 +12,8 @@ rule count_fastq_length:
          "fastq/{sample}.log"
     output:
          "fastq/{sample}.size"
+    benchmark:
+        repeat("benchmarks/count_fastq_length_{sample}.benchmark.txt", 3)
     shell:
           "seqtk seq -A {input.fastq} | grep -v '^>' | wc -l 1> {output} 2> {log}"
 
@@ -24,6 +26,8 @@ rule count_accession_ts_tv:
         "{query}/ts_tv_counts/{sample}/{orgname}_count_{accession}.csv"
     log:
         "{query}/ts_tv_counts/{sample}/{orgname}_count_{accession}.log"
+    benchmark:
+        repeat("benchmarks/count_accession_ts_tv_{query}_{sample}_{orgname}_{accession}.benchmark.txt", 3)
     script:
           "../scripts/count_accession_ts_tv.py"
 
@@ -56,6 +60,8 @@ rule initial_ts_tv:
         "{query}/ts_tv_counts/{sample}/all_ts_tv_counts.csv"
     log:
         "{query}/ts_tv_counts/{sample}/all_ts_tv_counts.log"
+    benchmark:
+        repeat("benchmarks/initial_ts_tv_{query}_{sample}.benchmark.txt", 3)
     shell:
         "cat {input} 1> {output} 2> {log}"
 
@@ -71,6 +77,8 @@ rule calculate_likelihoods:
         "{query}/probabilities/{sample}/{sample}_probability_model_params.json"
     log:
         "{query}/probabilities/{sample}/{sample}_likelihood_ts_tv_matrix.log"
+    benchmark:
+        repeat("benchmarks/calculate_likelihoods_{query}_{sample}.benchmark.txt", 3)
     script:
         "../scripts/calculate_likelihoods.py" #todo ask Evan to check if they are the same with the SQL commands
 
@@ -85,6 +93,8 @@ rule calculate_taxa_probabilities:
         "{query}/probabilities/{sample}/{sample}_posterior_probabilities.csv"
     log:
         "{query}/probabilities/{sample}/{sample}_posterior_probabilities.log"
+    benchmark:
+        repeat("benchmarks/calculate_taxa_probabilities_{query}_{sample}.benchmark.txt", 3)
     params:
         submatrices=False
     script:
@@ -99,6 +109,8 @@ rule fasta_idx:
         "database/{orgname}/{accession}.fasta.gz.fai"
     log:
         "database/{orgname}/{accession}.fasta.gz.fai.log"
+    benchmark:
+        repeat("benchmarks/fasta_idx_{orgname}_{accession}.benchmark.txt", 3)
     shell:
         "samtools faidx {input} 2> {log}"
 
@@ -112,6 +124,8 @@ rule coverage_t_test:
         "{query}/probabilities/{sample}/{orgname}_t_test_pvalue_{accession}.txt"
     log:
         "{query}/probabilities/{sample}/{orgname}_t_test_pvalue_{accession}.log"
+    benchmark:
+        repeat("benchmarks/coverage_t_test_{query}_{sample}_{orgname}_{accession}.benchmark.txt", 3)
     script:
         "../scripts/coverage_t_test.py"
 
@@ -147,6 +161,8 @@ rule cat_pvalues:
         "{query}/probabilities/{sample}/{sample}_t_test_pvalues.txt",
     log:
         "{query}/probabilities/{sample}/{sample}_t_test_pvalues.log"
+    benchmark:
+        repeat("benchmarks/cat_pvalues_{query}_{sample}.benchmark.txt", 3)
     shell:
          "cat {input} 1> {output} 2> {log}"
 
@@ -161,6 +177,8 @@ rule calculate_dirichlet_abundances:
         "{query}/probabilities/{sample}/{sample}_posterior_abundance.tsv"
     log:
         "{query}/probabilities/{sample}/{sample}_posterior_abundance.log"
+    benchmark:
+        repeat("benchmarks/calculate_dirichlet_abundances_{query}_{sample}.benchmark.txt", 3)
     script:
         "../scripts/calculate_dirichlet_abundances.py"
 

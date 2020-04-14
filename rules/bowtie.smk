@@ -16,6 +16,8 @@ rule bowtie_index:
     output:
          expand("{{query}}/bowtie/{{query}}.{n}.bt2l", n=[1, 2, 3, 4]),
          expand("{{query}}/bowtie/{{query}}.rev.{n}.bt2l", n=[1, 2])
+    benchmark:
+        repeat("benchmarks/bowtie_index_{query}.benchmark.txt", 3)
     shell:
           "bowtie2-build --large-index {input} {wildcards.query}/bowtie/{wildcards.query} &> {log}"
 
@@ -31,11 +33,39 @@ rule bowtie_alignment:
         index="{query}/bowtie/{query}",
     output:
         "{query}/bam/{sample}_sorted.bam"
+    benchmark:
+        repeat("benchmarks/bowtie_alignment_{query}_{sample}.benchmark.txt", 3)
     threads:
         cpu_count()
     shell:
          "( bowtie2 -q --very-fast-local --threads {threads} -x {params.index} -U {input.fastq} "
          "| samtools sort -O bam -o {output} ) 2> {log}"
+
+
+
+# todo it's provisional haven't used it
+rule bowtie_alignment_paired_end:
+    input:
+        fastq_r1=lambda wildcards: config['samples'][wildcards.sample],
+        fastq_r2=lambda wildcards: config['samples'][wildcards.sample],
+        bt2idx="{query}/bowtie/{query}.1.bt2l",
+    log:
+        "{query}/bam/{sample}.log"
+    output:
+        bam_file="{query}/bam/{sample}_sorted.bam"
+    benchmark:
+        repeat("benchmarks/bowtie_alignment_paired_end_{query}_{sample}.benchmark.txt", 3)
+    params:
+        index="{query}/bowtie/{query}"
+    threads:
+        cpu_count()
+    shell:
+         "( bowtie2 -q --very-fast-local --threads {threads} -x {params.index} -1 {input.fastq_r1} -2 {input.fastq_r2} "
+         "| samtools sort -O bam -o {output} ) 2> {log}"
+
+
+
+ruleorder: bowtie_alignment > bowtie_alignment_paired_end
 
 
 
@@ -46,6 +76,8 @@ rule dedup_merged:
         "{query}/bam/{sample}_sorted_rmdup.log"
     output:
         "{query}/bam/{sample}_sorted_rmdup.bam"
+    benchmark:
+        repeat("benchmarks/dedup_merged_{query}_{sample}.benchmark.txt", 3)
     params:
         output="{query}/bam/"
     shell:
@@ -60,6 +92,8 @@ rule extract_fastq_single_end:
         "{query}/fastq/{sample}_mapq.log"
     output:
         "{query}/fastq/{sample}_mapq.fastq.gz"
+    benchmark:
+        repeat("benchmarks/extract_fastq_single_end_{query}_{sample}.benchmark.txt", 3)
     params:
         min_mapq = config['min_mapq']
     shell:
@@ -76,6 +110,8 @@ rule extract_fastq_paired_end:
     output:
         "{query}/fastq/{sample}_r1_mapq.fastq.gz",
         "{query}/fastq/{sample}_r2_mapq.fastq.gz"
+    benchmark:
+        repeat("benchmarks/extract_fastq_paired_end_{query}_{sample}.benchmark.txt", 3)
     params:
         min_mapq = config['min_mapq']
     shell:
@@ -95,6 +131,8 @@ rule average_fastq_read_len_single_end:
         "{query}/fastq/{sample}_mapq_readlen.log"
     output:
         "{query}/fastq/{sample}_mapq.readlen"
+    benchmark:
+        repeat("benchmarks/average_fastq_read_len_single_end_{query}_{sample}.benchmark.txt", 3)
     params:
         sample_size=SUBSAMPLE_FIXED_READS
     shell:
@@ -113,6 +151,8 @@ rule average_fastq_read_len_paired_end:
         mate1 = temp("{query}/fastq/{sample}_mapq_mate1.readlen"),
         mate2 = temp("{query}/fastq/{sample}_mapq_mate2.readlen"),
         pair = "{query}/fastq/{sample}_mapq.readlen"
+    benchmark:
+        repeat("benchmarks/average_fastq_read_len_paired_end_{query}_{sample}.benchmark.txt", 3)
     params:
         sample_size=SUBSAMPLE_FIXED_READS
     shell:

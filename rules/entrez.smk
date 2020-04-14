@@ -11,6 +11,8 @@ checkpoint entrez_find_accessions:
         temp("{query}/entrez/{query}-accessions.tsv")
     log:
         temp("{query}/entrez/{query}-accessions.log")
+    benchmark:
+        repeat("benchmarks/entrez_find_accessions_{query}.benchmark.txt", 3)
     script:
         "../scripts/entrez_find_accessions.py"
 
@@ -23,6 +25,8 @@ rule entrez_nuccore_query:
         temp("{query}/entrez/{query}_{chunk}-nuccore.tsv")
     log:
         temp("{query}/entrez/{query}_{chunk}-nuccore.log")
+    benchmark:
+        repeat("benchmarks/entrez_nuccore_query_{query}_{chunk}.benchmark.txt", 3)
     script:
         "../scripts/entrez_nuccore_query.py"
 
@@ -61,6 +65,8 @@ rule entrez_aggregate_nuccore:
         "{query}/entrez/{query}-nuccore.tsv"
     log:
         "{query}/entrez/{query}-nuccore.log"
+    benchmark:
+        repeat("benchmarks/entrez_aggregate_nuccore_{query}.benchmark.txt", 3)
     shell:
         "awk 'FNR>1 || NR==1' {input} 1> {output} 2> {log}"
 
@@ -73,6 +79,8 @@ rule entrez_taxa_query:
         "{query}/entrez/{query}-taxa.tsv"
     log:
         "{query}/entrez/{query}-taxa.log"
+    benchmark:
+        repeat("benchmarks/entrez_taxa_query_{query}.benchmark.txt", 3)
     script:
         "../scripts/entrez_taxonomy_query.py"
 
@@ -86,6 +94,8 @@ checkpoint entrez_pick_sequences:
          "{query}/entrez/{query}-selected-seqs.tsv"
     log:
          "{query}/entrez/{query}-selected-seqs.log"
+    benchmark:
+        repeat("benchmarks/entrez_pick_sequences_{query}.benchmark.txt", 3)
     script:
         "../scripts/entrez_pick_sequences.py"
 
@@ -96,6 +106,10 @@ rule entrez_download_sequence:
         "database/{orgname}/{accession}.fasta.gz"
     log:
         "database/{orgname}/{accession}.log"
+    benchmark:
+        repeat("benchmarks/entrez_download_sequence_{orgname}_{accession}.benchmark.txt", 3)
+    params:
+        assembly=False
     script:
          "../scripts/entrez_download_sequence.py"
 
@@ -129,5 +143,7 @@ rule entrez_multifasta:
          "{query}/bowtie/{query}.log"
     output:
          "{query}/bowtie/{query}.fasta.gz"
+    benchmark:
+        repeat("benchmarks/entrez_multifasta_{query}.benchmark.txt", 3)
     shell:
          "cat {input} > {output}"
