@@ -30,7 +30,9 @@ rule all:
         "database_inputs/prok_representative_genomes.txt",
         "refseq_rep/entrez/refseq_rep-refseq-genomes.tsv", # test entrez_build_prok_refseq_rep.smk
         "refseq_rep/bowtie/refseq_rep_refseq_genbank.fasta.gz",
-        "refseq_rep/bowtie/refseq_rep_assemblies.fasta.gz"
+        "refseq_rep/bowtie/refseq_rep_assemblies.fasta.gz",
+        "database/refseq_rep_softlink_refseq_to_database.done",
+        "database/refseq_rep_softlink_assembly_to_database.done"
         # "yersinia_test/entrez_alt/sizes.txt",
         # "yersinia_test/entrez/yersinia_test-nuccore.tsv",
         # "yersinia_test/bowtie/yersinia_test.fasta.gz",  # test entrez.smk

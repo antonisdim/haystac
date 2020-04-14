@@ -156,3 +156,69 @@ rule entrez_assembly_multifasta:
 
 
 
+def get_refseq_genome_directories(wildcards):
+    """
+    Get all the species dir paths from the refseq directory.
+    """
+    pick_sequences = checkpoints.entrez_refseq_accessions.get(query=wildcards.query)
+    refseq_sequences = pd.read_csv(pick_sequences.output[0], sep='\t')
+    genbank_sequences = pd.read_csv(pick_sequences.output[1], sep='\t')
+    refseq_plasmids = pd.read_csv(pick_sequences.output[3], sep='\t')
+    genbank_plasmids = pd.read_csv(pick_sequences.output[4], sep='\t')
+    sequences = pd.concat([refseq_sequences, genbank_sequences, refseq_plasmids, genbank_plasmids],axis=0)
+
+
+    if len(sequences) == 0:
+        raise RuntimeError("The entrez pick sequences file is empty.")
+
+    inputs = []
+
+    for key, seq in sequences.iterrows():
+        orgname = seq['species'].replace(" ", "_")
+        inputs.append('database/refseq_genbank/{orgname}'.format(orgname=orgname))
+
+    return inputs
+
+
+
+rule softlink_refseq_to_database:
+    input:
+        get_refseq_genome_directories
+    output:
+        "database/{query}_softlink_refseq_to_database.done"
+    log:
+        "database/{query}_softlink_refseq_to_database.log"
+    shell:
+        "for i in {input}; do ln -sfn refseq_genbank/`basename $i` database; done; touch {output}"
+
+
+
+def get_assembly_genome_directories(wildcards):
+    """
+    Get all the species dir paths from the assembly directory
+    """
+    pick_sequences = checkpoints.entrez_refseq_accessions.get(query=wildcards.query)
+    assembly_sequences = pd.read_csv(pick_sequences.output[2], sep='\t')
+
+    if len(assembly_sequences) == 0:
+        raise RuntimeError("The entrez pick sequences file is empty.")
+
+    inputs = []
+
+    for key, seq in assembly_sequences.iterrows():
+        orgname = seq['species'].replace(" ", "_")
+        inputs.append('database/refseq_assembly/{orgname}'.format(orgname=orgname))
+
+    return inputs
+
+
+
+rule softlink_assemblies_to_database:
+    input:
+        get_assembly_genome_directories
+    output:
+        "database/{query}_softlink_assembly_to_database.done"
+    log:
+        "database/{query}_softlink_assembly_to_database.log"
+    shell:
+        "for i in {input}; do ln -sfn refseq_assembly/`basename $i` database; done; touch {output}"
