@@ -27,12 +27,12 @@ from datetime import datetime
 startTime = datetime.now()
 rule all:
     input:
-        # "refseq_rep/bowtie/refseq_rep_refseq_genbank.fasta.gz", # test entrez_build_prok_refseq_rep.smk
-        # "refseq_rep/bowtie/refseq_rep_assemblies.fasta.gz", # test entrez_build_prok_refseq_rep.smk
+        "refseq_rep/bowtie/refseq_rep_refseq_prok.fasta.gz", # test entrez_build_prok_refseq_rep.smk
+         # todo softlinks can be run after the database has been downloaded
         # "database/refseq_rep_softlink_refseq_to_database.done", # test entrez_build_prok_refseq_rep.smk
         # "database/refseq_rep_softlink_assembly_to_database.done", # test entrez_build_prok_refseq_rep.smk
         # "refseq_rep/entrez/refseq_rep-nuccore.tsv",
-        "refseq_rep/bowtie/refseq_rep.fasta.gz",
+        "refseq_rep/bowtie/refseq_rep.fasta.gz", # test entrez.smk
         # "yersinia_test/entrez_alt/sizes.txt",
         # "yersinia_test/bowtie/yersinia_test.fasta.gz",  # test entrez.smk
         # "yersinia_test/fastq/RISE00_mapq.readlen",      # test bowtie.smk

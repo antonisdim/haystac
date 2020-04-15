@@ -54,11 +54,12 @@ def entrez_refseq_create_files(input_file, nuccore_genomes_out, genbank_genomes_
 
     header = ['species', 'GBSeq_accession-version']
 
-    genbank_filtered.to_csv(genbank_genomes_out, sep='\t', header=header, index=False)
-    nuccore_filtered.to_csv(nuccore_genomes_out, sep='\t', header=header, index=False)
-    assemblies_filtered.to_csv(assemblies_out, sep='\t', header=header, index=False)
-    genbank_plasmids_filtered_exploded.to_csv(genbank_plasmids_out, sep='\t', header=header, index=False)
-    nuccore_plasmids_exploded.to_csv(nuccore_plasmids_out, sep='\t', header=header, index=False)
+    # todo working example the head() needs to leave for a proper run
+    genbank_filtered.head(5).to_csv(genbank_genomes_out, sep='\t', header=header, index=False)
+    nuccore_filtered.head(5).to_csv(nuccore_genomes_out, sep='\t', header=header, index=False)
+    assemblies_filtered.head(5).to_csv(assemblies_out, sep='\t', header=header, index=False)
+    genbank_plasmids_filtered_exploded.head(5).to_csv(genbank_plasmids_out, sep='\t', header=header, index=False)
+    nuccore_plasmids_exploded.head(5).to_csv(nuccore_plasmids_out, sep='\t', header=header, index=False)
 
 
 if __name__ == '__main__':

@@ -147,6 +147,21 @@ rule entrez_assembly_multifasta:
 
 
 
+rule entrez_refseq_prok_multifasta:
+    input:
+        assemblies="{query}/bowtie/{query}_assemblies.fasta.gz",
+        refseq="{query}/bowtie/{query}_refseq_genbank.fasta.gz"
+    log:
+         "{query}/bowtie/{query}_refseq_prok.log"
+    output:
+         "{query}/bowtie/{query}_refseq_prok.fasta.gz"
+    benchmark:
+        repeat("benchmarks/entrez_refseq_prok_multifasta_{query}.benchmark.txt", 3)
+    shell:
+         "cat {input.assemblies} {input.refseq} > {output}"
+
+
+
 def get_refseq_genome_directories(wildcards):
     """
     Get all the species dir paths from the refseq directory.
@@ -217,11 +232,11 @@ rule softlink_assemblies_to_database:
 
 
 
+
+
 # todo database indexing for species with plasmids/multiple fasta files - have just the primary accession for it
 
 # todo check the refseq rep files if they're empty
 
 # todo add a rule that specifies specific genera for analysis
 
-# todo connect the entrez_build_prok_refseq_rep.smk and entrez.smk:
-#  How can I essentlially run 2 NCBI queries with one query wild card?

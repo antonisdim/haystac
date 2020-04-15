@@ -36,6 +36,8 @@ def entrez_pick_sequences(config, nuccore_file, taxa_file, output_file, query):
         genbank_plasmids = pd.read_csv(
             "{query}/entrez/{query}-genbank-plasmids.tsv".format(query=config['entrez']['queries'][query]), sep='\t')
 
+        # the entrez query might give a different accession for a certain species than the refseq rep one and
+        # I don't want that. If the species exists in the refseq I want to keep the refseq records
         selected_sequences = selected_sequences[~selected_sequences.species.isin(refseq_genomes.species)]
         selected_sequences = selected_sequences[~selected_sequences.species.isin(genbank_genomes.species)]
         selected_sequences = selected_sequences[~selected_sequences.species.isin(assemblies.species)]
