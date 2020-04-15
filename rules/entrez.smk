@@ -142,7 +142,7 @@ rule entrez_multifasta:
     log:
          "{query}/bowtie/{query}.log"
     output:
-         "{query}/bowtie/{query}.fasta.gz"
+         "{query}/bowtie/{query}_entrez.fasta.gz"
     benchmark:
         repeat("benchmarks/entrez_multifasta_{query}.benchmark.txt", 3)
     shell:

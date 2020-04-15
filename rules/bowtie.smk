@@ -4,13 +4,24 @@
 from multiprocessing import cpu_count
 
 SUBSAMPLE_FIXED_READS = 200000
+WITH_REFSEQ_REP = True
 
 ##### Target rules #####
 
 
+
+def filtering_bowtie_aln_inputs(wildcards):
+    if WITH_REFSEQ_REP:
+        return ["{query}/bowtie/{query}_entrez.fasta.gz".format(query=wildcards.query),
+                "{query}/bowtie/{query}_refseq_prok.fasta.gz".format(query=wildcards.query)]
+    else:
+        return ["{query}/bowtie/{query}_entrez.fasta.gz".format(query=wildcards.query)]
+
+
+
 rule bowtie_index:
     input:
-         "{query}/bowtie/{query}.fasta.gz"
+         filtering_bowtie_aln_inputs
     log:
          "{query}/bowtie/{query}_index.log"
     output:
@@ -18,8 +29,13 @@ rule bowtie_index:
          expand("{{query}}/bowtie/{{query}}.rev.{n}.bt2l", n=[1, 2])
     benchmark:
         repeat("benchmarks/bowtie_index_{query}.benchmark.txt", 3)
-    shell:
-          "bowtie2-build --large-index {input} {wildcards.query}/bowtie/{wildcards.query} &> {log}"
+    run:
+        if WITH_REFSEQ_REP:
+            shell("cat {input} > {wildcards.query}/bowtie/{wildcards.query}.fasta.gz; " 
+            "bowtie2-build --large-index {wildcards.query}/bowtie/{wildcards.query}.fasta.gz " 
+            "{wildcards.query}/bowtie/{wildcards.query} &> {log}")
+        else:
+            shell("bowtie2-build --large-index {input} {wildcards.query}/bowtie/{wildcards.query} &> {log}")
 
 
 

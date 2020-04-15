@@ -25,16 +25,11 @@ def entrez_pick_sequences(config, nuccore_file, taxa_file, output_file, query):
     print(selected_sequences, file=sys.stderr)
 
     if os.path.isfile("database_inputs/prok_representative_genomes.txt"):
-        refseq_genomes = pd.read_csv(
-            "{query}/entrez/{query}-refseq-genomes.tsv".format(query=config['entrez']['queries'][query]), sep='\t')
-        genbank_genomes = pd.read_csv(
-            "{query}/entrez/{query}-genbank-genomes.tsv".format(query=config['entrez']['queries'][query]), sep='\t')
-        assemblies = pd.read_csv(
-            "{query}/entrez/{query}-assemblies.tsv".format(query=config['entrez']['queries'][query]), sep='\t')
-        refseq_plasmids = pd.read_csv(
-            "{query}/entrez/{query}-refseq-plasmids.tsv".format(query=config['entrez']['queries'][query]), sep='\t')
-        genbank_plasmids = pd.read_csv(
-            "{query}/entrez/{query}-genbank-plasmids.tsv".format(query=config['entrez']['queries'][query]), sep='\t')
+        refseq_genomes = pd.read_csv("{query}/entrez/{query}-refseq-genomes.tsv".format(query=query), sep='\t')
+        genbank_genomes = pd.read_csv("{query}/entrez/{query}-genbank-genomes.tsv".format(query=query), sep='\t')
+        assemblies = pd.read_csv("{query}/entrez/{query}-assemblies.tsv".format(query=query), sep='\t')
+        refseq_plasmids = pd.read_csv("{query}/entrez/{query}-refseq-plasmids.tsv".format(query=query), sep='\t')
+        genbank_plasmids = pd.read_csv("{query}/entrez/{query}-genbank-plasmids.tsv".format(query=query), sep='\t')
 
         # the entrez query might give a different accession for a certain species than the refseq rep one and
         # I don't want that. If the species exists in the refseq I want to keep the refseq records
