@@ -27,15 +27,14 @@ from datetime import datetime
 startTime = datetime.now()
 rule all:
     input:
-        "database_inputs/prok_representative_genomes.txt",
-        "refseq_rep/entrez/refseq_rep-refseq-genomes.tsv", # test entrez_build_prok_refseq_rep.smk
-        "refseq_rep/bowtie/refseq_rep_refseq_genbank.fasta.gz",
-        "refseq_rep/bowtie/refseq_rep_assemblies.fasta.gz",
-        "database/refseq_rep_softlink_refseq_to_database.done",
-        "database/refseq_rep_softlink_assembly_to_database.done"
+        # "refseq_rep/bowtie/refseq_rep_refseq_genbank.fasta.gz", # test entrez_build_prok_refseq_rep.smk
+        # "refseq_rep/bowtie/refseq_rep_assemblies.fasta.gz", # test entrez_build_prok_refseq_rep.smk
+        # "database/refseq_rep_softlink_refseq_to_database.done", # test entrez_build_prok_refseq_rep.smk
+        # "database/refseq_rep_softlink_assembly_to_database.done", # test entrez_build_prok_refseq_rep.smk
+        # "refseq_rep/entrez/refseq_rep-nuccore.tsv",
+        "refseq_rep/bowtie/refseq_rep.fasta.gz",
         # "yersinia_test/entrez_alt/sizes.txt",
-        # "yersinia_test/entrez/yersinia_test-nuccore.tsv",
-        "yersinia_test/bowtie/yersinia_test.fasta.gz",  # test entrez.smk
+        # "yersinia_test/bowtie/yersinia_test.fasta.gz",  # test entrez.smk
         # "yersinia_test/fastq/RISE00_mapq.readlen",      # test bowtie.smk
         # "yersinia_test/sigma/RISE00_alignments.done",   # test bowtie_meta.smk
         # "yersinia_test/probabilities/RISE00/RISE00_posterior_probabilities.csv", #test metagenomics.smk - probabilities

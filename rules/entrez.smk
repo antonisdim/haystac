@@ -43,7 +43,7 @@ def get_nuccore_chunks(wildcards):
     sequences = pd.read_csv(pick_accessions.output[0], sep='\t')
 
     if len(sequences) == 0:
-        raise RuntimeError("The entrez pick sequences file is empty.")
+        raise RuntimeError("The entrez find accessions file is empty.")
 
     if len(sequences) % chunk_size == 0:
         tot_chunks = len(sequences)/float(chunk_size)
