@@ -29,7 +29,8 @@ rule all:
     input:
         "refseq_rep/bowtie/refseq_rep_refseq_prok.fasta.gz", # test entrez_build_prok_refseq_rep.smk
         "refseq_rep/bowtie/refseq_rep_entrez.fasta.gz", # test entrez.smk
-        "refseq_rep/fastq/RISE00_mapq.readlen"  # test bowtie.smk
+        "refseq_rep/fastq/RISE00_mapq.readlen",  # test bowtie.smk
+        "refseq_rep/sigma/RISE00_alignments.done",   # test bowtie_meta.smk
 
         # "yersinia_test/entrez_alt/sizes.txt",
 

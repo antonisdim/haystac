@@ -7,6 +7,7 @@ import pandas as pd
 MIN_FRAG_LEN = 0 # I found them from the actual command that SIGMA runs
 MAX_FRAG_LEN = 1000
 SIGMA_MIN_SCORE_CONSTANT = -6 # it's from SIGMA, wouldn't want this changed unless the user is SUPER knowledgeable
+WITH_REFSEQ_REP = True
 
 ##### Target rules #####
 
@@ -107,6 +108,18 @@ def get_bamfile_paths(wildcards):
     """
     pick_sequences = checkpoints.entrez_pick_sequences.get(query=wildcards.query)
     sequences = pd.read_csv(pick_sequences.output[0], sep='\t')
+
+    if WITH_REFSEQ_REP:
+        refseq_rep_prok = checkpoints.entrez_refseq_accessions.get(query=wildcards.query)
+
+        refseq_genomes = pd.read_csv(refseq_rep_prok.output[0], sep='\t')
+        genbank_genomes = pd.read_csv(refseq_rep_prok.output[1], sep='\t')
+        assemblies = pd.read_csv(refseq_rep_prok.output[2], sep='\t')
+        refseq_plasmids = pd.read_csv(refseq_rep_prok.output[3], sep='\t')
+        genbank_plasmids = pd.read_csv(refseq_rep_prok.output[4], sep='\t')
+
+        sequences = pd.concat([sequences, refseq_genomes, genbank_genomes, assemblies, refseq_plasmids,
+                               genbank_plasmids])
 
     inputs = []
 
