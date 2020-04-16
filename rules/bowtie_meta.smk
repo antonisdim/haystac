@@ -109,6 +109,9 @@ def get_bamfile_paths(wildcards):
     pick_sequences = checkpoints.entrez_pick_sequences.get(query=wildcards.query)
     sequences = pd.read_csv(pick_sequences.output[0], sep='\t')
 
+    if len(sequences) == 0:
+        raise RuntimeError("The entrez pick sequences file is empty.")
+
     if WITH_REFSEQ_REP:
         refseq_rep_prok = checkpoints.entrez_refseq_accessions.get(query=wildcards.query)
 

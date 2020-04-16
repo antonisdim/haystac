@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+WITH_REFSEQ_REP = True
 
 ##### Target rules #####
 
@@ -41,6 +42,21 @@ def get_ts_tv_count_paths(wildcards):
     pick_sequences = checkpoints.entrez_pick_sequences.get(query=wildcards.query)
     sequences = pd.read_csv(pick_sequences.output[0], sep='\t')
 
+    if len(sequences) == 0:
+        raise RuntimeError("The entrez pick sequences file is empty.")
+
+    if WITH_REFSEQ_REP:
+        refseq_rep_prok = checkpoints.entrez_refseq_accessions.get(query=wildcards.query)
+
+        refseq_genomes = pd.read_csv(refseq_rep_prok.output[0], sep='\t')
+        genbank_genomes = pd.read_csv(refseq_rep_prok.output[1], sep='\t')
+        assemblies = pd.read_csv(refseq_rep_prok.output[2], sep='\t')
+        refseq_plasmids = pd.read_csv(refseq_rep_prok.output[3], sep='\t')
+        genbank_plasmids = pd.read_csv(refseq_rep_prok.output[4], sep='\t')
+
+        sequences = pd.concat([sequences, refseq_genomes, genbank_genomes, assemblies, refseq_plasmids,
+                               genbank_plasmids])
+
     inputs = []
 
     for key, seq in sequences.iterrows():
@@ -78,7 +94,7 @@ rule calculate_likelihoods:
     log:
         "{query}/probabilities/{sample}/{sample}_likelihood_ts_tv_matrix.log"
     benchmark:
-        repeat("benchmarks/calculate_likelihoods_{query}_{sample}.benchmark.txt", 3)
+        repeat("benchmarks/calculate_likelihoods_{query}_{sample}.benchmark.txt", 1)
     script:
         "../scripts/calculate_likelihoods.py" #todo ask Evan to check if they are the same with the SQL commands
 
@@ -94,7 +110,7 @@ rule calculate_taxa_probabilities:
     log:
         "{query}/probabilities/{sample}/{sample}_posterior_probabilities.log"
     benchmark:
-        repeat("benchmarks/calculate_taxa_probabilities_{query}_{sample}.benchmark.txt", 3)
+        repeat("benchmarks/calculate_taxa_probabilities_{query}_{sample}.benchmark.txt", 1)
     params:
         submatrices=False
     script:
@@ -125,7 +141,7 @@ rule coverage_t_test:
     log:
         "{query}/probabilities/{sample}/{orgname}_t_test_pvalue_{accession}.log"
     benchmark:
-        repeat("benchmarks/coverage_t_test_{query}_{sample}_{orgname}_{accession}.benchmark.txt", 3)
+        repeat("benchmarks/coverage_t_test_{query}_{sample}_{orgname}_{accession}.benchmark.txt", 1)
     script:
         "../scripts/coverage_t_test.py"
 
@@ -141,7 +157,19 @@ def get_t_test_values_paths(wildcards):
 
     if len(sequences) == 0:
         raise RuntimeError("The entrez pick sequences file is empty.")
-    
+
+    if WITH_REFSEQ_REP:
+        refseq_rep_prok = checkpoints.entrez_refseq_accessions.get(query=wildcards.query)
+
+        refseq_genomes = pd.read_csv(refseq_rep_prok.output[0], sep='\t')
+        genbank_genomes = pd.read_csv(refseq_rep_prok.output[1], sep='\t')
+        assemblies = pd.read_csv(refseq_rep_prok.output[2], sep='\t')
+        refseq_plasmids = pd.read_csv(refseq_rep_prok.output[3], sep='\t')
+        genbank_plasmids = pd.read_csv(refseq_rep_prok.output[4], sep='\t')
+
+        sequences = pd.concat([sequences, refseq_genomes, genbank_genomes, assemblies, refseq_plasmids,
+                               genbank_plasmids])
+
     inputs = []
 
     for key, seq in sequences.iterrows():
@@ -178,7 +206,7 @@ rule calculate_dirichlet_abundances:
     log:
         "{query}/probabilities/{sample}/{sample}_posterior_abundance.log"
     benchmark:
-        repeat("benchmarks/calculate_dirichlet_abundances_{query}_{sample}.benchmark.txt", 3)
+        repeat("benchmarks/calculate_dirichlet_abundances_{query}_{sample}.benchmark.txt", 1)
     script:
         "../scripts/calculate_dirichlet_abundances.py"
 

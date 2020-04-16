@@ -111,6 +111,8 @@ def calculate_likelihoods(ts_tv_file, readlen_file, taxa_file, config, output_ma
     #  The only reason it is in a for loop is because I want to assign the likelihoods I calculate per read to
     #  the right rows. If there's a more straightforward way happy to change it
 
+    # todo the for loop is not efficient
+
     for index, group in init_ts_tv.groupby('Read_ID'):
         init_ts_tv['Likelihood'] = init_ts_tv['ll_nom'].transform(lambda nom: nom / (
                 sum(nom) + ((total_taxa_count - len(group['Taxon'].unique())) * data_ts_missing * data_tv_missing)))
