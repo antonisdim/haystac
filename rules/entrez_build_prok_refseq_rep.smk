@@ -188,10 +188,6 @@ rule entrez_refseq_prok_multifasta:
 
 
 
-# todo database indexing for species with plasmids/multiple fasta files - have just the primary accession for it
-
-# todo selected seqs - check if it exists in the refseq if the refseq exists. If it does don't add it
-         
 # todo check the refseq rep files if they're empty
 
 # todo add a rule that specifies specific genera for analysis

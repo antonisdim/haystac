@@ -31,7 +31,8 @@ rule all:
         "refseq_rep/bowtie/refseq_rep_entrez.fasta.gz", # test entrez.smk
         "refseq_rep/fastq/RISE00_mapq.readlen",  # test bowtie.smk
         "refseq_rep/sigma/RISE00_alignments.done",   # test bowtie_meta.smk
-        "refseq_rep/probabilities/RISE00/RISE00_posterior_probabilities.csv"
+        "refseq_rep/probabilities/RISE00/RISE00_posterior_probabilities.csv", #test metagenomics.smk - probabilities
+        "refseq_rep/probabilities/RISE00/RISE00_posterior_abundance.tsv" #test metagenomics.smk - abundances
         # "yersinia_test/entrez_alt/sizes.txt",
 
         # "yersinia_test/bowtie/yersinia_test.fasta.gz",  # test entrez.smk

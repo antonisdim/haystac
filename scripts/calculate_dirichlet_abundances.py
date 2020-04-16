@@ -6,11 +6,11 @@ import sys
 import numpy as np
 import pandas as pd
 from scipy.stats import beta
+from scipy.stats import hmean
 import os
 
 
 def calculate_dirichlet_abundances(ts_tv_file, pvaluesfile, total_sample_fastq_reads, sample_abundance):
-
     """
     Function that calculates the mean posterior abundances of species in metagenomic samples/libraries.
     """
@@ -22,7 +22,8 @@ def calculate_dirichlet_abundances(ts_tv_file, pvaluesfile, total_sample_fastq_r
 
     # I calculate the coverage of each taxon from reads in its bam/pileup file. Let's go there
 
-    t_test_vector = pd.read_csv(pvaluesfile, sep='\t', header=None).set_index(0).squeeze().rename('Taxon')
+    t_test_vector = pd.read_csv(pvaluesfile, sep='\t', names=['species', 'pvalue']).groupby('species').apply(
+        hmean).squeeze().astype('float64').rename('Taxon')
     t_test_vector['Dark_Matter'] = np.nan
 
     ts_tv_matrix = pd.read_csv(ts_tv_file, sep=',', usecols=['Taxon', 'Read_ID', 'Dirichlet_Assignment'])
@@ -42,7 +43,11 @@ def calculate_dirichlet_abundances(ts_tv_file, pvaluesfile, total_sample_fastq_r
     reads_in_bams = len(ts_tv_matrix['Read_ID'].unique())
 
     remaining_dark_matter = total_fastq_reads - reads_in_bams
-    a.loc['Dark_Matter'] = a.loc['Dark_Matter'] + remaining_dark_matter
+
+    if 'Dark.Matter' in a.index:
+        a.loc['Dark_Matter'] = a.loc['Dark_Matter'] + remaining_dark_matter
+    else:
+        a.loc['Dark_Matter'] = remaining_dark_matter
 
     print(a, file=sys.stderr)
 
