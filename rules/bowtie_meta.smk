@@ -20,7 +20,7 @@ rule index_database:
         expand("database/{{orgname}}/{{accession}}.{n}.bt2l", n=[1, 2, 3, 4]),
         expand("database/{{orgname}}/{{accession}}.rev.{n}.bt2l", n=[1, 2])
     benchmark:
-        repeat("benchmarks/index_database_{orgname}_{accession}.benchmark.txt", 3)
+        repeat("benchmarks/index_database_{orgname}_{accession}.benchmark.txt", 1)
     shell:
         "bowtie2-build --large-index {input} database/{wildcards.orgname}/{wildcards.accession} &> {log}"
 
@@ -42,7 +42,7 @@ rule align_taxon_single_end:
         bam_file="{query}/sigma/{sample}/{orgname}/{orgname}_{accession}.bam",
         bai_file="{query}/sigma/{sample}/{orgname}/{orgname}_{accession}.bam.bai"
     benchmark:
-        repeat("benchmarks/align_taxon_single_end_{query}_{sample}_{orgname}_{accession}.benchmark.txt", 3)
+        repeat("benchmarks/align_taxon_single_end_{query}_{sample}_{orgname}_{accession}.benchmark.txt", 1)
     params:
         min_score=get_min_score,
         min_frag_length=MIN_FRAG_LEN,
@@ -69,7 +69,7 @@ rule align_taxon_single_end:
 #   sample=RISE00_r1
 
 # todo this shouldn't be needed as a rule as the reads aligned here come from a single fastq file, that results
-#  from a paired end alignment in the bowite.smk file. Unless we want to maintain the pairs
+#  from a paired end alignment in the bowtie.smk file. Unless we want to maintain the pairs
 # rule align_taxon_paired_end:
 #     input:
 #         fastq_r1="{query}/fastq/{sample}_r1_mapq.fastq.gz",

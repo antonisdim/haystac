@@ -29,8 +29,10 @@ rule all:
     input:
         "refseq_rep/bowtie/refseq_rep_refseq_prok.fasta.gz", # test entrez_build_prok_refseq_rep.smk
         "refseq_rep/bowtie/refseq_rep_entrez.fasta.gz", # test entrez.smk
+        "refseq_rep/fastq/RISE00_mapq.readlen"  # test bowtie.smk
+
         # "yersinia_test/entrez_alt/sizes.txt",
-        expand("refseq_rep/bowtie/refseq_rep.{n}.bt2l", n=[1, 2, 3, 4])
+
         # "yersinia_test/bowtie/yersinia_test.fasta.gz",  # test entrez.smk
         # "yersinia_test/fastq/RISE00_mapq.readlen",      # test bowtie.smk
         # "yersinia_test/sigma/RISE00_alignments.done",   # test bowtie_meta.smk

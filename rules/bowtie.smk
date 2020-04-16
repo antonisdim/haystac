@@ -28,7 +28,7 @@ rule bowtie_index:
          expand("{{query}}/bowtie/{{query}}.{n}.bt2l", n=[1, 2, 3, 4]),
          expand("{{query}}/bowtie/{{query}}.rev.{n}.bt2l", n=[1, 2])
     benchmark:
-        repeat("benchmarks/bowtie_index_{query}.benchmark.txt", 3)
+        repeat("benchmarks/bowtie_index_{query}.benchmark.txt", 1)
     run:
         if WITH_REFSEQ_REP:
             shell("cat {input} > {wildcards.query}/bowtie/{wildcards.query}.fasta.gz; " 
@@ -50,7 +50,7 @@ rule bowtie_alignment:
     output:
         "{query}/bam/{sample}_sorted.bam"
     benchmark:
-        repeat("benchmarks/bowtie_alignment_{query}_{sample}.benchmark.txt", 3)
+        repeat("benchmarks/bowtie_alignment_{query}_{sample}.benchmark.txt", 1)
     threads:
         cpu_count()
     shell:
@@ -62,15 +62,15 @@ rule bowtie_alignment:
 # todo it's provisional haven't used it
 rule bowtie_alignment_paired_end:
     input:
-        fastq_r1=lambda wildcards: config['samples'][wildcards.sample],
-        fastq_r2=lambda wildcards: config['samples'][wildcards.sample],
+        fastq_r1=lambda wildcards: config['samples'][wildcards.sample]['R1'],
+        fastq_r2=lambda wildcards: config['samples'][wildcards.sample]['R2'],
         bt2idx="{query}/bowtie/{query}.1.bt2l",
     log:
         "{query}/bam/{sample}.log"
     output:
         bam_file="{query}/bam/{sample}_sorted.bam"
     benchmark:
-        repeat("benchmarks/bowtie_alignment_paired_end_{query}_{sample}.benchmark.txt", 3)
+        repeat("benchmarks/bowtie_alignment_paired_end_{query}_{sample}.benchmark.txt", 1)
     params:
         index="{query}/bowtie/{query}"
     threads:
@@ -84,7 +84,7 @@ rule bowtie_alignment_paired_end:
 ruleorder: bowtie_alignment > bowtie_alignment_paired_end
 
 
-
+# todo this needs to be implemented differently in the pipeline
 rule dedup_merged:
     input:
         "{query}/bam/{sample}_sorted.bam"
@@ -93,7 +93,7 @@ rule dedup_merged:
     output:
         "{query}/bam/{sample}_sorted_rmdup.bam"
     benchmark:
-        repeat("benchmarks/dedup_merged_{query}_{sample}.benchmark.txt", 3)
+        repeat("benchmarks/dedup_merged_{query}_{sample}.benchmark.txt", 1)
     params:
         output="{query}/bam/"
     shell:
@@ -103,7 +103,7 @@ rule dedup_merged:
 
 rule extract_fastq_single_end:
     input:
-        "{query}/bam/{sample}_sorted_rmdup.bam"
+        "{query}/bam/{sample}_sorted.bam"
     log:
         "{query}/fastq/{sample}_mapq.log"
     output:
@@ -113,14 +113,14 @@ rule extract_fastq_single_end:
     params:
         min_mapq = config['min_mapq']
     shell:
-        "( samtools view -h -q {params.min_mapq} {input} "
+        "( samtools view -h -F 4 {input} "
         "| samtools fastq -c 6 - > {output} ) 2> {log}"
 
 
 
 rule extract_fastq_paired_end:
     input:
-        "{query}/bam/{sample}_sorted_rmdup.bam"
+        "{query}/bam/{sample}_sorted.bam"
     log:
         "{query}/fastq/{sample}_mapq.log"
     output:
@@ -131,7 +131,7 @@ rule extract_fastq_paired_end:
     params:
         min_mapq = config['min_mapq']
     shell:
-        "( samtools view -h -q {params.min_mapq} {input} "
+        "( samtools view -h -F 4 {input} "
         "| samtools fastq -c 6 -1 {output[0]} -2 {output[1]} -0 /dev/null -s /dev/null - ) 2> {log}"
 
 
@@ -156,29 +156,36 @@ rule average_fastq_read_len_single_end:
          "awk '{{count++; bases += length}} END{{print bases/count}}' 1> {output} 2> {log}"
 
 
-
-rule average_fastq_read_len_paired_end:
-    input:
-        mate1 = "{query}/fastq/{sample}_r1_mapq.fastq.gz",
-        mate2 = "{query}/fastq/{sample}_r2_mapq.fastq.gz"
-    log:
-        "{query}/fastq/{sample}_mapq_readlen.log"
-    output:
-        mate1 = temp("{query}/fastq/{sample}_mapq_mate1.readlen"),
-        mate2 = temp("{query}/fastq/{sample}_mapq_mate2.readlen"),
-        pair = "{query}/fastq/{sample}_mapq.readlen"
-    benchmark:
-        repeat("benchmarks/average_fastq_read_len_paired_end_{query}_{sample}.benchmark.txt", 3)
-    params:
-        sample_size=SUBSAMPLE_FIXED_READS
-    shell:
-         "seqtk sample {input.mate1} {params.sample_size} | seqtk seq -A | grep -v '^>' | "
-         "awk '{{count++; bases += length}} END{{print bases/count}}' 1> {output.mate1} 2> {log}; "
-         "seqtk sample {input.mate2} {params.sample_size} | seqtk seq -A | grep -v '^>' | "
-         "awk '{{count++; bases += length}} END{{print bases/count}}' 1> {output.mate2} 2> {log}; "
-         "cat {output.mate1} {output.mate2} | awk '{{sum += $1; n++ }} END {{if (n>0) print sum/n;}}' "
-         "1> {output.pair} 2> {log} "
+# todo if it not commented out smk doesn't see the rule average_fastq_read_len_single_end and I get this error:
+#  InputFunctionException in line 63 of /Users/edimopoulos/rip/rules/bowtie.smk:
+#  KeyError: 'RISE00_r1'
+#  Wildcards:
+#  query=refseq_rep
+#  sample=RISE00_r1
 
 
-
-ruleorder: average_fastq_read_len_single_end > average_fastq_read_len_paired_end
+# rule average_fastq_read_len_paired_end:
+#     input:
+#         mate1 = "{query}/fastq/{sample}_r1_mapq.fastq.gz",
+#         mate2 = "{query}/fastq/{sample}_r2_mapq.fastq.gz"
+#     log:
+#         "{query}/fastq/{sample}_mapq_readlen.log"
+#     output:
+#         mate1 = temp("{query}/fastq/{sample}_r1_mapq.readlen"),
+#         mate2 = temp("{query}/fastq/{sample}_r2_mapq.readlen"),
+#         pair = "{query}/fastq/{sample}_mapq.readlen"
+#     benchmark:
+#         repeat("benchmarks/average_fastq_read_len_paired_end_{query}_{sample}.benchmark.txt", 3)
+#     params:
+#         sample_size=SUBSAMPLE_FIXED_READS
+#     shell:
+#          "seqtk sample {input.mate1} {params.sample_size} | seqtk seq -A | grep -v '^>' | "
+#          "awk '{{count++; bases += length}} END{{print bases/count}}' 1> {output.mate1} 2> {log}; "
+#          "seqtk sample {input.mate2} {params.sample_size} | seqtk seq -A | grep -v '^>' | "
+#          "awk '{{count++; bases += length}} END{{print bases/count}}' 1> {output.mate2} 2> {log}; "
+#          "cat {output.mate1} {output.mate2} | awk '{{sum += $1; n++ }} END {{if (n>0) print sum/n;}}' "
+#          "1> {output.pair} 2> {log} "
+#
+#
+#
+# ruleorder: average_fastq_read_len_single_end > average_fastq_read_len_paired_end
