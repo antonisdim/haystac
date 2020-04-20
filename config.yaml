@@ -19,11 +19,16 @@ entrez:
 
 
 samples:
-  CSL.all: fastq/CSL.all.fastq.gz
+  CSL.all: fastq_inputs/CSL.all.fastq.gz
 #  RISE00: fastq/RISE00_test.fastq.gz
-  RISE00: [fastq/RISE00_rmdup.fastq.gz]
+  RISE00: [fastq_inputs/RISE00_rmdup.fastq.gz]
 #  single: [fastq/CSL.all.fastq.gz]
 #  paired: [(fastq/CSL.all_r1.fastq.gz, fastq/CSL.all_r2.fastq.gz)]
+  SRR1031215:
+    R1: [sra_data/SRR1031215_R1.fastq.gz]
+    R2: [sra_data/SRR1031215_R2.fastq.gz]
+  SRR055002:
+    sra_data/SRR055002.fastq.gz
 
 
 min_mapq:
