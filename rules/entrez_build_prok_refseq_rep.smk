@@ -190,4 +190,5 @@ rule entrez_refseq_prok_multifasta:
 
 # todo check the refseq rep files if they're empty
 
-# todo add a rule that specifies specific genera for analysis
+# todo add a rule that specifies specific genera for analysis -
+#  static constant list that has the genera and check as a set in the input functions
