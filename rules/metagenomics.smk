@@ -5,14 +5,36 @@ WITH_REFSEQ_REP = True
 
 ##### Target rules #####
 
+
+
+def get_inputs_for_bowtie_r1(wildcards):
+
+    if SRA_LOOKUP:
+        if PE_MODERN:
+            return "fastq_inputs/PE/{sample}_R1_adRm.fastq.gz".format(sample=wildcards.sample)
+        elif PE_ANCIENT:
+            return "fastq_inputs/PE/{sample}_adRm.fastq.gz".format(sample=wildcards.sample)
+        elif SE:
+            return "fastq_inputs/SE/{sample}_adRm.fastq.gz".format(sample=wildcards.sample)
+
+    else:
+        if PE_MODERN:
+            return config['samples'][wildcards.sample]['R1']
+        elif PE_ANCIENT:
+            return config['samples'][wildcards.sample]
+        elif SE:
+            return config['samples'][wildcards.sample]
+
+
+
 # todo add the read count for paired end with ruleorder
 rule count_fastq_length:
     input:
-         fastq=lambda wildcards: config['samples'][wildcards.sample]
+         fastq=get_inputs_for_bowtie_r1
     log:
-         "fastq/{sample}.log"
+         "fastq_inputs/meta/{sample}.log"
     output:
-         "fastq/{sample}.size"
+         "fastq_inputs/meta/{sample}.size"
     benchmark:
         repeat("benchmarks/count_fastq_length_{sample}.benchmark.txt", 3)
     shell:
@@ -104,7 +126,7 @@ rule calculate_taxa_probabilities:
     input:
         "{query}/probabilities/{sample}/{sample}_likelihood_ts_tv_matrix.csv",
         "{query}/probabilities/{sample}/{sample}_probability_model_params.json",
-        "fastq/{sample}.size"
+        "fastq_inputs/meta/{sample}.size"
     output:
         "{query}/probabilities/{sample}/{sample}_posterior_probabilities.csv"
     log:
@@ -200,7 +222,7 @@ rule calculate_dirichlet_abundances:
     input:
         "{query}/probabilities/{sample}/{sample}_likelihood_ts_tv_matrix.csv",
         "{query}/probabilities/{sample}/{sample}_t_test_pvalues.txt",
-        "fastq/{sample}.size"
+        "fastq_inputs/meta/{sample}.size"
     output:
         "{query}/probabilities/{sample}/{sample}_posterior_abundance.tsv"
     log:

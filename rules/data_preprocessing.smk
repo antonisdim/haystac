@@ -3,9 +3,9 @@
 
 
 SRA_LOOKUP = True
-PE_ANCIENT = True
+PE_ANCIENT = False
 PE_MODERN = False
-SE = False
+SE = True
 
 
 ##### Target rules #####

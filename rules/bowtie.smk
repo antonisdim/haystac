@@ -5,6 +5,10 @@ from multiprocessing import cpu_count
 
 SUBSAMPLE_FIXED_READS = 200000
 WITH_REFSEQ_REP = True
+SRA_LOOKUP = True
+PE_ANCIENT = False
+PE_MODERN = False
+SE = True
 
 ##### Target rules #####
 
@@ -39,49 +43,82 @@ rule bowtie_index:
 
 
 
+def get_inputs_for_bowtie_r1(wildcards):
+    print(wildcards.sample)
+
+    if SRA_LOOKUP:
+        if PE_MODERN:
+            return "fastq_inputs/PE/{sample}_R1_adRm.fastq.gz".format(sample=wildcards.sample)
+        elif PE_ANCIENT:
+            return "fastq_inputs/PE/{sample}_adRm.fastq.gz".format(sample=wildcards.sample)
+        elif SE:
+            return "fastq_inputs/SE/{sample}_adRm.fastq.gz".format(sample=wildcards.sample)
+
+    else:
+        if PE_MODERN:
+            return config['samples'][wildcards.sample]['R1']
+        elif PE_ANCIENT:
+            return config['samples'][wildcards.sample]
+        elif SE:
+            return config['samples'][wildcards.sample]
+
+
+
+def get_inputs_for_bowtie_r2(wildcards):
+
+    if SRA_LOOKUP:
+        if PE_MODERN:
+            return "fastq_inputs/PE/{sample}_R2_adRm.fastq.gz".format(sample=wildcards.sample)
+
+    else:
+        if PE_MODERN:
+            return config['samples'][wildcards.sample]['R2']
+
+
+
 rule bowtie_alignment:
     input:
-        fastq=lambda wildcards: config['samples'][wildcards.sample],
+        fastq=get_inputs_for_bowtie_r1,
         bt2idx="{query}/bowtie/{query}.1.bt2l"
     log:
         "{query}/bam/{sample}.log"
     params:
         index="{query}/bowtie/{query}",
     output:
-        "{query}/bam/{sample}_sorted.bam"
+        bam_file="{query}/bam/{sample}_sorted.bam"
     benchmark:
         repeat("benchmarks/bowtie_alignment_{query}_{sample}.benchmark.txt", 1)
     threads:
         cpu_count()
     shell:
          "( bowtie2 -q --very-fast-local --threads {threads} -x {params.index} -U {input.fastq} "
-         "| samtools sort -O bam -o {output} ) 2> {log}"
+         "| samtools sort -O bam -o {output.bam_file} ) 2> {log}"
 
 
 
-# todo it's provisional haven't used it
-rule bowtie_alignment_paired_end:
-    input:
-        fastq_r1=lambda wildcards: config['samples'][wildcards.sample]['R1'],
-        fastq_r2=lambda wildcards: config['samples'][wildcards.sample]['R2'],
-        bt2idx="{query}/bowtie/{query}.1.bt2l",
-    log:
-        "{query}/bam/{sample}.log"
-    output:
-        bam_file="{query}/bam/{sample}_sorted.bam"
-    benchmark:
-        repeat("benchmarks/bowtie_alignment_paired_end_{query}_{sample}.benchmark.txt", 1)
-    params:
-        index="{query}/bowtie/{query}"
-    threads:
-        cpu_count()
-    shell:
-         "( bowtie2 -q --very-fast-local --threads {threads} -x {params.index} -1 {input.fastq_r1} -2 {input.fastq_r2} "
-         "| samtools sort -O bam -o {output} ) 2> {log}"
-
-
-
-ruleorder: bowtie_alignment > bowtie_alignment_paired_end
+# # todo it's provisional haven't used it
+# rule bowtie_alignment_paired_end:
+#     input:
+#         fastq_r1=get_inputs_for_bowtie_r1,
+#         fastq_r2=get_inputs_for_bowtie_r2,
+#         bt2idx="{query}/bowtie/{query}.1.bt2l"
+#     log:
+#         "{query}/bam/{sample}.log"
+#     output:
+#         bam_file="{query}/bam/{sample}_sorted.bam"
+#     benchmark:
+#         repeat("benchmarks/bowtie_alignment_paired_end_{query}_{sample}.benchmark.txt", 1)
+#     params:
+#         index="{query}/bowtie/{query}"
+#     threads:
+#         cpu_count()
+#     shell:
+#          "( bowtie2 -q --very-fast-local --threads {threads} -x {params.index} -1 {input.fastq_r1} -2 {input.fastq_r2} "
+#          "| samtools sort -O bam -o {output.bam_file} ) 2> {log}"
+#
+#
+#
+# ruleorder: bowtie_alignment > bowtie_alignment_paired_end
 
 
 # todo this needs to be implemented differently in the pipeline
