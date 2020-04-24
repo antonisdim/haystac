@@ -17,7 +17,6 @@ ENTREZ_RETTYPE_GB = 'gb'
 ENTREZ_RETMAX = 10 ** 9
 
 
-
 # noinspection PyUnresolvedReferences
 def get_nuccore_xml(wildcards):
     """
@@ -27,7 +26,7 @@ def get_nuccore_xml(wildcards):
     query = wildcards.query
 
     accessions = ncbi.search(config['entrez']['queries'][query], retmax=ENTREZ_RETMAX,
-                             retmode=ENTREZ_RETMODE_XML, rettype=ENTREZ_RETTYPE_GB, idtype='acc')
+        retmode=ENTREZ_RETMODE_XML, rettype=ENTREZ_RETTYPE_GB, idtype='acc')
 
     input_files = expand("{query}/entrez_alt/{acc}.gb.xml", query=query, acc=accessions)
     input_files.remove("{query}/entrez_alt/NG_052043.1.gb.xml".format(query=query))
@@ -48,6 +47,4 @@ rule entrez_download_xml:
     output:
         "{query}/entrez_alt/sizes.txt"
     shell:
-         "cat {input} > {output}"
-
-
+        "cat {input} > {output}"

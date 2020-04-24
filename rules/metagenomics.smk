@@ -11,9 +11,7 @@ SE = True
 ##### Target rules #####
 
 
-
 def get_inputs_for_bowtie_r1(wildcards):
-
     if SRA_LOOKUP:
         if PE_MODERN:
             return "fastq_inputs/PE_mod/{sample}_R1_adRm.fastq.gz".format(sample=wildcards.sample)
@@ -31,20 +29,17 @@ def get_inputs_for_bowtie_r1(wildcards):
             return config['samples'][wildcards.sample]
 
 
-
 rule count_fastq_length:
     input:
-         fastq=get_inputs_for_bowtie_r1
+        fastq=get_inputs_for_bowtie_r1
     log:
-         "fastq_inputs/meta/{sample}.log"
+        "fastq_inputs/meta/{sample}.log"
     output:
-         "fastq_inputs/meta/{sample}.size"
+        "fastq_inputs/meta/{sample}.size"
     benchmark:
         repeat("benchmarks/count_fastq_length_{sample}.benchmark.txt", 3)
     shell:
-          "seqtk seq -A {input.fastq} | grep -v '^>' | wc -l 1> {output} 2> {log}"
-
-
+        "seqtk seq -A {input.fastq} | grep -v '^>' | wc -l 1> {output} 2> {log}"
 
 rule count_accession_ts_tv:
     input:
@@ -58,8 +53,7 @@ rule count_accession_ts_tv:
     params:
         pairs=PE_MODERN
     script:
-          "../scripts/count_accession_ts_tv.py"
-
+        "../scripts/count_accession_ts_tv.py"
 
 
 # noinspection PyUnresolvedReferences
@@ -91,15 +85,14 @@ def get_ts_tv_count_paths(wildcards):
         orgname, accession = seq['species'].replace(" ", "_"), seq['GBSeq_accession-version']
 
         inputs.append('{query}/ts_tv_counts/{sample}/{orgname}_count_{accession}.csv'.
-                      format(query=wildcards.query, sample=wildcards.sample, orgname=orgname, accession=accession))
+        format(query=wildcards.query, sample=wildcards.sample, orgname=orgname, accession=accession))
 
     return inputs
 
 
-
 rule initial_ts_tv:
     input:
-       get_ts_tv_count_paths
+        get_ts_tv_count_paths
     output:
         "{query}/ts_tv_counts/{sample}/all_ts_tv_counts.csv"
     log:
@@ -110,14 +103,11 @@ rule initial_ts_tv:
         "cat {input} 1> {output} 2> {log}"
 
 
-
 def get_right_readlen(wildcards):
-
     if PE_MODERN:
         return "{query}/fastq/{sample}_mapq_pair.readlen".format(query=wildcards.query, sample=wildcards.sample)
     else:
         return "{query}/fastq/{sample}_mapq.readlen".format(query=wildcards.query, sample=wildcards.sample)
-
 
 
 rule calculate_likelihoods:
@@ -133,9 +123,7 @@ rule calculate_likelihoods:
     benchmark:
         repeat("benchmarks/calculate_likelihoods_{query}_{sample}.benchmark.txt", 1)
     script:
-        "../scripts/calculate_likelihoods.py" #todo ask Evan to check if they are the same with the SQL commands
-
-
+        "../scripts/calculate_likelihoods.py"  #todo ask Evan to check if they are the same with the SQL commands
 
 rule calculate_taxa_probabilities:
     input:
@@ -151,9 +139,7 @@ rule calculate_taxa_probabilities:
     params:
         submatrices=False
     script:
-          "../scripts/calculate_taxa_probabilities.py"
-
-
+        "../scripts/calculate_taxa_probabilities.py"
 
 rule fasta_idx:
     input:
@@ -167,8 +153,6 @@ rule fasta_idx:
     shell:
         "samtools faidx {input} 2> {log}"
 
-
-
 rule coverage_t_test:
     input:
         "{query}/sigma/{sample}/{orgname}/{orgname}_{accession}.bam",
@@ -181,7 +165,6 @@ rule coverage_t_test:
         repeat("benchmarks/coverage_t_test_{query}_{sample}_{orgname}_{accession}.benchmark.txt", 1)
     script:
         "../scripts/coverage_t_test.py"
-
 
 
 # noinspection PyUnresolvedReferences
@@ -213,10 +196,9 @@ def get_t_test_values_paths(wildcards):
         orgname, accession = seq['species'].replace(" ", "_"), seq['GBSeq_accession-version']
 
         inputs.append('{query}/probabilities/{sample}/{orgname}_t_test_pvalue_{accession}.txt'.
-                      format(query=wildcards.query, sample=wildcards.sample, orgname=orgname, accession=accession))
+        format(query=wildcards.query, sample=wildcards.sample, orgname=orgname, accession=accession))
 
     return inputs
-
 
 
 rule cat_pvalues:
@@ -229,9 +211,7 @@ rule cat_pvalues:
     benchmark:
         repeat("benchmarks/cat_pvalues_{query}_{sample}.benchmark.txt", 3)
     shell:
-         "cat {input} 1> {output} 2> {log}"
-
-
+        "cat {input} 1> {output} 2> {log}"
 
 rule calculate_dirichlet_abundances:
     input:
@@ -246,4 +226,3 @@ rule calculate_dirichlet_abundances:
         repeat("benchmarks/calculate_dirichlet_abundances_{query}_{sample}.benchmark.txt", 1)
     script:
         "../scripts/calculate_dirichlet_abundances.py"
-

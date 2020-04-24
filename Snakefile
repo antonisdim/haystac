@@ -23,9 +23,10 @@ wildcard_constraints:
     chunk='\d+',
     # sample_accession="^(.(?!(_R1|_R2)))*."
 
-##### Target rules #####
+    ##### Target rules #####
 
 from datetime import datetime
+
 startTime = datetime.now()
 rule all:
     input:
@@ -46,13 +47,14 @@ rule all:
         # "refseq_rep/probabilities/SRR1031289/SRR1031289_posterior_probabilities.csv", #test metagenomics.smk - probabilities
         # "refseq_rep/probabilities/SRR1031289/SRR1031289_posterior_abundance.tsv" #test metagenomics.smk - abundances
         #
-        "fastq_inputs/SE/SRR054920_adRm.fastq.gz", # test data_preprocessing.smk for ancient SE
-        "refseq_rep/bowtie/refseq_rep_refseq_prok.fasta.gz", # test entrez_build_prok_refseq_rep.smk
-        "refseq_rep/bowtie/refseq_rep_entrez.fasta.gz", # test entrez.smk
-        "refseq_rep/fastq/SRR054920_mapq.readlen", # test bowtie.smk
-        "refseq_rep/sigma/SRR054920_alignments.done",   # test bowtie_meta.smk
-        "refseq_rep/probabilities/SRR054920/SRR054920_posterior_probabilities.csv", #test metagenomics.smk - probabilities
-        "refseq_rep/probabilities/SRR054920/SRR054920_posterior_abundance.tsv" #test metagenomics.smk - abundances
+        "fastq_inputs/SE/SRR054920_adRm.fastq.gz",  # test data_preprocessing.smk for ancient SE
+        "refseq_rep/bowtie/refseq_rep_refseq_prok.fasta.gz",  # test entrez_build_prok_refseq_rep.smk
+        "refseq_rep/bowtie/refseq_rep_entrez.fasta.gz",  # test entrez.smk
+        "refseq_rep/fastq/SRR054920_mapq.readlen",  # test bowtie.smk
+        "refseq_rep/sigma/SRR054920_alignments.done",  # test bowtie_meta.smk
+        "refseq_rep/probabilities/SRR054920/SRR054920_posterior_probabilities.csv",
+        #test metagenomics.smk - probabilities
+        "refseq_rep/probabilities/SRR054920/SRR054920_posterior_abundance.tsv"  #test metagenomics.smk - abundances
 
         # "refseq_rep/bowtie/refseq_rep_refseq_prok.fasta.gz", # test entrez_build_prok_refseq_rep.smk
         # "refseq_rep/bowtie/refseq_rep_entrez.fasta.gz", # test entrez.smk
@@ -62,7 +64,6 @@ rule all:
         # "refseq_rep/probabilities/RISE00/RISE00_posterior_abundance.tsv" #test metagenomics.smk - abundances
         # "yersinia_test/entrez_alt/sizes.txt",
 
-
         # "yersinia_test/bowtie/yersinia_test.fasta.gz",  # test entrez.smk
         # "yersinia_test/fastq/RISE00_mapq.readlen",      # test bowtie.smk
         # "yersinia_test/sigma/RISE00_alignments.done",   # test bowtie_meta.smk
@@ -70,5 +71,3 @@ rule all:
         # "yersinia_test/probabilities/RISE00/RISE00_posterior_abundance.tsv" #test metagenomics.smk - abundances
 
 print(datetime.now() - startTime)
-
-

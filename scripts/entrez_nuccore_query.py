@@ -74,8 +74,8 @@ def entrez_nuccore_query(input_file, config, query_chunk_num, output_file, attem
 
         while True:
             handle = Entrez.esearch(db=ENTREZ_DB_NUCCORE, term=entrez_query, retmax=retmax, idtype="acc",
-                                    usehistory='y', retstart=retmax * counter, rettype=ENTREZ_RETTYPE_GB,
-                                    retmode=ENTREZ_RETMODE_XML)
+                usehistory='y', retstart=retmax * counter, rettype=ENTREZ_RETTYPE_GB,
+                retmode=ENTREZ_RETMODE_XML)
 
             handle_reader = Entrez.read(handle)
             accessions = handle_reader['IdList']
@@ -91,7 +91,7 @@ def entrez_nuccore_query(input_file, config, query_chunk_num, output_file, attem
                 # stop iterating when we get an empty resultset
                 if dictwriter_counter == total_records:
                     print("A total of {} records have been saved successfully.\n".format(total_records),
-                          file=sys.stderr)
+                        file=sys.stderr)
                 else:
                     raise RuntimeError("A total of {} records have been saved successfully. Please check the relevant "
                                        "log file to see which ones failed.\n".format(total_records))

@@ -16,8 +16,6 @@ checkpoint entrez_find_accessions:
     script:
         "../scripts/entrez_find_accessions.py"
 
-
-
 rule entrez_nuccore_query:
     input:
         "{query}/entrez/{query}-accessions.tsv"
@@ -31,14 +29,13 @@ rule entrez_nuccore_query:
         "../scripts/entrez_nuccore_query.py"
 
 
-
 # noinspection PyUnresolvedReferences
 def get_nuccore_chunks(wildcards):
     """
     Get all the accession chunks for the {query}-nuccore.tsv file.
     """
 
-    chunk_size = 20 # todo Is this acceptable way to chunk the query based on chunk size ? Feel like I can do it better
+    chunk_size = 20  # todo Is this acceptable way to chunk the query based on chunk size ? Feel like I can do it better
     pick_accessions = checkpoints.entrez_find_accessions.get(query=wildcards.query)
     sequences = pd.read_csv(pick_accessions.output[0], sep='\t')
 
@@ -46,16 +43,15 @@ def get_nuccore_chunks(wildcards):
         raise RuntimeError("The entrez find accessions file is empty.")
 
     if len(sequences) % chunk_size == 0:
-        tot_chunks = len(sequences)/float(chunk_size)
+        tot_chunks = len(sequences) / float(chunk_size)
     else:
-        tot_chunks = (len(sequences)//float(chunk_size)) + 1
+        tot_chunks = (len(sequences) // float(chunk_size)) + 1
 
     inputs = []
     for chunk_num in range(int(tot_chunks)):
         inputs.append("{query}/entrez/{query}_{chunk}-nuccore.tsv".format(query=wildcards.query, chunk=chunk_num))
 
     return inputs
-
 
 
 rule entrez_aggregate_nuccore:
@@ -70,8 +66,6 @@ rule entrez_aggregate_nuccore:
     shell:
         "awk 'FNR>1 || NR==1' {input} 1> {output} 2> {log}"
 
-
-
 rule entrez_taxa_query:
     input:
         "{query}/entrez/{query}-nuccore.tsv"
@@ -84,22 +78,18 @@ rule entrez_taxa_query:
     script:
         "../scripts/entrez_taxonomy_query.py"
 
-
-
 checkpoint entrez_pick_sequences:
     input:
-         "{query}/entrez/{query}-nuccore.tsv",
-         "{query}/entrez/{query}-taxa.tsv"
+        "{query}/entrez/{query}-nuccore.tsv",
+        "{query}/entrez/{query}-taxa.tsv"
     output:
-         "{query}/entrez/{query}-selected-seqs.tsv"
+        "{query}/entrez/{query}-selected-seqs.tsv"
     log:
-         "{query}/entrez/{query}-selected-seqs.log"
+        "{query}/entrez/{query}-selected-seqs.log"
     benchmark:
         repeat("benchmarks/entrez_pick_sequences_{query}.benchmark.txt", 3)
     script:
         "../scripts/entrez_pick_sequences.py"
-
-
 
 rule entrez_download_sequence:
     output:
@@ -111,8 +101,7 @@ rule entrez_download_sequence:
     params:
         assembly=False
     script:
-         "../scripts/entrez_download_sequence.py"
-
+        "../scripts/entrez_download_sequence.py"
 
 
 # noinspection PyUnresolvedReferences
@@ -135,15 +124,14 @@ def get_fasta_sequences(wildcards):
     return inputs
 
 
-
 rule entrez_multifasta:
     input:
-         get_fasta_sequences
+        get_fasta_sequences
     log:
-         "{query}/bowtie/{query}.log"
+        "{query}/bowtie/{query}.log"
     output:
-         "{query}/bowtie/{query}_entrez.fasta.gz"
+        "{query}/bowtie/{query}_entrez.fasta.gz"
     benchmark:
         repeat("benchmarks/entrez_multifasta_{query}.benchmark.txt", 3)
     shell:
-         "cat {input} > {output}"
+        "cat {input} > {output}"

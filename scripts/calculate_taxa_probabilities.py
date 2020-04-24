@@ -24,8 +24,8 @@ def calculate_taxa_probabilities(ts_tv_matrix_file, params_file, sample_name, to
 
     print('all taxa', '\t', sample_name, file=sys.stderr)
 
-    calculate_probabilities(ts_tv_matrix_file, params_file, sample_name, total_sample_fastq_reads,
-                            outputfile, submatrix='all taxa')
+    calculate_probabilities(ts_tv_matrix_file, params_file, sample_name, total_sample_fastq_reads, outputfile,
+        submatrix='all taxa')
 
     # 83) todo fix that - with Alberto , can I parallelise this step ? I'm possibly deleting it
 
@@ -61,7 +61,6 @@ def calculate_taxa_probabilities(ts_tv_matrix_file, params_file, sample_name, to
 
 def calculate_probabilities(ts_tv_matrix_file, params_file, sample_name,
                             total_sample_fastq_reads, outputfile, submatrix):
-
     total_fastq_reads = float(open(total_sample_fastq_reads, 'r').read())
 
     read_count = len(pd.read_csv(ts_tv_matrix_file, sep=',', usecols=['Read_ID'])['Read_ID'].unique())
