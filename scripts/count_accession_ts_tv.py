@@ -73,12 +73,13 @@ def count_ts_tv_init(bam_file, output_file, taxon, pairs=False):
             for read1, read2 in read_pair_generator(bam):
                 ts, tv = 0, 0
 
-                if base_call1.upper() == 'N' or base_ref1.upper() == 'N' or \
-                        base_call2.upper() == 'N' or base_ref2.upper() == 'N' :
-                    continue
-
                 for base_call1, base_ref1, base_call2, base_ref2 in \
                         zip(read1.seq, read1.get_reference_sequence(), read2.seq, read2.get_reference_sequence()):
+
+                    if base_call1.upper() == 'N' or base_ref1.upper() == 'N' or \
+                            base_call2.upper() == 'N' or base_ref2.upper() == 'N':
+                        continue
+                        
                     if base_call1 != base_ref1:
                         if mutation_type([base_call1, base_ref1]) == 'ts':
                             ts += 1
