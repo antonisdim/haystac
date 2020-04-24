@@ -7,8 +7,8 @@ SUBSAMPLE_FIXED_READS = 200000
 WITH_REFSEQ_REP = True
 SRA_LOOKUP = True
 PE_ANCIENT = False
-PE_MODERN = False
-SE = True
+PE_MODERN = True
+SE = False
 
 
 ##### Target rules #####
@@ -20,6 +20,7 @@ def filtering_bowtie_aln_inputs(wildcards):
                 "{query}/bowtie/{query}_refseq_prok.fasta.gz".format(query=wildcards.query)]
     else:
         return ["{query}/bowtie/{query}_entrez.fasta.gz".format(query=wildcards.query)]
+
 
 
 rule bowtie_index:
@@ -39,6 +40,7 @@ rule bowtie_index:
                   "{wildcards.query}/bowtie/{wildcards.query} &> {log}")
         else:
             shell("bowtie2-build --large-index {input} {wildcards.query}/bowtie/{wildcards.query} &> {log}")
+
 
 
 def get_inputs_for_bowtie_r1(wildcards):
@@ -61,6 +63,7 @@ def get_inputs_for_bowtie_r1(wildcards):
             return config['samples'][wildcards.sample]
 
 
+
 def get_inputs_for_bowtie_r2(wildcards):
     if SRA_LOOKUP:
         if PE_MODERN:
@@ -73,6 +76,7 @@ def get_inputs_for_bowtie_r2(wildcards):
             return config['samples'][wildcards.sample]['R2']
         else:
             return ""
+
 
 
 rule bowtie_alignment:
@@ -93,6 +97,8 @@ rule bowtie_alignment:
         "( bowtie2 -q --very-fast-local --threads {threads} -x {params.index} -U {input.fastq} "
         "| samtools sort -O bam -o {output.bam_file} ) 2> {log}"
 
+
+
 rule bowtie_alignment_paired_end:
     input:
         fastq_r1=get_inputs_for_bowtie_r1,
@@ -112,6 +118,8 @@ rule bowtie_alignment_paired_end:
         "( bowtie2 -q --very-fast-local --threads {threads} -x {params.index} -1 {input.fastq_r1} -2 {input.fastq_r2} "
         "| samtools sort -O bam -o {output.bam_file} ) 2> {log}"
 
+
+
 # todo this needs to be implemented differently in the pipeline
 rule dedup_merged:
     input:
@@ -127,6 +135,8 @@ rule dedup_merged:
     shell:
         "dedup --merged --input {input} --output {params.output} &> {log}"
 
+
+
 rule extract_fastq_single_end:
     input:
         "{query}/bam/SE_{sample}_sorted.bam"
@@ -139,8 +149,9 @@ rule extract_fastq_single_end:
     params:
         min_mapq=config['min_mapq']
     shell:
-        "( samtools view -h -F 4 {input} "
-        "| samtools fastq -c 6 - > {output} ) 2> {log}"
+        "( samtools view -h -F 4 {input} | samtools fastq -c 6 - > {output} ) 2> {log}"
+
+
 
 rule extract_fastq_paired_end:
     input:
@@ -158,6 +169,12 @@ rule extract_fastq_paired_end:
         "( samtools view -h -F 4 {input} "
         "| samtools fastq -c 6 -1 {output[0]} -2 {output[1]} -0 /dev/null -s /dev/null - ) 2> {log}"
 
+
+
+ruleorder: extract_fastq_paired_end > extract_fastq_single_end
+
+
+
 rule average_fastq_read_len_single_end:
     input:
         "{query}/fastq/{sample}_mapq.fastq.gz"
@@ -172,6 +189,8 @@ rule average_fastq_read_len_single_end:
     shell:
         "seqtk sample {input} {params.sample_size} | seqtk seq -A | grep -v '^>' | "
         "awk '{{count++; bases += length}} END{{print bases/count}}' 1> {output} 2> {log}"
+
+
 
 rule average_fastq_read_len_paired_end:
     input:

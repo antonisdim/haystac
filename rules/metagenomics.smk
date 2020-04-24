@@ -4,8 +4,8 @@
 WITH_REFSEQ_REP = True
 SRA_LOOKUP = True
 PE_ANCIENT = False
-PE_MODERN = False
-SE = True
+PE_MODERN = True
+SE = False
 
 
 ##### Target rules #####

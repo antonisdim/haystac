@@ -30,14 +30,14 @@ from datetime import datetime
 startTime = datetime.now()
 rule all:
     input:
-        # "fastq_inputs/PE_mod/SRR1031215_R1_adRm.fastq.gz",  # test data_preprocessing.smk for merged ancient PE
-        # "refseq_rep/bowtie/refseq_rep_refseq_prok.fasta.gz", # test entrez_build_prok_refseq_rep.smk
-        # "refseq_rep/bowtie/refseq_rep_entrez.fasta.gz", # test entrez.smk,
-        # "refseq_rep/fastq/SRR1031215_mapq_pair.readlen", # test bowtie.smk
-        # "refseq_rep/sigma/SRR1031215_alignments.done",   # test bowtie_meta.smk
-        # "refseq_rep/ts_tv_counts/SRR1031215/all_ts_tv_counts.csv",
-        # "refseq_rep/probabilities/SRR1031215/SRR1031215_posterior_probabilities.csv", #test metagenomics.smk - probabilities
-        # "refseq_rep/probabilities/SRR1031215/SRR1031215_posterior_abundance.tsv"
+        "fastq_inputs/PE_mod/SRR1031215_R1_adRm.fastq.gz",  # test data_preprocessing.smk for merged ancient PE
+        "refseq_rep/bowtie/refseq_rep_refseq_prok.fasta.gz", # test entrez_build_prok_refseq_rep.smk
+        "refseq_rep/bowtie/refseq_rep_entrez.fasta.gz", # test entrez.smk,
+        "refseq_rep/fastq/SRR1031215_mapq_pair.readlen", # test bowtie.smk
+        "refseq_rep/sigma/SRR1031215_alignments.done",   # test bowtie_meta.smk
+        "refseq_rep/ts_tv_counts/SRR1031215/all_ts_tv_counts.csv",
+        "refseq_rep/probabilities/SRR1031215/SRR1031215_posterior_probabilities.csv", #test metagenomics.smk - probabilities
+        "refseq_rep/probabilities/SRR1031215/SRR1031215_posterior_abundance.tsv" #test metagenomics.smk - abundances
         #
         # "fastq_inputs/PE_anc/SRR1031289_adRm.fastq.gz", # test data_preprocessing.smk for merged ancient PE
         # "refseq_rep/bowtie/refseq_rep_refseq_prok.fasta.gz", # test entrez_build_prok_refseq_rep.smk
@@ -47,14 +47,14 @@ rule all:
         # "refseq_rep/probabilities/SRR1031289/SRR1031289_posterior_probabilities.csv", #test metagenomics.smk - probabilities
         # "refseq_rep/probabilities/SRR1031289/SRR1031289_posterior_abundance.tsv" #test metagenomics.smk - abundances
         #
-        "fastq_inputs/SE/SRR054920_adRm.fastq.gz",  # test data_preprocessing.smk for ancient SE
-        "refseq_rep/bowtie/refseq_rep_refseq_prok.fasta.gz",  # test entrez_build_prok_refseq_rep.smk
-        "refseq_rep/bowtie/refseq_rep_entrez.fasta.gz",  # test entrez.smk
-        "refseq_rep/fastq/SRR054920_mapq.readlen",  # test bowtie.smk
-        "refseq_rep/sigma/SRR054920_alignments.done",  # test bowtie_meta.smk
-        "refseq_rep/probabilities/SRR054920/SRR054920_posterior_probabilities.csv",
-        #test metagenomics.smk - probabilities
-        "refseq_rep/probabilities/SRR054920/SRR054920_posterior_abundance.tsv"  #test metagenomics.smk - abundances
+        # "fastq_inputs/SE/SRR054920_adRm.fastq.gz",  # test data_preprocessing.smk for ancient SE
+        # "refseq_rep/bowtie/refseq_rep_refseq_prok.fasta.gz",  # test entrez_build_prok_refseq_rep.smk
+        # "refseq_rep/bowtie/refseq_rep_entrez.fasta.gz",  # test entrez.smk
+        # "refseq_rep/fastq/SRR054920_mapq.readlen",  # test bowtie.smk
+        # "refseq_rep/sigma/SRR054920_alignments.done",  # test bowtie_meta.smk
+        # "refseq_rep/probabilities/SRR054920/SRR054920_posterior_probabilities.csv",
+        # #test metagenomics.smk - probabilities
+        # "refseq_rep/probabilities/SRR054920/SRR054920_posterior_abundance.tsv"  #test metagenomics.smk - abundances
 
         # "refseq_rep/bowtie/refseq_rep_refseq_prok.fasta.gz", # test entrez_build_prok_refseq_rep.smk
         # "refseq_rep/bowtie/refseq_rep_entrez.fasta.gz", # test entrez.smk
