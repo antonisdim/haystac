@@ -2,6 +2,11 @@
 # -*- coding: utf-8 -*-
 
 WITH_REFSEQ_REP = True
+SRA_LOOKUP = True
+PE_ANCIENT = False
+PE_MODERN = False
+SE = True
+
 
 ##### Target rules #####
 
@@ -11,9 +16,9 @@ def get_inputs_for_bowtie_r1(wildcards):
 
     if SRA_LOOKUP:
         if PE_MODERN:
-            return "fastq_inputs/PE/{sample}_R1_adRm.fastq.gz".format(sample=wildcards.sample)
+            return "fastq_inputs/PE_mod/{sample}_R1_adRm.fastq.gz".format(sample=wildcards.sample)
         elif PE_ANCIENT:
-            return "fastq_inputs/PE/{sample}_adRm.fastq.gz".format(sample=wildcards.sample)
+            return "fastq_inputs/PE_anc/{sample}_adRm.fastq.gz".format(sample=wildcards.sample)
         elif SE:
             return "fastq_inputs/SE/{sample}_adRm.fastq.gz".format(sample=wildcards.sample)
 
@@ -27,7 +32,6 @@ def get_inputs_for_bowtie_r1(wildcards):
 
 
 
-# todo add the read count for paired end with ruleorder
 rule count_fastq_length:
     input:
          fastq=get_inputs_for_bowtie_r1
@@ -51,6 +55,8 @@ rule count_accession_ts_tv:
         "{query}/ts_tv_counts/{sample}/{orgname}_count_{accession}.log"
     benchmark:
         repeat("benchmarks/count_accession_ts_tv_{query}_{sample}_{orgname}_{accession}.benchmark.txt", 3)
+    params:
+        pairs=PE_MODERN
     script:
           "../scripts/count_accession_ts_tv.py"
 
@@ -105,10 +111,19 @@ rule initial_ts_tv:
 
 
 
+def get_right_readlen(wildcards):
+
+    if PE_MODERN:
+        return "{query}/fastq/{sample}_mapq_pair.readlen".format(query=wildcards.query, sample=wildcards.sample)
+    else:
+        return "{query}/fastq/{sample}_mapq.readlen".format(query=wildcards.query, sample=wildcards.sample)
+
+
+
 rule calculate_likelihoods:
     input:
         "{query}/ts_tv_counts/{sample}/all_ts_tv_counts.csv",
-        "{query}/fastq/{sample}_mapq.readlen",
+        get_right_readlen,
         "{query}/entrez/{query}-selected-seqs.tsv"
     output:
         "{query}/probabilities/{sample}/{sample}_likelihood_ts_tv_matrix.csv",

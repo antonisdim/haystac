@@ -70,6 +70,7 @@ ruleorder: get_sra_fastq_pe > get_sra_fastq_se
 ruleorder: compress_sra_fastq_pe > compress_sra_fastq_se
 
 
+
 def get_inputs_for_adapterremoval_r1(wildcards):
     print(wildcards.accession)
 
@@ -86,15 +87,20 @@ def get_inputs_for_adapterremoval_r1(wildcards):
             return config['samples'][wildcards.accession]
 
 
+
 def get_inputs_for_adapterremoval_r2(wildcards):
 
     if SRA_LOOKUP:
         if PE_ANCIENT or PE_MODERN:
             return "sra_data/PE/{accession}_R2.fastq.gz".format(accession=wildcards.accession)
+        else:
+            return ""
 
     else:
         if PE_ANCIENT or PE_MODERN:
             return config['samples'][wildcards.accession]['R2']
+        else:
+            return ""
 
 
 
@@ -118,15 +124,15 @@ rule adapterremoval_paired_end_ancient:
         fastq_r1=get_inputs_for_adapterremoval_r1,
         fastq_r2=get_inputs_for_adapterremoval_r2
     log:
-        "fastq_inputs/PE/{accession}_adRm.log"
+        "fastq_inputs/PE_anc/{accession}_adRm.log"
     output:
-        "fastq_inputs/PE/{accession}_adRm.fastq.gz"
+        "fastq_inputs/PE_anc/{accession}_adRm.fastq.gz"
     benchmark:
         repeat("benchmarks/adapterremoval_paired_end_ancient_{accession}.benchmark.txt", 3)
     shell:
         "AdapterRemoval --file1 {input.fastq_r1}  --file2 {input.fastq_r2} "
-        "--basename fastq_inputs/PE/{wildcards.accession} --gzip --collapse-deterministic  --minlength 15 "
-        "--trimns; cat fastq_inputs/PE/{wildcards.accession}*collapsed* 1> {output} 2> {log}"
+        "--basename fastq_inputs/PE_anc/{wildcards.accession} --gzip --collapse-deterministic  --minlength 15 "
+        "--trimns; cat fastq_inputs/PE_anc/{wildcards.accession}*collapsed* 1> {output} 2> {log}"
 
 
 
@@ -137,23 +143,18 @@ rule adapterremoval_paired_end_modern:
     log:
         "fastq_inputs/PE/{accession}_adRm.log"
     output:
-        fastq_r1="fastq_inputs/PE/{accession}_R1_adRm.fastq.gz",
-        fastq_r2="fastq_inputs/PE/{accession}_R2_adRm.fastq.gz"
+        fastq_r1="fastq_inputs/PE_mod/{accession}_R1_adRm.fastq.gz",
+        fastq_r2="fastq_inputs/PE_mod/{accession}_R2_adRm.fastq.gz"
     benchmark:
         repeat("benchmarks/adapterremoval_paired_end_modern_{accession}.benchmark.txt", 3)
     shell:
         "AdapterRemoval --file1 {input.fastq_r1}  --file2 {input.fastq_r2} "
-        "--basename fastq_inputs/PE/{wildcards.accession} --gzip --minlength 15 --trimns; "
-        "cat fastq_inputs/PE/{wildcards.accession}*pair1* 1> {output.fastq_r1} 2> {log}; "
-        "cat fastq_inputs/PE/{wildcards.accession}*pair2* 1> {output.fastq_r2} 2> {log}"
+        "--basename fastq_inputs/PE_mod/{wildcards.accession} --gzip --minlength 15 --trimns; "
+        "cat fastq_inputs/PE_mod/{wildcards.accession}*pair1* 1> {output.fastq_r1} 2> {log}; "
+        "cat fastq_inputs/PE_mod/{wildcards.accession}*pair2* 1> {output.fastq_r2} 2> {log}"
 
 
 
 ruleorder: adapterremoval_paired_end_modern > adapterremoval_paired_end_ancient
 
 
-# # rule choose_inputs:
-#
-#     # todo input function in the bowtie.smk file with ifs for the returns - include the pair1 alignment options,
-#     #  constant static for any type of input, check paths or whether it is the config and then decide.
-#     #  Do that for adapter removal and bowtie.smk alignments
