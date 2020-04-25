@@ -2,10 +2,10 @@
 # -*- coding: utf-8 -*-
 
 
-SRA_LOOKUP = True
-PE_ANCIENT = False
-PE_MODERN = True
-SE = False
+SRA_LOOKUP = config['SRA_LOOKUP']
+PE_ANCIENT = config['PE_ANCIENT']
+PE_MODERN = config['PE_MODERN']
+SE = config['SE']
 
 ##### Target rules #####
 
@@ -21,6 +21,8 @@ rule get_sra_fastq_se:
     wrapper:
         "0.51.2/bio/sra-tools/fasterq-dump"
 
+
+
 rule get_sra_fastq_pe:
     output:
         # the wildcard name must be accession, pointing to an SRA number
@@ -35,6 +37,8 @@ rule get_sra_fastq_pe:
     wrapper:
         "0.51.2/bio/sra-tools/fasterq-dump"
 
+
+
 rule compress_sra_fastq_se:
     input:
         "sra_data/SE/{accession}.fastq"
@@ -44,6 +48,8 @@ rule compress_sra_fastq_se:
         "sra_data/SE/{accession}.fastq.gz"
     shell:
         "gzip -c {input} 1> {output} 2> {log}"
+
+
 
 rule compress_sra_fastq_pe:
     input:
@@ -57,8 +63,8 @@ rule compress_sra_fastq_pe:
     shell:
         "gzip -c {input.r1} 1> {output.r1} 2> {log}; gzip -c {input.r2} 1> {output.r2} 2> {log}"
 
-ruleorder: get_sra_fastq_pe > get_sra_fastq_se
-ruleorder: compress_sra_fastq_pe > compress_sra_fastq_se
+# ruleorder: get_sra_fastq_pe > get_sra_fastq_se
+# ruleorder: compress_sra_fastq_pe > compress_sra_fastq_se
 
 
 def get_inputs_for_adapterremoval_r1(wildcards):
@@ -104,6 +110,8 @@ rule adapterremoval_single_end:
         "AdapterRemoval --file1 {input} --basename fastq_inputs/SE/{wildcards.accession} --gzip --minlength 15 "
         "--trimns; cat fastq_inputs/SE/{wildcards.accession}*truncated* 1> {output} 2> {log}"
 
+
+
 rule adapterremoval_paired_end_ancient:
     input:
         fastq_r1=get_inputs_for_adapterremoval_r1,
@@ -118,6 +126,8 @@ rule adapterremoval_paired_end_ancient:
         "AdapterRemoval --file1 {input.fastq_r1}  --file2 {input.fastq_r2} "
         "--basename fastq_inputs/PE_anc/{wildcards.accession} --gzip --collapse-deterministic  --minlength 15 "
         "--trimns; cat fastq_inputs/PE_anc/{wildcards.accession}*collapsed* 1> {output} 2> {log}"
+
+
 
 rule adapterremoval_paired_end_modern:
     input:
@@ -136,4 +146,4 @@ rule adapterremoval_paired_end_modern:
         "cat fastq_inputs/PE_mod/{wildcards.accession}*pair1* 1> {output.fastq_r1} 2> {log}; "
         "cat fastq_inputs/PE_mod/{wildcards.accession}*pair2* 1> {output.fastq_r2} 2> {log}"
 
-ruleorder: adapterremoval_paired_end_modern > adapterremoval_paired_end_ancient
+# ruleorder: adapterremoval_paired_end_modern > adapterremoval_paired_end_ancient

@@ -41,3 +41,15 @@ sequencing:
 
 bowtie2_treads:
   1
+
+SRA_LOOKUP:
+  True
+PE_ANCIENT:
+  False
+PE_MODERN:
+  True
+SE:
+  False
+
+SPECIFIC_GENUS:
+  ['Yersinia']

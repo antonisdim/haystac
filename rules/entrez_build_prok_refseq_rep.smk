@@ -168,7 +168,8 @@ rule entrez_refseq_prok_multifasta:
     shell:
         "cat {input.assemblies} {input.refseq} > {output}"
 
-        # todo check the refseq rep files if they're empty
 
-        # todo add a rule that specifies specific genera for analysis -
-        #  static constant list that has the genera and check as a set in the input functions
+
+
+# todo check the refseq rep files if they're empty
+

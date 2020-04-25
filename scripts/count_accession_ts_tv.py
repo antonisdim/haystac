@@ -42,7 +42,7 @@ def mutation_type(alleles):
     Is this mutation a transition (A <-> G and C <-> T) or a transversion (everything else).
     """
     alleles = set([a.upper() for a in alleles])
-    assert len(alleles) == 2 and alleles.issubset({'A', 'C', 'G', 'T'})
+    assert len(alleles) == 2 and alleles.issubset({'A', 'C', 'G', 'T', 'N'})
     return 'ts' if alleles in [{'A', 'G'}, {'C', 'T'}] else 'tv'
 
 
@@ -55,6 +55,8 @@ def count_ts_tv_init(bam_file, output_file, taxon, pairs=False):
             ts, tv = 0, 0
 
             if not read.is_proper_pair:
+
+                # todo add max mismatches for pe mod when it's orphan
 
                 for base_call, base_ref in zip(read.seq, read.get_reference_sequence()):
                     if base_call.upper() == 'N' or base_ref.upper() == 'N':
@@ -79,7 +81,7 @@ def count_ts_tv_init(bam_file, output_file, taxon, pairs=False):
                     if base_call1.upper() == 'N' or base_ref1.upper() == 'N' or \
                             base_call2.upper() == 'N' or base_ref2.upper() == 'N':
                         continue
-                        
+
                     if base_call1 != base_ref1:
                         if mutation_type([base_call1, base_ref1]) == 'ts':
                             ts += 1

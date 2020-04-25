@@ -33,9 +33,9 @@ def get_min_score(wildcards, input):
 
 rule align_taxon_single_end:
     input:
-        fastq="{query}/fastq/{sample}_mapq.fastq.gz",
+        fastq="{query}/fastq/SE/{sample}_mapq.fastq.gz",
         bt2idx="database/{orgname}/{accession}.1.bt2l",
-        readlen="{query}/fastq/{sample}_mapq.readlen"
+        readlen="{query}/fastq/SE/{sample}_mapq.readlen"
     log:
         "{query}/sigma/{sample}/{orgname}/{accession}.log"
     output:
@@ -58,12 +58,14 @@ rule align_taxon_single_end:
         "| samtools sort -O bam -o {output.bam_file} ) 2> {log} "
         "; samtools index {output.bam_file}"
 
+
+
 rule align_taxon_paired_end:
     input:
-        fastq_r1="{query}/fastq/{sample}_R1_mapq.fastq.gz",
-        fastq_r2="{query}/fastq/{sample}_R2_mapq.fastq.gz",
+        fastq_r1="{query}/fastq/PE/{sample}_R1_mapq.fastq.gz",
+        fastq_r2="{query}/fastq/PE/{sample}_R2_mapq.fastq.gz",
         bt2idx="database/{orgname}/{accession}.1.bt2l",
-        readlen="{query}/fastq/{sample}_mapq_pair.readlen"
+        readlen="{query}/fastq/PE/{sample}_mapq_pair.readlen"
     log:
         "{query}/sigma/{sample}/{orgname}/{accession}.log"
     output:
@@ -84,7 +86,8 @@ rule align_taxon_paired_end:
         "| samtools sort -O bam -o {output.bam_file} ) 2> {log} "
         "; samtools index {output.bam_file}"
 
-ruleorder: align_taxon_single_end > align_taxon_paired_end
+ruleorder:  align_taxon_paired_end > align_taxon_single_end
+
 
 
 # noinspection PyUnresolvedReferences

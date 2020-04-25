@@ -2,16 +2,17 @@
 # -*- coding: utf-8 -*-
 
 WITH_REFSEQ_REP = True
-SRA_LOOKUP = True
-PE_ANCIENT = False
-PE_MODERN = True
-SE = False
+SRA_LOOKUP = config['SRA_LOOKUP']
+PE_ANCIENT = config['PE_ANCIENT']
+PE_MODERN = config['PE_MODERN']
+SE = config['SE']
+SPECIFIC_GENUS = config['SPECIFIC_GENUS']
 
 
 ##### Target rules #####
 
 
-def get_inputs_for_bowtie_r1(wildcards):
+def get_inputs_for_count_fastq_len(wildcards):
     if SRA_LOOKUP:
         if PE_MODERN:
             return "fastq_inputs/PE_mod/{sample}_R1_adRm.fastq.gz".format(sample=wildcards.sample)
@@ -31,7 +32,7 @@ def get_inputs_for_bowtie_r1(wildcards):
 
 rule count_fastq_length:
     input:
-        fastq=get_inputs_for_bowtie_r1
+        fastq=get_inputs_for_count_fastq_len
     log:
         "fastq_inputs/meta/{sample}.log"
     output:
@@ -40,6 +41,8 @@ rule count_fastq_length:
         repeat("benchmarks/count_fastq_length_{sample}.benchmark.txt", 3)
     shell:
         "seqtk seq -A {input.fastq} | grep -v '^>' | wc -l 1> {output} 2> {log}"
+
+
 
 rule count_accession_ts_tv:
     input:
@@ -81,6 +84,9 @@ def get_ts_tv_count_paths(wildcards):
 
     inputs = []
 
+    if SPECIFIC_GENUS:
+        sequences = sequences[sequences['species'].str.contains( "|".join(SPECIFIC_GENUS))]
+
     for key, seq in sequences.iterrows():
         orgname, accession = seq['species'].replace(" ", "_"), seq['GBSeq_accession-version']
 
@@ -105,16 +111,16 @@ rule initial_ts_tv:
 
 def get_right_readlen(wildcards):
     if PE_MODERN:
-        return "{query}/fastq/{sample}_mapq_pair.readlen".format(query=wildcards.query, sample=wildcards.sample)
+        return "{query}/fastq/PE/{sample}_mapq_pair.readlen".format(query=wildcards.query, sample=wildcards.sample)
     else:
-        return "{query}/fastq/{sample}_mapq.readlen".format(query=wildcards.query, sample=wildcards.sample)
+        return "{query}/fastq/SE/{sample}_mapq.readlen".format(query=wildcards.query, sample=wildcards.sample)
 
 
 rule calculate_likelihoods:
     input:
         "{query}/ts_tv_counts/{sample}/all_ts_tv_counts.csv",
         get_right_readlen,
-        "{query}/entrez/{query}-selected-seqs.tsv"
+        get_ts_tv_count_paths
     output:
         "{query}/probabilities/{sample}/{sample}_likelihood_ts_tv_matrix.csv",
         "{query}/probabilities/{sample}/{sample}_probability_model_params.json"
@@ -124,6 +130,8 @@ rule calculate_likelihoods:
         repeat("benchmarks/calculate_likelihoods_{query}_{sample}.benchmark.txt", 1)
     script:
         "../scripts/calculate_likelihoods.py"  #todo ask Evan to check if they are the same with the SQL commands
+
+
 
 rule calculate_taxa_probabilities:
     input:
@@ -141,6 +149,8 @@ rule calculate_taxa_probabilities:
     script:
         "../scripts/calculate_taxa_probabilities.py"
 
+
+
 rule fasta_idx:
     input:
         "database/{orgname}/{accession}.fasta.gz"
@@ -152,6 +162,8 @@ rule fasta_idx:
         repeat("benchmarks/fasta_idx_{orgname}_{accession}.benchmark.txt", 3)
     shell:
         "samtools faidx {input} 2> {log}"
+
+
 
 rule coverage_t_test:
     input:
@@ -165,6 +177,7 @@ rule coverage_t_test:
         repeat("benchmarks/coverage_t_test_{query}_{sample}_{orgname}_{accession}.benchmark.txt", 1)
     script:
         "../scripts/coverage_t_test.py"
+
 
 
 # noinspection PyUnresolvedReferences
@@ -192,6 +205,9 @@ def get_t_test_values_paths(wildcards):
 
     inputs = []
 
+    if SPECIFIC_GENUS:
+        sequences = sequences[sequences['species'].str.contains( "|".join(SPECIFIC_GENUS))]
+
     for key, seq in sequences.iterrows():
         orgname, accession = seq['species'].replace(" ", "_"), seq['GBSeq_accession-version']
 
@@ -212,6 +228,8 @@ rule cat_pvalues:
         repeat("benchmarks/cat_pvalues_{query}_{sample}.benchmark.txt", 3)
     shell:
         "cat {input} 1> {output} 2> {log}"
+
+
 
 rule calculate_dirichlet_abundances:
     input:

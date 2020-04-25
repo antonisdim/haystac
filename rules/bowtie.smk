@@ -5,10 +5,10 @@ from multiprocessing import cpu_count
 
 SUBSAMPLE_FIXED_READS = 200000
 WITH_REFSEQ_REP = True
-SRA_LOOKUP = True
-PE_ANCIENT = False
-PE_MODERN = True
-SE = False
+SRA_LOOKUP = config['SRA_LOOKUP']
+PE_ANCIENT = config['PE_ANCIENT']
+PE_MODERN = config['PE_MODERN']
+SE = config['SE']
 
 
 ##### Target rules #####
@@ -143,7 +143,7 @@ rule extract_fastq_single_end:
     log:
         "{query}/fastq/{sample}_mapq.log"
     output:
-        "{query}/fastq/{sample}_mapq.fastq.gz"
+        "{query}/fastq/SE/{sample}_mapq.fastq.gz"
     benchmark:
         repeat("benchmarks/extract_fastq_single_end_{query}_{sample}.benchmark.txt", 3)
     params:
@@ -159,8 +159,8 @@ rule extract_fastq_paired_end:
     log:
         "{query}/fastq/{sample}_mapq.log"
     output:
-        "{query}/fastq/{sample}_R1_mapq.fastq.gz",
-        "{query}/fastq/{sample}_R2_mapq.fastq.gz"
+        "{query}/fastq/PE/{sample}_R1_mapq.fastq.gz",
+        "{query}/fastq/PE/{sample}_R2_mapq.fastq.gz"
     benchmark:
         repeat("benchmarks/extract_fastq_paired_end_{query}_{sample}.benchmark.txt", 3)
     params:
@@ -171,17 +171,17 @@ rule extract_fastq_paired_end:
 
 
 
-ruleorder: extract_fastq_paired_end > extract_fastq_single_end
+# ruleorder: extract_fastq_paired_end > extract_fastq_single_end
 
 
 
 rule average_fastq_read_len_single_end:
     input:
-        "{query}/fastq/{sample}_mapq.fastq.gz"
+        "{query}/fastq/SE/{sample}_mapq.fastq.gz"
     log:
-        "{query}/fastq/{sample}_mapq_readlen.log"
+        "{query}/fastq/SE/{sample}_mapq_readlen.log"
     output:
-        "{query}/fastq/{sample}_mapq.readlen"
+        "{query}/fastq/SE/{sample}_mapq.readlen"
     benchmark:
         repeat("benchmarks/average_fastq_read_len_single_end_{query}_{sample}.benchmark.txt", 3)
     params:
@@ -194,14 +194,14 @@ rule average_fastq_read_len_single_end:
 
 rule average_fastq_read_len_paired_end:
     input:
-        mate1="{query}/fastq/{sample}_R1_mapq.fastq.gz",
-        mate2="{query}/fastq/{sample}_R2_mapq.fastq.gz"
+        mate1="{query}/fastq/PE/{sample}_R1_mapq.fastq.gz",
+        mate2="{query}/fastq/PE/{sample}_R2_mapq.fastq.gz"
     log:
-        "{query}/fastq/{sample}_mapq_readlen.log"
+        "{query}/fastq/PE/{sample}_mapq_readlen.log"
     output:
         mate1=temp("{query}/fastq/{sample}_R1_mapq.readlen"),
         mate2=temp("{query}/fastq/{sample}_R2_mapq.readlen"),
-        pair="{query}/fastq/{sample}_mapq_pair.readlen"
+        pair="{query}/fastq/PE/{sample}_mapq_pair.readlen"
     benchmark:
         repeat("benchmarks/average_fastq_read_len_paired_end_{query}_{sample}.benchmark.txt", 3)
     params:

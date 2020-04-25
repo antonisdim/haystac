@@ -9,14 +9,14 @@ import numpy as np
 import pandas as pd
 
 
-def calculate_likelihoods(ts_tv_file, readlen_file, taxa_file, config, output_matrix, output_params):
+def calculate_likelihoods(ts_tv_file, readlen_file, taxa_file_paths, config, output_matrix, output_params):
     """
     Calculate the parameters for the analytical framework of the method, then the likelihoods for each read/taxon pair
     and perform the dirichlet distribution assignment.
     """
     assert os.stat(ts_tv_file).st_size, "The ts_tv count file is empty {}".format(ts_tv_file)
     assert os.stat(readlen_file).st_size, "The read length is empty {}".format(readlen_file)
-    assert os.stat(taxa_file).st_size, "The taxa list is empty {}".format(taxa_file)
+    assert os.stat(taxa_file_paths).st_size, "The taxa list is empty {}".format(taxa_file_paths)
 
     print("Reading the initial Ts/Tv matrix.", file=sys.stderr)
     init_ts_tv = pd.read_csv(ts_tv_file, names=['Taxon', 'Read_ID', 'Ts', 'Tv'], sep=',')
@@ -90,11 +90,15 @@ def calculate_likelihoods(ts_tv_file, readlen_file, taxa_file, config, output_ma
     data_ts_missing = pow(delta_t, ts_missing_val)
     data_tv_missing = pow(delta_v, tv_missing_val)
 
+    # as we count max mismatches for every mate of a pair. So if a whole pair is missing we double the missing values
+    if config['PE_MODERN']:
+        data_ts_missing = 2 * data_ts_missing
+        data_tv_missing = 2 * data_tv_missing
+
     print('calculating the likelihood nominator', file=sys.stderr)
     init_ts_tv['ll_nom'] = init_ts_tv['Ts'].rpow(delta_t) * init_ts_tv['Tv'].rpow(delta_v)
 
-    total_taxa = pd.read_csv(taxa_file)
-    total_taxa_count = len(total_taxa)
+    total_taxa_count = len(taxa_file_paths)
 
     print('calculating the proper likelihood', file=sys.stderr)
     init_ts_tv['Likelihood'] = np.nan
@@ -148,7 +152,7 @@ if __name__ == '__main__':
     calculate_likelihoods(
         ts_tv_file=snakemake.input[0],
         readlen_file=snakemake.input[1],
-        taxa_file=snakemake.input[2],
+        taxa_file_paths=snakemake.input[2],
         config=snakemake.config,
         output_matrix=snakemake.output[0],
         output_params=snakemake.output[1]
