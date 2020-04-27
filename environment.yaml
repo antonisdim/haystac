@@ -15,3 +15,8 @@ dependencies:
   - wget
   - adapterremoval=2.3.1
   - sra-tools=2.9.1
+  - mapdamage2
+R:
+  - inline
+  - gam
+  - RcppGSL
