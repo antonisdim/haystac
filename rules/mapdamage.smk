@@ -19,9 +19,8 @@ rule run_mapdamage:
         "{query}/mapdamage/{sample}/{orgname}/{orgname}_{accession}.log"
     output:
         directory("{query}/mapdamage/{sample}/{orgname}_{accession}")
-    run:
-        if PE_ANCIENT or SE:
-            shell("mapDamage -i {input.bam} -r {input.ref_genome} -d {output}")
+    shell:
+        "mapDamage -i {input.bam} -r {input.ref_genome} -d {output}"
 
 
 
@@ -62,8 +61,9 @@ def get_mapdamage_out_dir_paths(wildcards):
     if PE_ANCIENT or SE:
         return inputs
     else:
-        raise RuntimeError('PE data, mapDamage cannot run with that input format. Either collapse the reads, '
-                           'use SE data or do not include that rule.')
+        return inputs
+        # raise RuntimeError('PE data, mapDamage cannot run with that input format. Either collapse the reads, '
+        #                    'use SE data or do not include that rule.')
 
 
 
@@ -74,6 +74,5 @@ rule all_mapdamage:
         "{query}/mapdamage/{sample}_mapdamage.done"
     benchmark:
         repeat("benchmarks/all_alignments_{query}_{sample}.benchmark.txt", 3)
-    run:
-        if PE_ANCIENT or SE:
-            shell("touch {output}")
+    shell:
+        "touch {output}"
