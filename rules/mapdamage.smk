@@ -16,7 +16,7 @@ rule run_mapdamage:
         bam="{query}/sigma/{sample}/{orgname}/{orgname}_{accession}.bam",
         ref_genome="database/{orgname}/{accession}.fasta.gz"
     log:
-        "{query}/mapdamage/{sample}/{orgname}/{orgname}_{accession}.log"
+        "{query}/mapdamage/{sample}/{orgname}_{accession}.log"
     output:
         directory("{query}/mapdamage/{sample}/{orgname}_{accession}")
     shell:
@@ -61,6 +61,7 @@ def get_mapdamage_out_dir_paths(wildcards):
     if PE_ANCIENT or SE:
         return inputs
     else:
+        print("WARNING: mapDamage has not been optimised to analyse paired end alignment data.")
         return inputs
         # raise RuntimeError('PE data, mapDamage cannot run with that input format. Either collapse the reads, '
         #                    'use SE data or do not include that rule.')
