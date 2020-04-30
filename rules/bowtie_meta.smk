@@ -12,7 +12,7 @@ WITH_REFSEQ_REP = config['WITH_REFSEQ_REP']
 ##### Target rules #####
 
 
-rule index_database:
+rule index_database_entrez:
     input:
         "database/{orgname}/{accession}.fasta.gz"
     log:
@@ -26,6 +26,118 @@ rule index_database:
         "bowtie2-build --large-index {input} database/{wildcards.orgname}/{wildcards.accession} &> {log}"
 
 
+
+rule index_database_refseq_genbank:
+    input:
+        "database/refseq_genbank/{orgname}/{accession}.fasta.gz"
+    log:
+        "database/refseq_genbank/{orgname}/{accession}_index.log"
+    output:
+        expand("database/refseq_genbank/{{orgname}}/{{accession}}.{n}.bt2l", n=[1, 2, 3, 4]),
+        expand("database/refseq_genbank/{{orgname}}/{{accession}}.rev.{n}.bt2l", n=[1, 2])
+    benchmark:
+        repeat("benchmarks/index_database_refseq_genbank_{orgname}_{accession}.benchmark.txt", 1)
+    shell:
+        "bowtie2-build --large-index {input} database/refseq_genbank/{wildcards.orgname}/{wildcards.accession} &> {log}"
+
+
+
+rule index_database_assemblies:
+    input:
+        "database/refseq_assembly/{orgname}/{accession}.fasta.gz"
+    log:
+        "database/refseq_assembly/{orgname}/{accession}_index.log"
+    output:
+        expand("database/refseq_assembly/{{orgname}}/{{accession}}.{n}.bt2l", n=[1, 2, 3, 4]),
+        expand("database/refseq_assembly/{{orgname}}/{{accession}}.rev.{n}.bt2l", n=[1, 2])
+    benchmark:
+        repeat("benchmarks/index_database_refseq_assembly_{orgname}_{accession}.benchmark.txt", 1)
+    shell:
+        "bowtie2-build --large-index {input} database/refseq_assembly/{wildcards.orgname}/{wildcards.accession} &> {log}"
+
+
+
+def get_idx_entrez(wildcards):
+    """
+    Get all the index paths for the taxa in our database from the entrez query.
+    """
+    pick_sequences = checkpoints.entrez_pick_sequences.get(query=wildcards.query)
+    sequences = pd.read_csv(pick_sequences.output[0], sep='\t')
+
+    if len(sequences) == 0:
+        raise RuntimeError("The entrez pick sequences file is empty.")
+
+    inputs = []
+
+    for key, seq in sequences.iterrows():
+        orgname, accession = seq['species'].replace(" ", "_"), seq['GBSeq_accession-version']
+        inputs.append("database/{orgname}/{accession}.1.bt2l".
+        format(orgname=orgname, accession=accession))
+
+    return inputs
+
+
+
+def get_idx_ref_gen(wildcards):
+    """
+    Get all the index paths for the taxa in our database from the refseq rep and genbank.
+    """
+    refseq_rep_prok = checkpoints.entrez_refseq_accessions.get(query=wildcards.query)
+
+    refseq_genomes = pd.read_csv(refseq_rep_prok.output[0], sep='\t')
+    genbank_genomes = pd.read_csv(refseq_rep_prok.output[1], sep='\t')
+    refseq_plasmids = pd.read_csv(refseq_rep_prok.output[3], sep='\t')
+    genbank_plasmids = pd.read_csv(refseq_rep_prok.output[4], sep='\t')
+
+    sequences = pd.concat([refseq_genomes, genbank_genomes, refseq_plasmids, genbank_plasmids])
+
+    inputs = []
+
+    for key, seq in sequences.iterrows():
+        orgname, accession = seq['species'].replace(" ", "_"), seq['GBSeq_accession-version']
+        inputs.append("database/refseq_genbank/{orgname}/{accession}.1.bt2l".
+        format(orgname=orgname, accession=accession))
+
+
+    return inputs
+
+
+
+def get_idx_assembly(wildcards):
+    """
+    Get all the individual bam file paths for the taxa in our database.
+    """
+
+    refseq_rep_prok = checkpoints.entrez_refseq_accessions.get(query=wildcards.query)
+
+    assemblies = pd.read_csv(refseq_rep_prok.output[2], sep='\t')
+    sequences = assemblies
+
+    inputs = []
+
+    for key, seq in sequences.iterrows():
+        orgname, accession = seq['species'].replace(" ", "_"), seq['GBSeq_accession-version']
+        inputs.append("database/refseq_assembly/{orgname}/{accession}.1.bt2l".
+        format(orgname=orgname, accession=accession))
+
+    return inputs
+
+
+
+rule idx_database:
+    input:
+        get_idx_entrez,
+        get_idx_ref_gen,
+        get_idx_assembly
+    log:
+        "database/idx_database_{query}.log"
+    output:
+        "database/idx_database_{query}.done"
+    shell:
+        "touch {output}"
+
+
+
 def get_min_score(wildcards, input):
     """Get the min score dor the edit distance of the alignment."""
     return round(float(open(input.readlen).read()) * float(config['mismatch_probability'])) * SIGMA_MIN_SCORE_CONSTANT
@@ -34,7 +146,8 @@ def get_min_score(wildcards, input):
 rule align_taxon_single_end:
     input:
         fastq="{query}/fastq/SE/{sample}_mapq.fastq.gz",
-        bt2idx="database/{orgname}/{accession}.1.bt2l",
+        # bt2idx="database/{orgname}/{accession}.1.bt2l",
+        db_idx="database/idx_database_{query}.done",
         readlen="{query}/fastq/SE/{sample}_mapq.readlen"
     log:
         "{query}/sigma/{sample}/{orgname}/{accession}.log"
@@ -64,7 +177,8 @@ rule align_taxon_paired_end:
     input:
         fastq_r1="{query}/fastq/PE/{sample}_R1_mapq.fastq.gz",
         fastq_r2="{query}/fastq/PE/{sample}_R2_mapq.fastq.gz",
-        bt2idx="database/{orgname}/{accession}.1.bt2l",
+        # bt2idx="database/{orgname}/{accession}.1.bt2l",
+        db_idx="database/idx_database_{query}.done",
         readlen="{query}/fastq/PE/{sample}_mapq_pair.readlen"
     log:
         "{query}/sigma/{sample}/{orgname}/{accession}.log"

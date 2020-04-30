@@ -36,7 +36,7 @@ rule all:
         "refseq_rep/bowtie/refseq_rep_refseq_prok.fasta.gz", # test entrez_build_prok_refseq_rep.smk
         "refseq_rep/bowtie/refseq_rep_entrez.fasta.gz", # test entrez.smk,
         "refseq_rep/fastq/PE/SRR1031215_mapq_pair.readlen", # test bowtie.smk
-        # "refseq_rep/sigma/SRR1031215_alignments.done",   # test bowtie_meta.smk,
+        "refseq_rep/sigma/SRR1031215_alignments.done",   # test bowtie_meta.smk,
         # "refseq_rep/probabilities/SRR1031215/SRR1031215_posterior_probabilities.csv", #test metagenomics.smk - probabilities
         # "refseq_rep/probabilities/SRR1031215/SRR1031215_posterior_abundance.tsv", #test metagenomics.smk - abundances
         # "refseq_rep/mapdamage/SRR1031215_mapdamage.done" # test mapdamage.smk
