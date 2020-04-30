@@ -16,6 +16,8 @@ checkpoint entrez_find_accessions:
     script:
         "../scripts/entrez_find_accessions.py"
 
+
+
 rule entrez_nuccore_query:
     input:
         "{query}/entrez/{query}-accessions.tsv"
@@ -27,6 +29,7 @@ rule entrez_nuccore_query:
         repeat("benchmarks/entrez_nuccore_query_{query}_{chunk}.benchmark.txt", 3)
     script:
         "../scripts/entrez_nuccore_query.py"
+
 
 
 # noinspection PyUnresolvedReferences
@@ -54,6 +57,7 @@ def get_nuccore_chunks(wildcards):
     return inputs
 
 
+
 rule entrez_aggregate_nuccore:
     input:
         get_nuccore_chunks
@@ -66,6 +70,8 @@ rule entrez_aggregate_nuccore:
     shell:
         "awk 'FNR>1 || NR==1' {input} 1> {output} 2> {log}"
 
+
+
 rule entrez_taxa_query:
     input:
         "{query}/entrez/{query}-nuccore.tsv"
@@ -77,6 +83,8 @@ rule entrez_taxa_query:
         repeat("benchmarks/entrez_taxa_query_{query}.benchmark.txt", 3)
     script:
         "../scripts/entrez_taxonomy_query.py"
+
+
 
 checkpoint entrez_pick_sequences:
     input:
@@ -91,6 +99,8 @@ checkpoint entrez_pick_sequences:
     script:
         "../scripts/entrez_pick_sequences.py"
 
+
+
 rule entrez_download_sequence:
     output:
         "database/{orgname}/{accession}.fasta.gz"
@@ -102,6 +112,7 @@ rule entrez_download_sequence:
         assembly=False
     script:
         "../scripts/entrez_download_sequence.py"
+
 
 
 # noinspection PyUnresolvedReferences
@@ -122,6 +133,7 @@ def get_fasta_sequences(wildcards):
         inputs.append('database/{orgname}/{accession}.fasta.gz'.format(orgname=orgname, accession=accession))
 
     return inputs
+
 
 
 rule entrez_multifasta:

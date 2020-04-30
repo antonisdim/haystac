@@ -51,5 +51,8 @@ PE_MODERN:
 SE:
   False
 
+WITH_REFSEQ_REP:
+  True
+
 SPECIFIC_GENUS:
   ['Yersinia']

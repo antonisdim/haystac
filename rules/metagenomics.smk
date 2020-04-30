@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-WITH_REFSEQ_REP = True
+WITH_REFSEQ_REP = config['WITH_REFSEQ_REP']
 SRA_LOOKUP = config['SRA_LOOKUP']
 PE_ANCIENT = config['PE_ANCIENT']
 PE_MODERN = config['PE_MODERN']
@@ -44,9 +44,19 @@ rule count_fastq_length:
 
 
 
+def get_bams_for_ts_tv_count(wildcards):
+    if config['PE_MODERN']:
+        return "{query}/sigma/{sample}/PE/{orgname}/{orgname}_{accession}.bam".format(query=wildcards.query,
+            sample=wildcards.sample, orgname=wildcards.orgname, accession=wildcards.accession)
+    elif config['PE_ANCIENT'] or config['SE']:
+        return "{query}/sigma/{sample}/SE/{orgname}/{orgname}_{accession}.bam".format(query=wildcards.query,
+            sample=wildcards.sample, orgname=wildcards.orgname, accession=wildcards.accession)
+
+
+
 rule count_accession_ts_tv:
     input:
-        "{query}/sigma/{sample}/{orgname}/{orgname}_{accession}.bam"
+        get_bams_for_ts_tv_count
     output:
         "{query}/ts_tv_counts/{sample}/{orgname}_count_{accession}.csv"
     log:

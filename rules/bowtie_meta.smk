@@ -7,7 +7,7 @@ import pandas as pd
 MIN_FRAG_LEN = 0  # I found them from the actual command that SIGMA runs
 MAX_FRAG_LEN = 1000
 SIGMA_MIN_SCORE_CONSTANT = -6  # it's from SIGMA, wouldn't want this changed unless the user is SUPER knowledgeable
-WITH_REFSEQ_REP = True
+WITH_REFSEQ_REP = config['WITH_REFSEQ_REP']
 
 ##### Target rules #####
 
@@ -39,8 +39,8 @@ rule align_taxon_single_end:
     log:
         "{query}/sigma/{sample}/{orgname}/{accession}.log"
     output:
-        bam_file="{query}/sigma/{sample}/{orgname}/{orgname}_{accession}.bam",
-        bai_file="{query}/sigma/{sample}/{orgname}/{orgname}_{accession}.bam.bai"
+        bam_file="{query}/sigma/{sample}/SE/{orgname}/{orgname}_{accession}.bam",
+        bai_file="{query}/sigma/{sample}/SE/{orgname}/{orgname}_{accession}.bam.bai"
     benchmark:
         repeat("benchmarks/align_taxon_single_end_{query}_{sample}_{orgname}_{accession}.benchmark.txt", 1)
     params:
@@ -69,8 +69,8 @@ rule align_taxon_paired_end:
     log:
         "{query}/sigma/{sample}/{orgname}/{accession}.log"
     output:
-        bam_file="{query}/sigma/{sample}/{orgname}/{orgname}_{accession}.bam",
-        bai_file="{query}/sigma/{sample}/{orgname}/{orgname}_{accession}.bam.bai"
+        bam_file="{query}/sigma/{sample}/PE/{orgname}/{orgname}_{accession}.bam",
+        bai_file="{query}/sigma/{sample}/PE/{orgname}/{orgname}_{accession}.bam.bai"
     params:
         min_score=get_min_score,
         min_frag_length=MIN_FRAG_LEN,
@@ -86,7 +86,7 @@ rule align_taxon_paired_end:
         "| samtools sort -O bam -o {output.bam_file} ) 2> {log} "
         "; samtools index {output.bam_file}"
 
-ruleorder:  align_taxon_paired_end > align_taxon_single_end
+# ruleorder:  align_taxon_paired_end > align_taxon_single_end
 
 
 
@@ -115,10 +115,17 @@ def get_bamfile_paths(wildcards):
 
     inputs = []
 
-    for key, seq in sequences.iterrows():
-        orgname, accession = seq['species'].replace(" ", "_"), seq['GBSeq_accession-version']
-        inputs.append('{query}/sigma/{sample}/{orgname}/{orgname}_{accession}.bam'.
-        format(query=wildcards.query, sample=wildcards.sample, orgname=orgname, accession=accession))
+    if config['SE'] or config['PE_ANCIENT']:
+        for key, seq in sequences.iterrows():
+            orgname, accession = seq['species'].replace(" ", "_"), seq['GBSeq_accession-version']
+            inputs.append('{query}/sigma/{sample}/SE/{orgname}/{orgname}_{accession}.bam'.
+            format(query=wildcards.query, sample=wildcards.sample, orgname=orgname, accession=accession))
+
+    elif config['PE_MODERN']:
+        for key, seq in sequences.iterrows():
+            orgname, accession = seq['species'].replace(" ", "_"), seq['GBSeq_accession-version']
+            inputs.append('{query}/sigma/{sample}/PE/{orgname}/{orgname}_{accession}.bam'.
+            format(query=wildcards.query, sample=wildcards.sample, orgname=orgname, accession=accession))
 
     return inputs
 

@@ -16,6 +16,8 @@ rule download_refseq_representative_table:
     shell:
         "wget -O {output} https://ftp.ncbi.nlm.nih.gov/genomes/GENOME_REPORTS/prok_representative_genomes.txt 2> {log}"
 
+
+
 checkpoint entrez_refseq_accessions:
     input:
         "database_inputs/prok_representative_genomes.txt"
@@ -32,6 +34,8 @@ checkpoint entrez_refseq_accessions:
     script:
         "../scripts/entrez_refseq_create_files.py"
 
+
+
 # todo: Can I use the rule from entrez.smk as they are exactly the same, instead of writing a
 #  new one with a different name ?
 rule entrez_download_refseq_genbank_sequence:
@@ -46,7 +50,8 @@ rule entrez_download_refseq_genbank_sequence:
     script:
         "../scripts/entrez_download_sequence.py"
 
-ruleorder: entrez_download_refseq_genbank_sequence > entrez_download_sequence
+# ruleorder: entrez_download_refseq_genbank_sequence > entrez_download_sequence
+
 
 
 def get_refseq_genome_sequences(wildcards):
@@ -73,6 +78,7 @@ def get_refseq_genome_sequences(wildcards):
     return inputs
 
 
+
 rule entrez_refseq_genbank_multifasta:
     input:
         get_refseq_genome_sequences
@@ -84,6 +90,8 @@ rule entrez_refseq_genbank_multifasta:
         repeat("benchmarks/entrez_refseq_genbank_multifasta_{query}.benchmark.txt", 3)
     shell:
         "cat {input} > {output}"
+
+
 
 rule entrez_download_assembly_sequence:
     output:
@@ -98,7 +106,8 @@ rule entrez_download_assembly_sequence:
         "../scripts/entrez_download_sequence.py"
 
 # todo same problem as with the entrez_download_refseq_genbank_sequence rule
-ruleorder: entrez_download_assembly_sequence > entrez_download_sequence
+# ruleorder: entrez_download_assembly_sequence > entrez_download_sequence
+
 
 
 def get_assembly_genome_sequences(wildcards):
@@ -121,6 +130,7 @@ def get_assembly_genome_sequences(wildcards):
     return inputs
 
 
+
 rule entrez_assembly_multifasta:
     input:
         get_assembly_genome_sequences
@@ -133,6 +143,8 @@ rule entrez_assembly_multifasta:
     shell:
         "cat {input} > {output}"
 
+
+
 rule softlink_refseq_to_database:
     input:
         get_refseq_genome_sequences
@@ -143,6 +155,8 @@ rule softlink_refseq_to_database:
     shell:
         "for i in {input}; do ln -sfn `echo $i | cut -d '/' -f 2-3` database; done; touch {output}"
 
+
+
 rule softlink_assemblies_to_database:
     input:
         get_assembly_genome_sequences
@@ -152,6 +166,7 @@ rule softlink_assemblies_to_database:
         "database/{query}_softlink_assembly_to_database.log"
     shell:
         "for i in {input}; do ln -sfn `echo $i | cut -d '/' -f 2-3` database; done; touch {output}"
+
 
 rule entrez_refseq_prok_multifasta:
     input:

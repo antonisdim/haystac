@@ -4,7 +4,7 @@
 from multiprocessing import cpu_count
 
 SUBSAMPLE_FIXED_READS = 200000
-WITH_REFSEQ_REP = True
+WITH_REFSEQ_REP = config['WITH_REFSEQ_REP']
 SRA_LOOKUP = config['SRA_LOOKUP']
 PE_ANCIENT = config['PE_ANCIENT']
 PE_MODERN = config['PE_MODERN']
