@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 WITH_REFSEQ_REP = config['WITH_REFSEQ_REP']
+WITH_ENTREZ_QUERY = config['WITH_ENTREZ_QUERY']
 SRA_LOOKUP = config['SRA_LOOKUP']
 PE_ANCIENT = config['PE_ANCIENT']
 PE_MODERN = config['PE_MODERN']
@@ -62,7 +63,7 @@ rule count_accession_ts_tv:
     log:
         "{query}/ts_tv_counts/{sample}/{orgname}_count_{accession}.log"
     benchmark:
-        repeat("benchmarks/count_accession_ts_tv_{query}_{sample}_{orgname}_{accession}.benchmark.txt", 3)
+        repeat("benchmarks/count_accession_ts_tv_{query}_{sample}_{orgname}_{accession}.benchmark.txt", 1)
     params:
         pairs=PE_MODERN
     script:
@@ -74,11 +75,15 @@ def get_ts_tv_count_paths(wildcards):
     """
     Get all the individual cav file paths for the taxa in our database.
     """
-    pick_sequences = checkpoints.entrez_pick_sequences.get(query=wildcards.query)
-    sequences = pd.read_csv(pick_sequences.output[0], sep='\t')
 
-    if len(sequences) == 0:
-        raise RuntimeError("The entrez pick sequences file is empty.")
+    sequences = pd.DataFrame()
+
+    if WITH_ENTREZ_QUERY:
+        pick_sequences = checkpoints.entrez_pick_sequences.get(query=wildcards.query)
+        sequences = pd.read_csv(pick_sequences.output[0], sep='\t')
+
+        if len(sequences) == 0:
+            raise RuntimeError("The entrez pick sequences file is empty.")
 
     if WITH_REFSEQ_REP:
         refseq_rep_prok = checkpoints.entrez_refseq_accessions.get(query=wildcards.query)
@@ -89,8 +94,12 @@ def get_ts_tv_count_paths(wildcards):
         refseq_plasmids = pd.read_csv(refseq_rep_prok.output[3], sep='\t')
         genbank_plasmids = pd.read_csv(refseq_rep_prok.output[4], sep='\t')
 
-        sequences = pd.concat([sequences, refseq_genomes, genbank_genomes, assemblies, refseq_plasmids,
-                               genbank_plasmids])
+        if WITH_ENTREZ_QUERY:
+            sequences = pd.concat([sequences, refseq_genomes, genbank_genomes, assemblies, refseq_plasmids,
+                                   genbank_plasmids])
+        else:
+            sequences = pd.concat([refseq_genomes, genbank_genomes, assemblies, refseq_plasmids,
+                                   genbank_plasmids])
 
     inputs = []
 
@@ -114,7 +123,7 @@ rule initial_ts_tv:
     log:
         "{query}/ts_tv_counts/{sample}/all_ts_tv_counts.log"
     benchmark:
-        repeat("benchmarks/initial_ts_tv_{query}_{sample}.benchmark.txt", 3)
+        repeat("benchmarks/initial_ts_tv_{query}_{sample}.benchmark.txt", 1)
     shell:
         "cat {input} 1> {output} 2> {log}"
 
@@ -177,14 +186,14 @@ rule fasta_idx:
 
 rule coverage_t_test:
     input:
-        "{query}/sigma/{sample}/{orgname}/{orgname}_{accession}.bam",
+        "{query}/sigma/{sample}/{reads}/{orgname}/{orgname}_{accession}.bam",
         "database/{orgname}/{accession}.fasta.gz.fai"
     output:
-        "{query}/probabilities/{sample}/{orgname}_t_test_pvalue_{accession}.txt"
+        "{query}/probabilities/{sample}/{orgname}_t_test_pvalue_{accession}_{reads}.txt"
     log:
-        "{query}/probabilities/{sample}/{orgname}_t_test_pvalue_{accession}.log"
+        "{query}/probabilities/{sample}/{orgname}_t_test_pvalue_{accession}_{reads}.log"
     benchmark:
-        repeat("benchmarks/coverage_t_test_{query}_{sample}_{orgname}_{accession}.benchmark.txt", 1)
+        repeat("benchmarks/coverage_t_test_{query}_{sample}_{orgname}_{accession}_{reads}.benchmark.txt", 1)
     script:
         "../scripts/coverage_t_test.py"
 
@@ -195,11 +204,15 @@ def get_t_test_values_paths(wildcards):
     """
     Get all the individual cav file paths for the taxa in our database.
     """
-    pick_sequences = checkpoints.entrez_pick_sequences.get(query=wildcards.query)
-    sequences = pd.read_csv(pick_sequences.output[0], sep='\t')
 
-    if len(sequences) == 0:
-        raise RuntimeError("The entrez pick sequences file is empty.")
+    sequences = pd.DataFrame()
+
+    if WITH_ENTREZ_QUERY:
+        pick_sequences = checkpoints.entrez_pick_sequences.get(query=wildcards.query)
+        sequences = pd.read_csv(pick_sequences.output[0], sep='\t')
+
+        if len(sequences) == 0:
+            raise RuntimeError("The entrez pick sequences file is empty.")
 
     if WITH_REFSEQ_REP:
         refseq_rep_prok = checkpoints.entrez_refseq_accessions.get(query=wildcards.query)
@@ -210,19 +223,29 @@ def get_t_test_values_paths(wildcards):
         refseq_plasmids = pd.read_csv(refseq_rep_prok.output[3], sep='\t')
         genbank_plasmids = pd.read_csv(refseq_rep_prok.output[4], sep='\t')
 
-        sequences = pd.concat([sequences, refseq_genomes, genbank_genomes, assemblies, refseq_plasmids,
-                               genbank_plasmids])
+        if WITH_ENTREZ_QUERY:
+            sequences = pd.concat([sequences, refseq_genomes, genbank_genomes, assemblies, refseq_plasmids,
+                                   genbank_plasmids])
+        else:
+            sequences = pd.concat([refseq_genomes, genbank_genomes, assemblies, refseq_plasmids,
+                                   genbank_plasmids])
 
     inputs = []
 
     if SPECIFIC_GENUS:
         sequences = sequences[sequences['species'].str.contains( "|".join(SPECIFIC_GENUS))]
 
+    reads = ''
+    if PE_MODERN:
+        reads = 'PE'
+    elif PE_ANCIENT or SE:
+        reads = 'SE'
+
     for key, seq in sequences.iterrows():
         orgname, accession = seq['species'].replace(" ", "_"), seq['GBSeq_accession-version']
 
-        inputs.append('{query}/probabilities/{sample}/{orgname}_t_test_pvalue_{accession}.txt'.
-        format(query=wildcards.query, sample=wildcards.sample, orgname=orgname, accession=accession))
+        inputs.append('{query}/probabilities/{sample}/{orgname}_t_test_pvalue_{accession}_{reads}.txt'.
+        format(query=wildcards.query, sample=wildcards.sample, orgname=orgname, accession=accession, reads=reads))
 
     return inputs
 

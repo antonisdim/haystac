@@ -1,24 +1,26 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-
+WITH_REFSEQ_REP = config['WITH_REFSEQ_REP']
+WITH_ENTREZ_QUERY = config['WITH_ENTREZ_QUERY']
 SPECIFIC_GENUS = config['SPECIFIC_GENUS']
 PE_ANCIENT = config['PE_ANCIENT']
 PE_MODERN = config['PE_MODERN']
 SE = config['SE']
 
+import pandas as pd
 
 ##### Target rules #####
 
 
 rule run_mapdamage:
     input:
-        bam="{query}/sigma/{sample}/{orgname}/{orgname}_{accession}.bam",
+        bam="{query}/sigma/{sample}/{reads}/{orgname}/{orgname}_{accession}.bam",
         ref_genome="database/{orgname}/{accession}.fasta.gz"
     log:
-        "{query}/mapdamage/{sample}/{orgname}_{accession}.log"
+        "{query}/mapdamage/{sample}/{reads}/{orgname}_{accession}.log"
     output:
-        directory("{query}/mapdamage/{sample}/{orgname}_{accession}")
+        directory("{query}/mapdamage/{sample}/{reads}/{orgname}-{accession}")
     shell:
         "mapDamage -i {input.bam} -r {input.ref_genome} -d {output}"
 
@@ -29,11 +31,15 @@ def get_mapdamage_out_dir_paths(wildcards):
     """
     Get all the individual cav file paths for the taxa in our database.
     """
-    pick_sequences = checkpoints.entrez_pick_sequences.get(query=wildcards.query)
-    sequences = pd.read_csv(pick_sequences.output[0], sep='\t')
 
-    if len(sequences) == 0:
-        raise RuntimeError("The entrez pick sequences file is empty.")
+    sequences = pd.Dataframe()
+
+    if WITH_ENTREZ_QUERY:
+        pick_sequences = checkpoints.entrez_pick_sequences.get(query=wildcards.query)
+        sequences = pd.read_csv(pick_sequences.output[0], sep='\t')
+
+        if len(sequences) == 0:
+            raise RuntimeError("The entrez pick sequences file is empty.")
 
     if WITH_REFSEQ_REP:
         refseq_rep_prok = checkpoints.entrez_refseq_accessions.get(query=wildcards.query)
@@ -44,19 +50,29 @@ def get_mapdamage_out_dir_paths(wildcards):
         refseq_plasmids = pd.read_csv(refseq_rep_prok.output[3], sep='\t')
         genbank_plasmids = pd.read_csv(refseq_rep_prok.output[4], sep='\t')
 
-        sequences = pd.concat([sequences, refseq_genomes, genbank_genomes, assemblies, refseq_plasmids,
-                               genbank_plasmids])
+        if WITH_ENTREZ_QUERY:
+            sequences = pd.concat([sequences, refseq_genomes, genbank_genomes, assemblies, refseq_plasmids,
+                                   genbank_plasmids])
+        else:
+            sequences = pd.concat([refseq_genomes, genbank_genomes, assemblies, refseq_plasmids,
+                                   genbank_plasmids])
 
     inputs = []
 
     if SPECIFIC_GENUS:
         sequences = sequences[sequences['species'].str.contains( "|".join(SPECIFIC_GENUS))]
 
+    reads = ''
+    if PE_MODERN:
+        reads = 'PE'
+    elif PE_ANCIENT or SE:
+        reads = 'SE'
+
     for key, seq in sequences.iterrows():
         orgname, accession = seq['species'].replace(" ", "_"), seq['GBSeq_accession-version']
 
-        inputs.append('{query}/mapdamage/{sample}/{orgname}_{accession}'.
-        format(query=wildcards.query, sample=wildcards.sample, orgname=orgname, accession=accession))
+        inputs.append('{query}/mapdamage/{sample}/{reads}/{orgname}-{accession}'.
+        format(query=wildcards.query, sample=wildcards.sample, orgname=orgname, accession=accession, reads=reads))
 
     if PE_ANCIENT or SE:
         return inputs

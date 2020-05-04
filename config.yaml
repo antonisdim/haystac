@@ -53,6 +53,9 @@ SE:
 
 WITH_REFSEQ_REP:
   True
+WITH_ENTREZ_QUERY:
+  True
 
 SPECIFIC_GENUS:
-  ['Yersinia']
+#  ['Yersinia']
+  []

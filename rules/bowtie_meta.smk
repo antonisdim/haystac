@@ -8,6 +8,7 @@ MIN_FRAG_LEN = 0  # I found them from the actual command that SIGMA runs
 MAX_FRAG_LEN = 1000
 SIGMA_MIN_SCORE_CONSTANT = -6  # it's from SIGMA, wouldn't want this changed unless the user is SUPER knowledgeable
 WITH_REFSEQ_REP = config['WITH_REFSEQ_REP']
+WITH_ENTREZ_QUERY = config['WITH_ENTREZ_QUERY']
 
 ##### Target rules #####
 
@@ -61,6 +62,9 @@ def get_idx_entrez(wildcards):
     """
     Get all the index paths for the taxa in our database from the entrez query.
     """
+    if not WITH_ENTREZ_QUERY:
+        return []
+
     pick_sequences = checkpoints.entrez_pick_sequences.get(query=wildcards.query)
     sequences = pd.read_csv(pick_sequences.output[0], sep='\t')
 
@@ -82,6 +86,9 @@ def get_idx_ref_gen(wildcards):
     """
     Get all the index paths for the taxa in our database from the refseq rep and genbank.
     """
+    if not WITH_REFSEQ_REP:
+        return []
+
     refseq_rep_prok = checkpoints.entrez_refseq_accessions.get(query=wildcards.query)
 
     refseq_genomes = pd.read_csv(refseq_rep_prok.output[0], sep='\t')
@@ -107,6 +114,8 @@ def get_idx_assembly(wildcards):
     """
     Get all the individual bam file paths for the taxa in our database.
     """
+    if not WITH_REFSEQ_REP:
+        return []
 
     refseq_rep_prok = checkpoints.entrez_refseq_accessions.get(query=wildcards.query)
 
@@ -150,7 +159,7 @@ rule align_taxon_single_end:
         db_idx="database/idx_database_{query}.done",
         readlen="{query}/fastq/SE/{sample}_mapq.readlen"
     log:
-        "{query}/sigma/{sample}/{orgname}/{accession}.log"
+        "{query}/sigma/{sample}/SE/{orgname}/{accession}.log"
     output:
         bam_file="{query}/sigma/{sample}/SE/{orgname}/{orgname}_{accession}.bam",
         bai_file="{query}/sigma/{sample}/SE/{orgname}/{orgname}_{accession}.bam.bai"
@@ -181,7 +190,7 @@ rule align_taxon_paired_end:
         db_idx="database/idx_database_{query}.done",
         readlen="{query}/fastq/PE/{sample}_mapq_pair.readlen"
     log:
-        "{query}/sigma/{sample}/{orgname}/{accession}.log"
+        "{query}/sigma/{sample}/PE/{orgname}/{accession}.log"
     output:
         bam_file="{query}/sigma/{sample}/PE/{orgname}/{orgname}_{accession}.bam",
         bai_file="{query}/sigma/{sample}/PE/{orgname}/{orgname}_{accession}.bam.bai"
@@ -209,11 +218,15 @@ def get_bamfile_paths(wildcards):
     """
     Get all the individual bam file paths for the taxa in our database.
     """
-    pick_sequences = checkpoints.entrez_pick_sequences.get(query=wildcards.query)
-    sequences = pd.read_csv(pick_sequences.output[0], sep='\t')
 
-    if len(sequences) == 0:
-        raise RuntimeError("The entrez pick sequences file is empty.")
+    sequences = pd.DataFrame()
+
+    if WITH_ENTREZ_QUERY:
+        pick_sequences = checkpoints.entrez_pick_sequences.get(query=wildcards.query)
+        sequences = pd.read_csv(pick_sequences.output[0], sep='\t')
+
+        if len(sequences) == 0:
+            raise RuntimeError("The entrez pick sequences file is empty.")
 
     if WITH_REFSEQ_REP:
         refseq_rep_prok = checkpoints.entrez_refseq_accessions.get(query=wildcards.query)
@@ -224,8 +237,12 @@ def get_bamfile_paths(wildcards):
         refseq_plasmids = pd.read_csv(refseq_rep_prok.output[3], sep='\t')
         genbank_plasmids = pd.read_csv(refseq_rep_prok.output[4], sep='\t')
 
-        sequences = pd.concat([sequences, refseq_genomes, genbank_genomes, assemblies, refseq_plasmids,
-                               genbank_plasmids])
+        if WITH_ENTREZ_QUERY:
+            sequences = pd.concat([sequences, refseq_genomes, genbank_genomes, assemblies, refseq_plasmids,
+                                   genbank_plasmids])
+        else:
+            sequences = pd.concat([refseq_genomes, genbank_genomes, assemblies, refseq_plasmids,
+                                   genbank_plasmids])
 
     inputs = []
 

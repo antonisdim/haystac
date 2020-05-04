@@ -2,6 +2,7 @@ channels:
   - conda-forge
   - bioconda
   - defaults
+  - r
 dependencies:
   - python=3.6.7
   - snakemake=5.12.3
@@ -18,5 +19,7 @@ dependencies:
   - r-inline
   - r-gam
   - r-RcppGSL
+  - r-ggplot2
+  - r-Rcpp
   - pip:
       - "--editable=git+git://github.com/ginolhac/mapDamage.git#egg=mapdamage"
