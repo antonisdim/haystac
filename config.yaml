@@ -45,9 +45,9 @@ bowtie2_treads:
 SRA_LOOKUP:
   True
 PE_ANCIENT:
-  False
-PE_MODERN:
   True
+PE_MODERN:
+  False
 SE:
   False
 
@@ -59,3 +59,9 @@ WITH_ENTREZ_QUERY:
 SPECIFIC_GENUS:
 #  ['Yersinia']
   []
+
+
+MEM_RESOURCES_MB:
+  80
+MEM_RESCALING_FACTOR:
+  2.5

@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 
 from multiprocessing import cpu_count
+from psutil import virtual_memory
+import pandas as pd
 
 SUBSAMPLE_FIXED_READS = 200000
 WITH_REFSEQ_REP = config['WITH_REFSEQ_REP']
@@ -10,6 +12,9 @@ SRA_LOOKUP = config['SRA_LOOKUP']
 PE_ANCIENT = config['PE_ANCIENT']
 PE_MODERN = config['PE_MODERN']
 SE = config['SE']
+MAX_MEM_MB = virtual_memory().total / (1024 ** 2)
+MEM_RESOURCES_MB = config['MEM_RESOURCES_MB']
+MEM_RESCALING_FACTOR = config['MEM_RESCALING_FACTOR']
 
 
 ##### Target rules #####
@@ -26,23 +31,44 @@ def filtering_bowtie_aln_inputs(wildcards):
 
 
 
-rule bowtie_index:
+checkpoint count_bt2_idx:
     input:
         filtering_bowtie_aln_inputs
     log:
-        "{query}/bowtie/{query}_index.log"
+        "{query}/bowtie/{query}_count_bt2_idx.log"
     output:
-        expand("{{query}}/bowtie/{{query}}.{n}.bt2l", n=[1, 2, 3, 4]),
-        expand("{{query}}/bowtie/{{query}}.rev.{n}.bt2l", n=[1, 2])
+        "{query}/bowtie/{query}_bt2_idx_chunk_paths.txt"
+    params:
+        query="{query}",
+        output_dir="{query}/bowtie/",
+        mem_resources=MEM_RESOURCES_MB,
+        mem_rescaling_factor=MEM_RESCALING_FACTOR
+    script:
+        "../scripts/count_bt2_idx.py"
+
+
+
+rule bowtie_index:
+    input:
+        chunk_path_file="{query}/bowtie/{query}_bt2_idx_chunk_paths.txt",
+        fasta_chunk="{query}/bowtie/{query}_chunk{chunk_num}.fasta.gz"
+    log:
+        "{query}/bowtie/{query}_{chunk_num}_index.log"
+    output:
+        expand("{{query}}/bowtie/{{query}}_chunk{{chunk_num}}.{n}.bt2l", n=[1, 2, 3, 4]),
+        expand("{{query}}/bowtie/{{query}}_chunk{{chunk_num}}.rev.{n}.bt2l", n=[1, 2])
     benchmark:
-        repeat("benchmarks/bowtie_index_{query}.benchmark.txt", 1)
-    run:
-        if WITH_REFSEQ_REP:
-            shell("cat {input} > {wildcards.query}/bowtie/{wildcards.query}.fasta.gz; "
-                  "bowtie2-build --large-index {wildcards.query}/bowtie/{wildcards.query}.fasta.gz "
-                  "{wildcards.query}/bowtie/{wildcards.query} &> {log}")
-        else:
-            shell("bowtie2-build --large-index {input} {wildcards.query}/bowtie/{wildcards.query} &> {log}")
+        repeat("benchmarks/bowtie_index_{query}_chunk{chunk_num}.benchmark.txt", 1)
+    # run:
+    #     if WITH_REFSEQ_REP and WITH_ENTREZ_QUERY:
+    #         shell("cat {input} > {wildcards.query}/bowtie/{wildcards.query}.fasta.gz; "
+    #               "bowtie2-build --large-index {wildcards.query}/bowtie/{wildcards.query}.fasta.gz "
+    #               "{wildcards.query}/bowtie/{wildcards.query} &> {log}")
+    #     else:
+    #         shell("bowtie2-build --large-index {input} {wildcards.query}/bowtie/{wildcards.query} &> {log}")
+    shell:
+        "bowtie2-build --large-index {input.fasta_chunk} "
+        "{wildcards.query}/bowtie/{wildcards.query}_chunk{wildcards.chunk_num} &> {log}"
 
 
 
@@ -82,18 +108,18 @@ def get_inputs_for_bowtie_r2(wildcards):
 
 
 
-rule bowtie_alignment:
+rule bowtie_alignment_single_end:
     input:
         fastq=get_inputs_for_bowtie_r1,
-        bt2idx="{query}/bowtie/{query}.1.bt2l"
+        bt2idx="{query}/bowtie/{query}_chunk{chunk_num}.1.bt2l"
     log:
-        "{query}/bam/{sample}.log"
-    params:
-        index="{query}/bowtie/{query}",
+        "{query}/bam/{sample}_chunk{chunk_num}.log"
     output:
-        bam_file="{query}/bam/SE_{sample}_sorted.bam"
+        bam_file=temp("{query}/bam/SE_{sample}_sorted_chunk{chunk_num}.bam")
     benchmark:
-        repeat("benchmarks/bowtie_alignment_{query}_{sample}.benchmark.txt", 1)
+        repeat("benchmarks/bowtie_alignment_{query}_{sample}_chunk{chunk_num}.benchmark.txt", 1)
+    params:
+        index="{query}/bowtie/{query}_chunk{chunk_num}"
     threads:
         cpu_count()
     shell:
@@ -106,15 +132,15 @@ rule bowtie_alignment_paired_end:
     input:
         fastq_r1=get_inputs_for_bowtie_r1,
         fastq_r2=get_inputs_for_bowtie_r2,
-        bt2idx="{query}/bowtie/{query}.1.bt2l"
+        bt2idx="{query}/bowtie/{query}_chunk{chunk_num}.1.bt2l"
     log:
-        "{query}/bam/{sample}.log"
+        "{query}/bam/{sample}_chunk{chunk_num}.log"
     output:
-        bam_file="{query}/bam/PE_{sample}_sorted.bam"
+        bam_file=temp("{query}/bam/PE_{sample}_sorted_chunk{chunk_num}.bam")
     benchmark:
-        repeat("benchmarks/bowtie_alignment_paired_end_{query}_{sample}.benchmark.txt", 1)
+        repeat("benchmarks/bowtie_alignment_{query}_{sample}_chunk{chunk_num}.benchmark.txt", 1)
     params:
-        index="{query}/bowtie/{query}"
+        index="{query}/bowtie/{query}_chunk{chunk_num}"
     threads:
         cpu_count()
     shell:
@@ -123,20 +149,59 @@ rule bowtie_alignment_paired_end:
 
 
 
-# todo this needs to be implemented differently in the pipeline
-rule dedup_merged:
+def get_sorted_bam_paths(wildcards):
+
+    get_paths = checkpoints.count_bt2_idx.get(query=wildcards.query)
+    idx_chunk_total = len(pd.read_csv(get_paths.output[0], sep='\t'))
+
+    if PE_MODERN:
+        return expand("{query}/bam/{reads}_{sample}_sorted_chunk{chunk_num}.bam", query=wildcards.query, reads=['PE'],
+            sample=wildcards.sample, chunk_num=[x+1 for x in range(idx_chunk_total)])
+    if PE_ANCIENT or SE:
+        return expand("{query}/bam/{reads}_{sample}_sorted_chunk{chunk_num}.bam", query=wildcards.query, reads=['SE'],
+            sample=wildcards.sample, chunk_num=[x+1 for x in range(idx_chunk_total)])
+
+
+
+rule merge_bams_single_end:
     input:
-        "{query}/bam/{sample}_sorted.bam"
+        # aln_done="{query}/bam/{sample}_all_aln.done",
+        aln_path=get_sorted_bam_paths
     log:
-        "{query}/bam/{sample}_sorted_rmdup.log"
+        "{query}/bam/{sample}_merge_bams.log"
     output:
-        "{query}/bam/{sample}_sorted_rmdup.bam"
-    benchmark:
-        repeat("benchmarks/dedup_merged_{query}_{sample}.benchmark.txt", 1)
-    params:
-        output="{query}/bam/"
+        "{query}/bam/SE_{sample}_sorted.bam"
     shell:
-        "dedup --merged --input {input} --output {params.output} &> {log}"
+        "samtools merge -f {output} {input.aln_path} 2> {log}"
+
+
+
+rule merge_bams_paired_end:
+    input:
+        # aln_done="{query}/bam/{sample}_all_aln.done",
+        aln_path=get_sorted_bam_paths
+    log:
+        "{query}/bam/{sample}_merge_bams.log"
+    output:
+        "{query}/bam/PE_{sample}_sorted.bam"
+    shell:
+        "samtools merge -f {output} {input.aln_path} 2> {log}"
+
+
+
+# rule dedup_merged:
+#     input:
+#         "{query}/bam/{sample}_sorted.bam"
+#     log:
+#         "{query}/bam/{sample}_sorted_rmdup.log"
+#     output:
+#         "{query}/bam/{sample}_sorted_rmdup.bam"
+#     benchmark:
+#         repeat("benchmarks/dedup_merged_{query}_{sample}.benchmark.txt", 1)
+#     params:
+#         output="{query}/bam/"
+#     shell:
+#         "dedup --merged --input {input} --output {params.output} &> {log}"
 
 
 
@@ -144,7 +209,7 @@ rule extract_fastq_single_end:
     input:
         "{query}/bam/SE_{sample}_sorted.bam"
     log:
-        "{query}/fastq/{sample}_mapq.log"
+        "{query}/fastq/SE/{sample}_mapq.log"
     output:
         "{query}/fastq/SE/{sample}_mapq.fastq.gz"
     benchmark:
@@ -160,7 +225,7 @@ rule extract_fastq_paired_end:
     input:
         "{query}/bam/PE_{sample}_sorted.bam"
     log:
-        "{query}/fastq/{sample}_mapq.log"
+        "{query}/fastq/PE/{sample}_mapq.log"
     output:
         "{query}/fastq/PE/{sample}_R1_mapq.fastq.gz",
         "{query}/fastq/PE/{sample}_R2_mapq.fastq.gz"

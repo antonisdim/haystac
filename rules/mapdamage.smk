@@ -13,9 +13,24 @@ import pandas as pd
 ##### Target rules #####
 
 
+rule dedup_merged_mapdamage:
+    input:
+        bam="{query}/sigma/{sample}/{reads}/{orgname}/{orgname}_{accession}.bam"
+    log:
+        "{query}/mapdamage/{sample}/rmdup_bam/{reads}/{orgname}/{orgname}_{accession}_rmdup.log"
+    output:
+        "{query}/mapdamage/{sample}/rmdup_bam/{reads}/{orgname}/{orgname}_{accession}_rmdup.bam"
+    benchmark:
+        repeat("benchmarks/dedup_merged_{query}_{sample}_{reads}_{orgname}_{accession}.benchmark.txt", 1)
+    params:
+        output="{query}/mapdamage/{sample}/rmdup_bam/{reads}/{orgname}/"
+    shell:
+        "dedup --merged --input {input.bam} --output {params.output} &> {log}"
+
+
 rule run_mapdamage:
     input:
-        bam="{query}/sigma/{sample}/{reads}/{orgname}/{orgname}_{accession}.bam",
+        bam="{query}/mapdamage/{sample}/rmdup_bam/{reads}/{orgname}/{orgname}_{accession}_rmdup.bam",
         ref_genome="database/{orgname}/{accession}.fasta.gz"
     log:
         "{query}/mapdamage/{sample}/{reads}/{orgname}_{accession}.log"
@@ -32,7 +47,7 @@ def get_mapdamage_out_dir_paths(wildcards):
     Get all the individual cav file paths for the taxa in our database.
     """
 
-    sequences = pd.Dataframe()
+    sequences = pd.DataFrame()
 
     if WITH_ENTREZ_QUERY:
         pick_sequences = checkpoints.entrez_pick_sequences.get(query=wildcards.query)
@@ -77,6 +92,8 @@ def get_mapdamage_out_dir_paths(wildcards):
     if PE_ANCIENT or SE:
         return inputs
     else:
+        print("WARNING: dedup is treating PE uncollapsed reads as SE reads. "
+              "Removing PCR duplicates might not have been done correctly.")
         print("WARNING: mapDamage has not been optimised to analyse paired end alignment data.")
         return inputs
         # raise RuntimeError('PE data, mapDamage cannot run with that input format. Either collapse the reads, '
