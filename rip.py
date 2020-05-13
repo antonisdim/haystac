@@ -37,7 +37,13 @@ def main(args):
         sys.exit(-1)
 
     with open('config.yaml') as fin:
-        config = yaml.safe_load(fin)
+        config_yaml = yaml.safe_load(fin)
+
+    config_args = vars(args)
+
+    # config = {**config_yaml, **config_args}
+
+    config = config_yaml.update((k, v) for k, v in config_args.items() if v is not None)
 
     print('--------')
     print('details!')
@@ -60,6 +66,17 @@ if __name__ == '__main__':
 
     parser.add_argument('config_yaml')
     parser.add_argument('-n', '--dry-run', action='store_true')
+    parser.add_argument('--query_name', help='name of the query and the output directory <str>')
+    parser.add_argument('--entrez_query', help='Actual NCBI query in the NCBI query language')
+    parser.add_argument('--entrez_email', help='email address for NCBI identification')
+    parser.add_argument('--entrez_batchsize', help='batchsize for fetching records from NCBI')
+    parser.add_argument('--entrez_rank', help='Taxonomic rank to perform the identifications on')
+    parser.add_argument('--sample_name', help='Sample name')
+    parser.add_argument('--sample_fastq', help='Path to the fastq input file. Can be raw or with adapters removed')
+    parser.add_argument('--sample_fastq_R1', help='Path to the mate 1 fastq input file, if reads are PE. '
+                                                  'Can be raw or with adapters removed')
+    parser.add_argument('--sample_fastq_R2', help='Path to the mate 2 fastq input file, if reads are PE. '
+                                                  'Can be raw or with adapters removed')
     parser.add_argument('--mismatch_probability', help='base mismatch probability <float> (default: 0.05)')
     parser.add_argument('--bowtie2_treads', help='threads for the bowtie2 alignments <int> (default: 1)')
     parser.add_argument('--SRA_LOOKUP', help='fetch raw data files from the SRA <bool> (default: False)')
