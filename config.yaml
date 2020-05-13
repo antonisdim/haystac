@@ -26,41 +26,28 @@
 
 query_name:
   refseq_rep
-
 entrez_query:
   ("Yersinia"[Organism] OR "Yersinia"[Organism]) AND "complete genome"[All Fields]
-
 entrez_email:
   evangelos-antonios.dimopoulos@hertford.ox.ac.uk
-
 entrez_batchsize:
   5
-
 entrez_rank:
   'species'
 
-
-
 sample_name:
-  SRR1031215
-
+  SRR1031289
 sample_fastq:
   sra_data/SRR055002.fastq.gz
-
 sample_fastq_R1:
   [sra_data/SRR1031215_R1.fastq.gz]
-
 sample_fastq_R2:
   [sra_data/SRR1031215_R2.fastq.gz]
 
-
-
 min_mapq:
   20
-
 mismatch_probability:
   0.05
-
 sequencing:
   'single_end'
 
@@ -84,7 +71,6 @@ WITH_ENTREZ_QUERY:
 SPECIFIC_GENUS:
 #  ['Yersinia']
   []
-
 
 MEM_RESOURCES_MB:
   80

@@ -42,17 +42,54 @@ def main(args):
     config_args = vars(args)
 
     # config = {**config_yaml, **config_args}
+    config_yaml.update((k, v) for k, v in config_args.items() if v is not None)
+    config = config_yaml
 
-    config = config_yaml.update((k, v) for k, v in config_args.items() if v is not None)
+    input_mode = ''
+    if config['PE_ANCIENT']:
+        input_mode = 'PE_anc'
+    elif config['PE_MODERN']:
+        input_mode = 'PE_mod'
+    elif config['SE']:
+        input_mode = 'SE'
+
+    read_mode = ''
+    if config['PE_MODERN']:
+        read_mode = 'PE'
+    elif config['PE_ANCIENT'] or config['SE']:
+        read_mode = 'SE'
+
+    # todo flag for data pre processing
+    data_preprocessing = "fastq_inputs/{input_mode}/{sample}_adRm.fastq.gz".format(sample=config['sample_name'],
+        input_mode=input_mode)
+    # todo incorporate the right flag in order to request the right target
+    entrez_build_prok_refseq_rep = "{query}/bowtie/refseq_rep_refseq_prok.fasta.gz".format(query=config['query_name'])
+    # todo incorporate the right flag in order to request the right target
+    entrez = "{query}/bowtie/{query}_entrez.fasta.gz".format(query=config['query_name'])
+    bowtie = "{query}/fastq/{read_mode}/{sample}_mapq.readlen".format(query=config['query_name'],
+        sample=config['sample_name'], read_mode=read_mode)
+    bowtie_meta = "{query}/sigma/{sample}_alignments.done".format(query=config['query_name'],
+        sample=config['sample_name'])
+    metagenomics_probabilities = "{query}/probabilities/{sample}/{sample}_posterior_probabilities.csv".format(
+        query=config['query_name'], sample=config['sample_name'])
+    metagenomics_abundances = "{query}/probabilities/{sample}/{sample}_posterior_abundance.tsv".format(
+        query=config['query_name'], sample=config['sample_name'])
+    mapdamage = "{query}/mapdamage/{sample}_mapdamage.done".format(query=config['query_name'],
+        sample=config['sample_name'])
+
+    target_list = [data_preprocessing, entrez_build_prok_refseq_rep, entrez, bowtie, bowtie_meta,
+                   metagenomics_probabilities, metagenomics_abundances, mapdamage]
 
     print('--------')
     print('details!')
     print('\tsnakefile: {}'.format(snakefile))
-    print('\tconfig: {}'.format(config_yaml))
+    print('\tconfig: {}'.format(config))
+    print('\ttargets: {}'.format(target_list))
     print('--------')
 
     # run!!
-    status = snakemake.snakemake(snakefile, config=config, printshellcmds=True, dryrun=args.dry_run)
+    status = snakemake.snakemake(snakefile, config=config, targets=target_list, printshellcmds=True,
+        dryrun=args.dry_run)
 
     if status:  # translate "success" into shell exit code of 0
         return 0
