@@ -85,11 +85,11 @@ def get_inputs_for_bowtie_r1(wildcards):
 
     else:
         if PE_MODERN:
-            return config['samples'][wildcards.sample]['R1']
+            return config['sample_fastq_R1']
         elif PE_ANCIENT:
-            return config['samples'][wildcards.sample]
+            return config['sample_fastq']
         elif SE:
-            return config['samples'][wildcards.sample]
+            return config['sample_fastq']
 
 
 
@@ -102,7 +102,7 @@ def get_inputs_for_bowtie_r2(wildcards):
 
     else:
         if PE_MODERN:
-            return config['samples'][wildcards.sample]['R2']
+            return config['sample_fastq_R2']
         else:
             return ""
 

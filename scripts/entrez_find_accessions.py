@@ -12,10 +12,10 @@ sys.path.append(os.getcwd())
 from scripts.entrez_utils import guts_of_entrez, ENTREZ_DB_NUCCORE, ENTREZ_RETMODE_XML, ENTREZ_RETTYPE_GB, ENTREZ_RETMAX
 
 
-def entrez_find_accessions(config, query, output_file):
-    Entrez.email = config['entrez']['email']
+def entrez_find_accessions(config, output_file):
+    Entrez.email = config['entrez_email']
 
-    entrez_query = config['entrez']['queries'][query]
+    entrez_query = config['entrez_query']
 
     handle = Entrez.esearch(db=ENTREZ_DB_NUCCORE, term=entrez_query, retmax=ENTREZ_RETMAX, idtype="acc",
                             rettype=ENTREZ_RETTYPE_GB, retmode=ENTREZ_RETMODE_XML)
@@ -37,6 +37,5 @@ if __name__ == '__main__':
 
     entrez_find_accessions(
         config=snakemake.config,
-        query=snakemake.wildcards.query,
         output_file=snakemake.output[0]
     )

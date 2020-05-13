@@ -11,7 +11,7 @@ import os.path
 def entrez_pick_sequences(config, nuccore_file, taxa_file, output_file, query):
     accessions = pd.read_csv(nuccore_file, sep='\t')
     taxa = pd.read_csv(taxa_file, sep='\t')
-    rank = config['entrez']['rank']
+    rank = config['entrez_rank']
 
     print("read the accessions and the taxa", file=sys.stderr)
 

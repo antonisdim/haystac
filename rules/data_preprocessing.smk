@@ -78,9 +78,9 @@ def get_inputs_for_adapterremoval_r1(wildcards):
 
     else:
         if PE_ANCIENT or PE_MODERN:
-            return config['samples'][wildcards.accession]['R1']
+            return config['sample_fastq_R1']
         elif SE:
-            return config['samples'][wildcards.accession]
+            return config['sample_fastq']
 
 
 def get_inputs_for_adapterremoval_r2(wildcards):
@@ -92,7 +92,7 @@ def get_inputs_for_adapterremoval_r2(wildcards):
 
     else:
         if PE_ANCIENT or PE_MODERN:
-            return config['samples'][wildcards.accession]['R2']
+            return config['sample_fastq_R2']
         else:
             return ""
 

@@ -24,11 +24,11 @@ def get_inputs_for_count_fastq_len(wildcards):
 
     else:
         if PE_MODERN:
-            return config['samples'][wildcards.sample]['R1']
+            return config['sample_fastq_R1']
         elif PE_ANCIENT:
-            return config['samples'][wildcards.sample]
+            return config['sample_fastq']
         elif SE:
-            return config['samples'][wildcards.sample]
+            return config['sample_fastq']
 
 
 rule count_fastq_length:

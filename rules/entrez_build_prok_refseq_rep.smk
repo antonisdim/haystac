@@ -36,8 +36,6 @@ checkpoint entrez_refseq_accessions:
 
 
 
-# todo: Can I use the rule from entrez.smk as they are exactly the same, instead of writing a
-#  new one with a different name ?
 rule entrez_download_refseq_genbank_sequence:
     output:
         "database/refseq_genbank/{orgname}/{accession}.fasta.gz"
@@ -105,7 +103,8 @@ rule entrez_download_assembly_sequence:
     script:
         "../scripts/entrez_download_sequence.py"
 
-# todo same problem as with the entrez_download_refseq_genbank_sequence rule
+
+
 # ruleorder: entrez_download_assembly_sequence > entrez_download_sequence
 
 

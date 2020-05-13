@@ -36,7 +36,8 @@ def main(args):
         sys.stderr.write('Error: cannot find config.yaml {}\n'.format(args.config_yaml))
         sys.exit(-1)
 
-    config = vars(args)
+    with open('config.yaml') as fin:
+        config = yaml.safe_load(fin)
 
     print('--------')
     print('details!')

@@ -50,7 +50,7 @@ def entrez_nuccore_query(input_file, config, query_chunk_num, output_file, attem
     """
 
     time.sleep(int(query_chunk_num) // 3)
-    Entrez.email = config['entrez']['email']
+    Entrez.email = config['entrez_email']
 
     accessions = pd.read_csv(input_file, sep='\t').squeeze().to_list()
     entrez_query_list = next(itertools.islice(chunker(accessions, CHUNK_SIZE), int(query_chunk_num), None))
@@ -63,7 +63,7 @@ def entrez_nuccore_query(input_file, config, query_chunk_num, output_file, attem
     # get list of entries for given query
     print("Getting list of Accessions for term={} ...\n".format(entrez_query), file=sys.stderr)
 
-    retmax = config['entrez']['batchSize']
+    retmax = config['entrez_batchsize']
     counter = 0
     dictwriter_counter = 0
 
