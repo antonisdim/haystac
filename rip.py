@@ -59,12 +59,9 @@ def main(args):
     elif config['PE_ANCIENT'] or config['SE']:
         read_mode = 'SE'
 
-    # todo flag for data pre processing
     data_preprocessing = "fastq_inputs/{input_mode}/{sample}_adRm.fastq.gz".format(sample=config['sample_name'],
         input_mode=input_mode)
-    # todo incorporate the right flag in order to request the right target
     entrez_build_prok_refseq_rep = "{query}/bowtie/refseq_rep_refseq_prok.fasta.gz".format(query=config['query_name'])
-    # todo incorporate the right flag in order to request the right target
     entrez = "{query}/bowtie/{query}_entrez.fasta.gz".format(query=config['query_name'])
     bowtie = "{query}/fastq/{read_mode}/{sample}_mapq.readlen".format(query=config['query_name'],
         sample=config['sample_name'], read_mode=read_mode)
@@ -77,8 +74,16 @@ def main(args):
     mapdamage = "{query}/mapdamage/{sample}_mapdamage.done".format(query=config['query_name'],
         sample=config['sample_name'])
 
-    target_list = [data_preprocessing, entrez_build_prok_refseq_rep, entrez, bowtie, bowtie_meta,
-                   metagenomics_probabilities, metagenomics_abundances, mapdamage]
+    target_list = [bowtie, bowtie_meta, metagenomics_probabilities, metagenomics_abundances,
+                   mapdamage]
+
+    if config['WITH_DATA_PREPROCESSING']:
+        target_list.append(data_preprocessing)
+
+    if config['WITH_ENTREZ_QUERY']:
+        target_list.append(entrez)
+    if config['WITH_REFSEQ_REP']:
+        target_list.append(entrez_build_prok_refseq_rep)
 
     print('--------')
     print('details!')
@@ -132,6 +137,7 @@ if __name__ == '__main__':
                                                     'the species id pipeline. written in the NCBI query language '
                                                     '(copy it from the website).either or both of WITH_REFSEQ_REP and '
                                                     'WITH_ENTREZ_QUERY should be set (default: True)')
+    parser.add_argument('--WITH_DATA_PREPROCESSING', help='Remove adapters from raw fastq files')
     parser.add_argument('--SPECIFIC_GENUS', help='list containing the names of specific genera the abundances should '
                                                  'be calculated on <["genus"]>')
     parser.add_argument('--MEM_RESOURCES_MB', help='max mem resources allowed to be used ofr indexing the input for '
