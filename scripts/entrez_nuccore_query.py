@@ -95,8 +95,10 @@ def entrez_nuccore_query(input_file, config, query_chunk_num, output_file, attem
                     print("A total of {} records have been saved successfully.\n".format(total_records),
                         file=sys.stderr)
                 else:
+                    print('dictwriter_counter\t', dictwriter_counter)
+                    print('total_records\t', total_records)
                     raise RuntimeError("A total of {} records have been saved successfully. Please check the relevant "
-                                       "log file to see which ones failed.\n".format(total_records))
+                                       "log file to see which ones failed.\n".format(dictwriter_counter))
                 break
 
             try:

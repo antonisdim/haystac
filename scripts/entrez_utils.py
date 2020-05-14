@@ -103,7 +103,7 @@ def guts_of_entrez(db, retmode, rettype, chunk, batch_size):
 
         for accession in chunk:
             try:
-                guts_of_entrez(db, retmode, rettype, accession, batch_size)
+                yield guts_of_entrez(db, retmode, rettype, accession, batch_size)
             except (http.client.HTTPException, urllib.error.HTTPError, urllib.error.URLError,
                     RuntimeError, Entrez.Parser.ValidationError, socket.error):
                 print("Discarding this accession as it is a bad record {}.".format(accession), file=sys.stderr)
