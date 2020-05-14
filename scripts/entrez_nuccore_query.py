@@ -111,7 +111,6 @@ def entrez_nuccore_query(input_file, config, query_chunk_num, output_file, attem
                                           for val in gen_dict_extract('GBQualifier_value', node) if
                                           'taxon:' in val].pop()
                     # print("iterating on node", file=sys.stderr)
-                    print(node)
                     w.writerow(node)
                     dictwriter_counter += 1
 
