@@ -17,7 +17,7 @@ from scripts.entrez_utils import guts_of_entrez, ENTREZ_DB_NUCCORE, ENTREZ_RETMO
 
 # todo should it in the config ? needs to be the same as in entrez.smk file. Feel like I can do it better
 CHUNK_SIZE = 20
-TOO_MANY_REQUESTS_WAIT = 5
+TOO_MANY_REQUESTS_WAIT = 7
 MAX_RETRY_ATTEMPTS = 10
 
 
@@ -68,9 +68,11 @@ def entrez_nuccore_query(input_file, config, query_chunk_num, output_file, attem
     dictwriter_counter = 0
 
     with open(output_file, 'a') as fout:
+        fileEmpty = os.stat(output_file).st_size == 0
         fieldnames = ['GBSeq_accession-version', 'TSeq_taxid', 'GBSeq_organism', 'GBSeq_definition', 'GBSeq_length']
         w = csv.DictWriter(fout, fieldnames, delimiter='\t', extrasaction="ignore")
-        w.writeheader()
+        if fileEmpty:
+            w.writeheader()
 
         while True:
             handle = Entrez.esearch(db=ENTREZ_DB_NUCCORE, term=entrez_query, retmax=retmax, idtype="acc",
@@ -98,8 +100,8 @@ def entrez_nuccore_query(input_file, config, query_chunk_num, output_file, attem
                 break
 
             try:
-                records = guts_of_entrez(ENTREZ_DB_NUCCORE, ENTREZ_RETMODE_XML, ENTREZ_RETTYPE_GB, accessions, retmax)
-
+                records = guts_of_entrez(ENTREZ_DB_NUCCORE, ENTREZ_RETMODE_XML, ENTREZ_RETTYPE_GB, accessions,
+                    retmax)
                 for node in records:
                     # print(node)
 
@@ -107,7 +109,7 @@ def entrez_nuccore_query(input_file, config, query_chunk_num, output_file, attem
                                           for val in gen_dict_extract('GBQualifier_value', node) if
                                           'taxon:' in val].pop()
                     # print("iterating on node", file=sys.stderr)
-
+                    print(node)
                     w.writerow(node)
                     dictwriter_counter += 1
 
