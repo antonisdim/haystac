@@ -36,13 +36,13 @@ entrez_rank:
   'species'
 
 sample_name:
-  SRR1031289
+  SRR054920
 sample_fastq:
-  sra_data/SRR055002.fastq.gz
-sample_fastq_R1:
-  [sra_data/SRR1031215_R1.fastq.gz]
-sample_fastq_R2:
-  [sra_data/SRR1031215_R2.fastq.gz]
+  sra_data/SE/SRR054920.fastq.gz
+#sample_fastq_R1:
+#  [sra_data/PE/SRR054920_R1.fastq.gz]
+#sample_fastq_R2:
+#  [sra_data/PE/SRR054920_R2.fastq.gz]
 
 min_mapq:
   20
@@ -55,7 +55,7 @@ bowtie2_treads:
   1
 
 SRA_LOOKUP:
-  True
+  False
 PE_ANCIENT:
   False
 PE_MODERN:
@@ -64,7 +64,7 @@ SE:
   True
 
 WITH_REFSEQ_REP:
-  True
+  False
 WITH_ENTREZ_QUERY:
   True
 

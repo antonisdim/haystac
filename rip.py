@@ -36,7 +36,7 @@ def main(args):
         sys.stderr.write('Error: cannot find config.yaml {}\n'.format(args.config_yaml))
         sys.exit(-1)
 
-    with open('config.yaml') as fin:
+    with open(args.config_yaml) as fin:
         config_yaml = yaml.safe_load(fin)
 
     config_args = vars(args)
@@ -53,18 +53,31 @@ def main(args):
     elif config['SE']:
         input_mode = 'SE'
 
-    read_mode = ''
-    if config['PE_MODERN']:
-        read_mode = 'PE'
-    elif config['PE_ANCIENT'] or config['SE']:
-        read_mode = 'SE'
+    # read_mode = ''
+    # if config['PE_MODERN']:
+    #     read_mode = 'PE'
+    # elif config['PE_ANCIENT'] or config['SE']:
+    #     read_mode = 'SE'
 
-    data_preprocessing = "fastq_inputs/{input_mode}/{sample}_adRm.fastq.gz".format(sample=config['sample_name'],
-        input_mode=input_mode)
+    data_preprocessing = ''
+    if config['PE_MODERN']:
+        data_preprocessing = "fastq_inputs/{input_mode}/{sample}_R1_adRm.fastq.gz".format(sample=config['sample_name'],
+            input_mode=input_mode)
+    elif config['PE_ANCIENT'] or config['SE']:
+        data_preprocessing = "fastq_inputs/{input_mode}/{sample}_adRm.fastq.gz".format(sample=config['sample_name'],
+            input_mode=input_mode)
+
     entrez_build_prok_refseq_rep = "{query}/bowtie/refseq_rep_refseq_prok.fasta.gz".format(query=config['query_name'])
     entrez = "{query}/bowtie/{query}_entrez.fasta.gz".format(query=config['query_name'])
-    bowtie = "{query}/fastq/{read_mode}/{sample}_mapq.readlen".format(query=config['query_name'],
-        sample=config['sample_name'], read_mode=read_mode)
+
+    bowtie = ''
+    if config['PE_MODERN']:
+        bowtie = "{query}/fastq/PE/{sample}_mapq_pair.readlen".format(query=config['query_name'],
+            sample=config['sample_name'])
+    elif config['PE_ANCIENT'] or config['SE']:
+        bowtie = "{query}/fastq/SE/{sample}_mapq.readlen".format(query=config['query_name'],
+            sample=config['sample_name'])
+
     bowtie_meta = "{query}/sigma/{sample}_alignments.done".format(query=config['query_name'],
         sample=config['sample_name'])
     metagenomics_probabilities = "{query}/probabilities/{sample}/{sample}_posterior_probabilities.csv".format(

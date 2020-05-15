@@ -15,7 +15,7 @@ SE = config['SE']
 MAX_MEM_MB = virtual_memory().total / (1024 ** 2)
 MEM_RESOURCES_MB = config['MEM_RESOURCES_MB']
 MEM_RESCALING_FACTOR = config['MEM_RESCALING_FACTOR']
-
+WITH_DATA_PREPROCESSING = config['WITH_DATA_PREPROCESSING']
 
 ##### Target rules #####
 
@@ -87,9 +87,15 @@ def get_inputs_for_bowtie_r1(wildcards):
         if PE_MODERN:
             return config['sample_fastq_R1']
         elif PE_ANCIENT:
-            return config['sample_fastq']
+            if WITH_DATA_PREPROCESSING:
+                return "fastq_inputs/PE_anc/{sample}_adRm.fastq.gz".format(sample=wildcards.sample)
+            else:
+                return config['sample_fastq']
         elif SE:
-            return config['sample_fastq']
+            if WITH_DATA_PREPROCESSING:
+                return "fastq_inputs/SE/{sample}_adRm.fastq.gz".format(sample=wildcards.sample)
+            else:
+                return config['sample_fastq']
 
 
 
@@ -217,7 +223,8 @@ rule extract_fastq_single_end:
     params:
         min_mapq=config['min_mapq']
     shell:
-        "( samtools view -h -F 4 {input} | samtools fastq -c 6 - > {output} ) 2> {log}"
+        # "( samtools view -h -F 4 {input} | samtools fastq -c 6 - > {output} ) 2> {log}"
+        "( samtools view -h -F 4 {input} | samtools fastq -c 6 - | seqkit rmdup -n -o {output} ) 2> {log}"
 
 
 
@@ -234,9 +241,14 @@ rule extract_fastq_paired_end:
     params:
         min_mapq=config['min_mapq']
     shell:
+        # "( samtools view -h -F 4 {input} "
+        # "| samtools fastq -c 6 -1 {output[0]} -2 {output[1]} -0 /dev/null -s /dev/null - ) 2> {log}"
         "( samtools view -h -F 4 {input} "
-        "| samtools fastq -c 6 -1 {output[0]} -2 {output[1]} -0 /dev/null -s /dev/null - ) 2> {log}"
-
+        "| samtools fastq -c 6 -1 {wildcards.query}/fastq/PE/temp_R1.fastq.gz "
+        "-2 {wildcards.query}/fastq/PE/temp_R2.fastq.gz -0 /dev/null -s /dev/null - );"
+        "seqkit rmdup -n {wildcards.query}/fastq/PE/temp_R1.fastq.gz -o {output[0]}; "
+        "seqkit rmdup -n {wildcards.query}/fastq/PE/temp_R2.fastq.gz -o {output[1]};"
+        "rm {wildcards.query}/fastq/PE/temp_R1.fastq.gz; rm {wildcards.query}/fastq/PE/temp_R2.fastq.gz  2> {log}"
 
 
 # ruleorder: extract_fastq_paired_end > extract_fastq_single_end

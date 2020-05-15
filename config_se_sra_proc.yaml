@@ -36,7 +36,7 @@ entrez_rank:
   'species'
 
 sample_name:
-  SRR1031289
+  SRR054920
 sample_fastq:
   sra_data/SRR055002.fastq.gz
 sample_fastq_R1:

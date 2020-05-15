@@ -21,5 +21,6 @@ dependencies:
   - r-RcppGSL
   - r-ggplot2
   - r-Rcpp
+  - seqkit
   - pip:
       - "--editable=git+git://github.com/ginolhac/mapDamage.git#egg=mapdamage"

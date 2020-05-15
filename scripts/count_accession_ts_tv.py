@@ -68,7 +68,7 @@ def count_ts_tv_init(bam_file, output_file, taxon, pairs=False):
                         else:
                             tv += 1
 
-                    print(taxon, read.query_name, ts, tv, file=fout, sep=",")
+                print(taxon, read.query_name, ts, tv, file=fout, sep=",")
 
         if pairs:
 

@@ -57,11 +57,11 @@ bowtie2_treads:
 SRA_LOOKUP:
   True
 PE_ANCIENT:
-  False
+  True
 PE_MODERN:
   False
 SE:
-  True
+  False
 
 WITH_REFSEQ_REP:
   True
