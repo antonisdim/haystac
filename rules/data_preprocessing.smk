@@ -134,7 +134,7 @@ rule adapterremoval_paired_end_modern:
         fastq_r1=get_inputs_for_adapterremoval_r1,
         fastq_r2=get_inputs_for_adapterremoval_r2
     log:
-        "fastq_inputs/PE/{accession}_adRm.log"
+        "fastq_inputs/PE_mod/{accession}_adRm.log"
     output:
         fastq_r1="fastq_inputs/PE_mod/{accession}_R1_adRm.fastq.gz",
         fastq_r2="fastq_inputs/PE_mod/{accession}_R2_adRm.fastq.gz"
