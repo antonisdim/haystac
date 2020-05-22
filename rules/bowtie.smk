@@ -162,10 +162,10 @@ def get_sorted_bam_paths(wildcards):
 
     if PE_MODERN:
         return expand("{query}/bam/{reads}_{sample}_sorted_chunk{chunk_num}.bam", query=wildcards.query, reads=['PE'],
-            sample=wildcards.sample, chunk_num=[x+1 for x in range(idx_chunk_total)])
+            sample=wildcards.sample, chunk_num=[x+1 if idx_chunk_total > 1 else 1 for x in range(idx_chunk_total)] )
     if PE_ANCIENT or SE:
         return expand("{query}/bam/{reads}_{sample}_sorted_chunk{chunk_num}.bam", query=wildcards.query, reads=['SE'],
-            sample=wildcards.sample, chunk_num=[x+1 for x in range(idx_chunk_total)])
+            sample=wildcards.sample, chunk_num=[x+1 if idx_chunk_total > 1 else 1 for x in range(idx_chunk_total)])
 
 
 
