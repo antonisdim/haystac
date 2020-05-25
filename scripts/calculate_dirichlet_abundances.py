@@ -44,7 +44,7 @@ def calculate_dirichlet_abundances(ts_tv_file, pvaluesfile, total_sample_fastq_r
 
     remaining_dark_matter = total_fastq_reads - reads_in_bams
 
-    if 'Dark.Matter' in a.index:
+    if 'Dark_Matter' in a.index:
         a.loc['Dark_Matter'] = a.loc['Dark_Matter'] + remaining_dark_matter
     else:
         a.loc['Dark_Matter'] = remaining_dark_matter
