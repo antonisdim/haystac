@@ -107,7 +107,7 @@ def main(args):
 
     # run!!
     status = snakemake.snakemake(snakefile, config=config, targets=target_list, printshellcmds=True,
-        dryrun=args.dry_run, cores=4, keepgoing=True, force_incomplete=True)
+        dryrun=args.dry_run, cores=4, keepgoing=True)
 
     if status:  # translate "success" into shell exit code of 0
         return 0
