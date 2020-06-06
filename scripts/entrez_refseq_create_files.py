@@ -13,16 +13,26 @@ def entrez_refseq_create_files(input_file, nuccore_genomes_out, genbank_genomes_
     assemblies = prok_refseq_rep_rmdup.loc[prok_refseq_rep_rmdup['WGS'].notna(), ['#Species/genus', 'WGS']]
 
     assemblies['#Species/genus'] = assemblies['#Species/genus'].str.replace(' ', '_')
+    assemblies['#Species/genus'] = assemblies['#Species/genus'].str.replace('/', '_')
+    assemblies['#Species/genus'] = assemblies['#Species/genus'].str.replace("'", '')
+    assemblies['#Species/genus'] = assemblies['#Species/genus'].str.replace("(", '')
+    assemblies['#Species/genus'] = assemblies['#Species/genus'].str.replace(")", '')
 
     nuccore = prok_refseq_rep_rmdup.loc[
         prok_refseq_rep_rmdup['Chromosome RefSeq'].notna(), ['#Species/genus', 'Chromosome RefSeq']]
 
     nuccore['#Species/genus'] = nuccore['#Species/genus'].str.replace(' ', '_')
+    nuccore['#Species/genus'] = nuccore['#Species/genus'].str.replace("'", '')
+    nuccore['#Species/genus'] = nuccore['#Species/genus'].str.replace("(", '')
+    nuccore['#Species/genus'] = nuccore['#Species/genus'].str.replace(")", '')
 
     genbank = prok_refseq_rep_rmdup.loc[
         prok_refseq_rep_rmdup['Chromosome GenBank'].notna(), ['#Species/genus', 'Chromosome GenBank']]
 
     genbank['#Species/genus'] = genbank['#Species/genus'].str.replace(' ', '_')
+    genbank['#Species/genus'] = genbank['#Species/genus'].str.replace("'", '')
+    genbank['#Species/genus'] = genbank['#Species/genus'].str.replace("(", '')
+    genbank['#Species/genus'] = genbank['#Species/genus'].str.replace(")", '')
 
     genbank_filtered = genbank[(~genbank['#Species/genus'].isin(assemblies['#Species/genus'])) & (
         ~genbank['#Species/genus'].isin(nuccore['#Species/genus']))]

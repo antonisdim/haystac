@@ -36,13 +36,27 @@ checkpoint entrez_refseq_accessions:
 
 
 
+checkpoint entrez_invalid_assemblies:
+    input:
+        "{query}/entrez/{query}-assemblies.tsv"
+    log:
+        "{query}/entrez/{query}-invalid-assemblies.log"
+    output:
+        "{query}/entrez/{query}-invalid-assemblies.tsv"
+    benchmark:
+        repeat("benchmarks/entrez_valid_assemblies_{query}.benchmark.txt", 1)
+    script:
+        "../scripts/entrez_invalid_assemblies.py"
+
+
+
 rule entrez_download_refseq_genbank_sequence:
     output:
         "database/refseq_genbank/{orgname}/{accession}.fasta.gz"
     log:
         "database/refseq_genbank/{orgname}/{accession}.log"
     benchmark:
-        repeat("benchmarks/entrez_download_refseq_genbank_sequence_{orgname}_{accession}.benchmark.txt", 3)
+        repeat("benchmarks/entrez_download_refseq_genbank_sequence_{orgname}_{accession}.benchmark.txt", 1)
     params:
         assembly=False
     script:
@@ -97,7 +111,7 @@ rule entrez_download_assembly_sequence:
     log:
         "database/refseq_assembly/{orgname}/{accession}.log"
     benchmark:
-        repeat("benchmarks/entrez_download_assembly_sequence_{orgname}_{accession}.benchmark.txt", 3)
+        repeat("benchmarks/entrez_download_assembly_sequence_{orgname}_{accession}.benchmark.txt", 1)
     params:
         assembly=True
     script:
@@ -118,6 +132,11 @@ def get_assembly_genome_sequences(wildcards):
 
     if len(assembly_sequences) == 0:
         raise RuntimeError("The entrez pick sequences file is empty.")
+
+    invalid_assemblies = checkpoints.entrez_invalid_assemblies.get(query=wildcards.query)
+    invalid_assembly_sequences = pd.read_csv(invalid_assemblies.output[0], sep='\t')
+
+    assembly_sequences = assembly_sequences[~assembly_sequences['GBSeq_accession-version'].isin(invalid_assembly_sequences['GBSeq_accession-version'])]
 
     inputs = []
 
@@ -146,25 +165,27 @@ rule entrez_assembly_multifasta:
 
 rule softlink_refseq_to_database:
     input:
+        "{query}/bowtie/{query}_refseq_genbank.fasta.gz",
         get_refseq_genome_sequences
     output:
         "database/{query}_softlink_refseq_to_database.done"
     log:
         "database/{query}_softlink_refseq_to_database.log"
     shell:
-        "for i in {input}; do ln -sfn `echo $i | cut -d '/' -f 2-3` database; done; touch {output}"
+        "for i in {input[1]}; do ln -sfn `echo $i | cut -d '/' -f 2-3` database; done; touch {output}"
 
 
 
 rule softlink_assemblies_to_database:
     input:
+        "{query}/bowtie/{query}_assemblies.fasta.gz",
         get_assembly_genome_sequences
     output:
         "database/{query}_softlink_assembly_to_database.done"
     log:
         "database/{query}_softlink_assembly_to_database.log"
     shell:
-        "for i in {input}; do ln -sfn `echo $i | cut -d '/' -f 2-3` database; done; touch {output}"
+        "for i in {input[1]}; do ln -sfn `echo $i | cut -d '/' -f 2-3` database; done; touch {output}"
 
 
 rule entrez_refseq_prok_multifasta:

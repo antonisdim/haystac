@@ -41,6 +41,10 @@ def entrez_pick_sequences(config, nuccore_file, taxa_file, output_file, query):
 
     print("selected the longest sequence per species, writing it to a file", file=sys.stderr)
 
+    selected_sequences['species'] = selected_sequences['species'].str.replace("'", '')
+    selected_sequences['species'] = selected_sequences['species'].str.replace("(", '')
+    selected_sequences['species'] = selected_sequences['species'].str.replace(")", '')
+
     selected_sequences.to_csv(output_file, sep='\t', header=True, index=False)
 
 

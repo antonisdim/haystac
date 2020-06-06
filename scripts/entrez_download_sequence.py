@@ -28,7 +28,9 @@ def entrez_download_sequence(accession, config, output_file, attempt=1, assembly
     Entrez.email = config['entrez_email']
 
     if assembly:
-        handle = Entrez.esearch(db=ENTREZ_DB_ASSEMBLY, term=accession)
+        handle = Entrez.esearch(db=ENTREZ_DB_ASSEMBLY, term=accession + ' AND "latest refseq"[filter]')
+        # or handle = Entrez.esearch(db=ENTREZ_DB_ASSEMBLY,
+        # term=accession + ' AND ((latest[filter] OR "latest refseq"[filter])')
         assembly_record = Entrez.read(handle)
         esummary_handle = Entrez.esummary(db=ENTREZ_DB_ASSEMBLY, id=assembly_record['IdList'], report="full")
         esummary_record = Entrez.read(esummary_handle)
