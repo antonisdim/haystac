@@ -79,7 +79,7 @@ def main(args):
             sample=config['sample_name'])
 
     index_database = "database/idx_database_{query}.done".format(query=config['query_name'])
-    bt2_filter_idx = "{query}/bowtie/{query}_chunk1.1.bt2l".format(query=config['query_name'])
+    bt2_filter_idx = "{query}/bowtie/bowtie_index.done".format(query=config['query_name'])
     bowtie_meta = "{query}/sigma/{sample}_alignments.done".format(query=config['query_name'],
         sample=config['sample_name'])
     metagenomics_probabilities = "{query}/probabilities/{sample}/{sample}_posterior_probabilities.csv".format(
@@ -131,7 +131,6 @@ def main(args):
     if args.mapdamage:
         target_list = [mapdamage]
 
-
     print('--------')
     print('details!')
     print('\tsnakefile: {}'.format(snakefile))
@@ -141,7 +140,8 @@ def main(args):
 
     # run!!
     status = snakemake.snakemake(snakefile, config=config, targets=target_list, printshellcmds=True,
-        dryrun=args.dry_run, cores=args.cores, keepgoing=True, restart_times=15, touch=args.touch, forceall=args.touch)
+        dryrun=args.dry_run, cores=int(args.cores), keepgoing=True, restart_times=15,
+        touch=args.touch, forceall=args.touch, lock=args.no_lock)
 
     if status:  # translate "success" into shell exit code of 0
         return 0
@@ -202,7 +202,8 @@ if __name__ == '__main__':
     parser.add_argument('--abundances', action='store_true')
     parser.add_argument('--mapdamage', action='store_true')
     parser.add_argument('--touch', action='store_true')
-    parser.add_argument('-j', '-cores')
+    parser.add_argument('-j', '--cores')
+    parser.add_argument('-l', '--no_lock', action='store_false')
 
     args = parser.parse_args()
 

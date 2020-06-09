@@ -38,17 +38,17 @@ def count_bt2_idx(mem_resources, mem_rescaling_factor, input_file_list, query, o
 
     output_file_list = [output_file_path]
 
-    if not mem_resources_mb / file_size >= scaling_factor:
+    if not mem_resources_mb / float(file_size) >= float(scaling_factor):
 
         fout = bgzf.open(output_file_path, 'wt')
         for input_file in input_file_list:
-            binary_handle = gzip.open(input_file, 'rt')
+            binary_handle = bgzf.open(input_file, 'rt')
 
             for seq_record in SeqIO.parse(binary_handle, "fasta"):
                 fout.write(">" + str(seq_record.description) + "\n" + str(seq_record.seq) + "\n")
                 size = round(os.stat(output_file_path).st_size / (1024 ** 2))
 
-                if size >= file_size / scaling_factor:
+                if float(size) >= file_size / float(scaling_factor):
                     print("Chunk number {num} has reached its size limit".format(num=chunk_num), file=sys.stderr)
                     fout.close()
                     chunk_num += 1

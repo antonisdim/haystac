@@ -72,6 +72,30 @@ rule bowtie_index:
 
 
 
+def get__bt2_idx_chunk_paths(wildcards):
+
+    get_paths = checkpoints.count_bt2_idx.get(query=wildcards.query)
+    idx_chunk_total = len(pd.read_csv(get_paths.output[0], sep='\t', header=None))
+
+    return expand("{query}/bowtie/{query}_chunk{chunk_num}.1.bt2l", query=wildcards.query,
+        chunk_num=[x+1 if idx_chunk_total > 1 else 1 for x in range(idx_chunk_total)])
+
+
+
+rule bowtie_index_done:
+    input:
+        get__bt2_idx_chunk_paths
+    log:
+        "{query}/bowtie/bowtie_index.log"
+    output:
+         "{query}/bowtie/bowtie_index.done"
+    benchmark:
+        repeat("benchmarks/bowtie_index_done_{query}", 1)
+    shell:
+        "touch {output} 2> {log}"
+
+
+
 def get_inputs_for_bowtie_r1(wildcards):
     print(wildcards.sample)
 

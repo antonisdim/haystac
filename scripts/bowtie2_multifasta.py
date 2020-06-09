@@ -3,15 +3,17 @@
 
 import shutil
 import sys
+import gzip
+from Bio import bgzf
 
 
 def bowtie_multifasta(fasta_files, output_file):
-
     print("We're creating the bowtie2 multifasta file for the filtering ...", file=sys.stderr)
 
-    with open(output_file, 'wb') as fout:
+    with bgzf.open(output_file, 'wt') as fout:
         for fasta_file in fasta_files:
-            with open(fasta_file, 'rb') as fin:
+            print(fasta_file, file=sys.stderr)
+            with bgzf.open(fasta_file, 'rb') as fin:
                 shutil.copyfileobj(fin, fout)
 
     print("Multifasta file created", file=sys.stderr)
