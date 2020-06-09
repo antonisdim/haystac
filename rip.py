@@ -78,6 +78,8 @@ def main(args):
         bowtie = "{query}/fastq/SE/{sample}_mapq.readlen".format(query=config['query_name'],
             sample=config['sample_name'])
 
+    index_database = "database/idx_database_{query}.done".format(query=config['query_name'])
+    bt2_filter_idx = "{query}/bowtie/{query}_chunk1.1.bt2l".format(query=config['query_name'])
     bowtie_meta = "{query}/sigma/{sample}_alignments.done".format(query=config['query_name'],
         sample=config['sample_name'])
     metagenomics_probabilities = "{query}/probabilities/{sample}/{sample}_posterior_probabilities.csv".format(
@@ -98,6 +100,38 @@ def main(args):
     if config['WITH_REFSEQ_REP']:
         target_list.append(entrez_build_prok_refseq_rep)
 
+    if args.data_preprocess:
+        target_list = [data_preprocessing]
+
+    if args.build_db:
+        target_list = []
+        if config['WITH_ENTREZ_QUERY']:
+            target_list.append(entrez)
+        if config['WITH_REFSEQ_REP']:
+            target_list.append(entrez_build_prok_refseq_rep)
+
+    if args.index_db:
+        target_list = [index_database]
+
+    if args.aln_filter_index:
+        target_list = [bt2_filter_idx]
+
+    if args.aln_filter:
+        target_list = [bowtie]
+
+    if args.aln_meta:
+        target_list =[bowtie_meta]
+
+    if args.probabilities:
+        target_list = [metagenomics_probabilities]
+
+    if args.abundances:
+        target_list = [metagenomics_abundances]
+
+    if args.mapdamage:
+        target_list = [mapdamage]
+
+
     print('--------')
     print('details!')
     print('\tsnakefile: {}'.format(snakefile))
@@ -107,7 +141,7 @@ def main(args):
 
     # run!!
     status = snakemake.snakemake(snakefile, config=config, targets=target_list, printshellcmds=True,
-        dryrun=args.dry_run, cores=4, keepgoing=True)
+        dryrun=args.dry_run, cores=args.cores, keepgoing=True, restart_times=15, touch=args.touch, forceall=args.touch)
 
     if status:  # translate "success" into shell exit code of 0
         return 0
@@ -158,6 +192,17 @@ if __name__ == '__main__':
                                                    '(default: max available memory on the machine)')
     parser.add_argument('--MEM_RESCALING_FACTOR', help='factor to rescale/chunk the input file for the mutlifasta '
                                                        'index for the filtering alignemnt (default: 2.5)')
+    parser.add_argument('--data_preprocess', action='store_true')
+    parser.add_argument('--build_db', action='store_true')
+    parser.add_argument('--index_db', action='store_true')
+    parser.add_argument('--aln_filter_index', action='store_true')
+    parser.add_argument('--aln_filter', action='store_true')
+    parser.add_argument('--aln_meta', action='store_true')
+    parser.add_argument('--probabilities', action='store_true')
+    parser.add_argument('--abundances', action='store_true')
+    parser.add_argument('--mapdamage', action='store_true')
+    parser.add_argument('--touch', action='store_true')
+    parser.add_argument('-j', '-cores')
 
     args = parser.parse_args()
 

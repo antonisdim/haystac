@@ -127,7 +127,7 @@ rule bowtie_alignment_single_end:
     params:
         index="{query}/bowtie/{query}_chunk{chunk_num}"
     threads:
-        cpu_count()
+        config['bowtie2_treads']
     shell:
         "( bowtie2 -q --very-fast-local --threads {threads} -x {params.index} -U {input.fastq} "
         "| samtools sort -O bam -o {output.bam_file} ) 2> {log}"
@@ -148,7 +148,7 @@ rule bowtie_alignment_paired_end:
     params:
         index="{query}/bowtie/{query}_chunk{chunk_num}"
     threads:
-        cpu_count()
+        config['bowtie2_treads']
     shell:
         "( bowtie2 -q --very-fast-local --threads {threads} -x {params.index} -1 {input.fastq_r1} -2 {input.fastq_r2} "
         "| samtools sort -O bam -o {output.bam_file} ) 2> {log}"
@@ -158,7 +158,7 @@ rule bowtie_alignment_paired_end:
 def get_sorted_bam_paths(wildcards):
 
     get_paths = checkpoints.count_bt2_idx.get(query=wildcards.query)
-    idx_chunk_total = len(pd.read_csv(get_paths.output[0], sep='\t'))
+    idx_chunk_total = len(pd.read_csv(get_paths.output[0], sep='\t', header=None))
 
     if PE_MODERN:
         return expand("{query}/bam/{reads}_{sample}_sorted_chunk{chunk_num}.bam", query=wildcards.query, reads=['PE'],
@@ -219,7 +219,7 @@ rule extract_fastq_single_end:
     output:
         "{query}/fastq/SE/{sample}_mapq.fastq.gz"
     benchmark:
-        repeat("benchmarks/extract_fastq_single_end_{query}_{sample}.benchmark.txt", 3)
+        repeat("benchmarks/extract_fastq_single_end_{query}_{sample}.benchmark.txt", 1)
     params:
         min_mapq=config['min_mapq']
     shell:
@@ -237,7 +237,7 @@ rule extract_fastq_paired_end:
         "{query}/fastq/PE/{sample}_R1_mapq.fastq.gz",
         "{query}/fastq/PE/{sample}_R2_mapq.fastq.gz"
     benchmark:
-        repeat("benchmarks/extract_fastq_paired_end_{query}_{sample}.benchmark.txt", 3)
+        repeat("benchmarks/extract_fastq_paired_end_{query}_{sample}.benchmark.txt", 1)
     params:
         min_mapq=config['min_mapq']
     shell:
@@ -263,7 +263,7 @@ rule average_fastq_read_len_single_end:
     output:
         "{query}/fastq/SE/{sample}_mapq.readlen"
     benchmark:
-        repeat("benchmarks/average_fastq_read_len_single_end_{query}_{sample}.benchmark.txt", 3)
+        repeat("benchmarks/average_fastq_read_len_single_end_{query}_{sample}.benchmark.txt", 1)
     params:
         sample_size=SUBSAMPLE_FIXED_READS
     shell:
@@ -283,7 +283,7 @@ rule average_fastq_read_len_paired_end:
         mate2=temp("{query}/fastq/{sample}_R2_mapq.readlen"),
         pair="{query}/fastq/PE/{sample}_mapq_pair.readlen"
     benchmark:
-        repeat("benchmarks/average_fastq_read_len_paired_end_{query}_{sample}.benchmark.txt", 3)
+        repeat("benchmarks/average_fastq_read_len_paired_end_{query}_{sample}.benchmark.txt", 1)
     params:
         sample_size=SUBSAMPLE_FIXED_READS
     shell:

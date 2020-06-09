@@ -5,6 +5,7 @@ import pandas as pd
 
 ##### Target rules #####
 
+WITH_REFSEQ_REP = config['WITH_REFSEQ_REP']
 
 checkpoint entrez_find_accessions:
     output:
@@ -12,7 +13,7 @@ checkpoint entrez_find_accessions:
     log:
         temp("{query}/entrez/{query}-accessions.log")
     benchmark:
-        repeat("benchmarks/entrez_find_accessions_{query}.benchmark.txt", 3)
+        repeat("benchmarks/entrez_find_accessions_{query}.benchmark.txt", 1)
     script:
         "../scripts/entrez_find_accessions.py"
 
@@ -26,7 +27,7 @@ rule entrez_nuccore_query:
     log:
         temp("{query}/entrez/{query}_{chunk}-nuccore.log")
     benchmark:
-        repeat("benchmarks/entrez_nuccore_query_{query}_{chunk}.benchmark.txt", 3)
+        repeat("benchmarks/entrez_nuccore_query_{query}_{chunk}.benchmark.txt", 1)
     script:
         "../scripts/entrez_nuccore_query.py"
 
@@ -66,7 +67,7 @@ rule entrez_aggregate_nuccore:
     log:
         "{query}/entrez/{query}-nuccore.log"
     benchmark:
-        repeat("benchmarks/entrez_aggregate_nuccore_{query}.benchmark.txt", 3)
+        repeat("benchmarks/entrez_aggregate_nuccore_{query}.benchmark.txt", 1)
     shell:
         "awk 'FNR>1 || NR==1' {input} 1> {output} 2> {log}"
 
@@ -80,22 +81,32 @@ rule entrez_taxa_query:
     log:
         "{query}/entrez/{query}-taxa.log"
     benchmark:
-        repeat("benchmarks/entrez_taxa_query_{query}.benchmark.txt", 3)
+        repeat("benchmarks/entrez_taxa_query_{query}.benchmark.txt", 1)
     script:
         "../scripts/entrez_taxonomy_query.py"
+
+
+
+def pick_after_refseq_prok(wildcards):
+
+    if WITH_REFSEQ_REP:
+        return "{query}/entrez/{query}-genbank-genomes.tsv".format(query=wildcards.query)
+    else:
+        return ""
 
 
 
 checkpoint entrez_pick_sequences:
     input:
         "{query}/entrez/{query}-nuccore.tsv",
-        "{query}/entrez/{query}-taxa.tsv"
+        "{query}/entrez/{query}-taxa.tsv",
+        pick_after_refseq_prok
     output:
         "{query}/entrez/{query}-selected-seqs.tsv"
     log:
         "{query}/entrez/{query}-selected-seqs.log"
     benchmark:
-        repeat("benchmarks/entrez_pick_sequences_{query}.benchmark.txt", 3)
+        repeat("benchmarks/entrez_pick_sequences_{query}.benchmark.txt", 1)
     script:
         "../scripts/entrez_pick_sequences.py"
 
@@ -107,7 +118,7 @@ rule entrez_download_sequence:
     log:
         "database/{orgname}/{accession}.log"
     benchmark:
-        repeat("benchmarks/entrez_download_sequence_{orgname}_{accession}.benchmark.txt", 3)
+        repeat("benchmarks/entrez_download_sequence_{orgname}_{accession}.benchmark.txt", 1)
     params:
         assembly=False
     script:
@@ -129,7 +140,7 @@ def get_fasta_sequences(wildcards):
     inputs = []
 
     for key, seq in sequences.iterrows():
-        orgname, accession = seq['species'].replace(" ", "_"), seq['GBSeq_accession-version']
+        orgname, accession = seq['species'].replace(" ", "_").replace("[", "").replace("]", ""), seq['GBSeq_accession-version']
         inputs.append('database/{orgname}/{accession}.fasta.gz'.format(orgname=orgname, accession=accession))
 
     return inputs
@@ -144,6 +155,6 @@ rule entrez_multifasta:
     output:
         "{query}/bowtie/{query}_entrez.fasta.gz"
     benchmark:
-        repeat("benchmarks/entrez_multifasta_{query}.benchmark.txt", 3)
-    shell:
-        "cat {input} > {output}"
+        repeat("benchmarks/entrez_multifasta_{query}.benchmark.txt", 1)
+    script:
+        "../scripts/bowtie2_multifasta.py"

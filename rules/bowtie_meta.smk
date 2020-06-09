@@ -74,7 +74,7 @@ def get_idx_entrez(wildcards):
     inputs = []
 
     for key, seq in sequences.iterrows():
-        orgname, accession = seq['species'].replace(" ", "_"), seq['GBSeq_accession-version']
+        orgname, accession = seq['species'].replace(" ", "_").replace("[", "").replace("]", ""), seq['GBSeq_accession-version']
         inputs.append("database/{orgname}/{accession}.1.bt2l".
         format(orgname=orgname, accession=accession))
 
@@ -101,7 +101,7 @@ def get_idx_ref_gen(wildcards):
     inputs = []
 
     for key, seq in sequences.iterrows():
-        orgname, accession = seq['species'].replace(" ", "_"), seq['GBSeq_accession-version']
+        orgname, accession = seq['species'].replace(" ", "_").replace("[", "").replace("]", ""), seq['GBSeq_accession-version']
         inputs.append("database/refseq_genbank/{orgname}/{accession}.1.bt2l".
         format(orgname=orgname, accession=accession))
 
@@ -120,12 +120,18 @@ def get_idx_assembly(wildcards):
     refseq_rep_prok = checkpoints.entrez_refseq_accessions.get(query=wildcards.query)
 
     assemblies = pd.read_csv(refseq_rep_prok.output[2], sep='\t')
+
+    invalid_assemblies = checkpoints.entrez_invalid_assemblies.get(query=wildcards.query)
+    invalid_assembly_sequences = pd.read_csv(invalid_assemblies.output[0], sep='\t')
+
+    assemblies = assemblies[~assemblies['GBSeq_accession-version'].isin(invalid_assembly_sequences['GBSeq_accession-version'])]
+
     sequences = assemblies
 
     inputs = []
 
     for key, seq in sequences.iterrows():
-        orgname, accession = seq['species'].replace(" ", "_"), seq['GBSeq_accession-version']
+        orgname, accession = seq['species'].replace(" ", "_").replace("[", "").replace("]", ""), seq['GBSeq_accession-version']
         inputs.append("database/refseq_assembly/{orgname}/{accession}.1.bt2l".
         format(orgname=orgname, accession=accession))
 
@@ -174,7 +180,7 @@ rule align_taxon_single_end:
     shell:
         "( bowtie2 --time --no-unal --no-discordant --no-mixed --ignore-quals --mp 6,6 --np 6 "
         "--score-min L,{params.min_score},0.0 --gbar 1000 -q --threads {threads} "
-        "-x database/{wildcards.orgname}/{wildcards.accession} "
+        "-x database/\"{wildcards.orgname}\"/{wildcards.accession} "
         "-I {params.min_frag_length} -X {params.max_frag_length} "
         "-U {input.fastq} "
         "| samtools sort -O bam -o {output.bam_file} ) 2> {log} "
@@ -203,7 +209,7 @@ rule align_taxon_paired_end:
     shell:
         "( bowtie2 --time --no-unal --no-discordant --no-mixed --ignore-quals --mp 6,6 --np 6 "
         "--score-min L,{params.min_score},0.0 --gbar 1000 -q --threads {threads} "
-        "-x database/{wildcards.orgname}/{wildcards.accession} "
+        "-x database/\"{wildcards.orgname}\"/{wildcards.accession} "
         "-I {params.min_frag_length} -X {params.max_frag_length} "
         "-1 {input.fastq_r1} -2 {input.fastq_r2} "
         "| samtools sort -O bam -o {output.bam_file} ) 2> {log} "
@@ -237,6 +243,12 @@ def get_bamfile_paths(wildcards):
         refseq_plasmids = pd.read_csv(refseq_rep_prok.output[3], sep='\t')
         genbank_plasmids = pd.read_csv(refseq_rep_prok.output[4], sep='\t')
 
+        invalid_assemblies = checkpoints.entrez_invalid_assemblies.get(query=wildcards.query)
+        invalid_assembly_sequences = pd.read_csv(invalid_assemblies.output[0], sep='\t')
+
+        assemblies = assemblies[~assemblies['GBSeq_accession-version'].isin(invalid_assembly_sequences['GBSeq_accession-version'])]
+
+
         if WITH_ENTREZ_QUERY:
             sequences = pd.concat([sequences, refseq_genomes, genbank_genomes, assemblies, refseq_plasmids,
                                    genbank_plasmids])
@@ -248,13 +260,13 @@ def get_bamfile_paths(wildcards):
 
     if config['SE'] or config['PE_ANCIENT']:
         for key, seq in sequences.iterrows():
-            orgname, accession = seq['species'].replace(" ", "_"), seq['GBSeq_accession-version']
+            orgname, accession = seq['species'].replace(" ", "_").replace("[", "").replace("]", ""), seq['GBSeq_accession-version']
             inputs.append('{query}/sigma/{sample}/SE/{orgname}/{orgname}_{accession}.bam'.
             format(query=wildcards.query, sample=wildcards.sample, orgname=orgname, accession=accession))
 
     elif config['PE_MODERN']:
         for key, seq in sequences.iterrows():
-            orgname, accession = seq['species'].replace(" ", "_"), seq['GBSeq_accession-version']
+            orgname, accession = seq['species'].replace(" ", "_").replace("[", "").replace("]", ""), seq['GBSeq_accession-version']
             inputs.append('{query}/sigma/{sample}/PE/{orgname}/{orgname}_{accession}.bam'.
             format(query=wildcards.query, sample=wildcards.sample, orgname=orgname, accession=accession))
 
@@ -270,6 +282,6 @@ rule all_alignments:
     output:
         "{query}/sigma/{sample}_alignments.done"
     benchmark:
-        repeat("benchmarks/all_alignments_{query}_{sample}.benchmark.txt", 3)
+        repeat("benchmarks/all_alignments_{query}_{sample}.benchmark.txt", 1)
     shell:
         "touch {output}"

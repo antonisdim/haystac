@@ -83,7 +83,7 @@ def get_refseq_genome_sequences(wildcards):
     inputs = []
 
     for key, seq in sequences.iterrows():
-        orgname, accession = seq['species'].replace(" ", "_"), seq['GBSeq_accession-version']
+        orgname, accession = seq['species'].replace(" ", "_").replace("[", "").replace("]", ""), seq['GBSeq_accession-version']
         inputs.append('database/refseq_genbank/{orgname}/{accession}.fasta.gz'.format(orgname=orgname,
             accession=accession))
 
@@ -99,9 +99,9 @@ rule entrez_refseq_genbank_multifasta:
     output:
         "{query}/bowtie/{query}_refseq_genbank.fasta.gz"
     benchmark:
-        repeat("benchmarks/entrez_refseq_genbank_multifasta_{query}.benchmark.txt", 3)
-    shell:
-        "cat {input} > {output}"
+        repeat("benchmarks/entrez_refseq_genbank_multifasta_{query}.benchmark.txt", 1)
+    script:
+        "../scripts/bowtie2_multifasta.py"
 
 
 
@@ -141,7 +141,7 @@ def get_assembly_genome_sequences(wildcards):
     inputs = []
 
     for key, seq in assembly_sequences.iterrows():
-        orgname, accession = seq['species'].replace(" ", "_"), seq['GBSeq_accession-version']
+        orgname, accession = seq['species'].replace(" ", "_").replace("[", "").replace("]", ""), seq['GBSeq_accession-version']
         inputs.append('database/refseq_assembly/{orgname}/{accession}.fasta.gz'.format(orgname=orgname,
             accession=accession))
 
@@ -157,9 +157,9 @@ rule entrez_assembly_multifasta:
     output:
         "{query}/bowtie/{query}_assemblies.fasta.gz"
     benchmark:
-        repeat("benchmarks/entrez_assembly_multifasta_{query}.benchmark.txt", 3)
-    shell:
-        "cat {input} > {output}"
+        repeat("benchmarks/entrez_assembly_multifasta_{query}.benchmark.txt", 1)
+    script:
+        "../scripts/bowtie2_multifasta.py"
 
 
 
@@ -199,7 +199,7 @@ rule entrez_refseq_prok_multifasta:
     output:
         "{query}/bowtie/{query}_refseq_prok.fasta.gz"
     benchmark:
-        repeat("benchmarks/entrez_refseq_prok_multifasta_{query}.benchmark.txt", 3)
+        repeat("benchmarks/entrez_refseq_prok_multifasta_{query}.benchmark.txt", 1)
     shell:
         "cat {input.assemblies} {input.refseq} > {output}"
 

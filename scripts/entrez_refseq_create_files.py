@@ -12,7 +12,6 @@ def entrez_refseq_create_files(input_file, nuccore_genomes_out, genbank_genomes_
 
     assemblies = prok_refseq_rep_rmdup.loc[prok_refseq_rep_rmdup['WGS'].notna(), ['#Species/genus', 'WGS']]
 
-    assemblies['#Species/genus'] = assemblies['#Species/genus'].str.replace(' ', '_')
     assemblies['#Species/genus'] = assemblies['#Species/genus'].str.replace('/', '_')
     assemblies['#Species/genus'] = assemblies['#Species/genus'].str.replace("'", '')
     assemblies['#Species/genus'] = assemblies['#Species/genus'].str.replace("(", '')
@@ -21,7 +20,6 @@ def entrez_refseq_create_files(input_file, nuccore_genomes_out, genbank_genomes_
     nuccore = prok_refseq_rep_rmdup.loc[
         prok_refseq_rep_rmdup['Chromosome RefSeq'].notna(), ['#Species/genus', 'Chromosome RefSeq']]
 
-    nuccore['#Species/genus'] = nuccore['#Species/genus'].str.replace(' ', '_')
     nuccore['#Species/genus'] = nuccore['#Species/genus'].str.replace("'", '')
     nuccore['#Species/genus'] = nuccore['#Species/genus'].str.replace("(", '')
     nuccore['#Species/genus'] = nuccore['#Species/genus'].str.replace(")", '')
@@ -29,19 +27,24 @@ def entrez_refseq_create_files(input_file, nuccore_genomes_out, genbank_genomes_
     genbank = prok_refseq_rep_rmdup.loc[
         prok_refseq_rep_rmdup['Chromosome GenBank'].notna(), ['#Species/genus', 'Chromosome GenBank']]
 
-    genbank['#Species/genus'] = genbank['#Species/genus'].str.replace(' ', '_')
     genbank['#Species/genus'] = genbank['#Species/genus'].str.replace("'", '')
     genbank['#Species/genus'] = genbank['#Species/genus'].str.replace("(", '')
     genbank['#Species/genus'] = genbank['#Species/genus'].str.replace(")", '')
 
     genbank_filtered = genbank[(~genbank['#Species/genus'].isin(assemblies['#Species/genus'])) & (
         ~genbank['#Species/genus'].isin(nuccore['#Species/genus']))]
+    genbank_filtered.loc[:, 'Chromosome GenBank'] = genbank_filtered['Chromosome GenBank'].str.split(',')
+    genbank_exploded = genbank_filtered.explode('Chromosome GenBank')
 
     nuccore_filtered = nuccore[(~nuccore['#Species/genus'].isin(assemblies['#Species/genus'])) & (
         ~nuccore['#Species/genus'].isin(genbank_filtered['#Species/genus']))]
+    nuccore_filtered.loc[:, 'Chromosome RefSeq'] = nuccore_filtered['Chromosome RefSeq'].str.split(',')
+    nuccore_exploded = nuccore_filtered.explode('Chromosome RefSeq')
 
     assemblies_filtered = assemblies[(~assemblies['#Species/genus'].isin(nuccore_filtered['#Species/genus'])) & (
         ~assemblies['#Species/genus'].isin(genbank_filtered['#Species/genus']))]
+    assemblies_filtered.loc[:, 'WGS'] = assemblies_filtered['WGS'].str.split(',')
+    assemblies_exploded = assemblies_filtered.explode('WGS')
 
     nuccore_plasmids = prok_refseq_rep_rmdup[
                            prok_refseq_rep_rmdup['Plasmid RefSeq'].notna() &
@@ -56,18 +59,35 @@ def entrez_refseq_create_files(input_file, nuccore_genomes_out, genbank_genomes_
     nuccore_plasmids.loc[:, 'Plasmid RefSeq'] = nuccore_plasmids['Plasmid RefSeq'].str.split(',')
     nuccore_plasmids_exploded = nuccore_plasmids.explode('Plasmid RefSeq')
 
+    nuccore_plasmids_exploded['#Species/genus'] = nuccore_plasmids_exploded['#Species/genus'].str.replace(' ', '_')
+    nuccore_plasmids_exploded['#Species/genus'] = nuccore_plasmids_exploded['#Species/genus'].str.replace('/', '_')
+    nuccore_plasmids_exploded['#Species/genus'] = nuccore_plasmids_exploded['#Species/genus'].str.replace("'", '')
+    nuccore_plasmids_exploded['#Species/genus'] = nuccore_plasmids_exploded['#Species/genus'].str.replace("(", '')
+    nuccore_plasmids_exploded['#Species/genus'] = nuccore_plasmids_exploded['#Species/genus'].str.replace(")", '')
+
     # todo these lines give me this warning: SettingWithCopyWarning:
     #  A value is trying to be set on a copy of a slice from a DataFrame.
     #  Read about it, but can't figure out why it's happening
     genbank_plasmids_filtered.loc[:, 'Plasmid GenBank'] = genbank_plasmids_filtered['Plasmid GenBank'].str.split(',')
     genbank_plasmids_filtered_exploded = genbank_plasmids_filtered.explode('Plasmid GenBank')
 
+    genbank_plasmids_filtered_exploded['#Species/genus'] = genbank_plasmids_filtered_exploded[
+        '#Species/genus'].str.replace(' ', '_')
+    genbank_plasmids_filtered_exploded['#Species/genus'] = genbank_plasmids_filtered_exploded[
+        '#Species/genus'].str.replace('/', '_')
+    genbank_plasmids_filtered_exploded['#Species/genus'] = genbank_plasmids_filtered_exploded[
+        '#Species/genus'].str.replace("'", '')
+    genbank_plasmids_filtered_exploded['#Species/genus'] = genbank_plasmids_filtered_exploded[
+        '#Species/genus'].str.replace("(", '')
+    genbank_plasmids_filtered_exploded['#Species/genus'] = genbank_plasmids_filtered_exploded[
+        '#Species/genus'].str.replace(")", '')
+
     header = ['species', 'GBSeq_accession-version']
 
     # todo working example the head() needs to leave for a proper run
-    genbank_filtered.head(5).to_csv(genbank_genomes_out, sep='\t', header=header, index=False)
-    nuccore_filtered.head(5).to_csv(nuccore_genomes_out, sep='\t', header=header, index=False)
-    assemblies_filtered.head(5).to_csv(assemblies_out, sep='\t', header=header, index=False)
+    genbank_exploded.head(5).to_csv(genbank_genomes_out, sep='\t', header=header, index=False)
+    nuccore_exploded.head(5).to_csv(nuccore_genomes_out, sep='\t', header=header, index=False)
+    assemblies_exploded.head(5).to_csv(assemblies_out, sep='\t', header=header, index=False)
     genbank_plasmids_filtered_exploded.head(5).to_csv(genbank_plasmids_out, sep='\t', header=header, index=False)
     nuccore_plasmids_exploded.head(5).to_csv(nuccore_plasmids_out, sep='\t', header=header, index=False)
 

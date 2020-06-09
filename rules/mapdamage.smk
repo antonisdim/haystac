@@ -65,6 +65,11 @@ def get_mapdamage_out_dir_paths(wildcards):
         refseq_plasmids = pd.read_csv(refseq_rep_prok.output[3], sep='\t')
         genbank_plasmids = pd.read_csv(refseq_rep_prok.output[4], sep='\t')
 
+        invalid_assemblies = checkpoints.entrez_invalid_assemblies.get(query=wildcards.query)
+        invalid_assembly_sequences = pd.read_csv(invalid_assemblies.output[0], sep='\t')
+
+        assemblies = assemblies[~assemblies['GBSeq_accession-version'].isin(invalid_assembly_sequences['GBSeq_accession-version'])]
+
         if WITH_ENTREZ_QUERY:
             sequences = pd.concat([sequences, refseq_genomes, genbank_genomes, assemblies, refseq_plasmids,
                                    genbank_plasmids])
@@ -84,7 +89,7 @@ def get_mapdamage_out_dir_paths(wildcards):
         reads = 'SE'
 
     for key, seq in sequences.iterrows():
-        orgname, accession = seq['species'].replace(" ", "_"), seq['GBSeq_accession-version']
+        orgname, accession = seq['species'].replace(" ", "_").replace("[", "").replace("]", ""), seq['GBSeq_accession-version']
 
         inputs.append('{query}/mapdamage/{sample}/{reads}/{orgname}-{accession}'.
         format(query=wildcards.query, sample=wildcards.sample, orgname=orgname, accession=accession, reads=reads))
@@ -107,6 +112,6 @@ rule all_mapdamage:
     output:
         "{query}/mapdamage/{sample}_mapdamage.done"
     benchmark:
-        repeat("benchmarks/all_alignments_{query}_{sample}.benchmark.txt", 3)
+        repeat("benchmarks/all_alignments_{query}_{sample}.benchmark.txt", 1)
     shell:
         "touch {output}"

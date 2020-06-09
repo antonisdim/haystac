@@ -39,7 +39,7 @@ rule count_fastq_length:
     output:
         "fastq_inputs/meta/{sample}.size"
     benchmark:
-        repeat("benchmarks/count_fastq_length_{sample}.benchmark.txt", 3)
+        repeat("benchmarks/count_fastq_length_{sample}.benchmark.txt", 1)
     shell:
         "seqtk seq -A {input.fastq} | grep -v '^>' | wc -l 1> {output} 2> {log}"
 
@@ -94,6 +94,12 @@ def get_ts_tv_count_paths(wildcards):
         refseq_plasmids = pd.read_csv(refseq_rep_prok.output[3], sep='\t')
         genbank_plasmids = pd.read_csv(refseq_rep_prok.output[4], sep='\t')
 
+        invalid_assemblies = checkpoints.entrez_invalid_assemblies.get(query=wildcards.query)
+        invalid_assembly_sequences = pd.read_csv(invalid_assemblies.output[0], sep='\t')
+
+        assemblies = assemblies[~assemblies['GBSeq_accession-version'].isin(invalid_assembly_sequences['GBSeq_accession-version'])]
+
+
         if WITH_ENTREZ_QUERY:
             sequences = pd.concat([sequences, refseq_genomes, genbank_genomes, assemblies, refseq_plasmids,
                                    genbank_plasmids])
@@ -107,7 +113,7 @@ def get_ts_tv_count_paths(wildcards):
         sequences = sequences[sequences['species'].str.contains( "|".join(SPECIFIC_GENUS))]
 
     for key, seq in sequences.iterrows():
-        orgname, accession = seq['species'].replace(" ", "_"), seq['GBSeq_accession-version']
+        orgname, accession = seq['species'].replace(" ", "_").replace("[", "").replace("]", ""), seq['GBSeq_accession-version']
 
         inputs.append('{query}/ts_tv_counts/{sample}/{orgname}_count_{accession}.csv'.
         format(query=wildcards.query, sample=wildcards.sample, orgname=orgname, accession=accession))
@@ -178,7 +184,7 @@ rule fasta_idx:
     log:
         "database/{orgname}/{accession}.fasta.gz.fai.log"
     benchmark:
-        repeat("benchmarks/fasta_idx_{orgname}_{accession}.benchmark.txt", 3)
+        repeat("benchmarks/fasta_idx_{orgname}_{accession}.benchmark.txt", 1)
     shell:
         "samtools faidx {input} 2> {log}"
 
@@ -223,6 +229,12 @@ def get_t_test_values_paths(wildcards):
         refseq_plasmids = pd.read_csv(refseq_rep_prok.output[3], sep='\t')
         genbank_plasmids = pd.read_csv(refseq_rep_prok.output[4], sep='\t')
 
+        invalid_assemblies = checkpoints.entrez_invalid_assemblies.get(query=wildcards.query)
+        invalid_assembly_sequences = pd.read_csv(invalid_assemblies.output[0], sep='\t')
+
+        assemblies = assemblies[~assemblies['GBSeq_accession-version'].isin(invalid_assembly_sequences['GBSeq_accession-version'])]
+
+
         if WITH_ENTREZ_QUERY:
             sequences = pd.concat([sequences, refseq_genomes, genbank_genomes, assemblies, refseq_plasmids,
                                    genbank_plasmids])
@@ -242,7 +254,7 @@ def get_t_test_values_paths(wildcards):
         reads = 'SE'
 
     for key, seq in sequences.iterrows():
-        orgname, accession = seq['species'].replace(" ", "_"), seq['GBSeq_accession-version']
+        orgname, accession = seq['species'].replace(" ", "_").replace("[", "").replace("]", ""), seq['GBSeq_accession-version']
 
         inputs.append('{query}/probabilities/{sample}/{orgname}_t_test_pvalue_{accession}_{reads}.txt'.
         format(query=wildcards.query, sample=wildcards.sample, orgname=orgname, accession=accession, reads=reads))
@@ -258,7 +270,7 @@ rule cat_pvalues:
     log:
         "{query}/probabilities/{sample}/{sample}_t_test_pvalues.log"
     benchmark:
-        repeat("benchmarks/cat_pvalues_{query}_{sample}.benchmark.txt", 3)
+        repeat("benchmarks/cat_pvalues_{query}_{sample}.benchmark.txt", 1)
     shell:
         "cat {input} 1> {output} 2> {log}"
 
