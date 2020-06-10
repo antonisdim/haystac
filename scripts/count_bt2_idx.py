@@ -42,7 +42,7 @@ def count_bt2_idx(mem_resources, mem_rescaling_factor, input_file_list, query, o
 
         fout = bgzf.open(output_file_path, 'wt')
         for input_file in input_file_list:
-            binary_handle = bgzf.open(input_file, 'rt')
+            binary_handle = gzip.open(input_file, 'rt')
 
             for seq_record in SeqIO.parse(binary_handle, "fasta"):
                 fout.write(">" + str(seq_record.description) + "\n" + str(seq_record.seq) + "\n")
