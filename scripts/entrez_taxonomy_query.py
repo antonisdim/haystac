@@ -9,6 +9,7 @@ import pandas as pd
 from Bio import Entrez
 
 sys.path.append(os.getcwd())
+sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 
 from scripts.entrez_utils import chunker, guts_of_entrez, ENTREZ_DB_TAXA, ENTREZ_RETMODE_XML, ENTREZ_RETTYPE_FASTA
 

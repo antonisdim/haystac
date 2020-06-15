@@ -11,6 +11,7 @@ from Bio import Entrez
 from Bio import bgzf
 
 sys.path.append(os.getcwd())
+sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 
 from scripts.entrez_utils import guts_of_entrez, ENTREZ_DB_NUCCORE, ENTREZ_RETMODE_TEXT, ENTREZ_RETTYPE_FASTA, \
     ENTREZ_DB_ASSEMBLY

@@ -9,7 +9,7 @@ import pandas as pd
 from Bio import Entrez
 
 sys.path.append(os.getcwd())
-
+sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 
 from scripts.entrez_utils import ENTREZ_DB_ASSEMBLY
 
