@@ -1,29 +1,3 @@
-#entrez:
-#  queries:
-#    # query to send to NCBI for retrieving the species tp
-#    refseq_rep: ("Yersinia"[Organism] OR "Yersinia"[Organism]) AND "complete genome"[All Fields]
-#
-#  # email used to identify the user making an Entrez request
-#  email: evangelos-antonios.dimopoulos@hertford.ox.ac.uk
-#
-#  # fetch results in batches
-#  batchSize: 5
-#
-#  rank: 'species'
-
-
-#samples:
-#  CSL.all: fastq_inputs/CSL.all.fastq.gz
-#
-#  RISE00: [fastq_inputs/RISE00_rmdup.fastq.gz]
-#
-#  SRR1031215:
-#    R1: [sra_data/SRR1031215_R1.fastq.gz]
-#    R2: [sra_data/SRR1031215_R2.fastq.gz]
-#
-#  SRR055002:
-#    sra_data/SRR055002.fastq.gz
-
 query_name:
   refseq_rep
 entrez_query:

@@ -130,8 +130,10 @@ rule initial_ts_tv:
         "{query}/ts_tv_counts/{sample}/all_ts_tv_counts.log"
     benchmark:
         repeat("benchmarks/initial_ts_tv_{query}_{sample}.benchmark.txt", 1)
-    shell:
-        "cat {input} 1> {output} 2> {log}"
+    # shell:
+    #     "cat {input} 1> {output} 2> {log}"
+    script:
+        "../scripts/concat_files.py"
 
 
 def get_right_readlen(wildcards):
@@ -271,8 +273,10 @@ rule cat_pvalues:
         "{query}/probabilities/{sample}/{sample}_t_test_pvalues.log"
     benchmark:
         repeat("benchmarks/cat_pvalues_{query}_{sample}.benchmark.txt", 1)
-    shell:
-        "cat {input} 1> {output} 2> {log}"
+    # shell:
+    #     "cat {input} 1> {output} 2> {log}"
+    script:
+        "../scripts/concat_files.py"
 
 
 

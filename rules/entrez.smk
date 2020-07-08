@@ -92,7 +92,7 @@ def pick_after_refseq_prok(wildcards):
     if WITH_REFSEQ_REP:
         return "{query}/entrez/{query}-genbank-genomes.tsv".format(query=wildcards.query)
     else:
-        return ""
+        return "{query}/entrez/{query}_1-nuccore.tsv"
 
 
 

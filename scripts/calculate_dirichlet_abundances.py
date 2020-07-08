@@ -25,6 +25,7 @@ def calculate_dirichlet_abundances(ts_tv_file, pvaluesfile, total_sample_fastq_r
     t_test_vector = pd.read_csv(pvaluesfile, sep='\t', names=['species', 'pvalue']).groupby('species').apply(
         hmean).squeeze().astype('float64').rename('Taxon')
     t_test_vector['Dark_Matter'] = np.nan
+    t_test_vector['Grey_Matter'] = np.nan
 
     ts_tv_matrix = pd.read_csv(ts_tv_file, sep=',', usecols=['Taxon', 'Read_ID', 'Dirichlet_Assignment'])
 
@@ -32,10 +33,10 @@ def calculate_dirichlet_abundances(ts_tv_file, pvaluesfile, total_sample_fastq_r
     #     from the Dirichlet Assignment column
 
     ts_tv_group = ts_tv_matrix.groupby('Read_ID').sum().squeeze()
-    dark_matter = ts_tv_group.where(ts_tv_group == 0).replace(0, 1).fillna(0)
+    grey_matter = ts_tv_group.where(ts_tv_group == 0).replace(0, 1).fillna(0)
 
     a = ts_tv_matrix.groupby('Taxon').sum().squeeze().astype(float)
-    a.loc['Dark_Matter'] = dark_matter.sum()
+    a.loc['Grey_Matter'] = grey_matter.sum()
 
     # Add the non aligned filtered reads count in the Dark Matter category
 
@@ -44,10 +45,7 @@ def calculate_dirichlet_abundances(ts_tv_file, pvaluesfile, total_sample_fastq_r
 
     remaining_dark_matter = total_fastq_reads - reads_in_bams
 
-    if 'Dark_Matter' in a.index:
-        a.loc['Dark_Matter'] = a.loc['Dark_Matter'] + remaining_dark_matter
-    else:
-        a.loc['Dark_Matter'] = remaining_dark_matter
+    a.loc['Dark_Matter'] = remaining_dark_matter
 
     print(a, file=sys.stderr)
 

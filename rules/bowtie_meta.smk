@@ -258,6 +258,9 @@ def get_bamfile_paths(wildcards):
 
     inputs = []
 
+    if SPECIFIC_GENUS:
+        sequences = sequences[sequences['species'].str.contains( "|".join(SPECIFIC_GENUS))]
+
     if config['SE'] or config['PE_ANCIENT']:
         for key, seq in sequences.iterrows():
             orgname, accession = seq['species'].replace(" ", "_").replace("[", "").replace("]", ""), seq['GBSeq_accession-version']

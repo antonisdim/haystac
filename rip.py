@@ -14,6 +14,7 @@ thisdir = os.path.abspath(os.path.dirname(__file__))
 
 
 def main(args):
+
     # first, find the Snakefile
     snakefile = os.path.join(thisdir, 'Snakefile')
     if not os.path.exists(snakefile):
@@ -178,8 +179,9 @@ if __name__ == '__main__':
                                                     '(copy it from the website).either or both of WITH_REFSEQ_REP and '
                                                     'WITH_ENTREZ_QUERY should be set (default: True)', metavar='')
     parser.add_argument('--WITH_DATA_PREPROCESSING', help='Remove adapters from raw fastq files', metavar='')
-    parser.add_argument('--SPECIFIC_GENUS', help='list containing the names of specific genera the abundances should '
-                                                 'be calculated on <["genus"]>', metavar='')
+    parser.add_argument('--SPECIFIC_GENUS', nargs='+', help='list containing the names of specific genera '
+                                                            'the abundances should be calculated '
+                                                            'on <["genus"]>', metavar='')
     parser.add_argument('--MEM_RESOURCES_MB', help='max mem resources allowed to be used ofr indexing the input for '
                                                    'the filtering alignment '
                                                    '(default: max available memory on the machine)', metavar='')

@@ -14,7 +14,7 @@ sys.path.append(os.getcwd())
 sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 
 from scripts.entrez_utils import guts_of_entrez, ENTREZ_DB_NUCCORE, ENTREZ_RETMODE_TEXT, ENTREZ_RETTYPE_FASTA, \
-    ENTREZ_DB_ASSEMBLY
+    ENTREZ_DB_ASSEMBLY, ENTREZ_RETMODE_XML, ENTREZ_RETTYPE_GB
 
 TOO_MANY_REQUESTS_WAIT = 5
 MAX_RETRY_ATTEMPTS = 3
@@ -42,6 +42,21 @@ def entrez_download_sequence(accession, config, output_file, attempt=1, assembly
 
     try:
         records = guts_of_entrez(ENTREZ_DB_NUCCORE, ENTREZ_RETMODE_TEXT, ENTREZ_RETTYPE_FASTA, nuccore_id, batch_size=1)
+
+        if all(elem == '\n' for elem in [fa for fa in guts_of_entrez(ENTREZ_DB_NUCCORE, ENTREZ_RETMODE_TEXT,
+                ENTREZ_RETTYPE_FASTA, nuccore_id, batch_size=1)]):
+            print("The accession {} is a master record for an WGS project. "
+                  "That means that this record is empty in nuccore. "
+                  "Going to the assembly database to fetch the assembly for this taxon.".format(accession),
+                file=sys.stderr)
+            xml_records = guts_of_entrez(ENTREZ_DB_NUCCORE, ENTREZ_RETMODE_XML, ENTREZ_RETTYPE_GB, nuccore_id,
+                batch_size=1)
+            xml_list = [xml for xml in xml_records]
+            assembly_id = xml_list[0]['GBSeq_xrefs'][2]['GBXref_id']
+            new_nuccore_id = Entrez.read(Entrez.esearch(db=ENTREZ_DB_NUCCORE, term=assembly_id))['IdList']
+            records = guts_of_entrez(ENTREZ_DB_NUCCORE, ENTREZ_RETMODE_TEXT, ENTREZ_RETTYPE_FASTA, new_nuccore_id,
+                batch_size=1)
+
         with bgzf.open(output_file, 'wt') as fout:
             for fasta in records:
                 fout.write(fasta)
