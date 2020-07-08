@@ -50,22 +50,6 @@ checkpoint entrez_invalid_assemblies:
 
 
 
-rule entrez_download_refseq_genbank_sequence:
-    output:
-        "database/refseq_genbank/{orgname}/{accession}.fasta.gz"
-    log:
-        "database/refseq_genbank/{orgname}/{accession}.log"
-    benchmark:
-        repeat("benchmarks/entrez_download_refseq_genbank_sequence_{orgname}_{accession}.benchmark.txt", 1)
-    params:
-        assembly=False
-    script:
-        "../scripts/entrez_download_sequence.py"
-
-# ruleorder: entrez_download_refseq_genbank_sequence > entrez_download_sequence
-
-
-
 def get_refseq_genome_sequences(wildcards):
     """
     Get all the FASTA sequences for the multi-FASTA file.
@@ -84,8 +68,7 @@ def get_refseq_genome_sequences(wildcards):
 
     for key, seq in sequences.iterrows():
         orgname, accession = seq['species'].replace(" ", "_").replace("[", "").replace("]", ""), seq['GBSeq_accession-version']
-        inputs.append('database/refseq_genbank/{orgname}/{accession}.fasta.gz'.format(orgname=orgname,
-            accession=accession))
+        inputs.append('database/{orgname}/{accession}.fasta.gz'.format(orgname=orgname, accession=accession))
 
     return inputs
 
@@ -107,19 +90,17 @@ rule entrez_refseq_genbank_multifasta:
 
 rule entrez_download_assembly_sequence:
     output:
-        "database/refseq_assembly/{orgname}/{accession}.fasta.gz"
+        "database/{orgname}/{accession}.fasta.gz"
     log:
-        "database/refseq_assembly/{orgname}/{accession}.log"
+        "database/{orgname}/{accession}.log"
     benchmark:
         repeat("benchmarks/entrez_download_assembly_sequence_{orgname}_{accession}.benchmark.txt", 1)
     params:
         assembly=True
+    wildcard_constraints:
+        accession="[^.]+"
     script:
         "../scripts/entrez_download_sequence.py"
-
-
-
-# ruleorder: entrez_download_assembly_sequence > entrez_download_sequence
 
 
 
@@ -142,8 +123,7 @@ def get_assembly_genome_sequences(wildcards):
 
     for key, seq in assembly_sequences.iterrows():
         orgname, accession = seq['species'].replace(" ", "_").replace("[", "").replace("]", ""), seq['GBSeq_accession-version']
-        inputs.append('database/refseq_assembly/{orgname}/{accession}.fasta.gz'.format(orgname=orgname,
-            accession=accession))
+        inputs.append('database/{orgname}/{accession}.fasta.gz'.format(orgname=orgname, accession=accession))
 
     return inputs
 
@@ -163,35 +143,8 @@ rule entrez_assembly_multifasta:
 
 
 
-rule softlink_refseq_to_database:
-    input:
-        "{query}/bowtie/{query}_refseq_genbank.fasta.gz",
-        get_refseq_genome_sequences
-    output:
-        "database/{query}_softlink_refseq_to_database.done"
-    log:
-        "database/{query}_softlink_refseq_to_database.log"
-    shell:
-        "for i in {input[1]}; do ln -sfn `echo $i | cut -d '/' -f 2-3` database; done; touch {output}"
-
-
-
-rule softlink_assemblies_to_database:
-    input:
-        "{query}/bowtie/{query}_assemblies.fasta.gz",
-        get_assembly_genome_sequences
-    output:
-        "database/{query}_softlink_assembly_to_database.done"
-    log:
-        "database/{query}_softlink_assembly_to_database.log"
-    shell:
-        "for i in {input[1]}; do ln -sfn `echo $i | cut -d '/' -f 2-3` database; done; touch {output}"
-
-
 rule entrez_refseq_prok_multifasta:
     input:
-        assemblies_softlink="database/{query}_softlink_assembly_to_database.done",
-        refseq_softlink="database/{query}_softlink_refseq_to_database.done",
         assemblies="{query}/bowtie/{query}_assemblies.fasta.gz",
         refseq="{query}/bowtie/{query}_refseq_genbank.fasta.gz"
     log:
@@ -204,7 +157,4 @@ rule entrez_refseq_prok_multifasta:
         "cat {input.assemblies} {input.refseq} > {output}"
 
 
-
-
-# todo check the refseq rep files if they're empty
 

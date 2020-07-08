@@ -28,36 +28,6 @@ rule index_database_entrez:
 
 
 
-rule index_database_refseq_genbank:
-    input:
-        "database/refseq_genbank/{orgname}/{accession}.fasta.gz"
-    log:
-        "database/refseq_genbank/{orgname}/{accession}_index.log"
-    output:
-        expand("database/refseq_genbank/{{orgname}}/{{accession}}.{n}.bt2l", n=[1, 2, 3, 4]),
-        expand("database/refseq_genbank/{{orgname}}/{{accession}}.rev.{n}.bt2l", n=[1, 2])
-    benchmark:
-        repeat("benchmarks/index_database_refseq_genbank_{orgname}_{accession}.benchmark.txt", 1)
-    shell:
-        "bowtie2-build --large-index {input} database/refseq_genbank/{wildcards.orgname}/{wildcards.accession} &> {log}"
-
-
-
-rule index_database_assemblies:
-    input:
-        "database/refseq_assembly/{orgname}/{accession}.fasta.gz"
-    log:
-        "database/refseq_assembly/{orgname}/{accession}_index.log"
-    output:
-        expand("database/refseq_assembly/{{orgname}}/{{accession}}.{n}.bt2l", n=[1, 2, 3, 4]),
-        expand("database/refseq_assembly/{{orgname}}/{{accession}}.rev.{n}.bt2l", n=[1, 2])
-    benchmark:
-        repeat("benchmarks/index_database_refseq_assembly_{orgname}_{accession}.benchmark.txt", 1)
-    shell:
-        "bowtie2-build --large-index {input} database/refseq_assembly/{wildcards.orgname}/{wildcards.accession} &> {log}"
-
-
-
 def get_idx_entrez(wildcards):
     """
     Get all the index paths for the taxa in our database from the entrez query.
@@ -102,7 +72,7 @@ def get_idx_ref_gen(wildcards):
 
     for key, seq in sequences.iterrows():
         orgname, accession = seq['species'].replace(" ", "_").replace("[", "").replace("]", ""), seq['GBSeq_accession-version']
-        inputs.append("database/refseq_genbank/{orgname}/{accession}.1.bt2l".
+        inputs.append("database/{orgname}/{accession}.1.bt2l".
         format(orgname=orgname, accession=accession))
 
 
@@ -132,7 +102,7 @@ def get_idx_assembly(wildcards):
 
     for key, seq in sequences.iterrows():
         orgname, accession = seq['species'].replace(" ", "_").replace("[", "").replace("]", ""), seq['GBSeq_accession-version']
-        inputs.append("database/refseq_assembly/{orgname}/{accession}.1.bt2l".
+        inputs.append("database/{orgname}/{accession}.1.bt2l".
         format(orgname=orgname, accession=accession))
 
     return inputs
@@ -214,8 +184,6 @@ rule align_taxon_paired_end:
         "-1 {input.fastq_r1} -2 {input.fastq_r2} "
         "| samtools sort -O bam -o {output.bam_file} ) 2> {log} "
         "; samtools index {output.bam_file}"
-
-# ruleorder:  align_taxon_paired_end > align_taxon_single_end
 
 
 

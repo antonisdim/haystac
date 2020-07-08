@@ -24,7 +24,7 @@ def entrez_download_sequence(accession, config, output_file, attempt=1, assembly
     """
     Fetch the reference genome from NCBI.
     """
-    print("The sequences for the database are being selected ...", file=sys.stderr)
+    print("The sequences for the database are being downloaded ...", file=sys.stderr)
 
     Entrez.email = config['entrez_email']
 

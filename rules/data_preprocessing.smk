@@ -105,7 +105,7 @@ rule adapterremoval_single_end:
     output:
         "fastq_inputs/SE/{accession}_adRm.fastq.gz"
     benchmark:
-        repeat("benchmarks/adapterremoval_single_end_{accession}.benchmark.txt", 3)
+        repeat("benchmarks/adapterremoval_single_end_{accession}.benchmark.txt", 1)
     shell:
         "AdapterRemoval --file1 {input} --basename fastq_inputs/SE/{wildcards.accession} --gzip --minlength 15 "
         "--trimns; cat fastq_inputs/SE/{wildcards.accession}*truncated* 1> {output} 2> {log}"
@@ -121,7 +121,7 @@ rule adapterremoval_paired_end_ancient:
     output:
         "fastq_inputs/PE_anc/{accession}_adRm.fastq.gz"
     benchmark:
-        repeat("benchmarks/adapterremoval_paired_end_ancient_{accession}.benchmark.txt", 3)
+        repeat("benchmarks/adapterremoval_paired_end_ancient_{accession}.benchmark.txt", 1)
     shell:
         "AdapterRemoval --file1 {input.fastq_r1}  --file2 {input.fastq_r2} "
         "--basename fastq_inputs/PE_anc/{wildcards.accession} --gzip --collapse-deterministic  --minlength 15 "
@@ -139,7 +139,7 @@ rule adapterremoval_paired_end_modern:
         fastq_r1="fastq_inputs/PE_mod/{accession}_R1_adRm.fastq.gz",
         fastq_r2="fastq_inputs/PE_mod/{accession}_R2_adRm.fastq.gz"
     benchmark:
-        repeat("benchmarks/adapterremoval_paired_end_modern_{accession}.benchmark.txt", 3)
+        repeat("benchmarks/adapterremoval_paired_end_modern_{accession}.benchmark.txt", 1)
     shell:
         "AdapterRemoval --file1 {input.fastq_r1}  --file2 {input.fastq_r2} "
         "--basename fastq_inputs/PE_mod/{wildcards.accession} --gzip --minlength 15 --trimns; "

@@ -33,9 +33,9 @@ SRA_LOOKUP:
 PE_ANCIENT:
   False
 PE_MODERN:
-  False
-SE:
   True
+SE:
+  False
 
 WITH_REFSEQ_REP:
   True

@@ -121,6 +121,8 @@ rule entrez_download_sequence:
         repeat("benchmarks/entrez_download_sequence_{orgname}_{accession}.benchmark.txt", 1)
     params:
         assembly=False
+    wildcard_constraints:
+        accession="(?=.*.)"
     script:
         "../scripts/entrez_download_sequence.py"
 
