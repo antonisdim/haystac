@@ -215,7 +215,8 @@ def get_sorted_bam_paths(wildcards):
 
 rule merge_bams_single_end:
     input:
-        aln_path=get_sorted_bam_paths, # aln_done="{query}/bam/{sample}_all_aln.done",
+        aln_path=get_sorted_bam_paths,
+        # aln_done="{query}/bam/{sample}_all_aln.done",
     log:
         "{query}/bam/{sample}_merge_bams.log",
     output:
@@ -226,7 +227,8 @@ rule merge_bams_single_end:
 
 rule merge_bams_paired_end:
     input:
-        aln_path=get_sorted_bam_paths, # aln_done="{query}/bam/{sample}_all_aln.done",
+        aln_path=get_sorted_bam_paths,
+        # aln_done="{query}/bam/{sample}_all_aln.done",
     log:
         "{query}/bam/{sample}_merge_bams.log",
     output:
@@ -262,7 +264,8 @@ rule extract_fastq_single_end:
     params:
         min_mapq=config["min_mapq"],
     shell:
-        "( samtools view -h -F 4 {input} | samtools fastq -c 6 - | seqkit rmdup -n -o {output} ) 2> {log}" # "( samtools view -h -F 4 {input} | samtools fastq -c 6 - > {output} ) 2> {log}"
+        "( samtools view -h -F 4 {input} | samtools fastq -c 6 - | seqkit rmdup -n -o {output} ) 2> {log}"
+        # "( samtools view -h -F 4 {input} | samtools fastq -c 6 - > {output} ) 2> {log}"
 
 
 rule extract_fastq_paired_end:
@@ -283,7 +286,8 @@ rule extract_fastq_paired_end:
         "-2 {wildcards.query}/fastq/PE/temp_R2.fastq.gz -0 /dev/null -s /dev/null - );"
         "seqkit rmdup -n {wildcards.query}/fastq/PE/temp_R1.fastq.gz -o {output[0]}; "
         "seqkit rmdup -n {wildcards.query}/fastq/PE/temp_R2.fastq.gz -o {output[1]};"
-        "rm {wildcards.query}/fastq/PE/temp_R1.fastq.gz; rm {wildcards.query}/fastq/PE/temp_R2.fastq.gz  2> {log}" # "( samtools view -h -F 4 {input} "
+        "rm {wildcards.query}/fastq/PE/temp_R1.fastq.gz; rm {wildcards.query}/fastq/PE/temp_R2.fastq.gz  2> {log}"
+        # "( samtools view -h -F 4 {input} "
          # "| samtools fastq -c 6 -1 {output[0]} -2 {output[1]} -0 /dev/null -s /dev/null - ) 2> {log}"
 
 

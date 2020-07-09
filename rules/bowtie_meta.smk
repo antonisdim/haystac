@@ -155,7 +155,8 @@ def get_min_score(wildcards, input):
 
 rule align_taxon_single_end:
     input:
-        fastq="{query}/fastq/SE/{sample}_mapq.fastq.gz", # bt2idx="database/{orgname}/{accession}.1.bt2l",
+        fastq="{query}/fastq/SE/{sample}_mapq.fastq.gz",
+        # bt2idx="database/{orgname}/{accession}.1.bt2l",
         db_idx="database/idx_database_{query}.done",
         readlen="{query}/fastq/SE/{sample}_mapq.readlen",
     log:
@@ -186,7 +187,8 @@ rule align_taxon_single_end:
 rule align_taxon_paired_end:
     input:
         fastq_r1="{query}/fastq/PE/{sample}_R1_mapq.fastq.gz",
-        fastq_r2="{query}/fastq/PE/{sample}_R2_mapq.fastq.gz", # bt2idx="database/{orgname}/{accession}.1.bt2l",
+        fastq_r2="{query}/fastq/PE/{sample}_R2_mapq.fastq.gz",
+        # bt2idx="database/{orgname}/{accession}.1.bt2l",
         db_idx="database/idx_database_{query}.done",
         readlen="{query}/fastq/PE/{sample}_mapq_pair.readlen",
     log:

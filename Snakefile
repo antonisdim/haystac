@@ -41,7 +41,9 @@ wildcard_constraints:
     orgname="[^/]+",
     accession="[^/]+",
     chunk="\d+", # sample_accession="^(.(?!(_R1|_R2)))*."
-     ##### Target rules #####
+
+
+##### Target rules #####
 
 
 from datetime import datetime
