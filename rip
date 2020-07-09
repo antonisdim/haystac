@@ -4,16 +4,24 @@ Execution script for snakemake workflows.
 """
 import argparse
 import os.path
-import snakemake
 import sys
-import pprint
-import json
+
+import snakemake
 import yaml
 
 thisdir = os.path.abspath(os.path.dirname(__file__))
 
+# maximum concurrent Entrez requests
+MAX_ENTREZ_REQUESTS = 3
+
+# TODO come up with solution so we don't need to activate the conda environment
+
 
 def main(args):
+    # TODO running with no flags should display help
+    # TODO --cores should default to 'all'
+    # TODO implement a --debug flag which makes verbose output (e.g. --printshellcmds, --show-failed-logs)
+    # TODO default should be --printshellcmds turned off
 
     # first, find the Snakefile
     snakefile = os.path.join(thisdir, "Snakefile")
@@ -119,6 +127,7 @@ def main(args):
     if args.data_preprocess:
         target_list = [data_preprocessing]
 
+    # TODO this should build the entire database... including the indexing of the db
     if args.build_db:
         target_list = []
         if config["WITH_ENTREZ_QUERY"]:
@@ -147,6 +156,7 @@ def main(args):
     if args.mapdamage:
         target_list = [mapdamage]
 
+    # TODO format this so it looks nice (e.g. see how GATK does this)
     print("--------")
     print("details!")
     print("\tsnakefile: {}".format(snakefile))
@@ -161,13 +171,14 @@ def main(args):
         targets=target_list,
         printshellcmds=True,
         dryrun=args.dry_run,
-        cores=int(args.cores),
-        keepgoing=True,
-        restart_times=15,
+        cores=int(args.cores),  # TODO ValueError: invalid literal for int() with base 10: 'all'
+        # keepgoing=True,  # TODO this should be turned off in --debug mode
+        # restart_times=3, # TODO find a better solution to this... 15 is way too many!
         touch=args.touch,
         forceall=args.touch,
         lock=args.no_lock,
         unlock=args.unlock,
+        resources={'entrez_api': MAX_ENTREZ_REQUESTS},
     )
 
     if status:  # translate "success" into shell exit code of 0
@@ -217,13 +228,13 @@ if __name__ == "__main__":
     parser.add_argument(
         "--sample_fastq_R1",
         help="Path to the mate 1 fastq input file, if reads are PE. "
-        "Can be raw or with adapters removed",
+             "Can be raw or with adapters removed",
         metavar="",
     )
     parser.add_argument(
         "--sample_fastq_R2",
         help="Path to the mate 2 fastq input file, if reads are PE. "
-        "Can be raw or with adapters removed",
+             "Can be raw or with adapters removed",
         metavar="",
     )
     parser.add_argument(
@@ -244,36 +255,36 @@ if __name__ == "__main__":
     parser.add_argument(
         "--PE_ANCIENT",
         help="treat the data as paired end end but use only COLLAPSED reads. \n"
-        "mandatory and mutually exclusive with PE_MODERN and SE",
+             "mandatory and mutually exclusive with PE_MODERN and SE",
         metavar="",
     )
     parser.add_argument(
         "--PE_MODERN",
         help="treat the data as paired end end end but use only COMPLETE PAIRS of "
-        "reads. \n "
-        "mandatory and mutually exclusive with PE_ANCIENT and SE",
+             "reads. \n "
+             "mandatory and mutually exclusive with PE_ANCIENT and SE",
         metavar="",
     )
     parser.add_argument(
         "--SE",
         help="treat the data as single end end. \n"
-        "mandatory and mutually exclusive with PE_ANCIENT and PE_MODERN",
+             "mandatory and mutually exclusive with PE_ANCIENT and PE_MODERN",
         metavar="",
     )
     parser.add_argument(
         "--WITH_REFSEQ_REP",
         help="use the prokaryotic representative species of the RefSeq DB "
-        "for the species id pipeline. only species no strains. "
-        "either or both of WITH_REFSEQ_REP and "
-        "WITH_ENTREZ_QUERY should be set (default: True)",
+             "for the species id pipeline. only species no strains. "
+             "either or both of WITH_REFSEQ_REP and "
+             "WITH_ENTREZ_QUERY should be set (default: True)",
         metavar="",
     )
     parser.add_argument(
         "--WITH_ENTREZ_QUERY",
         help="use the recordset returned from a specific entrez query in "
-        "the species id pipeline. written in the NCBI query language "
-        "(copy it from the website).either or both of WITH_REFSEQ_REP and "
-        "WITH_ENTREZ_QUERY should be set (default: True)",
+             "the species id pipeline. written in the NCBI query language "
+             "(copy it from the website).either or both of WITH_REFSEQ_REP and "
+             "WITH_ENTREZ_QUERY should be set (default: True)",
         metavar="",
     )
     parser.add_argument(
@@ -285,51 +296,51 @@ if __name__ == "__main__":
         "--SPECIFIC_GENUS",
         nargs="+",
         help="list containing the names of specific genera "
-        "the abundances should be calculated "
-        'on <["genus"]>',
+             "the abundances should be calculated "
+             'on <["genus"]>',
         metavar="",
     )
     parser.add_argument(
         "--MEM_RESOURCES_MB",
         help="max mem resources allowed to be used ofr indexing the input for "
-        "the filtering alignment "
-        "(default: max available memory on the machine)",
+             "the filtering alignment "
+             "(default: max available memory on the machine)",
         metavar="",
     )
     parser.add_argument(
         "--MEM_RESCALING_FACTOR",
         help="factor to rescale/chunk the input file for the mutlifasta "
-        "index for the filtering alignment (default: 2.5)",
+             "index for the filtering alignment (default: 2.5)",
         metavar="",
     )
     parser.add_argument(
         "--data_preprocess",
         action="store_true",
         help="Only process raw fastq files, "
-        "incl downloading fastq files from the SRA, "
-        "compressing them and removing any sequencing "
-        "adapters  <bool> (default: False)",
+             "incl downloading fastq files from the SRA, "
+             "compressing them and removing any sequencing "
+             "adapters  <bool> (default: False)",
     )
     parser.add_argument(
         "--build_db",
         action="store_true",
         help="ONly build the database from refseq and/or "
-        "other sequences retrieved from an NCBI query",
+             "other sequences retrieved from an NCBI query",
     )
     parser.add_argument(
         "--index_db",
         action="store_true",
         help="Index each taxon's reference genome that is "
-        "contained in the reference database, using bowtie2 "
-        " <bool> (default: False)",
+             "contained in the reference database, using bowtie2 "
+             " <bool> (default: False)",
     )
     parser.add_argument(
         "--aln_filter_index",
         action="store_true",
         help="Build the index required for the filtering "
-        "alignment step, out of all the sequences "
-        "contained in the reference database "
-        " <bool> (default: False)",
+             "alignment step, out of all the sequences "
+             "contained in the reference database "
+             " <bool> (default: False)",
     )
     parser.add_argument(
         "--aln_filter",
@@ -340,35 +351,35 @@ if __name__ == "__main__":
         "--aln_meta",
         action="store_true",
         help="Perform metagenomic alignments. "
-        "The aligned reads from the filtering alignment step "
-        "are aligned to each reference genomes separately "
-        "using bowtie2  <bool> (default: False)",
+             "The aligned reads from the filtering alignment step "
+             "are aligned to each reference genomes separately "
+             "using bowtie2  <bool> (default: False)",
     )
     parser.add_argument(
         "--probabilities",
         action="store_true",
         help="Taxon assignment posterior probabilities are "
-        "calculated for a given sample  <bool> "
-        "(default: False)",
+             "calculated for a given sample  <bool> "
+             "(default: False)",
     )
     parser.add_argument(
         "--abundances",
         action="store_true",
         help="Mean posterior abundances for each taxon in our "
-        "ref db, for a given sample, are calculated "
-        " <bool> (default: False)",
+             "ref db, for a given sample, are calculated "
+             " <bool> (default: False)",
     )
     parser.add_argument(
         "--mapdamage",
         action="store_true",
         help="Performs a chemical damage analysis, "
-        "by using mapDamage  <bool> (default: False)",
+             "by using mapDamage  <bool> (default: False)",
     )
     parser.add_argument(
         "--touch",
         action="store_true",
         help="Touches the timestamps of the requested target files "
-        "AND ALL of their dependencies  <bool> (default: False)",
+             "AND ALL of their dependencies  <bool> (default: False)",
     )
     parser.add_argument(
         "-j", "--cores", help="Number of cores for smk to use", metavar=""
@@ -384,7 +395,7 @@ if __name__ == "__main__":
         "--unlock",
         action="store_true",
         help="Unlock the working directory after smk is "
-        "abruptly killed  <bool> (default: False)",
+             "abruptly killed  <bool> (default: False)",
     )
 
     args = parser.parse_args()

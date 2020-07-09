@@ -210,7 +210,7 @@ rule align_taxon_paired_end:
         "| samtools sort -O bam -o {output.bam_file} ) 2> {log} "
         "; samtools index {output.bam_file}"
 
-
+# TODO delete all of this...
 # noinspection PyUnresolvedReferences
 def get_bamfile_paths(wildcards):
     """
@@ -309,11 +309,7 @@ def get_bamfile_paths(wildcards):
 
     return inputs
 
-
-# todo it is a bit of vile way of doing it but it is the only way of doing it just by calling rule_all,
-#  happy to change it
-
-
+# TODO delete all of this...
 rule all_alignments:
     input:
         get_bamfile_paths,

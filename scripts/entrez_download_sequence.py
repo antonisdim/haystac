@@ -26,7 +26,7 @@ from scripts.entrez_utils import (
 TOO_MANY_REQUESTS_WAIT = 5
 MAX_RETRY_ATTEMPTS = 3
 
-
+# TODO refactor this code to make it simpler and cleaner
 def entrez_download_sequence(accession, config, output_file, attempt=1, assembly=False):
     """
     Fetch the reference genome from NCBI.

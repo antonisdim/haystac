@@ -5,22 +5,23 @@ channels:
   - r
 dependencies:
   - python=3.6.7
+  - pip=19.3.1
   - snakemake=5.12.3
   - pysam=0.15.3
-  - biopython=1.76
+  - biopython=1.77
   - bowtie2=2.3.5.1
   - samtools=1.9
   - dedup=0.12.5
   - scipy=1.4.1
   - seqtk=1.3
-  - wget
+  - wget  # TODO add version number
   - adapterremoval=2.3.1
   - sra-tools=2.9.1
-  - r-inline
-  - r-gam
-  - r-RcppGSL
-  - r-ggplot2
-  - r-Rcpp
-  - seqkit
+  - r-inline  # TODO add version number
+  - r-gam  # TODO add version number
+  - r-RcppGSL  # TODO add version number
+  - r-ggplot2  # TODO add version number
+  - r-Rcpp  # TODO add version number
+  - seqkit  # TODO add version number
   - pip:
-      - "--editable=git+git://github.com/ginolhac/mapDamage.git#egg=mapdamage"
+      - git+git://github.com/ginolhac/mapDamage.git   # TODO pin to a specific commit

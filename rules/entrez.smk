@@ -7,6 +7,7 @@ import pandas as pd
 
 WITH_REFSEQ_REP = config["WITH_REFSEQ_REP"]
 
+from scripts.entrez_nuccore_query import CHUNK_SIZE
 
 checkpoint entrez_find_accessions:
     output:
@@ -26,6 +27,9 @@ rule entrez_nuccore_query:
         temp("{query}/entrez/{query}_{chunk}-nuccore.tsv"),
     log:
         temp("{query}/entrez/{query}_{chunk}-nuccore.log"),
+    resources:
+        # TODO add this to every other rule that needs it
+        entrez_api=1
     benchmark:
         repeat("benchmarks/entrez_nuccore_query_{query}_{chunk}.benchmark.txt", 1)
     script:
@@ -38,17 +42,17 @@ def get_nuccore_chunks(wildcards):
     Get all the accession chunks for the {query}-nuccore.tsv file.
     """
 
-    chunk_size = 20  # todo Is this acceptable way to chunk the query based on chunk size ? Feel like I can do it better
+    # CHUNK_SIZE = 20  # todo Is this acceptable way to chunk the query based on chunk size ? Feel like I can do it better
     pick_accessions = checkpoints.entrez_find_accessions.get(query=wildcards.query)
     sequences = pd.read_csv(pick_accessions.output[0], sep="\t")
 
     if len(sequences) == 0:
         raise RuntimeError("The entrez find accessions file is empty.")
 
-    if len(sequences) % chunk_size == 0:
-        tot_chunks = len(sequences) / float(chunk_size)
+    if len(sequences) % CHUNK_SIZE == 0:
+        tot_chunks = len(sequences) / float(CHUNK_SIZE)
     else:
-        tot_chunks = (len(sequences) // float(chunk_size)) + 1
+        tot_chunks = (len(sequences) // float(CHUNK_SIZE)) + 1
 
     inputs = []
     for chunk_num in range(int(tot_chunks)):
@@ -122,7 +126,11 @@ rule entrez_download_sequence:
     params:
         assembly=False,
     wildcard_constraints:
-        accession="(?=.*.)",
+        # TODO refactor this so we're not reliant on the style of the accession (low priority)
+        accession="\w+\.\d+",
+    resources:
+        # TODO add this to every other rule that needs it
+        entrez_api=1
     script:
         "../scripts/entrez_download_sequence.py"
 

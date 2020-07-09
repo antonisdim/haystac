@@ -3,6 +3,8 @@
 
 import pandas as pd
 
+REFSEQ_REP_URL = 'https://ftp.ncbi.nlm.nih.gov/genomes/GENOME_REPORTS/prok_representative_genomes.txt'
+
 ##### Target rules #####
 
 
@@ -14,7 +16,7 @@ rule download_refseq_representative_table:
     benchmark:
         repeat("benchmarks/prok_report_download.benchmark.txt", 3)
     shell:
-        "wget -O {output} https://ftp.ncbi.nlm.nih.gov/genomes/GENOME_REPORTS/prok_representative_genomes.txt 2> {log}"
+        "wget -O {output} {REFSEQ_REP_URL} 2> {log}"
 
 
 
@@ -67,6 +69,7 @@ def get_refseq_genome_sequences(wildcards):
     inputs = []
 
     for key, seq in sequences.iterrows():
+        # TODO move the .replace() code into a function called normalize_name() and update any other instances
         orgname, accession = seq['species'].replace(" ", "_").replace("[", "").replace("]", ""), seq['GBSeq_accession-version']
         inputs.append('database/{orgname}/{accession}.fasta.gz'.format(orgname=orgname, accession=accession))
 
@@ -98,7 +101,11 @@ rule entrez_download_assembly_sequence:
     params:
         assembly=True
     wildcard_constraints:
+        # TODO refactor this so we're not reliant on the style of the accession (low priority)
         accession="[^.]+"
+    resources:
+        # TODO add this to every other rule that needs it
+        entrez_api=1
     script:
         "../scripts/entrez_download_sequence.py"
 

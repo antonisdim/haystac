@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+# TODO needs a block comment
+
 import csv
 import gzip
 import os

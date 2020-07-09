@@ -33,7 +33,7 @@ def filtering_bowtie_aln_inputs(wildcards):
             "{query}/bowtie/{query}_refseq_prok.fasta.gz".format(query=wildcards.query)
         ]
 
-
+# TODO make chunks explicitly
 checkpoint count_bt2_idx:
     input:
         filtering_bowtie_aln_inputs,
@@ -60,7 +60,9 @@ rule bowtie_index:
         expand("{{query}}/bowtie/{{query}}_chunk{{chunk_num}}.{n}.bt2l", n=[1, 2, 3, 4]),
         expand("{{query}}/bowtie/{{query}}_chunk{{chunk_num}}.rev.{n}.bt2l", n=[1, 2]),
     benchmark:
-        repeat("benchmarks/bowtie_index_{query}_chunk{chunk_num}.benchmark.txt", 1) # run:
+        repeat("benchmarks/bowtie_index_{query}_chunk{chunk_num}.benchmark.txt", 1)
+         # TODO delete me...
+         # run:
          #     if WITH_REFSEQ_REP and WITH_ENTREZ_QUERY:
          #         shell("cat {input} > {wildcards.query}/bowtie/{wildcards.query}.fasta.gz; "
          #               "bowtie2-build --large-index {wildcards.query}/bowtie/{wildcards.query}.fasta.gz "
@@ -237,6 +239,7 @@ rule merge_bams_paired_end:
         "samtools merge -f {output} {input.aln_path} 2> {log}"
 
 
+# TODO delete me...
 # rule dedup_merged:
 #     input:
 #         "{query}/bam/{sample}_sorted.bam"
@@ -283,10 +286,11 @@ rule extract_fastq_paired_end:
     shell:
         "( samtools view -h -F 4 {input} "
         "| samtools fastq -c 6 -1 {wildcards.query}/fastq/PE/temp_R1.fastq.gz "
-        "-2 {wildcards.query}/fastq/PE/temp_R2.fastq.gz -0 /dev/null -s /dev/null - );"
-        "seqkit rmdup -n {wildcards.query}/fastq/PE/temp_R1.fastq.gz -o {output[0]}; "
-        "seqkit rmdup -n {wildcards.query}/fastq/PE/temp_R2.fastq.gz -o {output[1]};"
-        "rm {wildcards.query}/fastq/PE/temp_R1.fastq.gz; rm {wildcards.query}/fastq/PE/temp_R2.fastq.gz  2> {log}"
+        "-2 {wildcards.query}/fastq/PE/temp_R2.fastq.gz -0 /dev/null -s /dev/null -;"
+        "seqkit rmdup -n {wildcards.query}/fastq/PE/temp_R1.fastq.gz -o {output[0]}; "  # TODO names are not unique, they must include the {sample} wildcard
+        "seqkit rmdup -n {wildcards.query}/fastq/PE/temp_R2.fastq.gz -o {output[1]}; "
+        "rm {wildcards.query}/fastq/PE/temp_R1.fastq.gz; "
+        "rm {wildcards.query}/fastq/PE/temp_R2.fastq.gz ) 2> {log}"
         # "( samtools view -h -F 4 {input} "
          # "| samtools fastq -c 6 -1 {output[0]} -2 {output[1]} -0 /dev/null -s /dev/null - ) 2> {log}"
 

@@ -2,12 +2,9 @@
 # -*- coding: utf-8 -*-
 
 
-configfile: "config.yaml"
-
-
 ##### Modules #####
 
-
+# TODO all the rules should use the messages feature https://snakemake.readthedocs.io/en/stable/snakefiles/rules.html#messages
 include: "rules/entrez.smk"
 
 
