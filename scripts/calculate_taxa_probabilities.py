@@ -8,8 +8,14 @@ import pandas as pd
 import os
 
 
-def calculate_taxa_probabilities(ts_tv_matrix_file, params_file, sample_name, total_sample_fastq_reads, outputfile,
-                                 submatrices):
+def calculate_taxa_probabilities(
+    ts_tv_matrix_file,
+    params_file,
+    sample_name,
+    total_sample_fastq_reads,
+    outputfile,
+    submatrices,
+):
     """
     Function that calculates the species identification posterior probabilities.
     This function acts as a wrapper around the calculate_probabilities function.
@@ -18,14 +24,24 @@ def calculate_taxa_probabilities(ts_tv_matrix_file, params_file, sample_name, to
     "If submatrices" subsample the ts_tv_matrix_file in a for loop way. Could we parallelise this step ?
     """
 
-    assert os.stat(ts_tv_matrix_file).st_size, "The ts_tv count file is empty {}".format(ts_tv_file)
+    assert os.stat(
+        ts_tv_matrix_file
+    ).st_size, "The ts_tv count file is empty {}".format(ts_tv_file)
 
-    assert os.stat(params_file).st_size, "The probability model parameters file is empty {}".format(params_file)
+    assert os.stat(
+        params_file
+    ).st_size, "The probability model parameters file is empty {}".format(params_file)
 
-    print('all taxa', '\t', sample_name, file=sys.stderr)
+    print("all taxa", "\t", sample_name, file=sys.stderr)
 
-    calculate_probabilities(ts_tv_matrix_file, params_file, sample_name, total_sample_fastq_reads, outputfile,
-        submatrix='all taxa')
+    calculate_probabilities(
+        ts_tv_matrix_file,
+        params_file,
+        sample_name,
+        total_sample_fastq_reads,
+        outputfile,
+        submatrix="all taxa",
+    )
 
     # 83) todo fix that - with Alberto , can I parallelise this step ? I'm possibly deleting it
 
@@ -59,41 +75,55 @@ def calculate_taxa_probabilities(ts_tv_matrix_file, params_file, sample_name, to
     # print "Done with sample %s" % sample
 
 
-def calculate_probabilities(ts_tv_matrix_file, params_file, sample_name,
-                            total_sample_fastq_reads, outputfile, submatrix):
-    total_fastq_reads = float(open(total_sample_fastq_reads, 'r').read())
+def calculate_probabilities(
+    ts_tv_matrix_file,
+    params_file,
+    sample_name,
+    total_sample_fastq_reads,
+    outputfile,
+    submatrix,
+):
+    total_fastq_reads = float(open(total_sample_fastq_reads, "r").read())
 
-    read_count = len(pd.read_csv(ts_tv_matrix_file, sep=',', usecols=['Read_ID'])['Read_ID'].unique())
+    read_count = len(
+        pd.read_csv(ts_tv_matrix_file, sep=",", usecols=["Read_ID"])["Read_ID"].unique()
+    )
 
     if not read_count:
-        print('File is empty, moving on.')
+        print("File is empty, moving on.")
 
-    ts_tv_matrix = pd.read_csv(ts_tv_matrix_file, sep=',', usecols=['Taxon', 'Ts', 'Tv'])
+    ts_tv_matrix = pd.read_csv(
+        ts_tv_matrix_file, sep=",", usecols=["Taxon", "Ts", "Tv"]
+    )
 
-    model_params = pd.read_json(params_file, orient='index').squeeze()
+    model_params = pd.read_json(params_file, orient="index").squeeze()
 
-    mismatch_df = ts_tv_matrix.groupby('Taxon').sum().astype({"Ts": float, "Tv": float})
+    mismatch_df = ts_tv_matrix.groupby("Taxon").sum().astype({"Ts": float, "Tv": float})
 
     mismatch_df.reset_index(inplace=True)
 
-    mismatch_df['Posterior'] = np.nan
+    mismatch_df["Posterior"] = np.nan
 
-    mismatch_df['Read.Count'] = read_count
+    mismatch_df["Read.Count"] = read_count
 
-    mismatch_df['Total.Reads'] = total_fastq_reads
+    mismatch_df["Total.Reads"] = total_fastq_reads
 
-    mismatch_df['Submatrix'] = submatrix
+    mismatch_df["Submatrix"] = submatrix
 
-    mismatch_df['Sample'] = sample_name
+    mismatch_df["Sample"] = sample_name
 
     for index, row in mismatch_df.iterrows():
         # print row['Taxon'], row['Ts'], row['Vs'], '\n'
 
-        mismatch_t_vec = mismatch_df['Ts'].subtract(row['Ts']).rpow(model_params['delta_t'])
+        mismatch_t_vec = (
+            mismatch_df["Ts"].subtract(row["Ts"]).rpow(model_params["delta_t"])
+        )
 
         # print  Mismatch_df['Ts'].subtract(row['Ts'])
 
-        mismatch_v_vec = mismatch_df['Tv'].subtract(row['Tv']).rpow(model_params['delta_v'])
+        mismatch_v_vec = (
+            mismatch_df["Tv"].subtract(row["Tv"]).rpow(model_params["delta_v"])
+        )
 
         # print Mismatch_df['Vs'].subtract(row['Vs'])
 
@@ -111,13 +141,13 @@ def calculate_probabilities(ts_tv_matrix_file, params_file, sample_name,
 
     print(mismatch_df, file=sys.stderr)
 
-    with open(outputfile, 'a') as output_handle:
-        mismatch_df.to_csv(path_or_buf=output_handle, sep='\t', index=False)
+    with open(outputfile, "a") as output_handle:
+        mismatch_df.to_csv(path_or_buf=output_handle, sep="\t", index=False)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # redirect all output to the log
-    sys.stderr = open(snakemake.log[0], 'w')
+    sys.stderr = open(snakemake.log[0], "w")
 
     calculate_taxa_probabilities(
         ts_tv_matrix_file=snakemake.input[0],
@@ -125,5 +155,5 @@ if __name__ == '__main__':
         sample_name=snakemake.wildcards.sample,
         total_sample_fastq_reads=snakemake.input[2],
         outputfile=snakemake.output[0],
-        submatrices=snakemake.params['submatrices']
+        submatrices=snakemake.params["submatrices"],
     )

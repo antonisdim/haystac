@@ -33,25 +33,29 @@ def coverage_t_test(bam, taxon_fasta_idx, taxon, outfile):
 
     oddsratio, pvalue = fisher_exact([contingency_first_row, contingency_second_row])
 
-    with open(outfile, 'w') as outhandle:
-        print(taxon, pvalue, file=outhandle, sep='\t')
+    with open(outfile, "w") as outhandle:
+        print(taxon, pvalue, file=outhandle, sep="\t")
 
 
 def genome_sizes(taxon_fasta_idx):
-    faidx = pd.read_csv(taxon_fasta_idx, sep='\t', names=['Name', 'Length', 'Offset', 'Linebases', 'Linewidth'])
+    faidx = pd.read_csv(
+        taxon_fasta_idx,
+        sep="\t",
+        names=["Name", "Length", "Offset", "Linebases", "Linewidth"],
+    )
 
-    taxon_seq_len = faidx['Length'].sum()
+    taxon_seq_len = faidx["Length"].sum()
 
     return taxon_seq_len
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # redirect all output to the log
-    sys.stderr = open(snakemake.log[0], 'w')
+    sys.stderr = open(snakemake.log[0], "w")
 
     coverage_t_test(
         bam=snakemake.input[0],
         taxon_fasta_idx=snakemake.input[1],
         taxon=snakemake.wildcards.orgname,
-        outfile=snakemake.output[0]
+        outfile=snakemake.output[0],
     )

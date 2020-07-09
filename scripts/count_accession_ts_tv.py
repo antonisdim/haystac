@@ -37,19 +37,20 @@ def read_pair_generator(bam, region_string=None):
 #     """
 #     return 'ts' if set(alleles) == {'A', 'G'} or set(alleles) == {'C', 'T'} else 'tv'
 
+
 def mutation_type(alleles):
     """
     Is this mutation a transition (A <-> G and C <-> T) or a transversion (everything else).
     """
     alleles = set([a.upper() for a in alleles])
-    assert len(alleles) == 2 and alleles.issubset({'A', 'C', 'G', 'T', 'N'})
-    return 'ts' if alleles in [{'A', 'G'}, {'C', 'T'}] else 'tv'
+    assert len(alleles) == 2 and alleles.issubset({"A", "C", "G", "T", "N"})
+    return "ts" if alleles in [{"A", "G"}, {"C", "T"}] else "tv"
 
 
 def count_ts_tv_init(bam_file, output_file, taxon, pairs=False):
-    bam = pysam.AlignmentFile(bam_file, 'rb')
+    bam = pysam.AlignmentFile(bam_file, "rb")
 
-    with open(output_file, 'w') as fout:
+    with open(output_file, "w") as fout:
 
         for read in bam.fetch():
             ts, tv = 0, 0
@@ -59,11 +60,11 @@ def count_ts_tv_init(bam_file, output_file, taxon, pairs=False):
                 # todo add max mismatches for pe mod when it's orphan
 
                 for base_call, base_ref in zip(read.seq, read.get_reference_sequence()):
-                    if base_call.upper() == 'N' or base_ref.upper() == 'N':
+                    if base_call.upper() == "N" or base_ref.upper() == "N":
                         continue
 
                     if base_call != base_ref:
-                        if mutation_type([base_call, base_ref]) == 'ts':
+                        if mutation_type([base_call, base_ref]) == "ts":
                             ts += 1
                         else:
                             tv += 1
@@ -75,21 +76,29 @@ def count_ts_tv_init(bam_file, output_file, taxon, pairs=False):
             for read1, read2 in read_pair_generator(bam):
                 ts, tv = 0, 0
 
-                for base_call1, base_ref1, base_call2, base_ref2 in \
-                        zip(read1.seq, read1.get_reference_sequence(), read2.seq, read2.get_reference_sequence()):
+                for base_call1, base_ref1, base_call2, base_ref2 in zip(
+                    read1.seq,
+                    read1.get_reference_sequence(),
+                    read2.seq,
+                    read2.get_reference_sequence(),
+                ):
 
-                    if base_call1.upper() == 'N' or base_ref1.upper() == 'N' or \
-                            base_call2.upper() == 'N' or base_ref2.upper() == 'N':
+                    if (
+                        base_call1.upper() == "N"
+                        or base_ref1.upper() == "N"
+                        or base_call2.upper() == "N"
+                        or base_ref2.upper() == "N"
+                    ):
                         continue
 
                     if base_call1 != base_ref1:
-                        if mutation_type([base_call1, base_ref1]) == 'ts':
+                        if mutation_type([base_call1, base_ref1]) == "ts":
                             ts += 1
                         else:
                             tv += 1
 
                     if base_call2 != base_ref2:
-                        if mutation_type([base_call2, base_ref2]) == 'ts':
+                        if mutation_type([base_call2, base_ref2]) == "ts":
                             ts += 1
                         else:
                             tv += 1
@@ -97,13 +106,13 @@ def count_ts_tv_init(bam_file, output_file, taxon, pairs=False):
                 print(taxon, read1.query_name, ts, tv, file=fout, sep=",")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # redirect all output to the log
-    sys.stderr = open(snakemake.log[0], 'w')
+    sys.stderr = open(snakemake.log[0], "w")
 
     count_ts_tv_init(
         bam_file=snakemake.input[0],
         output_file=snakemake.output[0],
         taxon=snakemake.wildcards.orgname,
-        pairs=snakemake.params[0]
+        pairs=snakemake.params[0],
     )
