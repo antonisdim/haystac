@@ -48,6 +48,7 @@ def entrez_taxonomy_query(config, nuccore_file, output_file):
             "genus",
             "species",
             "subspecies",
+            "serovar",
         ]
         w = csv.DictWriter(fout, columns, delimiter="\t", extrasaction="ignore")
         w.writeheader()
@@ -71,12 +72,21 @@ def entrez_taxonomy_query(config, nuccore_file, output_file):
                 for item in node["LineageEx"]:
                     if item["Rank"] in columns:
                         taxon[item["Rank"]] = item["ScientificName"]
+                    elif item["Rank"] == "no rank":
+                        taxon["serovar"] = item["ScientificName"]
 
                 if node["Rank"] in columns:
                     taxon[node["Rank"]] = node["ScientificName"]
 
+                if "serovar" not in taxon.keys():
+                    if node["Rank"] == "no rank":
+                        taxon["serovar"] = node["ScientificName"]
+
                 if taxon["species"] and not taxon.get("subspecies"):
                     taxon["subspecies"] = taxon["species"] + " ssp."
+
+                if taxon["species"] and not taxon.get("serovar"):
+                    taxon["serovar"] = ""
 
                 w.writerow(taxon)
 

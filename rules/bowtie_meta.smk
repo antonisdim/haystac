@@ -11,6 +11,8 @@ SIGMA_MIN_SCORE_CONSTANT = (
 )  # it's from SIGMA, wouldn't want this changed unless the user is SUPER knowledgeable
 WITH_REFSEQ_REP = config["WITH_REFSEQ_REP"]
 WITH_ENTREZ_QUERY = config["WITH_ENTREZ_QUERY"]
+WITH_CUSTOM_SEQUENCES = config["WITH_CUSTOM_SEQUENCES"]
+WITH_CUSTOM_ACCESSIONS = config["WITH_CUSTOM_ACCESSIONS"]
 
 ##### Target rules #####
 
@@ -132,11 +134,74 @@ def get_idx_assembly(wildcards):
     return inputs
 
 
+def get_idx_custom_seqs(wildcards):
+    """
+    Get all the individual bam file paths for the taxa in our database.
+    """
+    if not WITH_CUSTOM_SEQUENCES:
+        return []
+
+    custom_fasta_paths = pd.read_csv(
+        config["custom_seq_file"],
+        sep="\t",
+        header=None,
+        names=["species", "accession", "path"],
+    )
+
+    sequences = custom_fasta_paths
+
+    inputs = []
+
+    for key, seq in sequences.iterrows():
+        orgname, accession = (
+            seq["species"].replace(" ", "_").replace("[", "").replace("]", ""),
+            seq["accession"],
+        )
+        inputs.append(
+            "database/{orgname}/{accession}.1.bt2l".format(
+                orgname=orgname, accession=accession
+            )
+        )
+
+    return inputs
+
+
+def get_idx_custom_acc(wildcards):
+    """
+    Get all the individual bam file paths for the taxa in our database.
+    """
+    if not WITH_CUSTOM_ACCESSIONS:
+        return []
+
+    custom_accessions = pd.read_csv(
+        config["custom_acc_file"], sep="\t", header=None, names=["species", "accession"]
+    )
+
+    sequences = custom_accessions
+
+    inputs = []
+
+    for key, seq in sequences.iterrows():
+        orgname, accession = (
+            seq["species"].replace(" ", "_").replace("[", "").replace("]", ""),
+            seq["accession"],
+        )
+        inputs.append(
+            "database/{orgname}/{accession}.1.bt2l".format(
+                orgname=orgname, accession=accession
+            )
+        )
+
+    return inputs
+
+
 rule idx_database:
     input:
         get_idx_entrez,
         get_idx_ref_gen,
         get_idx_assembly,
+        get_idx_custom_seqs,
+        get_idx_custom_acc,
     log:
         "database/idx_database_{query}.log",
     output:
@@ -155,8 +220,7 @@ def get_min_score(wildcards, input):
 
 rule align_taxon_single_end:
     input:
-        fastq="{query}/fastq/SE/{sample}_mapq.fastq.gz",
-        # bt2idx="database/{orgname}/{accession}.1.bt2l",
+        fastq="{query}/fastq/SE/{sample}_mapq.fastq.gz", # bt2idx="database/{orgname}/{accession}.1.bt2l",
         db_idx="database/idx_database_{query}.done",
         readlen="{query}/fastq/SE/{sample}_mapq.readlen",
     log:
@@ -187,8 +251,7 @@ rule align_taxon_single_end:
 rule align_taxon_paired_end:
     input:
         fastq_r1="{query}/fastq/PE/{sample}_R1_mapq.fastq.gz",
-        fastq_r2="{query}/fastq/PE/{sample}_R2_mapq.fastq.gz",
-        # bt2idx="database/{orgname}/{accession}.1.bt2l",
+        fastq_r2="{query}/fastq/PE/{sample}_R2_mapq.fastq.gz", # bt2idx="database/{orgname}/{accession}.1.bt2l",
         db_idx="database/idx_database_{query}.done",
         readlen="{query}/fastq/PE/{sample}_mapq_pair.readlen",
     log:
@@ -209,6 +272,7 @@ rule align_taxon_paired_end:
         "-1 {input.fastq_r1} -2 {input.fastq_r2} "
         "| samtools sort -O bam -o {output.bam_file} ) 2> {log} "
         "; samtools index {output.bam_file}"
+
 
 # TODO delete all of this...
 # noinspection PyUnresolvedReferences
@@ -270,6 +334,28 @@ def get_bamfile_paths(wildcards):
                 ]
             )
 
+    if WITH_CUSTOM_SEQUENCES:
+        custom_fasta_paths = pd.read_csv(
+            config["custom_seq_file"],
+            sep="\t",
+            header=None,
+            names=["species", "GBSeq_accession-version", "path"],
+        )
+
+        custom_seqs = custom_fasta_paths[["species", "GBSeq_accession-version"]]
+
+        sequences = sequences.append(custom_seqs)
+
+    if WITH_CUSTOM_ACCESSIONS:
+        custom_accessions = pd.read_csv(
+            config["custom_acc_file"],
+            sep="\t",
+            header=None,
+            names=["species", "GBSeq_accession-version"],
+        )
+
+        sequences = sequences.append(custom_accessions)
+
     inputs = []
 
     if SPECIFIC_GENUS:
@@ -308,6 +394,7 @@ def get_bamfile_paths(wildcards):
             )
 
     return inputs
+
 
 # TODO delete all of this...
 rule all_alignments:

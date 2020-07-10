@@ -3,6 +3,8 @@
 
 WITH_REFSEQ_REP = config["WITH_REFSEQ_REP"]
 WITH_ENTREZ_QUERY = config["WITH_ENTREZ_QUERY"]
+WITH_CUSTOM_SEQUENCES = config["WITH_CUSTOM_SEQUENCES"]
+WITH_CUSTOM_ACCESSIONS = config["WITH_CUSTOM_ACCESSIONS"]
 SRA_LOOKUP = config["SRA_LOOKUP"]
 PE_ANCIENT = config["PE_ANCIENT"]
 PE_MODERN = config["PE_MODERN"]
@@ -143,6 +145,28 @@ def get_ts_tv_count_paths(wildcards):
                     genbank_plasmids,
                 ]
             )
+
+    if WITH_CUSTOM_SEQUENCES:
+        custom_fasta_paths = pd.read_csv(
+            config["custom_seq_file"],
+            sep="\t",
+            header=None,
+            names=["species", "GBSeq_accession-version", "path"],
+        )
+
+        custom_seqs = custom_fasta_paths[["species", "GBSeq_accession-version"]]
+
+        sequences = sequences.append(custom_seqs)
+
+    if WITH_CUSTOM_ACCESSIONS:
+        custom_accessions = pd.read_csv(
+            config["custom_acc_file"],
+            sep="\t",
+            header=None,
+            names=["species", "GBSeq_accession-version"],
+        )
+
+        sequences = sequences.append(custom_accessions)
 
     inputs = []
 
@@ -315,6 +339,28 @@ def get_t_test_values_paths(wildcards):
                     genbank_plasmids,
                 ]
             )
+
+    if WITH_CUSTOM_SEQUENCES:
+        custom_fasta_paths = pd.read_csv(
+            config["custom_seq_file"],
+            sep="\t",
+            header=None,
+            names=["species", "GBSeq_accession-version", "path"],
+        )
+
+        custom_seqs = custom_fasta_paths[["species", "GBSeq_accession-version"]]
+
+        sequences = sequences.append(custom_seqs)
+
+    if WITH_CUSTOM_ACCESSIONS:
+        custom_accessions = pd.read_csv(
+            config["custom_acc_file"],
+            sep="\t",
+            header=None,
+            names=["species", "GBSeq_accession-version"],
+        )
+
+        sequences = sequences.append(custom_accessions)
 
     inputs = []
 

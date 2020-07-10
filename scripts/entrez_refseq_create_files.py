@@ -5,6 +5,7 @@ import pandas as pd
 
 
 def entrez_refseq_create_files(
+    config,
     input_file,
     nuccore_genomes_out,
     genbank_genomes_out,
@@ -22,6 +23,7 @@ def entrez_refseq_create_files(
         prok_refseq_rep_rmdup["WGS"].notna(), ["#Species/genus", "WGS"]
     ]
 
+    assemblies["#Species/genus"] = assemblies["#Species/genus"].str.replace(" ", "_")
     assemblies["#Species/genus"] = assemblies["#Species/genus"].str.replace("/", "_")
     assemblies["#Species/genus"] = assemblies["#Species/genus"].str.replace("'", "")
     assemblies["#Species/genus"] = assemblies["#Species/genus"].str.replace("(", "")
@@ -32,6 +34,7 @@ def entrez_refseq_create_files(
         ["#Species/genus", "Chromosome RefSeq"],
     ]
 
+    nuccore["#Species/genus"] = nuccore["#Species/genus"].str.replace(" ", "_")
     nuccore["#Species/genus"] = nuccore["#Species/genus"].str.replace("'", "")
     nuccore["#Species/genus"] = nuccore["#Species/genus"].str.replace("(", "")
     nuccore["#Species/genus"] = nuccore["#Species/genus"].str.replace(")", "")
@@ -41,6 +44,7 @@ def entrez_refseq_create_files(
         ["#Species/genus", "Chromosome GenBank"],
     ]
 
+    genbank["#Species/genus"] = genbank["#Species/genus"].str.replace(" ", "_")
     genbank["#Species/genus"] = genbank["#Species/genus"].str.replace("'", "")
     genbank["#Species/genus"] = genbank["#Species/genus"].str.replace("(", "")
     genbank["#Species/genus"] = genbank["#Species/genus"].str.replace(")", "")
@@ -132,6 +136,62 @@ def entrez_refseq_create_files(
 
     header = ["species", "GBSeq_accession-version"]
 
+    if config["WITH_CUSTOM_SEQUENCES"]:
+        custom_fasta_paths = pd.read_csv(
+            config["custom_seq_file"],
+            sep="\t",
+            header=None,
+            names=["species", "accession", "path"],
+        )
+
+        genbank_exploded = genbank_exploded[
+            (~genbank_exploded["species"].isin(custom_fasta_paths["species"]))
+        ]
+        nuccore_exploded = nuccore_exploded[
+            (~nuccore_exploded["species"].isin(custom_fasta_paths["species"]))
+        ]
+        assemblies_exploded = assemblies_exploded[
+            (~assemblies_exploded["species"].isin(custom_fasta_paths["species"]))
+        ]
+        genbank_plasmids_filtered_exploded = genbank_plasmids_filtered_exploded[
+            (
+                ~genbank_plasmids_filtered_exploded["species"].isin(
+                    custom_fasta_paths["species"]
+                )
+            )
+        ]
+        nuccore_plasmids_exploded = nuccore_plasmids_exploded[
+            (~nuccore_plasmids_exploded["species"].isin(custom_fasta_paths["species"]))
+        ]
+
+    if config["WITH_CUSTOM_ACCESSIONS"]:
+        custom_accessions = pd.read_csv(
+            config["custom_acc_file"],
+            sep="\t",
+            header=None,
+            names=["species", "accession"],
+        )
+
+        genbank_exploded = genbank_exploded[
+            (~genbank_exploded["species"].isin(custom_accessions["species"]))
+        ]
+        nuccore_exploded = nuccore_exploded[
+            (~nuccore_exploded["species"].isin(custom_accessions["species"]))
+        ]
+        assemblies_exploded = assemblies_exploded[
+            (~assemblies_exploded["species"].isin(custom_accessions["species"]))
+        ]
+        genbank_plasmids_filtered_exploded = genbank_plasmids_filtered_exploded[
+            (
+                ~genbank_plasmids_filtered_exploded["species"].isin(
+                    custom_accessions["species"]
+                )
+            )
+        ]
+        nuccore_plasmids_exploded = nuccore_plasmids_exploded[
+            (~nuccore_plasmids_exploded["species"].isin(custom_accessions["species"]))
+        ]
+
     # todo working example the head() needs to leave for a proper run
     genbank_exploded.head(5).to_csv(
         genbank_genomes_out, sep="\t", header=header, index=False
@@ -155,6 +215,7 @@ if __name__ == "__main__":
     sys.stderr = open(snakemake.log[0], "w")
 
     entrez_refseq_create_files(
+        config=snakemake.config,
         input_file=snakemake.input[0],
         nuccore_genomes_out=snakemake.output[0],
         genbank_genomes_out=snakemake.output[1],

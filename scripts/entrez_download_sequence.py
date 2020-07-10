@@ -26,6 +26,7 @@ from scripts.entrez_utils import (
 TOO_MANY_REQUESTS_WAIT = 5
 MAX_RETRY_ATTEMPTS = 3
 
+
 # TODO refactor this code to make it simpler and cleaner
 def entrez_download_sequence(accession, config, output_file, attempt=1, assembly=False):
     """
@@ -53,7 +54,9 @@ def entrez_download_sequence(accession, config, output_file, attempt=1, assembly
             Entrez.esearch(db=ENTREZ_DB_NUCCORE, term=accession_id)
         )["IdList"]
     else:
-        nuccore_id = [accession]
+        nuccore_id = Entrez.read(Entrez.esearch(db=ENTREZ_DB_NUCCORE, term=accession))[
+            "IdList"
+        ]
 
     try:
         records = guts_of_entrez(

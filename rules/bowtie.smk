@@ -8,6 +8,8 @@ import pandas as pd
 SUBSAMPLE_FIXED_READS = 200000
 WITH_REFSEQ_REP = config["WITH_REFSEQ_REP"]
 WITH_ENTREZ_QUERY = config["WITH_ENTREZ_QUERY"]
+WITH_CUSTOM_SEQUENCES = config["WITH_CUSTOM_SEQUENCES"]
+WITH_CUSTOM_ACCESSIONS = config["WITH_CUSTOM_ACCESSIONS"]
 SRA_LOOKUP = config["SRA_LOOKUP"]
 PE_ANCIENT = config["PE_ANCIENT"]
 PE_MODERN = config["PE_MODERN"]
@@ -21,17 +23,28 @@ WITH_DATA_PREPROCESSING = config["WITH_DATA_PREPROCESSING"]
 
 
 def filtering_bowtie_aln_inputs(wildcards):
-    if WITH_REFSEQ_REP and WITH_ENTREZ_QUERY:
-        return [
-            "{query}/bowtie/{query}_entrez.fasta.gz".format(query=wildcards.query),
-            "{query}/bowtie/{query}_refseq_prok.fasta.gz".format(query=wildcards.query),
-        ]
-    elif WITH_ENTREZ_QUERY:
-        return ["{query}/bowtie/{query}_entrez.fasta.gz".format(query=wildcards.query)]
-    else:
-        return [
+
+    inputs = []
+
+    if WITH_REFSEQ_REP:
+        inputs.append(
             "{query}/bowtie/{query}_refseq_prok.fasta.gz".format(query=wildcards.query)
-        ]
+        )
+    if WITH_ENTREZ_QUERY:
+        inputs.append(
+            "{query}/bowtie/{query}_entrez.fasta.gz".format(query=wildcards.query)
+        )
+    if WITH_CUSTOM_SEQUENCES:
+        inputs.append(
+            "{query}/bowtie/{query}_custom_seqs.fasta.gz".format(query=wildcards.query)
+        )
+    if WITH_CUSTOM_ACCESSIONS:
+        inputs.append(
+            "{query}/bowtie/{query}_custom_acc.fasta.gz".format(query=wildcards.query)
+        )
+
+    return inputs
+
 
 # TODO make chunks explicitly
 checkpoint count_bt2_idx:
@@ -60,8 +73,7 @@ rule bowtie_index:
         expand("{{query}}/bowtie/{{query}}_chunk{{chunk_num}}.{n}.bt2l", n=[1, 2, 3, 4]),
         expand("{{query}}/bowtie/{{query}}_chunk{{chunk_num}}.rev.{n}.bt2l", n=[1, 2]),
     benchmark:
-        repeat("benchmarks/bowtie_index_{query}_chunk{chunk_num}.benchmark.txt", 1)
-         # TODO delete me...
+        repeat("benchmarks/bowtie_index_{query}_chunk{chunk_num}.benchmark.txt", 1) # TODO delete me...
          # run:
          #     if WITH_REFSEQ_REP and WITH_ENTREZ_QUERY:
          #         shell("cat {input} > {wildcards.query}/bowtie/{wildcards.query}.fasta.gz; "
@@ -217,8 +229,7 @@ def get_sorted_bam_paths(wildcards):
 
 rule merge_bams_single_end:
     input:
-        aln_path=get_sorted_bam_paths,
-        # aln_done="{query}/bam/{sample}_all_aln.done",
+        aln_path=get_sorted_bam_paths, # aln_done="{query}/bam/{sample}_all_aln.done",
     log:
         "{query}/bam/{sample}_merge_bams.log",
     output:
@@ -229,30 +240,13 @@ rule merge_bams_single_end:
 
 rule merge_bams_paired_end:
     input:
-        aln_path=get_sorted_bam_paths,
-        # aln_done="{query}/bam/{sample}_all_aln.done",
+        aln_path=get_sorted_bam_paths, # aln_done="{query}/bam/{sample}_all_aln.done",
     log:
         "{query}/bam/{sample}_merge_bams.log",
     output:
         "{query}/bam/PE_{sample}_sorted.bam",
     shell:
         "samtools merge -f {output} {input.aln_path} 2> {log}"
-
-
-# TODO delete me...
-# rule dedup_merged:
-#     input:
-#         "{query}/bam/{sample}_sorted.bam"
-#     log:
-#         "{query}/bam/{sample}_sorted_rmdup.log"
-#     output:
-#         "{query}/bam/{sample}_sorted_rmdup.bam"
-#     benchmark:
-#         repeat("benchmarks/dedup_merged_{query}_{sample}.benchmark.txt", 1)
-#     params:
-#         output="{query}/bam/"
-#     shell:
-#         "dedup --merged --input {input} --output {params.output} &> {log}"
 
 
 rule extract_fastq_single_end:
@@ -267,8 +261,7 @@ rule extract_fastq_single_end:
     params:
         min_mapq=config["min_mapq"],
     shell:
-        "( samtools view -h -F 4 {input} | samtools fastq -c 6 - | seqkit rmdup -n -o {output} ) 2> {log}"
-        # "( samtools view -h -F 4 {input} | samtools fastq -c 6 - > {output} ) 2> {log}"
+        "( samtools view -h -F 4 {input} | samtools fastq -c 6 - | seqkit rmdup -n -o {output} ) 2> {log}" # "( samtools view -h -F 4 {input} | samtools fastq -c 6 - > {output} ) 2> {log}"
 
 
 rule extract_fastq_paired_end:
@@ -287,11 +280,11 @@ rule extract_fastq_paired_end:
         "( samtools view -h -F 4 {input} "
         "| samtools fastq -c 6 -1 {wildcards.query}/fastq/PE/temp_R1.fastq.gz "
         "-2 {wildcards.query}/fastq/PE/temp_R2.fastq.gz -0 /dev/null -s /dev/null -;"
-        "seqkit rmdup -n {wildcards.query}/fastq/PE/temp_R1.fastq.gz -o {output[0]}; "  # TODO names are not unique, they must include the {sample} wildcard
+        "seqkit rmdup -n {wildcards.query}/fastq/PE/temp_R1.fastq.gz -o {output[0]}; "
         "seqkit rmdup -n {wildcards.query}/fastq/PE/temp_R2.fastq.gz -o {output[1]}; "
         "rm {wildcards.query}/fastq/PE/temp_R1.fastq.gz; "
-        "rm {wildcards.query}/fastq/PE/temp_R2.fastq.gz ) 2> {log}"
-        # "( samtools view -h -F 4 {input} "
+        "rm {wildcards.query}/fastq/PE/temp_R2.fastq.gz ) 2> {log}" # TODO names are not unique, they must include the {sample} wildcard
+         # "( samtools view -h -F 4 {input} "
          # "| samtools fastq -c 6 -1 {output[0]} -2 {output[1]} -0 /dev/null -s /dev/null - ) 2> {log}"
 
 

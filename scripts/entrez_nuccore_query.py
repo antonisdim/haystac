@@ -21,7 +21,6 @@ from scripts.entrez_utils import (
     ENTREZ_RETTYPE_GB,
 )
 
-# todo should it in the config ? needs to be the same as in entrez.smk file. Feel like I can do it better
 CHUNK_SIZE = 20
 TOO_MANY_REQUESTS_WAIT = 7
 MAX_RETRY_ATTEMPTS = 10
@@ -47,7 +46,7 @@ def gen_dict_extract(key, var):
 
 
 def chunker(seq, size):
-    return (seq[pos: pos + size] for pos in range(0, len(seq), size))
+    return (seq[pos : pos + size] for pos in range(0, len(seq), size))
 
 
 def entrez_nuccore_query(input_file, config, query_chunk_num, output_file, attempt=1):

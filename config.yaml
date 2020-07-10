@@ -53,3 +53,14 @@ MEM_RESCALING_FACTOR:
 
 WITH_DATA_PREPROCESSING:
   True
+
+WITH_CUSTOM_SEQUENCES:
+  False
+custom_seq_file:
+  custom_seq.txt
+
+WITH_CUSTOM_ACCESSIONS:
+  False
+custom_acc_file:
+  custom_acc.txt
+

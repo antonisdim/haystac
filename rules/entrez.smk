@@ -1,13 +1,20 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import os
+import sys
 import pandas as pd
+
+sys.path.append(os.getcwd())
+sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+
 
 ##### Target rules #####
 
 WITH_REFSEQ_REP = config["WITH_REFSEQ_REP"]
 
 from scripts.entrez_nuccore_query import CHUNK_SIZE
+
 
 checkpoint entrez_find_accessions:
     output:
@@ -28,8 +35,7 @@ rule entrez_nuccore_query:
     log:
         temp("{query}/entrez/{query}_{chunk}-nuccore.log"),
     resources:
-        # TODO add this to every other rule that needs it
-        entrez_api=1
+        entrez_api=1, # TODO add this to every other rule that needs it
     benchmark:
         repeat("benchmarks/entrez_nuccore_query_{query}_{chunk}.benchmark.txt", 1)
     script:
@@ -42,7 +48,6 @@ def get_nuccore_chunks(wildcards):
     Get all the accession chunks for the {query}-nuccore.tsv file.
     """
 
-    # CHUNK_SIZE = 20  # todo Is this acceptable way to chunk the query based on chunk size ? Feel like I can do it better
     pick_accessions = checkpoints.entrez_find_accessions.get(query=wildcards.query)
     sequences = pd.read_csv(pick_accessions.output[0], sep="\t")
 
@@ -126,11 +131,9 @@ rule entrez_download_sequence:
     params:
         assembly=False,
     wildcard_constraints:
-        # TODO refactor this so we're not reliant on the style of the accession (low priority)
-        accession="\w+\.\d+",
+        accession="\w+\.\d+", # TODO refactor this so we're not reliant on the style of the accession (low priority)
     resources:
-        # TODO add this to every other rule that needs it
-        entrez_api=1
+        entrez_api=1, # TODO add this to every other rule that needs it
     script:
         "../scripts/entrez_download_sequence.py"
 

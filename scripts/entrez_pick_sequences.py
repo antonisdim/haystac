@@ -70,6 +70,30 @@ def entrez_pick_sequences(config, nuccore_file, taxa_file, output_file, query):
     selected_sequences["species"] = selected_sequences["species"].str.replace("(", "")
     selected_sequences["species"] = selected_sequences["species"].str.replace(")", "")
 
+    if config["WITH_CUSTOM_SEQUENCES"]:
+        custom_fasta_paths = pd.read_csv(
+            config["custom_seq_file"],
+            sep="\t",
+            header=None,
+            names=["species", "accession", "path"],
+        )
+
+        selected_sequences = selected_sequences[
+            (~selected_sequences["species"].isin(custom_fasta_paths["species"]))
+        ]
+
+    if config["WITH_CUSTOM_ACCESSIONS"]:
+        custom_accessions = pd.read_csv(
+            config["custom_acc_file"],
+            sep="\t",
+            header=None,
+            names=["species", "accession"],
+        )
+
+        selected_sequences = selected_sequences[
+            (~selected_sequences["species"].isin(custom_accessions["species"]))
+        ]
+
     selected_sequences.to_csv(output_file, sep="\t", header=True, index=False)
 
 

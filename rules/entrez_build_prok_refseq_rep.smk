@@ -102,7 +102,7 @@ rule entrez_download_assembly_sequence:
         assembly=True
     wildcard_constraints:
         # TODO refactor this so we're not reliant on the style of the accession (low priority)
-        accession="[^.]+"
+        accession="[^._]+"
     resources:
         # TODO add this to every other rule that needs it
         entrez_api=1
