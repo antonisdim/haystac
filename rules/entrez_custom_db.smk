@@ -14,6 +14,9 @@ rule entrez_custom_sequences:
         "database/{orgname}/custom_seq-{accession}.log",
     output:
         "database/{orgname}/custom_seq-{accession}.fasta.gz",
+    message:
+        "Incorporating the user provided fasta sequence {wildcards.accession} for taxon {wildcards.orgname}. "
+        "The provided sequence can be found in {output} and its log file in {log}."
     script:
         "../scripts/entrez_custom_sequences.py"
 
@@ -85,6 +88,9 @@ rule entrez_aggregate_custom_seqs:
         "{query}/bowtie/{query}_custom_seqs.log",
     output:
         "{query}/bowtie/{query}_custom_seqs.fasta.gz",
+    message:
+        "Concatenating all the user provided sequences {input} in {output}. "
+        "Its log file can be found in {log}."
     script:
         "../scripts/bowtie2_multifasta.py"
 
@@ -153,5 +159,8 @@ rule entrez_aggregate_custom_acc:
         "{query}/bowtie/{query}_custom_acc.log",
     output:
         "{query}/bowtie/{query}_custom_acc.fasta.gz",
+    message:
+        "Concatenating all the sequences from user provided accessions {input} in {output}. "
+        "Its log file can be found in {log}."
     script:
         "../scripts/bowtie2_multifasta.py"

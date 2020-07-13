@@ -23,6 +23,9 @@ checkpoint entrez_find_accessions:
         temp("{query}/entrez/{query}-accessions.log"),
     benchmark:
         repeat("benchmarks/entrez_find_accessions_{query}.benchmark.txt", 1)
+    message:
+        "Finding all the accessions, whose metadata are going to be fetched, for query {wildcards.query}. "
+        "The temporary output can be found in {output} and the its log file in {log}."
     script:
         "../scripts/entrez_find_accessions.py"
 
@@ -34,10 +37,14 @@ rule entrez_nuccore_query:
         temp("{query}/entrez/{query}_{chunk}-nuccore.tsv"),
     log:
         temp("{query}/entrez/{query}_{chunk}-nuccore.log"),
-    resources:
-        entrez_api=1, # TODO add this to every other rule that needs it
     benchmark:
         repeat("benchmarks/entrez_nuccore_query_{query}_{chunk}.benchmark.txt", 1)
+    message:
+        "Fetching sequence metadata from the NCBI Nucleotide database "
+        "for the accessions in chunk {wildcards.chunk} for query {wildcards.query}. "
+        "The temporary output can be found in {output} and its log file in {log}."
+    resources:
+        entrez_api=1,
     script:
         "../scripts/entrez_nuccore_query.py"
 
@@ -79,6 +86,9 @@ rule entrez_aggregate_nuccore:
         "{query}/entrez/{query}-nuccore.log",
     benchmark:
         repeat("benchmarks/entrez_aggregate_nuccore_{query}.benchmark.txt", 1)
+    message:
+        "Concatenating all the temporary output files containing accession metadata fetched from the NCBI Nucleotide "
+        "database for query {wildcards.query}. The permanent output can be found in {output} and its log file in {log}."
     shell:
         "awk 'FNR>1 || NR==1' {input} 1> {output} 2> {log}"
 
@@ -92,6 +102,10 @@ rule entrez_taxa_query:
         "{query}/entrez/{query}-taxa.log",
     benchmark:
         repeat("benchmarks/entrez_taxa_query_{query}.benchmark.txt", 1)
+    message:
+        "Querying the NCBI Taxonomy database to fetch taxonomic metadata, for all the different "
+        "taxa the NCBI Nucleotide returned accessions belong to, for query {wildcards.query}. "
+        "The output table can be found in {output} and its log file in {log}."
     script:
         "../scripts/entrez_taxonomy_query.py"
 
@@ -108,15 +122,20 @@ def pick_after_refseq_prok(wildcards):
 
 checkpoint entrez_pick_sequences:
     input:
-        "{query}/entrez/{query}-nuccore.tsv",
-        "{query}/entrez/{query}-taxa.tsv",
-        pick_after_refseq_prok,
+        nuccore="{query}/entrez/{query}-nuccore.tsv",
+        taxonomy="{query}/entrez/{query}-taxa.tsv",
+        priority=pick_after_refseq_prok,
     output:
         "{query}/entrez/{query}-selected-seqs.tsv",
     log:
         "{query}/entrez/{query}-selected-seqs.log",
     benchmark:
         repeat("benchmarks/entrez_pick_sequences_{query}.benchmark.txt", 1)
+    message:
+        "Selecting the longest sequence per taxon for query {wildcards.query}. "
+        "Input tables with accession and taxonomic metadata can be found in "
+        "{input.nuccore} and {input.taxonomy} respectively."
+        "The output table can be found in {output} and its log file in {log}. "
     script:
         "../scripts/entrez_pick_sequences.py"
 
@@ -132,8 +151,11 @@ rule entrez_download_sequence:
         assembly=False,
     wildcard_constraints:
         accession="\w+\.\d+", # TODO refactor this so we're not reliant on the style of the accession (low priority)
+    message:
+        "Downloading accession {wildcards.accession} for taxon {wildcards.orgname}. "
+        "The downloaded fasta sequence can be found in {output} and its log file in {log}."
     resources:
-        entrez_api=1, # TODO add this to every other rule that needs it
+        entrez_api=1,
     script:
         "../scripts/entrez_download_sequence.py"
 
@@ -174,5 +196,8 @@ rule entrez_multifasta:
         "{query}/bowtie/{query}_entrez.fasta.gz",
     benchmark:
         repeat("benchmarks/entrez_multifasta_{query}.benchmark.txt", 1)
+    message:
+        "Concatenating all the fasta sequences for all the taxa in {output} for query {wildcards.query}, and its "
+        "log file can be found in {log}."
     script:
         "../scripts/bowtie2_multifasta.py"

@@ -18,6 +18,8 @@ rule get_sra_fastq_se:
     params:
         extra="",
     threads: 6
+    message:
+        "Download SRA file {output} for accession {wildcards.accession}. The log file can be found in {log}."
     wrapper:
         "0.51.2/bio/sra-tools/fasterq-dump"
 
@@ -31,6 +33,8 @@ rule get_sra_fastq_pe:
     params:
         extra="", # optional extra arguments
     threads: 6 # defaults to 6
+    message:
+        "Download SRA files {output} for accession {wildcards.accession}. The log file can be found in {log}."
     wrapper:
         "0.51.2/bio/sra-tools/fasterq-dump"
 
@@ -42,6 +46,9 @@ rule compress_sra_fastq_se:
         "sra_data/SE/{accession}_compress.log",
     output:
         "sra_data/SE/{accession}.fastq.gz",
+    message:
+        "Compressing the raw fastq file {input} for accession {wildcards.accession} and storing it in {output}. "
+        "The log file can be found in {log}."
     shell:
         "gzip -c {input} 1> {output} 2> {log}"
 
@@ -55,6 +62,10 @@ rule compress_sra_fastq_pe:
     output:
         r1="sra_data/PE/{accession}_R1.fastq.gz",
         r2="sra_data/PE/{accession}_R2.fastq.gz",
+    message:
+        "Compressing the raw fastq files {input.r1} and {input.r2} for accession {wildcards.accession} "
+        "and storing them in {output.r1} and {output.r2}. "
+        "The log file can be found in {log}."
     shell:
         "gzip -c {input.r1} 1> {output.r1} 2> {log}; gzip -c {input.r2} 1> {output.r2} 2> {log}"
 
@@ -108,6 +119,10 @@ rule adapterremoval_single_end:
         "fastq_inputs/SE/{accession}_adRm.fastq.gz",
     benchmark:
         repeat("benchmarks/adapterremoval_single_end_{accession}.benchmark.txt", 1)
+    message:
+        "Trimming sequencing adapters from file {input.fastq}, using AdapterRemoval. "
+        "The trimmed reads can be found in {output}, and the "
+        "log file can be found in {log}."
     shell:
         "AdapterRemoval --file1 {input} --basename fastq_inputs/SE/{wildcards.accession} --gzip --minlength 15 "
         "--trimns; cat fastq_inputs/SE/{wildcards.accession}*truncated* 1> {output} 2> {log}"
@@ -123,6 +138,11 @@ rule adapterremoval_paired_end_ancient:
         "fastq_inputs/PE_anc/{accession}_adRm.fastq.gz",
     benchmark:
         repeat("benchmarks/adapterremoval_paired_end_ancient_{accession}.benchmark.txt", 1)
+    message:
+        "Trimming sequencing adapters and collapsing reads from files {input.fastq_r1} and {input.fastq_r2}, "
+        "using AdapterRemoval. "
+        "The trimmed reads can be found in {output}, and the "
+        "log file can be found in {log}."
     shell:
         "AdapterRemoval --file1 {input.fastq_r1}  --file2 {input.fastq_r2} "
         "--basename fastq_inputs/PE_anc/{wildcards.accession} --gzip --collapse-deterministic  --minlength 15 "
@@ -140,6 +160,11 @@ rule adapterremoval_paired_end_modern:
         fastq_r2="fastq_inputs/PE_mod/{accession}_R2_adRm.fastq.gz",
     benchmark:
         repeat("benchmarks/adapterremoval_paired_end_modern_{accession}.benchmark.txt", 1)
+    message:
+        "Trimming sequencing adapters from files {input.fastq_r1} and {input.fastq_r2}, "
+        "using AdapterRemoval. "
+        "The trimmed reads can be found in {output.fastq_r1} and {output.fastq_r2}, and the "
+        "log file can be found in {log}."
     shell:
         "AdapterRemoval --file1 {input.fastq_r1}  --file2 {input.fastq_r2} "
         "--basename fastq_inputs/PE_mod/{wildcards.accession} --gzip --minlength 15 --trimns; "

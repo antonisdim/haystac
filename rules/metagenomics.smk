@@ -48,6 +48,9 @@ rule count_fastq_length:
         "fastq_inputs/meta/{sample}.size",
     benchmark:
         repeat("benchmarks/count_fastq_length_{sample}.benchmark.txt", 1)
+    message:
+        "Counting the number of reads for sample {wildcards.sample} and storing the result in {output}. "
+        "Its log file can be found in {log}."
     shell:
         "seqtk seq -A {input.fastq} | grep -v '^>' | wc -l 1> {output} 2> {log}"
 
@@ -83,6 +86,11 @@ rule count_accession_ts_tv:
         )
     params:
         pairs=PE_MODERN,
+    message:
+        "Counting the number of transitions and transversions per read for genome {wildcards.accession} "
+        "for taxon {wildcards.orgname} from input file {input}. "
+        "The file with the mismatch counts can be found in {output} and its "
+        "log file can be found in {log}."
     script:
         "../scripts/count_accession_ts_tv.py"
 
@@ -203,6 +211,9 @@ rule initial_ts_tv:
     benchmark:
         repeat("benchmarks/initial_ts_tv_{query}_{sample}.benchmark.txt", 1) # shell:
          #     "cat {input} 1> {output} 2> {log}"
+    message:
+        "Concatenating all the Ts and Tv count files {input} in {output} for sample {wildcards.sample}. "
+        "Its log file can be found in {log}."
     script:
         "../scripts/concat_files.py"
 
@@ -230,6 +241,10 @@ rule calculate_likelihoods:
         "{query}/probabilities/{sample}/{sample}_likelihood_ts_tv_matrix.log",
     benchmark:
         repeat("benchmarks/calculate_likelihoods_{query}_{sample}.benchmark.txt", 1)
+    message:
+        "Calculating the likelihoods and performing the Dirichlet assignment of the reads for sample "
+        "{wildcards.sample} to the taxa in our database. The output table can be found in {output}, "
+        "and its log file can be found in {log}."
     script:
         "../scripts/calculate_likelihoods.py" #todo ask Evan to check if they are the same with the SQL commands
 
@@ -247,6 +262,10 @@ rule calculate_taxa_probabilities:
         repeat("benchmarks/calculate_taxa_probabilities_{query}_{sample}.benchmark.txt", 1)
     params:
         submatrices=False,
+    message:
+        "Calculating the assignment posterior probabilities for sample {wildcards.sample}, using the likelihood table"
+        "calculated in the previous step. The assignment probabilities file can be found in {output}, "
+        "and its log file can be found in {log}."
     script:
         "../scripts/calculate_taxa_probabilities.py"
 
@@ -260,6 +279,9 @@ rule fasta_idx:
         "database/{orgname}/{accession}.fasta.gz.fai.log",
     benchmark:
         repeat("benchmarks/fasta_idx_{orgname}_{accession}.benchmark.txt", 1)
+    message:
+        "Indexing fasta file with accession {wildcards.accession} for taxon {wildcards.orgname}. "
+        "The index can be found in {output}, and its log file can be found in {log}."
     shell:
         "samtools faidx {input} 2> {log}"
 
@@ -277,6 +299,11 @@ rule coverage_t_test:
             "benchmarks/coverage_t_test_{query}_{sample}_{orgname}_{accession}_{reads}.benchmark.txt",
             1,
         )
+    message:
+        "Performing a T-Test to assess whether the reads of sample {wildcards.sample} "
+        "assigned to taxon {wildcards.orgname} for accession "
+        "{wildcards.accession} represent a random sample pf its genome or whether they are clustering around certain "
+        "genomic region. The output value can be found in {output} and its log file can be found in {log}."
     script:
         "../scripts/coverage_t_test.py"
 
@@ -404,6 +431,9 @@ rule cat_pvalues:
     benchmark:
         repeat("benchmarks/cat_pvalues_{query}_{sample}.benchmark.txt", 1) # shell:
          #     "cat {input} 1> {output} 2> {log}"
+    message:
+        "Concatenating all the T-Test p-value outputs for sample {wildcards.sample} "
+        "into one file {output}. Its log file can be found in {log}."
     script:
         "../scripts/concat_files.py"
 
@@ -419,5 +449,8 @@ rule calculate_dirichlet_abundances:
         "{query}/probabilities/{sample}/{sample}_posterior_abundance.log",
     benchmark:
         repeat("benchmarks/calculate_dirichlet_abundances_{query}_{sample}.benchmark.txt", 1)
+    message:
+        "Calculating the mean posterior abundance for sample {wildcards.sample}. The outputted abundance table can be "
+        "found in {output}, and its log file can be found in {log}."
     script:
         "../scripts/calculate_dirichlet_abundances.py"

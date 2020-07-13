@@ -15,6 +15,9 @@ rule download_refseq_representative_table:
         "database_inputs/prok_representative_genomes.log"
     benchmark:
         repeat("benchmarks/prok_report_download.benchmark.txt", 3)
+    message:
+        "Downloading the list of representative species from RefSeq in {output}. "
+        "Its log file can be found in {log}."
     shell:
         "wget -O {output} {REFSEQ_REP_URL} 2> {log}"
 
@@ -33,6 +36,14 @@ checkpoint entrez_refseq_accessions:
         genbank_plasmids="{query}/entrez/{query}-genbank-plasmids.tsv"
     benchmark:
         repeat("benchmarks/entrez_refseq_accessions_{query}.benchmark.txt", 3)
+    message:
+        "Splitting the representative RefSeq table in smaller tables. Table for species whose sequences "
+        "can be found in RefSeq:"
+        "{output.refseq_genomes}, table for species whose plasmid sequences can be found in RefSeq: "
+        "{output.refseq_plasmids}, table for species whose sequences can be found in Genbank: {output.genbank_genomes}, "
+        "table for species whose plasmid sequences can be found in Genbank: {output.genbank_plasmids}, "
+        "table for species whose sequences can be found in the Assembly database: {output.assemblies}. "
+        "The log file can be found in {log}."
     script:
         "../scripts/entrez_refseq_create_files.py"
 
@@ -47,6 +58,9 @@ checkpoint entrez_invalid_assemblies:
         "{query}/entrez/{query}-invalid-assemblies.tsv"
     benchmark:
         repeat("benchmarks/entrez_valid_assemblies_{query}.benchmark.txt", 1)
+    message:
+        "Finding assemblies that are not part of the RefSeq database for the accessions in {input}. "
+        "The output table can be found in {output} and its log file in {log}."
     script:
         "../scripts/entrez_invalid_assemblies.py"
 
@@ -86,6 +100,9 @@ rule entrez_refseq_genbank_multifasta:
         "{query}/bowtie/{query}_refseq_genbank.fasta.gz"
     benchmark:
         repeat("benchmarks/entrez_refseq_genbank_multifasta_{query}.benchmark.txt", 1)
+    message:
+        "Concatenating all the fasta sequences for all the taxa that can be found in RefSeq and Genbank "
+        "in {output}, and its log file can be found in {log}."
     script:
         "../scripts/bowtie2_multifasta.py"
 
@@ -103,8 +120,10 @@ rule entrez_download_assembly_sequence:
     wildcard_constraints:
         # TODO refactor this so we're not reliant on the style of the accession (low priority)
         accession="[^._]+"
+    message:
+        "Downloading accession {wildcards.accession} for taxon {wildcards.orgname}. "
+        "The downloaded fasta sequence can be found in {output} and its log file in {log}."
     resources:
-        # TODO add this to every other rule that needs it
         entrez_api=1
     script:
         "../scripts/entrez_download_sequence.py"
@@ -145,6 +164,10 @@ rule entrez_assembly_multifasta:
         "{query}/bowtie/{query}_assemblies.fasta.gz"
     benchmark:
         repeat("benchmarks/entrez_assembly_multifasta_{query}.benchmark.txt", 1)
+    message:
+        "Concatenating all the fasta sequences for all the taxa that can be found in the Assembly database "
+        "in {output}, and its log file can be found in {log}."
+
     script:
         "../scripts/bowtie2_multifasta.py"
 
@@ -160,6 +183,9 @@ rule entrez_refseq_prok_multifasta:
         "{query}/bowtie/{query}_refseq_prok.fasta.gz"
     benchmark:
         repeat("benchmarks/entrez_refseq_prok_multifasta_{query}.benchmark.txt", 1)
+    message:
+        "Concatenating input files {input.assemblies} and {input.refseq} in {output}. "
+        "Its log file can be found in {log}."
     shell:
         "cat {input.assemblies} {input.refseq} > {output}"
 

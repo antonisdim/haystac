@@ -27,6 +27,8 @@ rule index_database_entrez:
         expand("database/{{orgname}}/{{accession}}.rev.{n}.bt2l", n=[1, 2]),
     benchmark:
         repeat("benchmarks/index_database_{orgname}_{accession}.benchmark.txt", 1)
+    message:
+        "Preparing the bowtie2 index of the genome {wildcards.accession} for taxon {wildcards.orgname}."
     shell:
         "bowtie2-build --large-index {input} database/{wildcards.orgname}/{wildcards.accession} &> {log}"
 
@@ -206,6 +208,8 @@ rule idx_database:
         "database/idx_database_{query}.log",
     output:
         "database/idx_database_{query}.done",
+    message:
+        "All the individual genome indices have been prepared."
     shell:
         "touch {output}"
 
@@ -238,6 +242,10 @@ rule align_taxon_single_end:
         min_frag_length=MIN_FRAG_LEN,
         max_frag_length=MAX_FRAG_LEN,
     threads: config["bowtie2_treads"] # usually single threaded - the user can change it
+    message:
+        "Aligning file {input.fastq} against genome {wildcards.accession} of taxon {wildcards.orgname} "
+        "for sample {wildcards.sample}, with {threads} thread(s). The output bam file is stored in {output.bam_file} "
+        "and the log file can be found here {log}."
     shell:
         "( bowtie2 --time --no-unal --no-discordant --no-mixed --ignore-quals --mp 6,6 --np 6 "
         "--score-min L,{params.min_score},0.0 --gbar 1000 -q --threads {threads} "
@@ -264,6 +272,11 @@ rule align_taxon_paired_end:
         min_frag_length=MIN_FRAG_LEN,
         max_frag_length=MAX_FRAG_LEN,
     threads: config["bowtie2_treads"]
+    message:
+        "Aligning files {input.fastq_r1} and {input.fastq_r2} against genome {wildcards.accession} of "
+        "taxon {wildcards.orgname} for sample {wildcards.sample}, with {threads} thread(s). "
+        "The output bam file is stored in {output.bam_file} "
+        "and the log file can be found here {log}."
     shell:
         "( bowtie2 --time --no-unal --no-discordant --no-mixed --ignore-quals --mp 6,6 --np 6 "
         "--score-min L,{params.min_score},0.0 --gbar 1000 -q --threads {threads} "
@@ -404,5 +417,7 @@ rule all_alignments:
         "{query}/sigma/{sample}_alignments.done",
     benchmark:
         repeat("benchmarks/all_alignments_{query}_{sample}.benchmark.txt", 1)
+    message:
+        "All metagenomic alignments are done."
     shell:
         "touch {output}"

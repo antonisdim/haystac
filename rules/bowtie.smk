@@ -59,6 +59,10 @@ checkpoint count_bt2_idx:
         output_dir="{query}/bowtie/",
         mem_resources=MEM_RESOURCES_MB,
         mem_rescaling_factor=MEM_RESCALING_FACTOR,
+    message:
+        "The number of index chunks for the filtering alignment are being calculated for query {params.query}. "
+        "The size rescaling factor for the chunk is {params.mem_rescaling_factor} for the given memory "
+        "resources {params.mem_resources}. The log file can be found in {log}."
     script:
         "../scripts/count_bt2_idx.py"
 
@@ -73,14 +77,9 @@ rule bowtie_index:
         expand("{{query}}/bowtie/{{query}}_chunk{{chunk_num}}.{n}.bt2l", n=[1, 2, 3, 4]),
         expand("{{query}}/bowtie/{{query}}_chunk{{chunk_num}}.rev.{n}.bt2l", n=[1, 2]),
     benchmark:
-        repeat("benchmarks/bowtie_index_{query}_chunk{chunk_num}.benchmark.txt", 1) # TODO delete me...
-         # run:
-         #     if WITH_REFSEQ_REP and WITH_ENTREZ_QUERY:
-         #         shell("cat {input} > {wildcards.query}/bowtie/{wildcards.query}.fasta.gz; "
-         #               "bowtie2-build --large-index {wildcards.query}/bowtie/{wildcards.query}.fasta.gz "
-         #               "{wildcards.query}/bowtie/{wildcards.query} &> {log}")
-         #     else:
-         #         shell("bowtie2-build --large-index {input} {wildcards.query}/bowtie/{wildcards.query} &> {log}")
+        repeat("benchmarks/bowtie_index_{query}_chunk{chunk_num}.benchmark.txt", 1)
+    message:
+        "Bowtie2 index for chunk {input.fasta_chunk} is being built. The log file can be found in {log}."
     shell:
         "bowtie2-build --large-index {input.fasta_chunk} "
         "{wildcards.query}/bowtie/{wildcards.query}_chunk{wildcards.chunk_num} &> {log}"
@@ -107,6 +106,8 @@ rule bowtie_index_done:
         "{query}/bowtie/bowtie_index.done",
     benchmark:
         repeat("benchmarks/bowtie_index_done_{query}", 1)
+    message:
+        "The bowtie2 indices for all the chunks {input} have been built. The log file can be found in {log}."
     shell:
         "touch {output} 2> {log}"
 
@@ -176,6 +177,10 @@ rule bowtie_alignment_single_end:
     params:
         index="{query}/bowtie/{query}_chunk{chunk_num}",
     threads: config["bowtie2_treads"]
+    message:
+        "The filtering alignment for file {input.fastq}, of sample {wildcards.sample}, "
+        "for index chunk number {wildcards.chunk_num} is being executed, "
+        "with number {threads} of threads. The log file can be found in {log}."
     shell:
         "( bowtie2 -q --very-fast-local --threads {threads} -x {params.index} -U {input.fastq} "
         "| samtools sort -O bam -o {output.bam_file} ) 2> {log}"
@@ -195,6 +200,10 @@ rule bowtie_alignment_paired_end:
     params:
         index="{query}/bowtie/{query}_chunk{chunk_num}",
     threads: config["bowtie2_treads"]
+    message:
+        "The filtering alignment for files {input.fastq_r1} and {input.fastq_r2}, of sample {wildcards.sample}, "
+        "for index chunk number {wildcards.chunk_num} is being executed, "
+        "with number {threads} of threads. The log file can be found in {log}."
     shell:
         "( bowtie2 -q --very-fast-local --threads {threads} -x {params.index} -1 {input.fastq_r1} -2 {input.fastq_r2} "
         "| samtools sort -O bam -o {output.bam_file} ) 2> {log}"
@@ -234,6 +243,9 @@ rule merge_bams_single_end:
         "{query}/bam/{sample}_merge_bams.log",
     output:
         "{query}/bam/SE_{sample}_sorted.bam",
+    message:
+        "Merging bam files ({input}) produced by the filtering alignment stage for sample {wildcards.sample}. "
+        "The log file can be found in {log}."
     shell:
         "samtools merge -f {output} {input.aln_path} 2> {log}"
 
@@ -245,6 +257,9 @@ rule merge_bams_paired_end:
         "{query}/bam/{sample}_merge_bams.log",
     output:
         "{query}/bam/PE_{sample}_sorted.bam",
+    message:
+        "Merging bam files ({input}) produced by the filtering alignment stage for sample {wildcards.sample}. "
+        "The log file can be found in {log}."
     shell:
         "samtools merge -f {output} {input.aln_path} 2> {log}"
 
@@ -260,6 +275,9 @@ rule extract_fastq_single_end:
         repeat("benchmarks/extract_fastq_single_end_{query}_{sample}.benchmark.txt", 1)
     params:
         min_mapq=config["min_mapq"],
+    message:
+        "Extracting all the aligned reads for sample {wildcards.sample} and storing them in {output}. "
+        "The log file can be found in {log}."
     shell:
         "( samtools view -h -F 4 {input} | samtools fastq -c 6 - | seqkit rmdup -n -o {output} ) 2> {log}" # "( samtools view -h -F 4 {input} | samtools fastq -c 6 - > {output} ) 2> {log}"
 
@@ -276,15 +294,17 @@ rule extract_fastq_paired_end:
         repeat("benchmarks/extract_fastq_paired_end_{query}_{sample}.benchmark.txt", 1)
     params:
         min_mapq=config["min_mapq"],
+    message:
+        "Extracting all the aligned reads for sample {wildcards.sample} and storing them in {output}. "
+        "The log file can be found in {log}."
     shell:
         "( samtools view -h -F 4 {input} "
         "| samtools fastq -c 6 -1 {wildcards.query}/fastq/PE/temp_R1.fastq.gz "
         "-2 {wildcards.query}/fastq/PE/temp_R2.fastq.gz -0 /dev/null -s /dev/null -;"
-        "seqkit rmdup -n {wildcards.query}/fastq/PE/temp_R1.fastq.gz -o {output[0]}; "
-        "seqkit rmdup -n {wildcards.query}/fastq/PE/temp_R2.fastq.gz -o {output[1]}; "
-        "rm {wildcards.query}/fastq/PE/temp_R1.fastq.gz; "
-        "rm {wildcards.query}/fastq/PE/temp_R2.fastq.gz ) 2> {log}" # TODO names are not unique, they must include the {sample} wildcard
-         # "( samtools view -h -F 4 {input} "
+        "seqkit rmdup -n {wildcards.query}/fastq/PE/{wildcards.sample}_temp_R1.fastq.gz -o {output[0]}; "
+        "seqkit rmdup -n {wildcards.query}/fastq/PE/{wildcards.sample}_temp_R2.fastq.gz -o {output[1]}; "
+        "rm {wildcards.query}/fastq/PE/{wildcards.sample}_temp_R1.fastq.gz; "
+        "rm {wildcards.query}/fastq/PE/{wildcards.sample}_temp_R2.fastq.gz ) 2> {log}" # "( samtools view -h -F 4 {input} "
          # "| samtools fastq -c 6 -1 {output[0]} -2 {output[1]} -0 /dev/null -s /dev/null - ) 2> {log}"
 
 
@@ -302,6 +322,9 @@ rule average_fastq_read_len_single_end:
         repeat("benchmarks/average_fastq_read_len_single_end_{query}_{sample}.benchmark.txt", 1)
     params:
         sample_size=SUBSAMPLE_FIXED_READS,
+    message:
+        "Calculating the average read length for sample {wildcards.sample} from file {input} "
+        "and storing its value in {output}. The log file can be found in {log}."
     shell:
         "seqtk sample {input} {params.sample_size} | seqtk seq -A | grep -v '^>' | "
         "awk '{{count++; bases += length}} END{{print bases/count}}' 1> {output} 2> {log}"
@@ -321,6 +344,9 @@ rule average_fastq_read_len_paired_end:
         repeat("benchmarks/average_fastq_read_len_paired_end_{query}_{sample}.benchmark.txt", 1)
     params:
         sample_size=SUBSAMPLE_FIXED_READS,
+    message:
+        "Calculating the average read length for sample {wildcards.sample} from files {input.mate1} and {input.mate2} "
+        "and storing its value in {output}. The log file can be found in {log}."
     shell:
         "seqtk sample {input.mate1} {params.sample_size} | seqtk seq -A | grep -v '^>' | "
         "awk '{{count++; bases += length}} END{{print bases/count}}' 1> {output.mate1} 2> {log}; "

@@ -29,6 +29,10 @@ rule dedup_merged_mapdamage:
         )
     params:
         output="{query}/mapdamage/{sample}/rmdup_bam/{reads}/{orgname}/",
+    message:
+        "Removing duplicate reads that were aligned against genome {wildcards.accession} "
+        "for taxon {wildcards.orgname}, for sample {wildcards.sample}. The unique aligned reads can be found "
+        "in {output} and the log file can be found in {log}."
     shell:
         "dedup --merged --input {input.bam} --output {params.output} &> {log}"
 
@@ -41,6 +45,10 @@ rule run_mapdamage:
         "{query}/mapdamage/{sample}/{reads}/{orgname}_{accession}.log",
     output:
         directory("{query}/mapdamage/{sample}/{reads}/{orgname}-{accession}"),
+    message:
+        "Performing a mapDamage analysis on unique aligned reads against genome {wildcards.accession} "
+        "for taxon {wildcards.orgname}, for sample {wildcards.sample}. The output can be found in {output}, "
+        "and its log file can be found in {log}."
     shell:
         "mapDamage -i {input.bam} -r {input.ref_genome} -d {output}"
 
@@ -179,5 +187,7 @@ rule all_mapdamage:
         "{query}/mapdamage/{sample}_mapdamage.done",
     benchmark:
         repeat("benchmarks/all_alignments_{query}_{sample}.benchmark.txt", 1)
+    message:
+        "MapDamage analysis have been performed for all the taxa in our database for sample {wildcards.sample}."
     shell:
         "touch {output}"
