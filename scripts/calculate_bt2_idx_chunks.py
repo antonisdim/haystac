@@ -20,25 +20,22 @@ def calculate_bt2_idx_chunks(
         mem_resources_mb = MAX_MEM_MB
 
     total_file_size = 0
-
     input_file_list = [i for i in str(input_file_list).split()]
-    for input_file in input_file_list:
-        total_file_size += os.stat(input_file).st_size / float(1024 ** 2)
-
     scaling_factor = mem_rescaling_factor
 
-    chunk_num = 0
+    chunk_num = 1
 
-    if not mem_resources_mb / float(total_file_size) >= float(scaling_factor):
-        chunk_num = round(mem_resources_mb / float(total_file_size))
+    for input_file in input_file_list:
 
-        # if mem_resources_mb % float(total_file_size) == 0:
-        #     chunk_num = mem_resources_mb / float(total_file_size)
-        # else:
-        #     chunk_num = mem_resources_mb // float(total_file_size) + 1
+        size_to_be = total_file_size + os.stat(input_file).st_size / float(1024 ** 2)
 
-    else:
-        chunk_num += 1
+        if size_to_be <= mem_resources_mb / float(scaling_factor):
+            total_file_size += os.stat(input_file).st_size / float(1024 ** 2)
+
+        elif size_to_be > mem_resources_mb / float(scaling_factor):
+            total_file_size = 0
+            chunk_num += 1
+            total_file_size += os.stat(input_file).st_size / float(1024 ** 2)
 
     with open(output, "w") as outfile:
         print(chunk_num, file=outfile)

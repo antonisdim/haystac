@@ -175,9 +175,8 @@ def get_bt2_idx_filter_chunk(wildcards):
         elif size_to_be <= mem_resources_mb / float(MEM_RESCALING_FACTOR):
             incremental_file_size += os.stat(input_file).st_size / float(1024 ** 2)
             chunk_path_list.append(input_file)
-            print(input_file)
 
-        elif size_to_be >= mem_resources_mb / float(MEM_RESCALING_FACTOR):
+        elif size_to_be > mem_resources_mb / float(MEM_RESCALING_FACTOR):
             if chunk == chunk_to_chose:
                 break
             incremental_file_size = 0
