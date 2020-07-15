@@ -38,7 +38,7 @@ def count_bt2_idx(
 
     input_file_list = [i for i in str(input_file_list).split()]
     for input_file in input_file_list:
-        file_size += round(os.stat(input_file).st_size / (1024 ** 2))
+        file_size += os.stat(input_file).st_size / float(1024 ** 2)
 
     # see if mem_resources are x2.5 its size or based on any other rescaling factor
     scaling_factor = mem_rescaling_factor
@@ -93,6 +93,7 @@ def count_bt2_idx(
                     + str(seq_record.seq)
                     + "\n"
                 )
+        fout.close()
 
     # write the output paths into a file that can be read later
 

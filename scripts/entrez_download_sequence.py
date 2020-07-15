@@ -27,7 +27,27 @@ TOO_MANY_REQUESTS_WAIT = 5
 MAX_RETRY_ATTEMPTS = 3
 
 
-# TODO refactor this code to make it simpler and cleaner
+def get_assembly_acc_from_wgs_acc(accession):
+    """Get a valid NCBI (NOT GENBANK) assembly accession from its WGS project accession."""
+
+    handle = Entrez.esearch(
+        db=ENTREZ_DB_ASSEMBLY, term=accession + ' AND "latest refseq"[filter]'
+    )
+    # or handle = Entrez.esearch(db=ENTREZ_DB_ASSEMBLY,
+    # term=accession + ' AND ((latest[filter] OR "latest refseq"[filter])')
+    assembly_record = Entrez.read(handle)
+    esummary_handle = Entrez.esummary(
+        db=ENTREZ_DB_ASSEMBLY, id=assembly_record["IdList"], report="full"
+    )
+    esummary_record = Entrez.read(esummary_handle, validate=False)
+    accession_id = esummary_record["DocumentSummarySet"]["DocumentSummary"][0][
+        "AssemblyAccession"
+    ]
+
+    return accession_id
+
+
+# TODO refactor this code to make it simpler and cleaner - First attempt at cleaning up the code
 def entrez_download_sequence(accession, config, output_file, attempt=1, assembly=False):
     """
     Fetch the reference genome from NCBI.
@@ -37,21 +57,9 @@ def entrez_download_sequence(accession, config, output_file, attempt=1, assembly
     Entrez.email = config["entrez_email"]
 
     if assembly:
-        handle = Entrez.esearch(
-            db=ENTREZ_DB_ASSEMBLY, term=accession + ' AND "latest refseq"[filter]'
-        )
-        # or handle = Entrez.esearch(db=ENTREZ_DB_ASSEMBLY,
-        # term=accession + ' AND ((latest[filter] OR "latest refseq"[filter])')
-        assembly_record = Entrez.read(handle)
-        esummary_handle = Entrez.esummary(
-            db=ENTREZ_DB_ASSEMBLY, id=assembly_record["IdList"], report="full"
-        )
-        esummary_record = Entrez.read(esummary_handle)
-        accession_id = esummary_record["DocumentSummarySet"]["DocumentSummary"][0][
-            "AssemblyAccession"
-        ]
+        assembly_acc = get_assembly_acc_from_wgs_acc(accession)
         nuccore_id = Entrez.read(
-            Entrez.esearch(db=ENTREZ_DB_NUCCORE, term=accession_id)
+            Entrez.esearch(db=ENTREZ_DB_NUCCORE, term=assembly_acc)
         )["IdList"]
     else:
         nuccore_id = Entrez.read(Entrez.esearch(db=ENTREZ_DB_NUCCORE, term=accession))[

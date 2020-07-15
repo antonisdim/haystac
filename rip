@@ -43,7 +43,7 @@ def main(args):
     if not config_yaml:
         sys.stderr.write(
             "Error: cannot find the config yaml file {}. You definitely need one, even if it's empty "
-            "if you want to run everything from the CLI flags\n".format(
+            "and you want to specify all the parameters from the CLI flags\n".format(
                 args.config_yaml
             )
         )
@@ -54,6 +54,8 @@ def main(args):
     # config = {**config_yaml, **config_args}
     config_yaml.update((k, v) for k, v in config_args.items() if v is not None)
     config = config_yaml
+
+    # Targets
 
     input_mode = ""
     if config["PE_ANCIENT"]:
@@ -129,15 +131,6 @@ def main(args):
     if config["WITH_DATA_PREPROCESSING"]:
         target_list.append(data_preprocessing)
 
-    if config["WITH_ENTREZ_QUERY"]:
-        target_list.append(entrez)
-    if config["WITH_REFSEQ_REP"]:
-        target_list.append(entrez_build_prok_refseq_rep)
-    if config["WITH_CUSTOM_SEQUENCES"]:
-        target_list.append(entrez_custom_seqs)
-    if config["WITH_CUSTOM_ACCESSIONS"]:
-        target_list.append(entrez_custom_accs)
-
     if args.data_preprocess:
         target_list = [data_preprocessing]
 
@@ -148,6 +141,10 @@ def main(args):
             target_list.append(entrez)
         if config["WITH_REFSEQ_REP"]:
             target_list.append(entrez_build_prok_refseq_rep)
+        if config["WITH_CUSTOM_SEQUENCES"]:
+            target_list.append(entrez_custom_seqs)
+        if config["WITH_CUSTOM_ACCESSIONS"]:
+            target_list.append(entrez_custom_accs)
 
     if args.index_db:
         target_list = [index_database]
@@ -170,12 +167,17 @@ def main(args):
     if args.mapdamage:
         target_list = [mapdamage]
 
-    # TODO format this so it looks nice (e.g. see how GATK does this)
+    # Print the details for the run params
+
     print("--------")
-    print("details!")
-    print("\tsnakefile: {}".format(snakefile))
-    print("\tconfig: {}".format(config))
-    print("\ttargets: {}".format(target_list))
+    print("RUN DETAILS")
+    print("\n\tSnakefile: {}".format(snakefile))
+    print("\n\tConfig Parameters:\n")
+    for key, value in config.items():
+        print(f"{key:35}{value}")
+    print("\n\tTarget Output Files:\n")
+    for target in target_list:
+        print(target)
     print("--------")
 
     # run!!

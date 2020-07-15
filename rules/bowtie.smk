@@ -15,48 +15,124 @@ PE_ANCIENT = config["PE_ANCIENT"]
 PE_MODERN = config["PE_MODERN"]
 SE = config["SE"]
 MAX_MEM_MB = virtual_memory().total / (1024 ** 2)
-MEM_RESOURCES_MB = config["MEM_RESOURCES_MB"]
+MEM_RESOURCES_MB = float(config["MEM_RESOURCES_MB"])
 MEM_RESCALING_FACTOR = config["MEM_RESCALING_FACTOR"]
 WITH_DATA_PREPROCESSING = config["WITH_DATA_PREPROCESSING"]
 
 ##### Target rules #####
 
 
-def filtering_bowtie_aln_inputs(wildcards):
+def get_total_fasta_paths(wildcards):
+    """
+    Get all the individual fasta file paths for the taxa in our database.
+    """
+
+    sequences = pd.DataFrame()
+
+    if WITH_ENTREZ_QUERY:
+        pick_sequences = checkpoints.entrez_pick_sequences.get(query=wildcards.query)
+        sequences = pd.read_csv(pick_sequences.output[0], sep="\t")
+
+        if len(sequences) == 0:
+            raise RuntimeError("The entrez pick sequences file is empty.")
+
+    if WITH_REFSEQ_REP:
+        refseq_rep_prok = checkpoints.entrez_refseq_accessions.get(
+            query=wildcards.query
+        )
+
+        refseq_genomes = pd.read_csv(refseq_rep_prok.output[0], sep="\t")
+        genbank_genomes = pd.read_csv(refseq_rep_prok.output[1], sep="\t")
+        assemblies = pd.read_csv(refseq_rep_prok.output[2], sep="\t")
+        refseq_plasmids = pd.read_csv(refseq_rep_prok.output[3], sep="\t")
+        genbank_plasmids = pd.read_csv(refseq_rep_prok.output[4], sep="\t")
+
+        invalid_assemblies = checkpoints.entrez_invalid_assemblies.get(
+            query=wildcards.query
+        )
+        invalid_assembly_sequences = pd.read_csv(invalid_assemblies.output[0], sep="\t")
+
+        assemblies = assemblies[
+            ~assemblies["GBSeq_accession-version"].isin(
+                invalid_assembly_sequences["GBSeq_accession-version"]
+            )
+        ]
+
+        if WITH_ENTREZ_QUERY:
+            sequences = pd.concat(
+                [
+                    sequences,
+                    refseq_genomes,
+                    genbank_genomes,
+                    assemblies,
+                    refseq_plasmids,
+                    genbank_plasmids,
+                ]
+            )
+        else:
+            sequences = pd.concat(
+                [
+                    refseq_genomes,
+                    genbank_genomes,
+                    assemblies,
+                    refseq_plasmids,
+                    genbank_plasmids,
+                ]
+            )
+
+    if WITH_CUSTOM_SEQUENCES:
+        custom_fasta_paths = pd.read_csv(
+            config["custom_seq_file"],
+            sep="\t",
+            header=None,
+            names=["species", "GBSeq_accession-version", "path"],
+        )
+
+        custom_seqs = custom_fasta_paths[["species", "GBSeq_accession-version"]]
+
+        sequences = sequences.append(custom_seqs)
+
+    if WITH_CUSTOM_ACCESSIONS:
+        custom_accessions = pd.read_csv(
+            config["custom_acc_file"],
+            sep="\t",
+            header=None,
+            names=["species", "GBSeq_accession-version"],
+        )
+
+        sequences = sequences.append(custom_accessions)
 
     inputs = []
 
-    if WITH_REFSEQ_REP:
-        inputs.append(
-            "{query}/bowtie/{query}_refseq_prok.fasta.gz".format(query=wildcards.query)
+    if SPECIFIC_GENUS:
+        sequences = sequences[
+            sequences["species"].str.contains("|".join(SPECIFIC_GENUS))
+        ]
+
+    for key, seq in sequences.iterrows():
+        orgname, accession = (
+            seq["species"].replace(" ", "_").replace("[", "").replace("]", ""),
+            seq["GBSeq_accession-version"],
         )
-    if WITH_ENTREZ_QUERY:
+
         inputs.append(
-            "{query}/bowtie/{query}_entrez.fasta.gz".format(query=wildcards.query)
-        )
-    if WITH_CUSTOM_SEQUENCES:
-        inputs.append(
-            "{query}/bowtie/{query}_custom_seqs.fasta.gz".format(query=wildcards.query)
-        )
-    if WITH_CUSTOM_ACCESSIONS:
-        inputs.append(
-            "{query}/bowtie/{query}_custom_acc.fasta.gz".format(query=wildcards.query)
+            "database/{orgname}/{accession}.fasta.gz".format(
+                orgname=orgname, accession=accession,
+            )
         )
 
     return inputs
 
 
-# TODO make chunks explicitly
-checkpoint count_bt2_idx:
+checkpoint calculate_bt2_idx_chunks:
     input:
-        filtering_bowtie_aln_inputs,
+        get_total_fasta_paths,
     log:
-        "{query}/bowtie/{query}_count_bt2_idx.log",
+        "{query}/bowtie/{query}_bt2_idx_chunk_num.log",
     output:
-        "{query}/bowtie/{query}_bt2_idx_chunk_paths.txt",
+        "{query}/bowtie/{query}_bt2_idx_chunk_num.txt",
     params:
         query="{query}",
-        output_dir="{query}/bowtie/",
         mem_resources=MEM_RESOURCES_MB,
         mem_rescaling_factor=MEM_RESCALING_FACTOR,
     message:
@@ -64,12 +140,70 @@ checkpoint count_bt2_idx:
         "The size rescaling factor for the chunk is {params.mem_rescaling_factor} for the given memory "
         "resources {params.mem_resources}. The log file can be found in {log}."
     script:
-        "../scripts/count_bt2_idx.py"
+        "../scripts/calculate_bt2_idx_chunks.py"
+
+
+def get_bt2_idx_filter_chunk(wildcards):
+
+    """Pick the files for the specific bt2 index chunk"""
+
+    chunk = 1
+    chunk_to_chose = int(wildcards.chunk_num)
+
+    mem_resources_mb = MEM_RESOURCES_MB
+
+    if not mem_resources_mb:
+        mem_resources_mb = MAX_MEM_MB
+
+    incremental_file_size = float(0)
+
+    input_file_list = get_total_fasta_paths(wildcards)
+
+    chunk_path_list = []
+
+    for input_file in input_file_list:
+
+        size_to_be = incremental_file_size + os.stat(input_file).st_size / float(
+            1024 ** 2
+        )
+
+        if incremental_file_size == 0:
+            chunk_path_list = []
+            incremental_file_size += os.stat(input_file).st_size / float(1024 ** 2)
+            chunk_path_list.append(input_file)
+
+        elif size_to_be <= mem_resources_mb / float(MEM_RESCALING_FACTOR):
+            incremental_file_size += os.stat(input_file).st_size / float(1024 ** 2)
+            chunk_path_list.append(input_file)
+            print(input_file)
+
+        elif size_to_be >= mem_resources_mb / float(MEM_RESCALING_FACTOR):
+            if chunk == chunk_to_chose:
+                break
+            incremental_file_size = 0
+            chunk += 1
+            incremental_file_size += os.stat(input_file).st_size / float(1024 ** 2)
+            chunk_path_list = [input_file]
+
+    return chunk_path_list
+
+
+rule create_bt2_idx_filter_chunk:
+    input:
+        get_bt2_idx_filter_chunk,
+    log:
+        "{query}/bowtie/{query}_bt2_idx_filter_{chunk_num}.log",
+    output:
+        "{query}/bowtie/{query}_chunk{chunk_num}.fasta.gz",
+    message:
+        "Creating fasta chunk {wildcards.chunk_num} for the filtering alignment bowtie2 index for "
+        "query {wildcards.query}.The output can be found in {output} and its log can be found in {log}."
+    script:
+        "../scripts/bowtie2_multifasta.py"
 
 
 rule bowtie_index:
     input:
-        chunk_path_file="{query}/bowtie/{query}_bt2_idx_chunk_paths.txt",
         fasta_chunk="{query}/bowtie/{query}_chunk{chunk_num}.fasta.gz",
     log:
         "{query}/bowtie/{query}_{chunk_num}_index.log",
@@ -87,8 +221,8 @@ rule bowtie_index:
 
 def get__bt2_idx_chunk_paths(wildcards):
 
-    get_paths = checkpoints.count_bt2_idx.get(query=wildcards.query)
-    idx_chunk_total = len(pd.read_csv(get_paths.output[0], sep="\t", header=None))
+    get_chunk_num = checkpoints.calculate_bt2_idx_chunks.get(query=wildcards.query)
+    idx_chunk_total = int(float(open(get_chunk_num.output[0]).read()))
 
     return expand(
         "{query}/bowtie/{query}_chunk{chunk_num}.1.bt2l",
@@ -211,8 +345,8 @@ rule bowtie_alignment_paired_end:
 
 def get_sorted_bam_paths(wildcards):
 
-    get_paths = checkpoints.count_bt2_idx.get(query=wildcards.query)
-    idx_chunk_total = len(pd.read_csv(get_paths.output[0], sep="\t", header=None))
+    get_chunk_num = checkpoints.calculate_bt2_idx_chunks.get(query=wildcards.query)
+    idx_chunk_total = int(open(get_chunk_num.output[0]).read())
 
     if PE_MODERN:
         return expand(
@@ -273,8 +407,6 @@ rule extract_fastq_single_end:
         "{query}/fastq/SE/{sample}_mapq.fastq.gz",
     benchmark:
         repeat("benchmarks/extract_fastq_single_end_{query}_{sample}.benchmark.txt", 1)
-    params:
-        min_mapq=config["min_mapq"],
     message:
         "Extracting all the aligned reads for sample {wildcards.sample} and storing them in {output}. "
         "The log file can be found in {log}."
@@ -292,8 +424,6 @@ rule extract_fastq_paired_end:
         "{query}/fastq/PE/{sample}_R2_mapq.fastq.gz",
     benchmark:
         repeat("benchmarks/extract_fastq_paired_end_{query}_{sample}.benchmark.txt", 1)
-    params:
-        min_mapq=config["min_mapq"],
     message:
         "Extracting all the aligned reads for sample {wildcards.sample} and storing them in {output}. "
         "The log file can be found in {log}."

@@ -10,20 +10,16 @@ entrez_rank:
   'species'
 
 sample_name:
-  SRR1031289
+  ''
 sample_fastq:
-  sra_data/SRR055002.fastq.gz
+  []
 sample_fastq_R1:
-  [sra_data/SRR1031215_R1.fastq.gz]
+  []
 sample_fastq_R2:
-  [sra_data/SRR1031215_R2.fastq.gz]
+  []
 
-min_mapq:
-  20
 mismatch_probability:
   0.05
-sequencing:
-  'single_end'
 
 bowtie2_treads:
   1
@@ -43,7 +39,6 @@ WITH_ENTREZ_QUERY:
   True
 
 SPECIFIC_GENUS:
-#  ['Yersinia']
   []
 
 MEM_RESOURCES_MB:
