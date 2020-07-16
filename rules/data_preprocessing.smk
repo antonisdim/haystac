@@ -75,7 +75,7 @@ rule compress_sra_fastq_pe:
 
 
 def get_inputs_for_adapterremoval_r1(wildcards):
-    print(wildcards.accession)
+    # print(wildcards.accession)
 
     if SRA_LOOKUP:
         if PE_ANCIENT or PE_MODERN:

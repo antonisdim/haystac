@@ -22,7 +22,6 @@ MAX_ENTREZ_REQUESTS = 3
 
 
 def main(args):
-    # TODO implement a --debug flag which makes verbose output (e.g. --printshellcmds, --show-failed-logs)
     # todo add defaults to the parameters that need it
 
     # first, find the Snakefile
@@ -135,17 +134,7 @@ def main(args):
         target_list = [data_preprocessing]
 
     if args.complete_db_creation:
-        target_list = []
-        if config["WITH_ENTREZ_QUERY"]:
-            target_list.append(entrez)
-        if config["WITH_REFSEQ_REP"]:
-            target_list.append(entrez_build_prok_refseq_rep)
-        if config["WITH_CUSTOM_SEQUENCES"]:
-            target_list.append(entrez_custom_seqs)
-        if config["WITH_CUSTOM_ACCESSIONS"]:
-            target_list.append(entrez_custom_accs)
-        target_list.append(index_database)
-        target_list.append(bt2_filter_idx)
+        target_list = [index_database, bt2_filter_idx]
 
     if args.build_db:
         target_list = []
@@ -193,19 +182,29 @@ def main(args):
     print("--------")
 
     # run!!
+
+    printshellcmds = False
+    keepgoing = True
+
+    if args.debug:
+        printshellcmds = True
+        keepgoing = False
+
     status = snakemake.snakemake(
         snakefile,
         config=config,
         targets=target_list,
-        printshellcmds=False,
+        printshellcmds=printshellcmds,
         dryrun=args.dry_run,
         cores=int(args.cores),
-        keepgoing=True,  # TODO this should be turned off in --debug mode
+        keepgoing=keepgoing,
         restart_times=3,  # TODO find a better solution to this... 15 is way too many!
         touch=args.touch,
         forceall=args.touch,
         lock=args.no_lock,
         unlock=args.unlock,
+        debug=args.debug,
+        show_failed_logs=args.debug,
         resources={"entrez_api": MAX_ENTREZ_REQUESTS},
     )
 
@@ -465,6 +464,13 @@ if __name__ == "__main__":
         action="store_true",
         help="Unlock the working directory after smk is "
         "abruptly killed  <bool> (default: False)",
+    )
+
+    parser.add_argument(
+        "-dg",
+        "--debug",
+        action="store_true",
+        help="Debug the smk workflow <bool> (default: False)",
     )
 
     if len(sys.argv) == 1:

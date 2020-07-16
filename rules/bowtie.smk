@@ -246,7 +246,6 @@ rule bowtie_index_done:
 
 
 def get_inputs_for_bowtie_r1(wildcards):
-    print(wildcards.sample)
 
     if SRA_LOOKUP:
         if PE_MODERN:
@@ -345,7 +344,7 @@ rule bowtie_alignment_paired_end:
 def get_sorted_bam_paths(wildcards):
 
     get_chunk_num = checkpoints.calculate_bt2_idx_chunks.get(query=wildcards.query)
-    idx_chunk_total = int(open(get_chunk_num.output[0]).read())
+    idx_chunk_total = int(float(open(get_chunk_num.output[0]).read()))
 
     if PE_MODERN:
         return expand(
@@ -355,7 +354,7 @@ def get_sorted_bam_paths(wildcards):
             sample=wildcards.sample,
             chunk_num=[
                 x + 1 if idx_chunk_total > 1 else 1 for x in range(idx_chunk_total)
-            ],
+            ]
         )
     if PE_ANCIENT or SE:
         return expand(
@@ -365,19 +364,19 @@ def get_sorted_bam_paths(wildcards):
             sample=wildcards.sample,
             chunk_num=[
                 x + 1 if idx_chunk_total > 1 else 1 for x in range(idx_chunk_total)
-            ],
+            ]
         )
 
 
 rule merge_bams_single_end:
     input:
-        aln_path=get_sorted_bam_paths, # aln_done="{query}/bam/{sample}_all_aln.done",
+        aln_path=get_sorted_bam_paths,
     log:
         "{query}/bam/{sample}_merge_bams.log",
     output:
         "{query}/bam/SE_{sample}_sorted.bam",
     message:
-        "Merging bam files ({input}) produced by the filtering alignment stage for sample {wildcards.sample}. "
+        "Merging the bam files ({input}) produced by the filtering alignment stage for sample {wildcards.sample}. "
         "The log file can be found in {log}."
     shell:
         "samtools merge -f {output} {input.aln_path} 2> {log}"
@@ -385,13 +384,13 @@ rule merge_bams_single_end:
 
 rule merge_bams_paired_end:
     input:
-        aln_path=get_sorted_bam_paths, # aln_done="{query}/bam/{sample}_all_aln.done",
+        aln_path=get_sorted_bam_paths,
     log:
         "{query}/bam/{sample}_merge_bams.log",
     output:
         "{query}/bam/PE_{sample}_sorted.bam",
     message:
-        "Merging bam files ({input}) produced by the filtering alignment stage for sample {wildcards.sample}. "
+        "Merging the bam files ({input}) produced by the filtering alignment stage for sample {wildcards.sample}. "
         "The log file can be found in {log}."
     shell:
         "samtools merge -f {output} {input.aln_path} 2> {log}"
@@ -436,8 +435,6 @@ rule extract_fastq_paired_end:
         "rm {wildcards.query}/fastq/PE/{wildcards.sample}_temp_R2.fastq.gz ) 2> {log}" # "( samtools view -h -F 4 {input} "
          # "| samtools fastq -c 6 -1 {output[0]} -2 {output[1]} -0 /dev/null -s /dev/null - ) 2> {log}"
 
-
-# ruleorder: extract_fastq_paired_end > extract_fastq_single_end
 
 
 rule average_fastq_read_len_single_end:
