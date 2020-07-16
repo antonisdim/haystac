@@ -8,7 +8,7 @@
 ##### Modules #####
 
 
-# TODO all the rules should use the messages feature https://snakemake.readthedocs.io/en/stable/snakefiles/rules.html#messages
+
 include: "rules/entrez.smk"
 
 
@@ -38,7 +38,7 @@ include: "rules/mapdamage.smk"
 
 wildcard_constraints:
     query="[\w]+",
-    sample="[\w]+", # orgname="[\w]+", #todo these wildcards need to have numbers, letters and symbols like '_, .'
+    sample="[\w]+",
     orgname="[^/]+",
     accession="[^/]+",
     chunk="\d+", # sample_accession="^(.(?!(_R1|_R2)))*."

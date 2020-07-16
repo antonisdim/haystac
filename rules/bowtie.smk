@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from math import ceil
 from multiprocessing import cpu_count
 from psutil import virtual_memory
 import pandas as pd
@@ -220,8 +221,10 @@ rule bowtie_index:
 
 def get__bt2_idx_chunk_paths(wildcards):
 
+    """Get the paths for the index chunks for the filtering bowtie2 alignment"""
+
     get_chunk_num = checkpoints.calculate_bt2_idx_chunks.get(query=wildcards.query)
-    idx_chunk_total = int(float(open(get_chunk_num.output[0]).read()))
+    idx_chunk_total = ceil(float(open(get_chunk_num.output[0]).read().strip()))
 
     return expand(
         "{query}/bowtie/{query}_chunk{chunk_num}.1.bt2l",
@@ -342,30 +345,20 @@ rule bowtie_alignment_paired_end:
 
 
 def get_sorted_bam_paths(wildcards):
+    """Get the sorted bam paths for each index chunk"""
 
     get_chunk_num = checkpoints.calculate_bt2_idx_chunks.get(query=wildcards.query)
-    idx_chunk_total = int(float(open(get_chunk_num.output[0]).read()))
+    idx_chunk_total = ceil(float(open(get_chunk_num.output[0]).read().strip()))
 
-    if PE_MODERN:
-        return expand(
-            "{query}/bam/{reads}_{sample}_sorted_chunk{chunk_num}.bam",
-            query=wildcards.query,
-            reads=["PE"],
-            sample=wildcards.sample,
-            chunk_num=[
-                x + 1 if idx_chunk_total > 1 else 1 for x in range(idx_chunk_total)
-            ]
-        )
-    if PE_ANCIENT or SE:
-        return expand(
-            "{query}/bam/{reads}_{sample}_sorted_chunk{chunk_num}.bam",
-            query=wildcards.query,
-            reads=["SE"],
-            sample=wildcards.sample,
-            chunk_num=[
-                x + 1 if idx_chunk_total > 1 else 1 for x in range(idx_chunk_total)
-            ]
-        )
+    reads = ["PE"] if PE_MODERN else ["SE"]
+
+    return expand(
+        "{query}/bam/{reads}_{sample}_sorted_chunk{chunk_num}.bam",
+        query=wildcards.query,
+        reads=reads,
+        sample=wildcards.sample,
+        chunk_num=[x + 1 if idx_chunk_total > 1 else 1 for x in range(idx_chunk_total)],
+    )
 
 
 rule merge_bams_single_end:
@@ -434,7 +427,6 @@ rule extract_fastq_paired_end:
         "rm {wildcards.query}/fastq/PE/{wildcards.sample}_temp_R1.fastq.gz; "
         "rm {wildcards.query}/fastq/PE/{wildcards.sample}_temp_R2.fastq.gz ) 2> {log}" # "( samtools view -h -F 4 {input} "
          # "| samtools fastq -c 6 -1 {output[0]} -2 {output[1]} -0 /dev/null -s /dev/null - ) 2> {log}"
-
 
 
 rule average_fastq_read_len_single_end:

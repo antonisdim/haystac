@@ -22,7 +22,6 @@ MAX_ENTREZ_REQUESTS = 3
 
 
 def main(args):
-    # todo add defaults to the parameters that need it
 
     # first, find the Snakefile
     snakefile = os.path.join(thisdir, "Snakefile")
@@ -268,13 +267,13 @@ if __name__ == "__main__":
         "--mismatch_probability",
         help="base mismatch probability <float> (default: 0.05)",
         metavar="",
-        default=0.05
+        default=0.05,
     )
     parser.add_argument(
         "--bowtie2_treads",
         help="threads for the bowtie2 alignments <int> (default: 1)",
         metavar="",
-        default=1
+        default=1,
     )
     parser.add_argument(
         "--SRA_LOOKUP",
@@ -334,7 +333,7 @@ if __name__ == "__main__":
         "and an underscore '_' instead of spaces, a user defined accession code and the path of the fasta file. "
         "The fasta file that the path point to can be either uncompressed or compressed with gzip/bgzip",
         metavar="",
-        default=''
+        default="",
     )
 
     parser.add_argument(
@@ -349,7 +348,7 @@ if __name__ == "__main__":
         "and an underscore '_' instead of spaces, a user defined valid NCBI nucleotide, assembly or WGS "
         "accession code. ",
         metavar="",
-        default=''
+        default="",
     )
 
     parser.add_argument(
@@ -359,7 +358,7 @@ if __name__ == "__main__":
         "the abundances should be calculated "
         'on <["genus"]>',
         metavar="",
-        default=[]
+        default=[],
     )
     parser.add_argument(
         "--MEM_RESOURCES_MB",
@@ -373,7 +372,7 @@ if __name__ == "__main__":
         help="factor to rescale/chunk the input file for the mutlifasta "
         "index for the filtering alignment (default: 2.5)",
         metavar="",
-        default=2.5
+        default=2.5,
     )
     parser.add_argument(
         "--data_preprocess",
