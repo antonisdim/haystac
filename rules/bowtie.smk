@@ -369,7 +369,7 @@ def get_sorted_bam_paths(wildcards):
         query=wildcards.query,
         reads=reads,
         sample=wildcards.sample,
-        chunk_num=[x + 1 if idx_chunk_total > 1 else 1 for x in range(idx_chunk_total)],
+        chunk_num=range(1, idx_chunk_total + 1),
     )
 
 
