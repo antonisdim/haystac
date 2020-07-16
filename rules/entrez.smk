@@ -36,10 +36,13 @@ rule entrez_nuccore_query:
     output:
         temp("{query}/entrez/{query}_{chunk}-nuccore.tsv"),
     log:
-        temp("{query}/entrez/{query}_{chunk}-nuccore.log"),
+        temp("{query}/entrez/{query}_{chunk}-nuccore.log"),  # TODO why are the logs temporary?
     benchmark:
         repeat("benchmarks/entrez_nuccore_query_{query}_{chunk}.benchmark.txt", 1)
     message:
+        # TODO it looks weird that the scheduler picks the chunks at random
+        #   use the `priority` attribute to force them to download in order
+        #   see https://snakemake.readthedocs.io/en/stable/snakefiles/rules.html#priorities
         "Fetching sequence metadata from the NCBI Nucleotide database "
         "for the accessions in chunk {wildcards.chunk} for query {wildcards.query}. "
         "The temporary output can be found in {output} and its log file in {log}."

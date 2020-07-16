@@ -12,9 +12,12 @@ WITH_ENTREZ_QUERY = config["WITH_ENTREZ_QUERY"]
 WITH_CUSTOM_SEQUENCES = config["WITH_CUSTOM_SEQUENCES"]
 WITH_CUSTOM_ACCESSIONS = config["WITH_CUSTOM_ACCESSIONS"]
 SRA_LOOKUP = config["SRA_LOOKUP"]
+
+# TODO these 3 flags are mutually exclusive, so they should be one setting, e.g. SEQUENCING_MODE = {COLLAPSE|PE|SE}
 PE_ANCIENT = config["PE_ANCIENT"]
 PE_MODERN = config["PE_MODERN"]
 SE = config["SE"]
+
 MAX_MEM_MB = virtual_memory().total / (1024 ** 2)
 MEM_RESOURCES_MB = float(config["MEM_RESOURCES_MB"])
 MEM_RESCALING_FACTOR = config["MEM_RESCALING_FACTOR"]
@@ -28,6 +31,7 @@ def get_total_fasta_paths(wildcards):
     Get all the individual fasta file paths for the taxa in our database.
     """
 
+    # TODO why is this entire function duplicated in bowtie_meta.smk lines:297-377?
     sequences = pd.DataFrame()
 
     if WITH_ENTREZ_QUERY:
@@ -42,7 +46,7 @@ def get_total_fasta_paths(wildcards):
             query=wildcards.query
         )
 
-        refseq_genomes = pd.read_csv(refseq_rep_prok.output[0], sep="\t")
+        refseq_genomes = pd.read_csv(refseq_rep_prok.output[0], sep="\t")  # TODO use the output names not the indices (be consistent!)
         genbank_genomes = pd.read_csv(refseq_rep_prok.output[1], sep="\t")
         assemblies = pd.read_csv(refseq_rep_prok.output[2], sep="\t")
         refseq_plasmids = pd.read_csv(refseq_rep_prok.output[3], sep="\t")
@@ -59,6 +63,13 @@ def get_total_fasta_paths(wildcards):
             )
         ]
 
+        # TODO try to have less code duplication inside if/else statements... it's messy, but also makes it harder to
+        #   the difference between the two conditions, e.g. this if/else can easily be shortened to:
+        #   sources = [refseq_genomes, genbank_genomes, assemblies, refseq_plasmids, genbank_plasmids]
+        #   if WITH_ENTREZ_QUERY:
+        #         sources.append(sequences)
+        #   sequences = pd.concat(sources)
+        #
         if WITH_ENTREZ_QUERY:
             sequences = pd.concat(
                 [
@@ -81,6 +92,7 @@ def get_total_fasta_paths(wildcards):
                 ]
             )
 
+    # TODO loading this file should be done alongside the others
     if WITH_CUSTOM_SEQUENCES:
         custom_fasta_paths = pd.read_csv(
             config["custom_seq_file"],
@@ -105,7 +117,7 @@ def get_total_fasta_paths(wildcards):
 
     inputs = []
 
-    if SPECIFIC_GENUS:
+    if SPECIFIC_GENUS:  # TODO I get an unresolved reference `SPECIFIC_GENUS` error here
         sequences = sequences[
             sequences["species"].str.contains("|".join(SPECIFIC_GENUS))
         ]

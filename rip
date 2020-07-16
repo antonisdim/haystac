@@ -2,6 +2,14 @@
 """
 Execution script for snakemake workflows.
 """
+
+# TODO add this block to all the python files
+__author__ = "Evangelos A. Dimopoulos, Evan K. Irving-Pease"
+__copyright__ = "Copyright 2020, University of Oxford"
+__email__ = "antonisdim41@gmail.com"
+__license__ = "MIT"
+
+
 import argparse
 import os.path
 import sys
@@ -97,6 +105,7 @@ def main(args):
             query=config["query_name"], sample=config["sample_name"]
         )
 
+    # TODO this needs cleaning up... don't define these targets unless we know we will need them
     index_database = "database/idx_database_{query}.done".format(
         query=config["query_name"]
     )
@@ -119,6 +128,7 @@ def main(args):
         query=config["query_name"], sample=config["sample_name"]
     )
 
+    # TODO the logic of this needs tidying up... don't create the list here, only to override it on line 144!
     target_list = [
         bowtie,
         bowtie_meta,
@@ -137,7 +147,7 @@ def main(args):
         target_list = [index_database, bt2_filter_idx]
 
     if args.build_db:
-        target_list = []
+        target_list = []  # TODO but this already exits!
         if config["WITH_ENTREZ_QUERY"]:
             target_list.append(entrez)
         if config["WITH_REFSEQ_REP"]:
@@ -174,21 +184,19 @@ def main(args):
     print("RUN DETAILS")
     print("\n\tSnakefile: {}".format(snakefile))
     print("\n\tConfig Parameters:\n")
-    for key, value in config.items():
+    for key, value in config.items():  # TODO only print non-default settings, unless debug is turned on
         print(f"{key:35}{value}")
     print("\n\tTarget Output Files:\n")
     for target in target_list:
         print(target)
     print("--------")
 
-    # run!!
-
-    printshellcmds = False
-    keepgoing = True
-
     if args.debug:
         printshellcmds = True
         keepgoing = False
+    else:
+        printshellcmds = False
+        keepgoing = True
 
     status = snakemake.snakemake(
         snakefile,
@@ -207,12 +215,16 @@ def main(args):
         resources={"entrez_api": MAX_ENTREZ_REQUESTS},
     )
 
-    if status:  # translate "success" into shell exit code of 0
-        return 0
-    return 1
+    # translate "success" into shell exit code of 0
+    return 0 if status else 1
 
 
 if __name__ == "__main__":
+
+    # TODO as there are now multiple modes for running RIP, then you should refactor the CLI options such that they are
+    #   run as proper subcommands, e.g. https://chase-seibert.github.io/blog/2014/03/21/python-multilevel-argparse.html
+    #   we should not be asking users if their samples are PE or SE if all they want to do it build the database
+
     parser = argparse.ArgumentParser(
         description="run snakemake workflows",
         usage="""run <config.yaml>
@@ -247,7 +259,7 @@ if __name__ == "__main__":
     )
     parser.add_argument("--sample_name", help="Sample name prefix", metavar="")
     parser.add_argument(
-        "--sample_fastq",
+        "--sample_fastq",  # TODO make less versose... e.g. --fastq is fine
         help="Path to the fastq input file. Can be raw or with adapters " "removed",
         metavar="",
     )
@@ -276,32 +288,35 @@ if __name__ == "__main__":
         default=1,
     )
     parser.add_argument(
-        "--SRA_LOOKUP",
+        "--SRA_LOOKUP",  # TODO all config settings should be lowercase
         help="fetch raw data files from the SRA <bool> (default: False)",
         metavar="",
     )
+
+    # TODO merge these 3 settings into 1 with 3 states (we should not allow the user to specify conflicting settings)
+    #   alternatively, PE vs SE is implied by setting either --fastq or --fastq_r1, so you might only need --collapse
     parser.add_argument(
         "--PE_ANCIENT",
-        help="treat the data as paired end end but use only COLLAPSED reads. \n"
+        help="treat the data as paired end but use only COLLAPSED reads. \n"
         "mandatory and mutually exclusive with PE_MODERN and SE",
         metavar="",
     )
     parser.add_argument(
         "--PE_MODERN",
-        help="treat the data as paired end end end but use only COMPLETE PAIRS of "
+        help="treat the data as paired end but use only COMPLETE PAIRS of "
         "reads. \n "
         "mandatory and mutually exclusive with PE_ANCIENT and SE",
         metavar="",
     )
     parser.add_argument(
         "--SE",
-        help="treat the data as single end end. \n"
+        help="treat the data as single end. \n"
         "mandatory and mutually exclusive with PE_ANCIENT and PE_MODERN",
         metavar="",
     )
     parser.add_argument(
         "--WITH_REFSEQ_REP",
-        help="use the prokaryotic representative species of the RefSeq DB "
+        help="use the prokaryotic representative species of the RefSeq DB "  # TODO use proper sentence case in all help messages 
         "for the species id pipeline. only species no strains. "
         "either or both of WITH_REFSEQ_REP and "
         "WITH_ENTREZ_QUERY should be set (default: True)",
@@ -316,11 +331,12 @@ if __name__ == "__main__":
         metavar="",
     )
     parser.add_argument(
-        "--WITH_DATA_PREPROCESSING",
+        "--WITH_DATA_PREPROCESSING",  # TODO why is this not more literal? e.g. --trim-adapters?
         help="Remove adapters from raw fastq files",
         metavar="",
     )
 
+    # TODO this setting is implicit... either they give a valid filename for --custom_seq_file or they do not
     parser.add_argument(
         "--WITH_CUSTOM_SEQUENCES",
         help="Custom user defined fasta files will be used in the database <bool> (default False)",
@@ -336,6 +352,7 @@ if __name__ == "__main__":
         default="",
     )
 
+    # TODO same issue as with --WITH_CUSTOM_SEQUENCES, this setting should not exist
     parser.add_argument(
         "--WITH_CUSTOM_ACCESSIONS",
         help="Custom user defined accessions will be used in the database <bool> (default False)",
@@ -352,7 +369,7 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
-        "--SPECIFIC_GENUS",
+        "--SPECIFIC_GENUS",  # TODO don't use the singular `genus` if this accepts a list
         nargs="+",
         help="list containing the names of specific genera "
         "the abundances should be calculated "
@@ -361,10 +378,10 @@ if __name__ == "__main__":
         default=[],
     )
     parser.add_argument(
-        "--MEM_RESOURCES_MB",
+        "--MEM_RESOURCES_MB",  # TODO param names should be less verbose... e.g. --mem XXX is sufficient
         help="max mem resources allowed to be used ofr indexing the input for "
         "the filtering alignment "
-        "(default: max available memory on the machine)",
+        "(default: max available memory on the machine)",  # TODO show the actual default, like you do for --cores
         metavar="",
     )
     parser.add_argument(
@@ -378,7 +395,7 @@ if __name__ == "__main__":
         "--data_preprocess",
         action="store_true",
         help="Only process raw fastq files, "
-        "incl downloading fastq files from the SRA, "
+        "including downloading fastq files from the SRA, "
         "compressing them and removing any sequencing "
         "adapters  <bool> (default: False)",
     )
@@ -451,9 +468,9 @@ if __name__ == "__main__":
         "AND ALL of their dependencies  <bool> (default: False)",
     )
     parser.add_argument(
-        "-j",
-        "--cores",
-        help="Number of cores for smk to use",
+        "-j",  # TODO why do none of the above settings have single letter param names? all or nothing, be consistent!
+        "--cores",  # TODO why are you using -j/--cores and not -c/--cores or -j/--jobs?
+        help="Number of cores for smk to use",  # TODO why mention snakemake? this the name of this software is RIP!
         metavar="",
         default=cpu_count(),
     )
