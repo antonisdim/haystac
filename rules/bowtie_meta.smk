@@ -28,7 +28,7 @@ rule index_database_entrez:
     benchmark:
         repeat("benchmarks/index_database_{orgname}_{accession}.benchmark.txt", 1)
     message:
-        "Preparing the bowtie2 index of the genome {wildcards.accession} for taxon {wildcards.orgname}."
+        "Preparing the bowtie2 index of genome {wildcards.accession} for taxon {wildcards.orgname}."
     shell:
         "bowtie2-build --large-index {input} database/{wildcards.orgname}/{wildcards.accession} &> {log}"
 

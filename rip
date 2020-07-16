@@ -16,9 +16,10 @@ thisdir = os.path.abspath(os.path.dirname(__file__))
 # maximum concurrent Entrez requests
 MAX_ENTREZ_REQUESTS = 3
 
-# TODO come up with solution so we don't need to activate the conda environment
-#   if we split the environment file into smaller ones and assign them to the individual rules, then we don't need to
-#   pre-build the environment https://snakemake.readthedocs.io/en/stable/tutorial/additional_features.html#automatic-deployment-of-software-dependencies
+# TODO come up with solution so we don't need to activate the conda environment if we split the environment file into
+#  smaller ones and assign them to the individual rules, then we don't need to pre-build the environment
+#  https://snakemake.readthedocs.io/en/stable/tutorial/additional_features.html#automatic-deployment-of-software
+#  -dependencies
 
 
 def main(args):
@@ -202,7 +203,6 @@ def main(args):
         forceall=args.touch,
         lock=args.no_lock,
         unlock=args.unlock,
-        debug=args.debug,
         show_failed_logs=args.debug,
         resources={"entrez_api": MAX_ENTREZ_REQUESTS},
     )
