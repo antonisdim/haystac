@@ -4,41 +4,28 @@
 import os
 import sys
 
-from psutil import virtual_memory
-
-MAX_MEM_MB = virtual_memory().total / (1024 ** 2)
-
-
 def calculate_bt2_idx_chunks(
-    mem_resources, mem_rescaling_factor, input_file_list, output
+        mem_resources, mem_rescaling_factor, fasta_files, output
 ):
     """Calculate the number of chunks that the db sequences are going to be split into"""
 
-    mem_resources_mb = float(mem_resources)
+    chunk_size = float(mem_resources) / float(mem_rescaling_factor)
+    total_size = 0.0
+    chunks = 1
 
-    if not mem_resources_mb:
-        mem_resources_mb = MAX_MEM_MB
+    # TODO handle edge case where mem_resources is so low we can't build an index for a single large fasta file
 
-    total_file_size = 0
-    input_file_list = [i for i in str(input_file_list).split()]
-    scaling_factor = mem_rescaling_factor
+    for fasta_file in fasta_files:
+        file_size = os.stat(fasta_file).st_size / (1024 ** 2)
 
-    chunk_num = 1
-
-    for input_file in input_file_list:
-
-        size_to_be = total_file_size + os.stat(input_file).st_size / float(1024 ** 2)
-
-        if size_to_be <= mem_resources_mb / float(scaling_factor):
-            total_file_size += os.stat(input_file).st_size / float(1024 ** 2)
-
-        elif size_to_be > mem_resources_mb / float(scaling_factor):
-            total_file_size = 0
-            chunk_num += 1
-            total_file_size += os.stat(input_file).st_size / float(1024 ** 2)
+        if total_size + file_size >= chunk_size:
+            total_size = file_size
+            chunks += 1
+        else:
+            total_size += file_size
 
     with open(output, "w") as outfile:
-        print(chunk_num, file=outfile)
+        print(chunks, file=outfile)
 
 
 if __name__ == "__main__":
@@ -48,6 +35,6 @@ if __name__ == "__main__":
     calculate_bt2_idx_chunks(
         mem_resources=snakemake.params[1],
         mem_rescaling_factor=snakemake.params[2],
-        input_file_list=snakemake.input,
+        fasta_files=snakemake.input,
         output=snakemake.output[0],
     )
