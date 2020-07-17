@@ -52,10 +52,11 @@ rule count_fastq_length:
         "Counting the number of reads for sample {wildcards.sample} and storing the result in {output}. "
         "Its log file can be found in {log}."
     shell:
-        "seqtk seq -A {input.fastq} | grep -v '^>' | wc -l 1> {output} 2> {log}"
+        "(seqtk seq -A {input.fastq} | grep -v '^>' | wc -l 1> {output} ) 2> {log}"
 
 
 def get_bams_for_ts_tv_count(wildcards):
+    # TODO no need for this input function... make PE|SE a wildcard
     if config["PE_MODERN"]:
         return "{query}/sigma/{sample}/PE/{orgname}/{orgname}_{accession}.bam".format(
             query=wildcards.query,
@@ -115,7 +116,7 @@ def get_ts_tv_count_paths(wildcards):
             query=wildcards.query
         )
 
-        refseq_genomes = pd.read_csv(refseq_rep_prok.output[0], sep="\t")
+        refseq_genomes = pd.read_csv(refseq_rep_prok.output[0], sep="\t")  # TODO use the output names, not the indices
         genbank_genomes = pd.read_csv(refseq_rep_prok.output[1], sep="\t")
         assemblies = pd.read_csv(refseq_rep_prok.output[2], sep="\t")
         refseq_plasmids = pd.read_csv(refseq_rep_prok.output[3], sep="\t")
@@ -132,6 +133,7 @@ def get_ts_tv_count_paths(wildcards):
             )
         ]
 
+        # TODO more unnecessary code duplication!
         if WITH_ENTREZ_QUERY:
             sequences = pd.concat(
                 [
@@ -209,8 +211,7 @@ rule initial_ts_tv:
     log:
         "{query}/ts_tv_counts/{sample}/all_ts_tv_counts.log",
     benchmark:
-        repeat("benchmarks/initial_ts_tv_{query}_{sample}.benchmark.txt", 1) # shell:
-         #     "cat {input} 1> {output} 2> {log}"
+        repeat("benchmarks/initial_ts_tv_{query}_{sample}.benchmark.txt", 1)
     message:
         "Concatenating all the Ts and Tv count files {input} in {output} for sample {wildcards.sample}. "
         "Its log file can be found in {log}."
@@ -276,7 +277,7 @@ rule fasta_idx:
     output:
         "database/{orgname}/{accession}.fasta.gz.fai",
     log:
-        "database/{orgname}/{accession}.fasta.gz.fai.log",
+        "database/{orgname}/{accession}.fasta.gz.fai.log",  # TODO log file is not informative
     benchmark:
         repeat("benchmarks/fasta_idx_{orgname}_{accession}.benchmark.txt", 1)
     message:
@@ -429,8 +430,7 @@ rule cat_pvalues:
     log:
         "{query}/probabilities/{sample}/{sample}_t_test_pvalues.log",
     benchmark:
-        repeat("benchmarks/cat_pvalues_{query}_{sample}.benchmark.txt", 1) # shell:
-         #     "cat {input} 1> {output} 2> {log}"
+        repeat("benchmarks/cat_pvalues_{query}_{sample}.benchmark.txt", 1)
     message:
         "Concatenating all the T-Test p-value outputs for sample {wildcards.sample} "
         "into one file {output}. Its log file can be found in {log}."

@@ -196,8 +196,8 @@ rule bowtie_index:
     log:
         "{query}/bowtie/{query}_{chunk_num}_index.log",
     output:
-        expand("{{query}}/bowtie/{{query}}_chunk{{chunk_num}}.{n}.bt2l", n=[1, 2, 3, 4]),
-        expand("{{query}}/bowtie/{{query}}_chunk{{chunk_num}}.rev.{n}.bt2l", n=[1, 2]),
+        expand("{query}/bowtie/{query}_chunk{chunk_num}.{n}.bt2l", n=[1, 2, 3, 4], allow_missing=True),
+        expand("{query}/bowtie/{query}_chunk{chunk_num}.rev.{n}.bt2l", n=[1, 2], allow_missing=True),
     benchmark:
         repeat("benchmarks/bowtie_index_{query}_chunk{chunk_num}.benchmark.txt", 1)
     message:
@@ -225,7 +225,7 @@ rule bowtie_index_done:
     input:
         get__bt2_idx_chunk_paths,
     log:
-        "{query}/bowtie/bowtie_index.log",
+        "{query}/bowtie/bowtie_index.log",  # TODO ditch all log files that are empty when there is no error
     output:
         "{query}/bowtie/bowtie_index.done",
     benchmark:
@@ -278,13 +278,13 @@ def get_inputs_for_bowtie_r2(wildcards):
                 sample=wildcards.sample
             )
         else:
-            return ""
+            return ""  # TODO we should never get here, why does this else condition exist?
 
     else:
         if PE_MODERN:
             return config["sample_fastq_R2"]
         else:
-            return ""
+            return ""  # TODO we should never get here
 
 
 rule bowtie_alignment_single_end:
@@ -365,7 +365,7 @@ rule merge_bams_single_end:
 
 rule merge_bams_paired_end:
     input:
-        aln_path=get_sorted_bam_paths,
+        aln_path=get_sorted_bam_paths,  # TODO no need to both merge_bams_single_end and merge_bams_paired_end as the shell command is identical, make PE|SE a wildcard
     log:
         "{query}/bam/{sample}_merge_bams.log",
     output:
@@ -415,6 +415,7 @@ rule extract_fastq_paired_end:
         "rm {wildcards.query}/fastq/PE/{wildcards.sample}_temp_R1.fastq.gz; "
         "rm {wildcards.query}/fastq/PE/{wildcards.sample}_temp_R2.fastq.gz ) 2> {log}" # "( samtools view -h -F 4 {input} "
          # "| samtools fastq -c 6 -1 {output[0]} -2 {output[1]} -0 /dev/null -s /dev/null - ) 2> {log}"
+        # TODO get rid of commented out code
 
 
 rule average_fastq_read_len_single_end:
@@ -432,8 +433,8 @@ rule average_fastq_read_len_single_end:
         "Calculating the average read length for sample {wildcards.sample} from file {input} "
         "and storing its value in {output}. The log file can be found in {log}."
     shell:
-        "seqtk sample {input} {params.sample_size} | seqtk seq -A | grep -v '^>' | "
-        "awk '{{count++; bases += length}} END{{print bases/count}}' 1> {output} 2> {log}"
+        "( seqtk sample {input} {params.sample_size} | seqtk seq -A | grep -v '^>'"
+        "| awk '{{count++; bases += length}} END {{print bases/count}}' 1> {output} ) 2> {log}"
 
 
 rule average_fastq_read_len_paired_end:
@@ -449,14 +450,14 @@ rule average_fastq_read_len_paired_end:
     benchmark:
         repeat("benchmarks/average_fastq_read_len_paired_end_{query}_{sample}.benchmark.txt", 1)
     params:
-        sample_size=SUBSAMPLE_FIXED_READS,
+        sample_size=SUBSAMPLE_FIXED_READS, # TODO no need for {param.sample_size} as you can use {SUBSAMPLE_FIXED_READS} directly in the shell command
     message:
         "Calculating the average read length for sample {wildcards.sample} from files {input.mate1} and {input.mate2} "
         "and storing its value in {output}. The log file can be found in {log}."
     shell:
-        "seqtk sample {input.mate1} {params.sample_size} | seqtk seq -A | grep -v '^>' | "
-        "awk '{{count++; bases += length}} END{{print bases/count}}' 1> {output.mate1} 2> {log}; "
-        "seqtk sample {input.mate2} {params.sample_size} | seqtk seq -A | grep -v '^>' | "
-        "awk '{{count++; bases += length}} END{{print bases/count}}' 1> {output.mate2} 2> {log}; "
-        "cat {output.mate1} {output.mate2} | awk '{{sum += $1; n++ }} END {{if (n>0) print sum/n;}}' "
-        "1> {output.pair} 2> {log} "
+        "( seqtk sample {input.mate1} {params.sample_size} | seqtk seq -A | grep -v '^>' "
+        "| awk '{{count++; bases += length}} END{{print bases/count}}' 1> {output.mate1} ) 2>> {log}; "
+        "( seqtk sample {input.mate2} {params.sample_size} | seqtk seq -A | grep -v '^>' "
+        "| awk '{{count++; bases += length}} END{{print bases/count}}' 1> {output.mate2} ) 2>> {log}; "
+        "( cat {output.mate1} {output.mate2} "
+        "| awk '{{sum += $1; n++ }} END {{if (n>0) print sum/n;}}' 1> {output.pair} ) 2>> {log} "

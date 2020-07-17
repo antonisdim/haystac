@@ -4,12 +4,12 @@
 import os
 import pandas as pd
 
+# TODO don't reference sigma!
 MIN_FRAG_LEN = 0  # I found them from the actual command that SIGMA runs
 MAX_FRAG_LEN = 1000
-SIGMA_MIN_SCORE_CONSTANT = (
-    -6
-)  # it's from SIGMA, wouldn't want this changed unless the user is SUPER knowledgeable
-WITH_REFSEQ_REP = config["WITH_REFSEQ_REP"]
+
+SIGMA_MIN_SCORE_CONSTANT = -6  # TODO don't reference sigma!
+WITH_REFSEQ_REP = config["WITH_REFSEQ_REP"]  # TODO get rid of these redundant static constants
 WITH_ENTREZ_QUERY = config["WITH_ENTREZ_QUERY"]
 WITH_CUSTOM_SEQUENCES = config["WITH_CUSTOM_SEQUENCES"]
 WITH_CUSTOM_ACCESSIONS = config["WITH_CUSTOM_ACCESSIONS"]
@@ -23,8 +23,8 @@ rule index_database_entrez:
     log:
         "database/{orgname}/{accession}_index.log",
     output:
-        expand("database/{{orgname}}/{{accession}}.{n}.bt2l", n=[1, 2, 3, 4]),
-        expand("database/{{orgname}}/{{accession}}.rev.{n}.bt2l", n=[1, 2]),
+        expand("database/{orgname}/{accession}.{n}.bt2l", n=[1, 2, 3, 4], allow_missing=True),
+        expand("database/{orgname}/{accession}.rev.{n}.bt2l", n=[1, 2], allow_missing=True),
     benchmark:
         repeat("benchmarks/index_database_{orgname}_{accession}.benchmark.txt", 1)
     message:
@@ -248,12 +248,12 @@ rule align_taxon_single_end:
         "and the log file can be found here {log}."
     shell:
         "( bowtie2 --time --no-unal --no-discordant --no-mixed --ignore-quals --mp 6,6 --np 6 "
-        "--score-min L,{params.min_score},0.0 --gbar 1000 -q --threads {threads} "
-        '-x database/"{wildcards.orgname}"/{wildcards.accession} '
-        "-I {params.min_frag_length} -X {params.max_frag_length} "
-        "-U {input.fastq} "
-        "| samtools sort -O bam -o {output.bam_file} ) 2> {log} "
-        "; samtools index {output.bam_file}"
+        "   --score-min L,{params.min_score},0.0 --gbar 1000 -q --threads {threads} "
+        '   -x database/"{wildcards.orgname}"/{wildcards.accession} '
+        "   -I {params.min_frag_length} -X {params.max_frag_length} "
+        "   -U {input.fastq} "
+        "| samtools sort -O bam -o {output.bam_file} ) 2> {log}; "
+        "samtools index {output.bam_file}"
 
 
 rule align_taxon_paired_end:

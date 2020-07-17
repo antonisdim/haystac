@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-WITH_REFSEQ_REP = config["WITH_REFSEQ_REP"]
+WITH_REFSEQ_REP = config["WITH_REFSEQ_REP"]  # TODO get rid of all this redundancy
 WITH_ENTREZ_QUERY = config["WITH_ENTREZ_QUERY"]
 WITH_CUSTOM_SEQUENCES = config["WITH_CUSTOM_SEQUENCES"]
 WITH_CUSTOM_ACCESSIONS = config["WITH_CUSTOM_ACCESSIONS"]
@@ -73,7 +73,7 @@ def get_mapdamage_out_dir_paths(wildcards):
             query=wildcards.query
         )
 
-        refseq_genomes = pd.read_csv(refseq_rep_prok.output[0], sep="\t")
+        refseq_genomes = pd.read_csv(refseq_rep_prok.output[0], sep="\t")  # TODO use output names, not indicies
         genbank_genomes = pd.read_csv(refseq_rep_prok.output[1], sep="\t")
         assemblies = pd.read_csv(refseq_rep_prok.output[2], sep="\t")
         refseq_plasmids = pd.read_csv(refseq_rep_prok.output[3], sep="\t")
@@ -90,6 +90,7 @@ def get_mapdamage_out_dir_paths(wildcards):
             )
         ]
 
+        # TODO get rid of the redundancy!! we shouldn't be duplicating code
         if WITH_ENTREZ_QUERY:
             sequences = pd.concat(
                 [
@@ -175,11 +176,11 @@ def get_mapdamage_out_dir_paths(wildcards):
         )
         return inputs
 
-
+# TODO delete commented out code
 # raise RuntimeError('PE data, mapDamage cannot run with that input format. Either collapse the reads, '
 #                    'use SE data or do not include that rule.')
 
-
+# TODO delete ruls that are not used by the pipeline
 rule all_mapdamage:
     input:
         get_mapdamage_out_dir_paths,

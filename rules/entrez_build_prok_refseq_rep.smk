@@ -3,6 +3,8 @@
 
 import pandas as pd
 
+# TODO rename file `refseq.smk`
+
 REFSEQ_REP_URL = 'https://ftp.ncbi.nlm.nih.gov/genomes/GENOME_REPORTS/prok_representative_genomes.txt'
 
 ##### Target rules #####
@@ -71,7 +73,7 @@ def get_refseq_genome_sequences(wildcards):
     Get all the FASTA sequences for the multi-FASTA file.
     """
     pick_sequences = checkpoints.entrez_refseq_accessions.get(query=wildcards.query)
-    refseq_sequences = pd.read_csv(pick_sequences.output[0], sep='\t')
+    refseq_sequences = pd.read_csv(pick_sequences.output[0], sep='\t')  # TODO use the output names, not indicies
     genbank_sequences = pd.read_csv(pick_sequences.output[1], sep='\t')
     refseq_plasmids = pd.read_csv(pick_sequences.output[3], sep='\t')
     genbank_plasmids = pd.read_csv(pick_sequences.output[4], sep='\t')
@@ -148,7 +150,7 @@ def get_assembly_genome_sequences(wildcards):
     inputs = []
 
     for key, seq in assembly_sequences.iterrows():
-        orgname, accession = seq['species'].replace(" ", "_").replace("[", "").replace("]", ""), seq['GBSeq_accession-version']
+        orgname, accession = seq['species'].replace(" ", "_").replace("[", "").replace("]", ""), seq['GBSeq_accession-version']  # TODO use a function!
         inputs.append('database/{orgname}/{accession}.fasta.gz'.format(orgname=orgname, accession=accession))
 
     return inputs

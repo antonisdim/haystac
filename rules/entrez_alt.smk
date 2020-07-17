@@ -5,6 +5,8 @@ from snakemake.remote.NCBI import RemoteProvider as NCBIRemoteProvider
 
 ##### Target rules #####
 
+# TODO why does this file exist? move the contents into `entrez.smk`
+
 ENTREZ_DB_NUCCORE = "nuccore"
 ENTREZ_DB_TAXA = "taxonomy"
 
@@ -15,7 +17,6 @@ ENTREZ_RETTYPE_FASTA = "fasta"
 ENTREZ_RETTYPE_GB = "gb"
 
 ENTREZ_RETMAX = 10 ** 9
-
 
 # noinspection PyUnresolvedReferences
 def get_nuccore_xml(wildcards):

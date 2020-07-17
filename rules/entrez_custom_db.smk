@@ -21,7 +21,7 @@ rule entrez_custom_sequences:
         "../scripts/entrez_custom_sequences.py"
 
 
-def get_paths_for_custom_seqs(wildcards):
+def get_paths_for_custom_seqs(wildcards):  # TODO wildcards not used
 
     custom_fasta_paths = pd.read_csv(
         config["custom_seq_file"],
@@ -33,6 +33,7 @@ def get_paths_for_custom_seqs(wildcards):
     if len(custom_fasta_paths) == 0:
         raise RuntimeError("The custom sequences file is empty.")
 
+    # TODO code duplicated on lines 107-138!
     if custom_fasta_paths["species"].duplicated().any():
         raise RuntimeError(
             "You have provided more than one sequence for a taxon. "

@@ -5,8 +5,8 @@ import os
 import sys
 import pandas as pd
 
-sys.path.append(os.getcwd())
-sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+sys.path.append(os.getcwd()) # TODO why are this necessary?
+sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))) # TODO why are this necessary?
 
 
 ##### Target rules #####
@@ -86,7 +86,7 @@ rule entrez_aggregate_nuccore:
     output:
         "{query}/entrez/{query}-nuccore.tsv",
     log:
-        "{query}/entrez/{query}-nuccore.log",
+        "{query}/entrez/{query}-nuccore.log",  # TODO log file is not informative
     benchmark:
         repeat("benchmarks/entrez_aggregate_nuccore_{query}.benchmark.txt", 1)
     message:
@@ -177,10 +177,9 @@ def get_fasta_sequences(wildcards):
     inputs = []
 
     for key, seq in sequences.iterrows():
-        orgname, accession = (
-            seq["species"].replace(" ", "_").replace("[", "").replace("]", ""),
-            seq["GBSeq_accession-version"],
-        )
+        orgname = seq["species"].replace(" ", "_").replace("[", "").replace("]", "") # TODO use a function
+        accession = seq["GBSeq_accession-version"]
+
         inputs.append(
             "database/{orgname}/{accession}.fasta.gz".format(
                 orgname=orgname, accession=accession
