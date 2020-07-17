@@ -2,8 +2,6 @@
 """
 Execution script for snakemake workflows.
 """
-
-# TODO add this block to all the python files
 __author__ = "Evangelos A. Dimopoulos, Evan K. Irving-Pease"
 __copyright__ = "Copyright 2020, University of Oxford"
 __email__ = "antonisdim41@gmail.com"
@@ -184,7 +182,12 @@ def main(args):
     print("RUN DETAILS")
     print("\n\tSnakefile: {}".format(snakefile))
     print("\n\tConfig Parameters:\n")
-    for key, value in config.items():  # TODO only print non-default settings, unless debug is turned on
+    for (
+        key,
+        value,
+    ) in (
+        config.items()
+    ):  # TODO only print non-default settings, unless debug is turned on
         print(f"{key:35}{value}")
     print("\n\tTarget Output Files:\n")
     for target in target_list:
@@ -316,7 +319,7 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--WITH_REFSEQ_REP",
-        help="use the prokaryotic representative species of the RefSeq DB "  # TODO use proper sentence case in all help messages 
+        help="use the prokaryotic representative species of the RefSeq DB "  # TODO use proper sentence case in all help messages
         "for the species id pipeline. only species no strains. "
         "either or both of WITH_REFSEQ_REP and "
         "WITH_ENTREZ_QUERY should be set (default: True)",
@@ -369,7 +372,7 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
-        "--SPECIFIC_GENUS",  # TODO don't use the singular `genus` if this accepts a list
+        "--SPECIFIC_GENERA",
         nargs="+",
         help="list containing the names of specific genera "
         "the abundances should be calculated "

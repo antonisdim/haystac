@@ -1,6 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+__author__ = "Evangelos A. Dimopoulos, Evan K. Irving-Pease"
+__copyright__ = "Copyright 2020, University of Oxford"
+__email__ = "antonisdim41@gmail.com"
+__license__ = "MIT"
+
 WITH_REFSEQ_REP = config["WITH_REFSEQ_REP"]
 WITH_ENTREZ_QUERY = config["WITH_ENTREZ_QUERY"]
 WITH_CUSTOM_SEQUENCES = config["WITH_CUSTOM_SEQUENCES"]
@@ -9,7 +14,7 @@ SRA_LOOKUP = config["SRA_LOOKUP"]
 PE_ANCIENT = config["PE_ANCIENT"]
 PE_MODERN = config["PE_MODERN"]
 SE = config["SE"]
-SPECIFIC_GENUS = config["SPECIFIC_GENUS"]
+SPECIFIC_GENERA = config["SPECIFIC_GENERA"]
 
 
 ##### Target rules #####
@@ -116,7 +121,9 @@ def get_ts_tv_count_paths(wildcards):
             query=wildcards.query
         )
 
-        refseq_genomes = pd.read_csv(refseq_rep_prok.output[0], sep="\t")  # TODO use the output names, not the indices
+        refseq_genomes = pd.read_csv(
+            refseq_rep_prok.output[0], sep="\t"
+        )  # TODO use the output names, not the indices
         genbank_genomes = pd.read_csv(refseq_rep_prok.output[1], sep="\t")
         assemblies = pd.read_csv(refseq_rep_prok.output[2], sep="\t")
         refseq_plasmids = pd.read_csv(refseq_rep_prok.output[3], sep="\t")
@@ -180,9 +187,9 @@ def get_ts_tv_count_paths(wildcards):
 
     inputs = []
 
-    if SPECIFIC_GENUS:
+    if SPECIFIC_GENERA:
         sequences = sequences[
-            sequences["species"].str.contains("|".join(SPECIFIC_GENUS))
+            sequences["species"].str.contains("|".join(SPECIFIC_GENERA))
         ]
 
     for key, seq in sequences.iterrows():
@@ -277,7 +284,7 @@ rule fasta_idx:
     output:
         "database/{orgname}/{accession}.fasta.gz.fai",
     log:
-        "database/{orgname}/{accession}.fasta.gz.fai.log",  # TODO log file is not informative
+        "database/{orgname}/{accession}.fasta.gz.fai.log", # TODO log file is not informative
     benchmark:
         repeat("benchmarks/fasta_idx_{orgname}_{accession}.benchmark.txt", 1)
     message:
@@ -392,9 +399,9 @@ def get_t_test_values_paths(wildcards):
 
     inputs = []
 
-    if SPECIFIC_GENUS:
+    if SPECIFIC_GENERA:
         sequences = sequences[
-            sequences["species"].str.contains("|".join(SPECIFIC_GENUS))
+            sequences["species"].str.contains("|".join(SPECIFIC_GENERA))
         ]
 
     reads = ""

@@ -24,7 +24,7 @@ include: "rules/metagenomics.smk"
 include: "rules/entrez_custom_db.smk"
 
 
-include: "rules/entrez_build_prok_refseq_rep.smk"
+include: "rules/refseq.smk"
 
 
 include: "rules/data_preprocessing.smk"
@@ -58,7 +58,7 @@ startTime = datetime.now()
 # "refseq_rep/entrez/refseq_rep-invalid-assemblies.tsv",
 # "fastq_inputs/PE_mod/SRR1031215_R1_adRm.fastq.gz",  # test data_preprocessing.smk for merged ancient PE
 # "refseq_rep/bowtie/refseq_rep_custom_seqs.fasta.gz",
-# "refseq_rep/bowtie/refseq_rep_custom_acc.fasta.gz", # "refseq_rep/bowtie/refseq_rep_refseq_prok.fasta.gz", # test entrez_build_prok_refseq_rep.smk
+# "refseq_rep/bowtie/refseq_rep_custom_acc.fasta.gz", # "refseq_rep/bowtie/refseq_rep_refseq_prok.fasta.gz", # test refseq.smk
 # "refseq_rep/bowtie/refseq_rep_entrez.fasta.gz", # test entrez.smk,
 # "refseq_rep/fastq/PE/SRR1031215_mapq_pair.readlen", # test bowtie.smk
 # "refseq_rep/sigma/SRR1031215_alignments.done",   # test bowtie_meta.smk,
@@ -67,7 +67,7 @@ startTime = datetime.now()
 # "refseq_rep/mapdamage/SRR1031215_mapdamage.done" # test mapdamage.smk
 # PE ancient
 # "fastq_inputs/PE_anc/SRR1031289_adRm.fastq.gz", # test data_preprocessing.smk for merged ancient PE
-# "refseq_rep/bowtie/refseq_rep_refseq_prok.fasta.gz", # test entrez_build_prok_refseq_rep.smk
+# "refseq_rep/bowtie/refseq_rep_refseq_prok.fasta.gz", # test refseq.smk
 # "refseq_rep/bowtie/refseq_rep_entrez.fasta.gz", # test entrez.smk,
 # "refseq_rep/fastq/SE/SRR1031289_mapq.readlen", # test bowtie.smk
 # "refseq_rep/sigma/SRR1031289_alignments.done",   # test bowtie_meta.smk
@@ -76,7 +76,7 @@ startTime = datetime.now()
 # "refseq_rep/mapdamage/SRR1031289_mapdamage.done" # test mapdamage.smk
 # SE
 # "fastq_inputs/SE/SRR054920_adRm.fastq.gz",  # test data_preprocessing.smk for ancient SE
-# "refseq_rep/bowtie/refseq_rep_refseq_prok.fasta.gz",  # test entrez_build_prok_refseq_rep.smk
+# "refseq_rep/bowtie/refseq_rep_refseq_prok.fasta.gz",  # test refseq.smk
 # "refseq_rep/bowtie/refseq_rep_entrez.fasta.gz",  # test entrez.smk
 # "refseq_rep/fastq/SE/SRR054920_mapq.readlen",  # test bowtie.smk
 # "refseq_rep/sigma/SRR054920_alignments.done",  # test bowtie_meta.smk
@@ -86,7 +86,7 @@ startTime = datetime.now()
 # "refseq_rep/mapdamage/SRR054920_mapdamage.done" # test mapdamage.smk
 
 
-# "refseq_rep/bowtie/refseq_rep_refseq_prok.fasta.gz", # test entrez_build_prok_refseq_rep.smk
+# "refseq_rep/bowtie/refseq_rep_refseq_prok.fasta.gz", # test refseq.smk
 # "refseq_rep/bowtie/refseq_rep_entrez.fasta.gz", # test entrez.smk
 # "refseq_rep/fastq/RISE00_mapq.readlen",  # test bowtie.smk
 # "refseq_rep/sigma/RISE00_alignments.done",   # test bowtie_meta.smk

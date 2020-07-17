@@ -1,6 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+__author__ = "Evangelos A. Dimopoulos, Evan K. Irving-Pease"
+__copyright__ = "Copyright 2020, University of Oxford"
+__email__ = "antonisdim41@gmail.com"
+__license__ = "MIT"
+
+
 import json
 import os
 import sys

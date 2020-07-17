@@ -1,11 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+__author__ = "Evangelos A. Dimopoulos, Evan K. Irving-Pease"
+__copyright__ = "Copyright 2020, University of Oxford"
+__email__ = "antonisdim41@gmail.com"
+__license__ = "MIT"
+
 WITH_REFSEQ_REP = config["WITH_REFSEQ_REP"]  # TODO get rid of all this redundancy
 WITH_ENTREZ_QUERY = config["WITH_ENTREZ_QUERY"]
 WITH_CUSTOM_SEQUENCES = config["WITH_CUSTOM_SEQUENCES"]
 WITH_CUSTOM_ACCESSIONS = config["WITH_CUSTOM_ACCESSIONS"]
-SPECIFIC_GENUS = config["SPECIFIC_GENUS"]
+SPECIFIC_GENERA = config["SPECIFIC_GENERA"]
 PE_ANCIENT = config["PE_ANCIENT"]
 PE_MODERN = config["PE_MODERN"]
 SE = config["SE"]
@@ -73,7 +78,9 @@ def get_mapdamage_out_dir_paths(wildcards):
             query=wildcards.query
         )
 
-        refseq_genomes = pd.read_csv(refseq_rep_prok.output[0], sep="\t")  # TODO use output names, not indicies
+        refseq_genomes = pd.read_csv(
+            refseq_rep_prok.output[0], sep="\t"
+        )  # TODO use output names, not indicies
         genbank_genomes = pd.read_csv(refseq_rep_prok.output[1], sep="\t")
         assemblies = pd.read_csv(refseq_rep_prok.output[2], sep="\t")
         refseq_plasmids = pd.read_csv(refseq_rep_prok.output[3], sep="\t")
@@ -137,9 +144,9 @@ def get_mapdamage_out_dir_paths(wildcards):
 
     inputs = []
 
-    if SPECIFIC_GENUS:
+    if SPECIFIC_GENERA:
         sequences = sequences[
-            sequences["species"].str.contains("|".join(SPECIFIC_GENUS))
+            sequences["species"].str.contains("|".join(SPECIFIC_GENERA))
         ]
 
     reads = ""
@@ -176,9 +183,11 @@ def get_mapdamage_out_dir_paths(wildcards):
         )
         return inputs
 
+
 # TODO delete commented out code
 # raise RuntimeError('PE data, mapDamage cannot run with that input format. Either collapse the reads, '
 #                    'use SE data or do not include that rule.')
+
 
 # TODO delete ruls that are not used by the pipeline
 rule all_mapdamage:

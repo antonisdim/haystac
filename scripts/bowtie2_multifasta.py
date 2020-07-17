@@ -1,6 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+__author__ = "Evangelos A. Dimopoulos, Evan K. Irving-Pease"
+__copyright__ = "Copyright 2020, University of Oxford"
+__email__ = "antonisdim41@gmail.com"
+__license__ = "MIT"
+
 import shutil
 import sys
 from Bio import bgzf
@@ -8,8 +13,7 @@ from Bio import bgzf
 
 def bowtie_multifasta(fasta_files, output_file):
     print(
-        "Creating the bowtie2 multifasta file for the filtering ...",
-        file=sys.stderr,
+        "Creating the bowtie2 multifasta file for the filtering ...", file=sys.stderr,
     )
 
     with bgzf.open(output_file, "wt") as fout:

@@ -1,7 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# TODO needs a block comment
+__author__ = "Evangelos A. Dimopoulos, Evan K. Irving-Pease"
+__copyright__ = "Copyright 2020, University of Oxford"
+__email__ = "antonisdim41@gmail.com"
+__license__ = "MIT"
+
 
 import csv
 import gzip
@@ -26,6 +30,7 @@ def count_bt2_idx(
     output_dir,
     out_chunk_paths_file,
 ):
+    """Calculates the number of chunks for the bt2 filter aln index - depricated"""
 
     mem_resources_mb = mem_resources
 

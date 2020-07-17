@@ -1,13 +1,20 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+__author__ = "Evangelos A. Dimopoulos, Evan K. Irving-Pease"
+__copyright__ = "Copyright 2020, University of Oxford"
+__email__ = "antonisdim41@gmail.com"
+__license__ = "MIT"
+
 import shutil
 import sys
 
 
 def concat_files(list_of_files, output_file):
-    # TODO use declarative voice in logging and comments.. e.g. "Concatenating files..."
-    print("We're concatenating the files ...", file=sys.stderr)
+
+    """Concatenating files that are provided as input into a single file."""
+
+    print("Concatenating files ...", file=sys.stderr)
 
     with open(output_file, "w") as fout:
         for file in list_of_files:

@@ -1,15 +1,21 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+__author__ = "Evangelos A. Dimopoulos, Evan K. Irving-Pease"
+__copyright__ = "Copyright 2020, University of Oxford"
+__email__ = "antonisdim41@gmail.com"
+__license__ = "MIT"
+
 import os
 import pandas as pd
 
-# TODO don't reference sigma!
-MIN_FRAG_LEN = 0  # I found them from the actual command that SIGMA runs
+MIN_FRAG_LEN = 0
 MAX_FRAG_LEN = 1000
 
-SIGMA_MIN_SCORE_CONSTANT = -6  # TODO don't reference sigma!
-WITH_REFSEQ_REP = config["WITH_REFSEQ_REP"]  # TODO get rid of these redundant static constants
+META_ALN_MIN_SCORE_CONSTANT = -6
+WITH_REFSEQ_REP = config[
+    "WITH_REFSEQ_REP"
+]  # TODO get rid of these redundant static constants
 WITH_ENTREZ_QUERY = config["WITH_ENTREZ_QUERY"]
 WITH_CUSTOM_SEQUENCES = config["WITH_CUSTOM_SEQUENCES"]
 WITH_CUSTOM_ACCESSIONS = config["WITH_CUSTOM_ACCESSIONS"]
@@ -218,7 +224,7 @@ def get_min_score(wildcards, input):
     """Get the min score dor the edit distance of the alignment."""
     return (
         round(float(open(input.readlen).read()) * float(config["mismatch_probability"]))
-        * SIGMA_MIN_SCORE_CONSTANT
+        * META_ALN_MIN_SCORE_CONSTANT
     )
 
 
@@ -371,9 +377,9 @@ def get_bamfile_paths(wildcards):
 
     inputs = []
 
-    if SPECIFIC_GENUS:
+    if SPECIFIC_GENERA:
         sequences = sequences[
-            sequences["species"].str.contains("|".join(SPECIFIC_GENUS))
+            sequences["species"].str.contains("|".join(SPECIFIC_GENERA))
         ]
 
     if config["SE"] or config["PE_ANCIENT"]:

@@ -1,12 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+__author__ = "Evangelos A. Dimopoulos, Evan K. Irving-Pease"
+__copyright__ = "Copyright 2020, University of Oxford"
+__email__ = "antonisdim41@gmail.com"
+__license__ = "MIT"
+
 import os
 import sys
 
-def calculate_bt2_idx_chunks(
-        mem_resources, mem_rescaling_factor, fasta_files, output
-):
+
+def calculate_bt2_idx_chunks(mem_resources, mem_rescaling_factor, fasta_files, output):
     """Calculate the number of chunks that the db sequences are going to be split into"""
 
     chunk_size = float(mem_resources) / float(mem_rescaling_factor)

@@ -1,12 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+__author__ = "Evangelos A. Dimopoulos, Evan K. Irving-Pease"
+__copyright__ = "Copyright 2020, University of Oxford"
+__email__ = "antonisdim41@gmail.com"
+__license__ = "MIT"
+
 import os
 import sys
 import pandas as pd
-
-sys.path.append(os.getcwd()) # TODO why are this necessary?
-sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))) # TODO why are this necessary?
 
 
 ##### Target rules #####
@@ -36,16 +38,15 @@ rule entrez_nuccore_query:
     output:
         temp("{query}/entrez/{query}_{chunk}-nuccore.tsv"),
     log:
-        temp("{query}/entrez/{query}_{chunk}-nuccore.log"),  # TODO why are the logs temporary?
+        "{query}/entrez/{query}_{chunk}-nuccore.log",
     benchmark:
         repeat("benchmarks/entrez_nuccore_query_{query}_{chunk}.benchmark.txt", 1)
     message:
-        # TODO it looks weird that the scheduler picks the chunks at random
-        #   use the `priority` attribute to force them to download in order
-        #   see https://snakemake.readthedocs.io/en/stable/snakefiles/rules.html#priorities
         "Fetching sequence metadata from the NCBI Nucleotide database "
         "for the accessions in chunk {wildcards.chunk} for query {wildcards.query}. "
-        "The temporary output can be found in {output} and its log file in {log}."
+        "The temporary output can be found in {output} and its log file in {log}." # TODO it looks weird that the scheduler picks the chunks at random
+         #   use the `priority` attribute to force them to download in order
+         #   see https://snakemake.readthedocs.io/en/stable/snakefiles/rules.html#priorities
     resources:
         entrez_api=1,
     script:
@@ -86,7 +87,7 @@ rule entrez_aggregate_nuccore:
     output:
         "{query}/entrez/{query}-nuccore.tsv",
     log:
-        "{query}/entrez/{query}-nuccore.log",  # TODO log file is not informative
+        "{query}/entrez/{query}-nuccore.log", # TODO log file is not informative
     benchmark:
         repeat("benchmarks/entrez_aggregate_nuccore_{query}.benchmark.txt", 1)
     message:
@@ -177,7 +178,9 @@ def get_fasta_sequences(wildcards):
     inputs = []
 
     for key, seq in sequences.iterrows():
-        orgname = seq["species"].replace(" ", "_").replace("[", "").replace("]", "") # TODO use a function
+        orgname = (
+            seq["species"].replace(" ", "_").replace("[", "").replace("]", "")
+        )  # TODO use a function
         accession = seq["GBSeq_accession-version"]
 
         inputs.append(
