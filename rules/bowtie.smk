@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
+import os
 from math import ceil
 from multiprocessing import cpu_count
 from psutil import virtual_memory
 import pandas as pd
 
 SUBSAMPLE_FIXED_READS = 200000
-WITH_REFSEQ_REP = config["WITH_REFSEQ_REP"]
+WITH_REFSEQ_REP = config["WITH_REFSEQ_REP"]  # TODO use the config values directly, there is no need to assign them to static constants
 WITH_ENTREZ_QUERY = config["WITH_ENTREZ_QUERY"]
 WITH_CUSTOM_SEQUENCES = config["WITH_CUSTOM_SEQUENCES"]
 WITH_CUSTOM_ACCESSIONS = config["WITH_CUSTOM_ACCESSIONS"]
@@ -18,7 +18,8 @@ PE_ANCIENT = config["PE_ANCIENT"]
 PE_MODERN = config["PE_MODERN"]
 SE = config["SE"]
 
-MAX_MEM_MB = virtual_memory().total / (1024 ** 2)
+MEGABYTE = float(1024 ** 2)
+MAX_MEM_MB = virtual_memory().total / MEGABYTE
 MEM_RESOURCES_MB = float(config["MEM_RESOURCES_MB"])
 MEM_RESCALING_FACTOR = config["MEM_RESCALING_FACTOR"]
 WITH_DATA_PREPROCESSING = config["WITH_DATA_PREPROCESSING"]
@@ -124,7 +125,7 @@ def get_total_fasta_paths(wildcards):
 
     for key, seq in sequences.iterrows():
         orgname, accession = (
-            seq["species"].replace(" ", "_").replace("[", "").replace("]", ""),
+            seq["species"].replace(" ", "_").replace("[", "").replace("]", ""),  # TODO this should be a function, e.g. normalise_species_name()
             seq["GBSeq_accession-version"],
         )
 
@@ -157,47 +158,22 @@ checkpoint calculate_bt2_idx_chunks:
 
 
 def get_bt2_idx_filter_chunk(wildcards):
-
     """Pick the files for the specific bt2 index chunk"""
+    chunk_files = []
+    chunk_size = MEM_RESOURCES_MB / float(MEM_RESCALING_FACTOR)
+    total_size = 0.0
 
-    chunk = 1
-    chunk_to_chose = int(wildcards.chunk_num)
+    for fasta_file in get_total_fasta_paths(wildcards):
+        total_size += os.stat(fasta_file).st_size / MEGABYTE
 
-    mem_resources_mb = MEM_RESOURCES_MB
+        chunk = (total_size // chunk_size) + 1
 
-    if not mem_resources_mb:
-        mem_resources_mb = MAX_MEM_MB
+        if chunk == int(wildcards.chunk_num):
+            chunk_files.append(fasta_file)
+        elif chunk > int(wildcards.chunk_num):
+            break
 
-    incremental_file_size = float(0)
-
-    input_file_list = get_total_fasta_paths(wildcards)
-
-    chunk_path_list = []
-
-    for input_file in input_file_list:
-
-        size_to_be = incremental_file_size + os.stat(input_file).st_size / float(
-            1024 ** 2
-        )
-
-        if incremental_file_size == 0:
-            chunk_path_list = []
-            incremental_file_size += os.stat(input_file).st_size / float(1024 ** 2)
-            chunk_path_list.append(input_file)
-
-        elif size_to_be <= mem_resources_mb / float(MEM_RESCALING_FACTOR):
-            incremental_file_size += os.stat(input_file).st_size / float(1024 ** 2)
-            chunk_path_list.append(input_file)
-
-        elif size_to_be > mem_resources_mb / float(MEM_RESCALING_FACTOR):
-            if chunk == chunk_to_chose:
-                break
-            incremental_file_size = 0
-            chunk += 1
-            incremental_file_size += os.stat(input_file).st_size / float(1024 ** 2)
-            chunk_path_list = [input_file]
-
-    return chunk_path_list
+    return chunk_files
 
 
 rule create_bt2_idx_filter_chunk:
