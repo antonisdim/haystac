@@ -3,13 +3,12 @@
 
 import shutil
 import sys
-import gzip
 from Bio import bgzf
 
 
 def bowtie_multifasta(fasta_files, output_file):
     print(
-        "We're creating the bowtie2 multifasta file for the filtering ...",
+        "Creating the bowtie2 multifasta file for the filtering ...",
         file=sys.stderr,
     )
 

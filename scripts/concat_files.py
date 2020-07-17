@@ -6,6 +6,7 @@ import sys
 
 
 def concat_files(list_of_files, output_file):
+    # TODO use declarative voice in logging and comments.. e.g. "Concatenating files..."
     print("We're concatenating the files ...", file=sys.stderr)
 
     with open(output_file, "w") as fout:
