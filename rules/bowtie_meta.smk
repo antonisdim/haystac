@@ -11,16 +11,11 @@ import pandas as pd
 
 MIN_FRAG_LEN = 0
 MAX_FRAG_LEN = 1000
-
 META_ALN_MIN_SCORE_CONSTANT = -6
-WITH_REFSEQ_REP = config[
-    "WITH_REFSEQ_REP"
-]  # TODO get rid of these redundant static constants
-WITH_ENTREZ_QUERY = config["WITH_ENTREZ_QUERY"]
-WITH_CUSTOM_SEQUENCES = config["WITH_CUSTOM_SEQUENCES"]
-WITH_CUSTOM_ACCESSIONS = config["WITH_CUSTOM_ACCESSIONS"]
 
 ##### Target rules #####
+
+from scripts.rip_utilities import get_total_paths, normalise_name
 
 
 rule index_database_entrez:
@@ -43,7 +38,7 @@ def get_idx_entrez(wildcards):
     """
     Get all the index paths for the taxa in our database from the entrez query.
     """
-    if not WITH_ENTREZ_QUERY:
+    if not config["WITH_ENTREZ_QUERY"]:
         return []
 
     pick_sequences = checkpoints.entrez_pick_sequences.get(query=wildcards.query)
@@ -72,7 +67,7 @@ def get_idx_ref_gen(wildcards):
     """
     Get all the index paths for the taxa in our database from the refseq rep and genbank.
     """
-    if not WITH_REFSEQ_REP:
+    if not config["WITH_REFSEQ_REP"]:
         return []
 
     refseq_rep_prok = checkpoints.entrez_refseq_accessions.get(query=wildcards.query)
@@ -106,7 +101,7 @@ def get_idx_assembly(wildcards):
     """
     Get all the individual bam file paths for the taxa in our database.
     """
-    if not WITH_REFSEQ_REP:
+    if not config["WITH_REFSEQ_REP"]:
         return []
 
     refseq_rep_prok = checkpoints.entrez_refseq_accessions.get(query=wildcards.query)
@@ -142,11 +137,11 @@ def get_idx_assembly(wildcards):
     return inputs
 
 
-def get_idx_custom_seqs(wildcards):
+def get_idx_custom_seqs():
     """
     Get all the individual bam file paths for the taxa in our database.
     """
-    if not WITH_CUSTOM_SEQUENCES:
+    if not config["WITH_CUSTOM_SEQUENCES"]:
         return []
 
     custom_fasta_paths = pd.read_csv(
@@ -174,11 +169,11 @@ def get_idx_custom_seqs(wildcards):
     return inputs
 
 
-def get_idx_custom_acc(wildcards):
+def get_idx_custom_acc():
     """
     Get all the individual bam file paths for the taxa in our database.
     """
-    if not WITH_CUSTOM_ACCESSIONS:
+    if not config["WITH_CUSTOM_ACCESSIONS"]:
         return []
 
     custom_accessions = pd.read_csv(
@@ -220,7 +215,7 @@ rule idx_database:
         "touch {output}"
 
 
-def get_min_score(wildcards, input):
+def get_min_score(input):
     """Get the min score dor the edit distance of the alignment."""
     return (
         round(float(open(input.readlen).read()) * float(config["mismatch_probability"]))
@@ -293,101 +288,31 @@ rule align_taxon_paired_end:
         "; samtools index {output.bam_file}"
 
 
-# TODO delete all of this...
 # noinspection PyUnresolvedReferences
 def get_bamfile_paths(wildcards):
     """
     Get all the individual bam file paths for the taxa in our database.
     """
 
-    sequences = pd.DataFrame()
-
-    if WITH_ENTREZ_QUERY:
-        pick_sequences = checkpoints.entrez_pick_sequences.get(query=wildcards.query)
-        sequences = pd.read_csv(pick_sequences.output[0], sep="\t")
-
-        if len(sequences) == 0:
-            raise RuntimeError("The entrez pick sequences file is empty.")
-
-    if WITH_REFSEQ_REP:
-        refseq_rep_prok = checkpoints.entrez_refseq_accessions.get(
-            query=wildcards.query
-        )
-
-        refseq_genomes = pd.read_csv(refseq_rep_prok.output[0], sep="\t")
-        genbank_genomes = pd.read_csv(refseq_rep_prok.output[1], sep="\t")
-        assemblies = pd.read_csv(refseq_rep_prok.output[2], sep="\t")
-        refseq_plasmids = pd.read_csv(refseq_rep_prok.output[3], sep="\t")
-        genbank_plasmids = pd.read_csv(refseq_rep_prok.output[4], sep="\t")
-
-        invalid_assemblies = checkpoints.entrez_invalid_assemblies.get(
-            query=wildcards.query
-        )
-        invalid_assembly_sequences = pd.read_csv(invalid_assemblies.output[0], sep="\t")
-
-        assemblies = assemblies[
-            ~assemblies["GBSeq_accession-version"].isin(
-                invalid_assembly_sequences["GBSeq_accession-version"]
-            )
-        ]
-
-        if WITH_ENTREZ_QUERY:
-            sequences = pd.concat(
-                [
-                    sequences,
-                    refseq_genomes,
-                    genbank_genomes,
-                    assemblies,
-                    refseq_plasmids,
-                    genbank_plasmids,
-                ]
-            )
-        else:
-            sequences = pd.concat(
-                [
-                    refseq_genomes,
-                    genbank_genomes,
-                    assemblies,
-                    refseq_plasmids,
-                    genbank_plasmids,
-                ]
-            )
-
-    if WITH_CUSTOM_SEQUENCES:
-        custom_fasta_paths = pd.read_csv(
-            config["custom_seq_file"],
-            sep="\t",
-            header=None,
-            names=["species", "GBSeq_accession-version", "path"],
-        )
-
-        custom_seqs = custom_fasta_paths[["species", "GBSeq_accession-version"]]
-
-        sequences = sequences.append(custom_seqs)
-
-    if WITH_CUSTOM_ACCESSIONS:
-        custom_accessions = pd.read_csv(
-            config["custom_acc_file"],
-            sep="\t",
-            header=None,
-            names=["species", "GBSeq_accession-version"],
-        )
-
-        sequences = sequences.append(custom_accessions)
+    sequences = get_total_paths(
+        wildcards,
+        checkpoints,
+        config["WITH_ENTREZ_QUERY"],
+        config["WITH_REFSEQ_REP"],
+        config["WITH_CUSTOM_SEQUENCES"],
+        config["WITH_CUSTOM_ACCESSIONS"],
+        config["SPECIFIC_GENERA"],
+    )
 
     inputs = []
 
-    if SPECIFIC_GENERA:
-        sequences = sequences[
-            sequences["species"].str.contains("|".join(SPECIFIC_GENERA))
-        ]
+    for key, seq in sequences.iterrows():
+        orgname, accession = (
+            normalise_name(seq["species"]),
+            seq["GBSeq_accession-version"],
+        )
 
-    if config["SE"] or config["PE_ANCIENT"]:
-        for key, seq in sequences.iterrows():
-            orgname, accession = (
-                seq["species"].replace(" ", "_").replace("[", "").replace("]", ""),
-                seq["GBSeq_accession-version"],
-            )
+        if config["SE"] or config["PE_ANCIENT"]:
             inputs.append(
                 "{query}/sigma/{sample}/SE/{orgname}/{orgname}_{accession}.bam".format(
                     query=wildcards.query,
@@ -396,13 +321,7 @@ def get_bamfile_paths(wildcards):
                     accession=accession,
                 )
             )
-
-    elif config["PE_MODERN"]:
-        for key, seq in sequences.iterrows():
-            orgname, accession = (
-                seq["species"].replace(" ", "_").replace("[", "").replace("]", ""),
-                seq["GBSeq_accession-version"],
-            )
+        elif config["PE_MODERN"]:
             inputs.append(
                 "{query}/sigma/{sample}/PE/{orgname}/{orgname}_{accession}.bam".format(
                     query=wildcards.query,
@@ -415,7 +334,6 @@ def get_bamfile_paths(wildcards):
     return inputs
 
 
-# TODO delete all of this...
 rule all_alignments:
     input:
         get_bamfile_paths,

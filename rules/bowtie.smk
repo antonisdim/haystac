@@ -24,8 +24,7 @@ MAX_MEM_MB = virtual_memory().total / MEGABYTE
 
 ##### Target rules #####
 
-from scripts.rip_utilities import get_total_paths
-from scripts.rip_utilities import normalise_name
+from scripts.rip_utilities import get_total_paths, normalise_name
 
 
 def get_total_fasta_paths(wildcards):
@@ -80,7 +79,9 @@ checkpoint calculate_bt2_idx_chunks:
 
 
 def get_bt2_idx_filter_chunk(wildcards):
+
     """Pick the files for the specific bt2 index chunk"""
+
     chunk_files = []
     chunk_size = float(config["MEM_RESOURCES_MB"]) / float(
         config["MEM_RESCALING_FACTOR"]
@@ -163,7 +164,7 @@ rule bowtie_index_done:
     message:
         "The bowtie2 indices for all the chunks {input} have been built. The log file can be found in {log}."
     shell:
-        "touch {output} 2> {log}"
+        "if touch {output} 2> {log}; then rm {log}; fi"
 
 
 def get_inputs_for_bowtie_r1(wildcards):
@@ -207,16 +208,10 @@ def get_inputs_for_bowtie_r2(wildcards):
             return "fastq_inputs/PE_mod/{sample}_R2_adRm.fastq.gz".format(
                 sample=wildcards.sample
             )
-        else:
-            return (
-                ""  # TODO we should never get here, why does this else condition exist?
-            )
 
     else:
         if PE_MODERN:
             return config["sample_fastq_R2"]
-        else:
-            return ""  # TODO we should never get here
 
 
 rule bowtie_alignment_single_end:

@@ -101,3 +101,32 @@ def get_total_paths(
 def normalise_name(taxon):
     """remove unnecessary characters from a taxon name string."""
     return taxon.replace(" ", "_").replace("[", "").replace("]", "")
+
+
+def check_unique_taxa_in_custom_input(with_custom_accessions, with_custom_sequences):
+
+    """Checks that custom input files have only one entry per taxon"""
+
+    if with_custom_accessions and with_custom_sequences:
+        custom_fasta_paths = pd.read_csv(
+            config["custom_seq_file"],
+            sep="\t",
+            header=None,
+            names=["species", "accession", "path"],
+        )
+        custom_accessions = pd.read_csv(
+            config["custom_acc_file"],
+            sep="\t",
+            header=None,
+            names=["species", "accession"],
+        )
+
+        taxon_acc = custom_accessions["species"].tolist()
+        taxon_seq = custom_fasta_paths["species"].tolist()
+
+        if bool(set(taxon_acc) & set(taxon_seq)):
+            raise RuntimeError(
+                "You have provided the same taxon both in your custom sequences file and your "
+                "custom accessions file. Please pick and keep ONLY one entry from both of these files. "
+                "You can only have 1 sequence per chosen taxon in your database."
+            )

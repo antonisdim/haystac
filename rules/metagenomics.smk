@@ -6,41 +6,32 @@ __copyright__ = "Copyright 2020, University of Oxford"
 __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
-WITH_REFSEQ_REP = config["WITH_REFSEQ_REP"]
-WITH_ENTREZ_QUERY = config["WITH_ENTREZ_QUERY"]
-WITH_CUSTOM_SEQUENCES = config["WITH_CUSTOM_SEQUENCES"]
-WITH_CUSTOM_ACCESSIONS = config["WITH_CUSTOM_ACCESSIONS"]
-SRA_LOOKUP = config["SRA_LOOKUP"]
-PE_ANCIENT = config["PE_ANCIENT"]
-PE_MODERN = config["PE_MODERN"]
-SE = config["SE"]
-SPECIFIC_GENERA = config["SPECIFIC_GENERA"]
-
+from scripts.rip_utilities import get_total_paths, normalise_name
 
 ##### Target rules #####
 
 
 def get_inputs_for_count_fastq_len(wildcards):
-    if SRA_LOOKUP:
-        if PE_MODERN:
+    if config["SRA_LOOKUP"]:
+        if config["PE_MODERN"]:
             return "fastq_inputs/PE_mod/{sample}_R1_adRm.fastq.gz".format(
                 sample=wildcards.sample
             )
-        elif PE_ANCIENT:
+        elif config["PE_ANCIENT"]:
             return "fastq_inputs/PE_anc/{sample}_adRm.fastq.gz".format(
                 sample=wildcards.sample
             )
-        elif SE:
+        elif config["SE"]:
             return "fastq_inputs/SE/{sample}_adRm.fastq.gz".format(
                 sample=wildcards.sample
             )
 
     else:
-        if PE_MODERN:
+        if config["PE_MODERN"]:
             return config["sample_fastq_R1"]
-        elif PE_ANCIENT:
+        elif config["PE_ANCIENT"]:
             return config["sample_fastq"]
-        elif SE:
+        elif config["SE"]:
             return config["sample_fastq"]
 
 
@@ -91,7 +82,7 @@ rule count_accession_ts_tv:
             1,
         )
     params:
-        pairs=PE_MODERN,
+        pairs=config["PE_MODERN"],
     message:
         "Counting the number of transitions and transversions per read for genome {wildcards.accession} "
         "for taxon {wildcards.orgname} from input file {input}. "
@@ -101,100 +92,26 @@ rule count_accession_ts_tv:
         "../scripts/count_accession_ts_tv.py"
 
 
-# noinspection PyUnresolvedReferences
 def get_ts_tv_count_paths(wildcards):
     """
     Get all the individual cav file paths for the taxa in our database.
     """
 
-    sequences = pd.DataFrame()
-
-    if WITH_ENTREZ_QUERY:
-        pick_sequences = checkpoints.entrez_pick_sequences.get(query=wildcards.query)
-        sequences = pd.read_csv(pick_sequences.output[0], sep="\t")
-
-        if len(sequences) == 0:
-            raise RuntimeError("The entrez pick sequences file is empty.")
-
-    if WITH_REFSEQ_REP:
-        refseq_rep_prok = checkpoints.entrez_refseq_accessions.get(
-            query=wildcards.query
-        )
-
-        refseq_genomes = pd.read_csv(
-            refseq_rep_prok.output[0], sep="\t"
-        )  # TODO use the output names, not the indices
-        genbank_genomes = pd.read_csv(refseq_rep_prok.output[1], sep="\t")
-        assemblies = pd.read_csv(refseq_rep_prok.output[2], sep="\t")
-        refseq_plasmids = pd.read_csv(refseq_rep_prok.output[3], sep="\t")
-        genbank_plasmids = pd.read_csv(refseq_rep_prok.output[4], sep="\t")
-
-        invalid_assemblies = checkpoints.entrez_invalid_assemblies.get(
-            query=wildcards.query
-        )
-        invalid_assembly_sequences = pd.read_csv(invalid_assemblies.output[0], sep="\t")
-
-        assemblies = assemblies[
-            ~assemblies["GBSeq_accession-version"].isin(
-                invalid_assembly_sequences["GBSeq_accession-version"]
-            )
-        ]
-
-        # TODO more unnecessary code duplication!
-        if WITH_ENTREZ_QUERY:
-            sequences = pd.concat(
-                [
-                    sequences,
-                    refseq_genomes,
-                    genbank_genomes,
-                    assemblies,
-                    refseq_plasmids,
-                    genbank_plasmids,
-                ]
-            )
-        else:
-            sequences = pd.concat(
-                [
-                    refseq_genomes,
-                    genbank_genomes,
-                    assemblies,
-                    refseq_plasmids,
-                    genbank_plasmids,
-                ]
-            )
-
-    if WITH_CUSTOM_SEQUENCES:
-        custom_fasta_paths = pd.read_csv(
-            config["custom_seq_file"],
-            sep="\t",
-            header=None,
-            names=["species", "GBSeq_accession-version", "path"],
-        )
-
-        custom_seqs = custom_fasta_paths[["species", "GBSeq_accession-version"]]
-
-        sequences = sequences.append(custom_seqs)
-
-    if WITH_CUSTOM_ACCESSIONS:
-        custom_accessions = pd.read_csv(
-            config["custom_acc_file"],
-            sep="\t",
-            header=None,
-            names=["species", "GBSeq_accession-version"],
-        )
-
-        sequences = sequences.append(custom_accessions)
+    sequences = get_total_paths(
+        wildcards,
+        checkpoints,
+        config["WITH_ENTREZ_QUERY"],
+        config["WITH_REFSEQ_REP"],
+        config["WITH_CUSTOM_SEQUENCES"],
+        config["WITH_CUSTOM_ACCESSIONS"],
+        config["SPECIFIC_GENERA"],
+    )
 
     inputs = []
 
-    if SPECIFIC_GENERA:
-        sequences = sequences[
-            sequences["species"].str.contains("|".join(SPECIFIC_GENERA))
-        ]
-
     for key, seq in sequences.iterrows():
         orgname, accession = (
-            seq["species"].replace(" ", "_").replace("[", "").replace("]", ""),
+            normalise_name(seq["species"]),
             seq["GBSeq_accession-version"],
         )
 
@@ -227,7 +144,7 @@ rule initial_ts_tv:
 
 
 def get_right_readlen(wildcards):
-    if PE_MODERN:
+    if config["PE_MODERN"]:
         return "{query}/fastq/PE/{sample}_mapq_pair.readlen".format(
             query=wildcards.query, sample=wildcards.sample
         )
@@ -322,97 +239,27 @@ def get_t_test_values_paths(wildcards):
     Get all the individual cav file paths for the taxa in our database.
     """
 
-    sequences = pd.DataFrame()
-
-    if WITH_ENTREZ_QUERY:
-        pick_sequences = checkpoints.entrez_pick_sequences.get(query=wildcards.query)
-        sequences = pd.read_csv(pick_sequences.output[0], sep="\t")
-
-        if len(sequences) == 0:
-            raise RuntimeError("The entrez pick sequences file is empty.")
-
-    if WITH_REFSEQ_REP:
-        refseq_rep_prok = checkpoints.entrez_refseq_accessions.get(
-            query=wildcards.query
-        )
-
-        refseq_genomes = pd.read_csv(refseq_rep_prok.output[0], sep="\t")
-        genbank_genomes = pd.read_csv(refseq_rep_prok.output[1], sep="\t")
-        assemblies = pd.read_csv(refseq_rep_prok.output[2], sep="\t")
-        refseq_plasmids = pd.read_csv(refseq_rep_prok.output[3], sep="\t")
-        genbank_plasmids = pd.read_csv(refseq_rep_prok.output[4], sep="\t")
-
-        invalid_assemblies = checkpoints.entrez_invalid_assemblies.get(
-            query=wildcards.query
-        )
-        invalid_assembly_sequences = pd.read_csv(invalid_assemblies.output[0], sep="\t")
-
-        assemblies = assemblies[
-            ~assemblies["GBSeq_accession-version"].isin(
-                invalid_assembly_sequences["GBSeq_accession-version"]
-            )
-        ]
-
-        if WITH_ENTREZ_QUERY:
-            sequences = pd.concat(
-                [
-                    sequences,
-                    refseq_genomes,
-                    genbank_genomes,
-                    assemblies,
-                    refseq_plasmids,
-                    genbank_plasmids,
-                ]
-            )
-        else:
-            sequences = pd.concat(
-                [
-                    refseq_genomes,
-                    genbank_genomes,
-                    assemblies,
-                    refseq_plasmids,
-                    genbank_plasmids,
-                ]
-            )
-
-    if WITH_CUSTOM_SEQUENCES:
-        custom_fasta_paths = pd.read_csv(
-            config["custom_seq_file"],
-            sep="\t",
-            header=None,
-            names=["species", "GBSeq_accession-version", "path"],
-        )
-
-        custom_seqs = custom_fasta_paths[["species", "GBSeq_accession-version"]]
-
-        sequences = sequences.append(custom_seqs)
-
-    if WITH_CUSTOM_ACCESSIONS:
-        custom_accessions = pd.read_csv(
-            config["custom_acc_file"],
-            sep="\t",
-            header=None,
-            names=["species", "GBSeq_accession-version"],
-        )
-
-        sequences = sequences.append(custom_accessions)
+    sequences = get_total_paths(
+        wildcards,
+        checkpoints,
+        config["WITH_ENTREZ_QUERY"],
+        config["WITH_REFSEQ_REP"],
+        config["WITH_CUSTOM_SEQUENCES"],
+        config["WITH_CUSTOM_ACCESSIONS"],
+        config["SPECIFIC_GENERA"],
+    )
 
     inputs = []
 
-    if SPECIFIC_GENERA:
-        sequences = sequences[
-            sequences["species"].str.contains("|".join(SPECIFIC_GENERA))
-        ]
-
     reads = ""
-    if PE_MODERN:
+    if config["PE_MODERN"]:
         reads = "PE"
-    elif PE_ANCIENT or SE:
+    elif config["PE_ANCIENT"] or config["SE"]:
         reads = "SE"
 
     for key, seq in sequences.iterrows():
         orgname, accession = (
-            seq["species"].replace(" ", "_").replace("[", "").replace("]", ""),
+            normalise_name(seq["species"]),
             seq["GBSeq_accession-version"],
         )
 

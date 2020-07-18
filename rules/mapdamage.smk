@@ -6,16 +6,10 @@ __copyright__ = "Copyright 2020, University of Oxford"
 __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
-WITH_REFSEQ_REP = config["WITH_REFSEQ_REP"]  # TODO get rid of all this redundancy
-WITH_ENTREZ_QUERY = config["WITH_ENTREZ_QUERY"]
-WITH_CUSTOM_SEQUENCES = config["WITH_CUSTOM_SEQUENCES"]
-WITH_CUSTOM_ACCESSIONS = config["WITH_CUSTOM_ACCESSIONS"]
-SPECIFIC_GENERA = config["SPECIFIC_GENERA"]
-PE_ANCIENT = config["PE_ANCIENT"]
-PE_MODERN = config["PE_MODERN"]
-SE = config["SE"]
 
 import pandas as pd
+
+from scripts.rip_utilities import get_total_paths, normalise_name
 
 ##### Target rules #####
 
@@ -64,100 +58,27 @@ def get_mapdamage_out_dir_paths(wildcards):
     Get all the individual cav file paths for the taxa in our database.
     """
 
-    sequences = pd.DataFrame()
-
-    if WITH_ENTREZ_QUERY:
-        pick_sequences = checkpoints.entrez_pick_sequences.get(query=wildcards.query)
-        sequences = pd.read_csv(pick_sequences.output[0], sep="\t")
-
-        if len(sequences) == 0:
-            raise RuntimeError("The entrez pick sequences file is empty.")
-
-    if WITH_REFSEQ_REP:
-        refseq_rep_prok = checkpoints.entrez_refseq_accessions.get(
-            query=wildcards.query
-        )
-
-        refseq_genomes = pd.read_csv(
-            refseq_rep_prok.output[0], sep="\t"
-        )  # TODO use output names, not indicies
-        genbank_genomes = pd.read_csv(refseq_rep_prok.output[1], sep="\t")
-        assemblies = pd.read_csv(refseq_rep_prok.output[2], sep="\t")
-        refseq_plasmids = pd.read_csv(refseq_rep_prok.output[3], sep="\t")
-        genbank_plasmids = pd.read_csv(refseq_rep_prok.output[4], sep="\t")
-
-        invalid_assemblies = checkpoints.entrez_invalid_assemblies.get(
-            query=wildcards.query
-        )
-        invalid_assembly_sequences = pd.read_csv(invalid_assemblies.output[0], sep="\t")
-
-        assemblies = assemblies[
-            ~assemblies["GBSeq_accession-version"].isin(
-                invalid_assembly_sequences["GBSeq_accession-version"]
-            )
-        ]
-
-        # TODO get rid of the redundancy!! we shouldn't be duplicating code
-        if WITH_ENTREZ_QUERY:
-            sequences = pd.concat(
-                [
-                    sequences,
-                    refseq_genomes,
-                    genbank_genomes,
-                    assemblies,
-                    refseq_plasmids,
-                    genbank_plasmids,
-                ]
-            )
-        else:
-            sequences = pd.concat(
-                [
-                    refseq_genomes,
-                    genbank_genomes,
-                    assemblies,
-                    refseq_plasmids,
-                    genbank_plasmids,
-                ]
-            )
-
-    if WITH_CUSTOM_SEQUENCES:
-        custom_fasta_paths = pd.read_csv(
-            config["custom_seq_file"],
-            sep="\t",
-            header=None,
-            names=["species", "GBSeq_accession-version", "path"],
-        )
-
-        custom_seqs = custom_fasta_paths[["species", "GBSeq_accession-version"]]
-
-        sequences = sequences.append(custom_seqs)
-
-    if WITH_CUSTOM_ACCESSIONS:
-        custom_accessions = pd.read_csv(
-            config["custom_acc_file"],
-            sep="\t",
-            header=None,
-            names=["species", "GBSeq_accession-version"],
-        )
-
-        sequences = sequences.append(custom_accessions)
+    sequences = get_total_paths(
+        wildcards,
+        checkpoints,
+        config["WITH_ENTREZ_QUERY"],
+        config["WITH_REFSEQ_REP"],
+        config["WITH_CUSTOM_SEQUENCES"],
+        config["WITH_CUSTOM_ACCESSIONS"],
+        config["SPECIFIC_GENERA"],
+    )
 
     inputs = []
 
-    if SPECIFIC_GENERA:
-        sequences = sequences[
-            sequences["species"].str.contains("|".join(SPECIFIC_GENERA))
-        ]
-
     reads = ""
-    if PE_MODERN:
+    if config["PE_MODERN"]:
         reads = "PE"
-    elif PE_ANCIENT or SE:
+    elif config["PE_ANCIENT"] or config["SE"]:
         reads = "SE"
 
     for key, seq in sequences.iterrows():
         orgname, accession = (
-            seq["species"].replace(" ", "_").replace("[", "").replace("]", ""),
+            normalise_name(seq["species"]),
             seq["GBSeq_accession-version"],
         )
 
@@ -171,7 +92,7 @@ def get_mapdamage_out_dir_paths(wildcards):
             )
         )
 
-    if PE_ANCIENT or SE:
+    if config["PE_ANCIENT"] or config["SE"]:
         return inputs
     else:
         print(
@@ -184,12 +105,7 @@ def get_mapdamage_out_dir_paths(wildcards):
         return inputs
 
 
-# TODO delete commented out code
-# raise RuntimeError('PE data, mapDamage cannot run with that input format. Either collapse the reads, '
-#                    'use SE data or do not include that rule.')
-
-
-# TODO delete ruls that are not used by the pipeline
+# TODO delete rules that are not used by the pipeline
 rule all_mapdamage:
     input:
         get_mapdamage_out_dir_paths,

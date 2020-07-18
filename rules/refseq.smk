@@ -8,6 +8,7 @@ __license__ = "MIT"
 
 import pandas as pd
 
+from scripts.rip_utilities import normalise_name
 
 REFSEQ_REP_URL = "https://ftp.ncbi.nlm.nih.gov/genomes/GENOME_REPORTS/prok_representative_genomes.txt"
 
@@ -74,12 +75,10 @@ def get_refseq_genome_sequences(wildcards):
     Get all the FASTA sequences for the multi-FASTA file.
     """
     pick_sequences = checkpoints.entrez_refseq_accessions.get(query=wildcards.query)
-    refseq_sequences = pd.read_csv(
-        pick_sequences.output[0], sep="\t"
-    )  # TODO use the output names, not indicies
-    genbank_sequences = pd.read_csv(pick_sequences.output[1], sep="\t")
-    refseq_plasmids = pd.read_csv(pick_sequences.output[3], sep="\t")
-    genbank_plasmids = pd.read_csv(pick_sequences.output[4], sep="\t")
+    refseq_sequences = pd.read_csv(pick_sequences.output.refseq_genomes, sep="\t")
+    genbank_sequences = pd.read_csv(pick_sequences.output.genbank_genomes, sep="\t")
+    refseq_plasmids = pd.read_csv(pick_sequences.output.refseq_plasmids, sep="\t")
+    genbank_plasmids = pd.read_csv(pick_sequences.output.genbank_plasmids, sep="\t")
     sequences = pd.concat(
         [refseq_sequences, genbank_sequences, refseq_plasmids, genbank_plasmids], axis=0
     )
@@ -90,9 +89,8 @@ def get_refseq_genome_sequences(wildcards):
     inputs = []
 
     for key, seq in sequences.iterrows():
-        # TODO move the .replace() code into a function called normalize_name() and update any other instances
         orgname, accession = (
-            seq["species"].replace(" ", "_").replace("[", "").replace("]", ""),
+            normalise_name(seq["species"]),
             seq["GBSeq_accession-version"],
         )
         inputs.append(
@@ -148,7 +146,7 @@ def get_assembly_genome_sequences(wildcards):
     Get all the FASTA sequences for the multi-FASTA file.
     """
     pick_sequences = checkpoints.entrez_refseq_accessions.get(query=wildcards.query)
-    assembly_sequences = pd.read_csv(pick_sequences.output[2], sep="\t")
+    assembly_sequences = pd.read_csv(pick_sequences.output.assemblies, sep="\t")
 
     if len(assembly_sequences) == 0:
         raise RuntimeError("The entrez pick sequences file is empty.")
@@ -168,9 +166,9 @@ def get_assembly_genome_sequences(wildcards):
 
     for key, seq in assembly_sequences.iterrows():
         orgname, accession = (
-            seq["species"].replace(" ", "_").replace("[", "").replace("]", ""),
+            normalise_name(seq["species"]),
             seq["GBSeq_accession-version"],
-        )  # TODO use a function!
+        )
         inputs.append(
             "database/{orgname}/{accession}.fasta.gz".format(
                 orgname=orgname, accession=accession

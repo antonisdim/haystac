@@ -13,9 +13,9 @@ import pandas as pd
 
 ##### Target rules #####
 
-WITH_REFSEQ_REP = config["WITH_REFSEQ_REP"]
 
 from scripts.entrez_nuccore_query import CHUNK_SIZE
+from scripts.rip_utilities import normalise_name
 
 
 checkpoint entrez_find_accessions:
@@ -49,6 +49,7 @@ rule entrez_nuccore_query:
          #   see https://snakemake.readthedocs.io/en/stable/snakefiles/rules.html#priorities
     resources:
         entrez_api=1,
+    priority: {chunk}
     script:
         "../scripts/entrez_nuccore_query.py"
 
@@ -116,7 +117,7 @@ rule entrez_taxa_query:
 
 def pick_after_refseq_prok(wildcards):
 
-    if WITH_REFSEQ_REP:
+    if config["WITH_REFSEQ_REP"]:
         return "{query}/entrez/{query}-genbank-genomes.tsv".format(
             query=wildcards.query
         )
@@ -178,9 +179,7 @@ def get_fasta_sequences(wildcards):
     inputs = []
 
     for key, seq in sequences.iterrows():
-        orgname = (
-            seq["species"].replace(" ", "_").replace("[", "").replace("]", "")
-        )  # TODO use a function
+        orgname = normalise_name(seq["species"])
         accession = seq["GBSeq_accession-version"]
 
         inputs.append(

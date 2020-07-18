@@ -8,8 +8,10 @@ __license__ = "MIT"
 
 import pandas as pd
 
-WITH_CUSTOM_SEQUENCES = config["WITH_CUSTOM_SEQUENCES"]
-WITH_CUSTOM_ACCESSIONS = config["WITH_CUSTOM_ACCESSIONS"]
+##### Target rules #####
+
+
+from scripts.rip_utilities import normalise_name, check_unique_taxa_in_custom_input
 
 
 rule entrez_custom_sequences:
@@ -26,7 +28,7 @@ rule entrez_custom_sequences:
         "../scripts/entrez_custom_sequences.py"
 
 
-def get_paths_for_custom_seqs(wildcards):  # TODO wildcards not used
+def get_paths_for_custom_seqs():
 
     custom_fasta_paths = pd.read_csv(
         config["custom_seq_file"],
@@ -38,7 +40,6 @@ def get_paths_for_custom_seqs(wildcards):  # TODO wildcards not used
     if len(custom_fasta_paths) == 0:
         raise RuntimeError("The custom sequences file is empty.")
 
-    # TODO code duplicated on lines 107-138!
     if custom_fasta_paths["species"].duplicated().any():
         raise RuntimeError(
             "You have provided more than one sequence for a taxon. "
@@ -46,36 +47,15 @@ def get_paths_for_custom_seqs(wildcards):  # TODO wildcards not used
             "Please only provide your favourite sequence for each taxon."
         )
 
-    if WITH_CUSTOM_ACCESSIONS and WITH_CUSTOM_SEQUENCES:
-        custom_fasta_paths = pd.read_csv(
-            config["custom_seq_file"],
-            sep="\t",
-            header=None,
-            names=["species", "accession", "path"],
-        )
-        custom_accessions = pd.read_csv(
-            config["custom_acc_file"],
-            sep="\t",
-            header=None,
-            names=["species", "accession"],
-        )
-
-        taxon_acc = custom_accessions["species"].tolist()
-        taxon_seq = custom_fasta_paths["species"].tolist()
-
-        if bool(set(taxon_acc) & set(taxon_seq)):
-            raise RuntimeError(
-                "You have provided the same taxon both in your custom sequences file and your "
-                "custom accessions file. Please pick and keep ONLY one entry from both of these files. "
-                "You can only have 1 sequence per chosen taxon in your database."
-            )
+    check_unique_taxa_in_custom_input(
+        config["WITH_CUSTOM_ACCESSIONS"], config["WITH_CUSTOM_SEQUENCES"]
+    )
 
     inputs = []
 
     for key, seq in custom_fasta_paths.iterrows():
-        # TODO move the .replace() code into a function called normalize_name() and update any other instances
         orgname, accession = (
-            seq["species"].replace(" ", "_").replace("[", "").replace("]", ""),
+            normalise_name(seq["species"]),
             seq["accession"],
         )
         inputs.append(
@@ -101,7 +81,7 @@ rule entrez_aggregate_custom_seqs:
         "../scripts/bowtie2_multifasta.py"
 
 
-def get_paths_for_custom_acc(wildcards):
+def get_paths_for_custom_acc():
 
     custom_accessions = pd.read_csv(
         config["custom_acc_file"], sep="\t", header=None, names=["species", "accession"]
@@ -117,36 +97,15 @@ def get_paths_for_custom_acc(wildcards):
             "Please only provide your favourite sequence for each taxon."
         )
 
-    if WITH_CUSTOM_ACCESSIONS and WITH_CUSTOM_SEQUENCES:
-        custom_fasta_paths = pd.read_csv(
-            config["custom_seq_file"],
-            sep="\t",
-            header=None,
-            names=["species", "accession", "path"],
-        )
-        custom_accessions = pd.read_csv(
-            config["custom_acc_file"],
-            sep="\t",
-            header=None,
-            names=["species", "accession"],
-        )
-
-        taxon_acc = custom_accessions["species"].tolist()
-        taxon_seq = custom_fasta_paths["species"].tolist()
-
-        if bool(set(taxon_acc) & set(taxon_seq)):
-            raise RuntimeError(
-                "You have provided the same taxon both in your custom sequences file and your "
-                "custom accessions file. Please pick and keep ONLY one entry from both of these files. "
-                "You can only have 1 sequence per chosen taxon in your database."
-            )
+    check_unique_taxa_in_custom_input(
+        config["WITH_CUSTOM_ACCESSIONS"], config["WITH_CUSTOM_SEQUENCES"]
+    )
 
     inputs = []
 
     for key, seq in custom_accessions.iterrows():
-        # TODO move the .replace() code into a function called normalize_name() and update any other instances
         orgname, accession = (
-            seq["species"].replace(" ", "_").replace("[", "").replace("]", ""),
+            normalise_name(seq["species"]),
             seq["accession"],
         )
         inputs.append(
