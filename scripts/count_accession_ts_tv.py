@@ -62,6 +62,9 @@ def count_ts_tv_init(bam_file, output_file, taxon, pairs=False):
 
             if not read.is_proper_pair:
 
+                if pairs:
+                    continue
+
                 for base_call, base_ref in zip(read.seq, read.get_reference_sequence()):
                     if base_call.upper() == "N" or base_ref.upper() == "N":
                         continue
