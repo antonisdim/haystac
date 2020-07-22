@@ -164,6 +164,20 @@ rule bowtie_index_done:
 
 def get_inputs_for_bowtie_r1(wildcards):
 
+    if config['trim_adapters']:
+        if PE_MODERN:
+            return "fastq_inputs/PE_mod/{sample}_R1_adRm.fastq.gz".format(
+                sample=wildcards.sample
+            )
+        elif PE_ANCIENT:
+            return "fastq_inputs/PE_anc/{sample}_adRm.fastq.gz".format(
+                sample=wildcards.sample
+            )
+        elif PE_ANCIENT or SE:
+            return "fastq_inputs/SE/{sample}_adRm.fastq.gz".format(
+                sample=wildcards.sample
+            )
+
     if PE_MODERN:
         return config["fastq_R1"]
     elif PE_ANCIENT or SE:
@@ -171,6 +185,12 @@ def get_inputs_for_bowtie_r1(wildcards):
 
 
 def get_inputs_for_bowtie_r2(wildcards):
+
+    if config["sra_lookup"]:
+        if PE_MODERN:
+            return "fastq_inputs/PE_mod/{sample}_R2_adRm.fastq.gz".format(
+                sample=wildcards.sample
+            )
 
     if PE_MODERN:
         return config["fastq_R2"]

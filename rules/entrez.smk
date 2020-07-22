@@ -44,12 +44,9 @@ rule entrez_nuccore_query:
     message:
         "Fetching sequence metadata from the NCBI Nucleotide database "
         "for the accessions in chunk {wildcards.chunk} for query {wildcards.query}. "
-        "The temporary output can be found in {output} and its log file in {log}." # TODO it looks weird that the scheduler picks the chunks at random
-         #   use the `priority` attribute to force them to download in order
-         #   see https://snakemake.readthedocs.io/en/stable/snakefiles/rules.html#priorities
+        "The temporary output can be found in {output} and its log file in {log}."
     resources:
-        entrez_api=1, # priority:
-         #     chunk
+        entrez_api=1,
     script:
         "../scripts/entrez_nuccore_query.py"
 

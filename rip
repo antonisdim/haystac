@@ -177,6 +177,11 @@ def main(args):
         )
 
     if args.abundances:
+
+        if not os.path.exists("database/idx_database_{query}.done".format(query=config["query_name"])) and os.path.exists("{query}/bowtie/bowtie_index.done".format(query=config["query_name"])):
+            raise RuntimeError("You have not completed the building and indexing of the database. "
+                               "Please run --complete_db_creation before analysing any samples.")
+
         target_list.append(
             "{query}/probabilities/{sample}/{sample}_posterior_abundance.tsv".format(
                 query=config["query_name"], sample=config["sample_name"]
@@ -202,7 +207,11 @@ def main(args):
             ] = "fastq_inputs/PE_mod/{accession}_R2_adRm.fastq.gz".format(
                 accession=config["sample_name"]
             )
-        elif config["PE_ANCIENT"] or config["SE"]:
+        elif config["PE_ANCIENT"]:
+            config["fastq"] = "fastq_inputs/PE_anc/{accession}_adRm.fastq.gz".format(
+                accession=config["sample_name"]
+            )
+        elif config["SE"]:
             config["fastq"] = "fastq_inputs/SE/{accession}_adRm.fastq.gz".format(
                 accession=config["sample_name"]
             )

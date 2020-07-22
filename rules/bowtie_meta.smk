@@ -137,7 +137,7 @@ def get_idx_assembly(wildcards):
     return inputs
 
 
-def get_idx_custom_seqs(wildcards):
+def get_idx_custom_seqs():
     """
     Get all the individual bam file paths for the taxa in our database.
     """
@@ -169,7 +169,7 @@ def get_idx_custom_seqs(wildcards):
     return inputs
 
 
-def get_idx_custom_acc(wildcards):
+def get_idx_custom_acc():
     """
     Get all the individual bam file paths for the taxa in our database.
     """
@@ -203,8 +203,8 @@ rule idx_database:
         get_idx_entrez,
         get_idx_ref_gen,
         get_idx_assembly,
-        get_idx_custom_seqs,
-        get_idx_custom_acc,
+        get_idx_custom_seqs(),
+        get_idx_custom_acc(),
     log:
         "database/idx_database_{query}.log",
     output:
