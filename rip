@@ -7,7 +7,6 @@ __copyright__ = "Copyright 2020, University of Oxford"
 __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
-
 import argparse
 import os.path
 import sys
@@ -16,11 +15,16 @@ import snakemake
 import yaml
 
 from multiprocessing import cpu_count
+from psutil import virtual_memory
+
+MEGABYTE = float(1024 ** 2)
+MAX_MEM_MB = virtual_memory().total / MEGABYTE
 
 thisdir = os.path.abspath(os.path.dirname(__file__))
 
 # maximum concurrent Entrez requests
 MAX_ENTREZ_REQUESTS = 3
+
 
 # TODO come up with solution so we don't need to activate the conda environment if we split the environment file into
 #  smaller ones and assign them to the individual rules, then we don't need to pre-build the environment
@@ -29,7 +33,6 @@ MAX_ENTREZ_REQUESTS = 3
 
 
 def main(args):
-
     # first, find the Snakefile
     snakefile = os.path.join(thisdir, "Snakefile")
     if not os.path.exists(snakefile):
@@ -62,133 +65,215 @@ def main(args):
 
     # Targets
 
-    input_mode = ""
-    if config["PE_ANCIENT"]:
-        input_mode = "PE_anc"
-    elif config["PE_MODERN"]:
-        input_mode = "PE_mod"
-    elif config["SE"]:
-        input_mode = "SE"
-
-    data_preprocessing = ""
-    if config["PE_MODERN"]:
-        data_preprocessing = "fastq_inputs/{input_mode}/{sample}_R1_adRm.fastq.gz".format(
-            sample=config["sample_name"], input_mode=input_mode
-        )
-    elif config["PE_ANCIENT"] or config["SE"]:
-        data_preprocessing = "fastq_inputs/{input_mode}/{sample}_adRm.fastq.gz".format(
-            sample=config["sample_name"], input_mode=input_mode
-        )
-
-    entrez_build_prok_refseq_rep = "{query}/bowtie/refseq_rep_refseq_prok.fasta.gz".format(
-        query=config["query_name"]
-    )
-    entrez = "{query}/bowtie/{query}_entrez.fasta.gz".format(query=config["query_name"])
-
-    entrez_custom_seqs = "{query}/bowtie/{query}_custom_seqs.fasta.gz".format(
-        query=config["query_name"]
-    )
-
-    entrez_custom_accs = "{query}/bowtie/{query}_custom_acc.fasta.gz".format(
-        query=config["query_name"]
-    )
-
-    bowtie = ""
-    if config["PE_MODERN"]:
-        bowtie = "{query}/fastq/PE/{sample}_mapq_pair.readlen".format(
-            query=config["query_name"], sample=config["sample_name"]
-        )
-    elif config["PE_ANCIENT"] or config["SE"]:
-        bowtie = "{query}/fastq/SE/{sample}_mapq.readlen".format(
-            query=config["query_name"], sample=config["sample_name"]
+    if args.input_mode == "COLLAPSED":
+        config["PE_ANCIENT"] = True
+        config["PE_MODERN"] = False
+        config["SE"] = False
+    elif args.input_mode == "PE":
+        config["PE_ANCIENT"] = False
+        config["PE_MODERN"] = True
+        config["SE"] = False
+    elif args.input_mode == "SE":
+        config["PE_ANCIENT"] = False
+        config["PE_MODERN"] = False
+        config["SE"] = True
+    else:
+        raise RuntimeError(
+            "You have provided an invalid option as input mode. "
+            "Please provide only one of the following COLLAPSED, PE or SE."
         )
 
-    # TODO this needs cleaning up... don't define these targets unless we know we will need them
-    index_database = "database/idx_database_{query}.done".format(
-        query=config["query_name"]
-    )
+    if args.custom_seq_file != "":
+        config["with_custom_sequences"] = True
+    else:
+        config["with_custom_sequences"] = False
 
-    bt2_filter_idx = "{query}/bowtie/bowtie_index.done".format(
-        query=config["query_name"]
-    )
-    bowtie_meta = "{query}/sigma/{sample}_alignments.done".format(
-        query=config["query_name"], sample=config["sample_name"]
-    )
+    if args.custom_acc_file != "":
+        config["with_custom_accessions"] = True
+    else:
+        config["with_custom_accessions"] = False
 
-    metagenomics_probabilities = "{query}/probabilities/{sample}/{sample}_posterior_probabilities.csv".format(
-        query=config["query_name"], sample=config["sample_name"]
-    )
-    metagenomics_abundances = "{query}/probabilities/{sample}/{sample}_posterior_abundance.tsv".format(
-        query=config["query_name"], sample=config["sample_name"]
-    )
+    target_list = []
 
-    mapdamage = "{query}/mapdamage/{sample}_mapdamage.done".format(
-        query=config["query_name"], sample=config["sample_name"]
-    )
+    if config["trim_adapters"] or args.data_preprocess:
+        input_mode = ""
+        if config["PE_ANCIENT"]:
+            input_mode = "PE_anc"
+        elif config["PE_MODERN"]:
+            input_mode = "PE_mod"
+        elif config["SE"]:
+            input_mode = "SE"
 
-    # TODO the logic of this needs tidying up... don't create the list here, only to override it on line 144!
-    target_list = [
-        bowtie,
-        bowtie_meta,
-        metagenomics_probabilities,
-        metagenomics_abundances,
-        mapdamage,
-    ]
-
-    if config["WITH_DATA_PREPROCESSING"]:
+        data_preprocessing = ""
+        if config["PE_MODERN"]:
+            data_preprocessing = "fastq_inputs/{input_mode}/{sample}_R1_adRm.fastq.gz".format(
+                sample=config["sample_name"], input_mode=input_mode
+            )
+        elif config["PE_ANCIENT"] or config["SE"]:
+            data_preprocessing = "fastq_inputs/{input_mode}/{sample}_adRm.fastq.gz".format(
+                sample=config["sample_name"], input_mode=input_mode
+            )
         target_list.append(data_preprocessing)
 
-    if args.data_preprocess:
-        target_list = [data_preprocessing]
-
-    if args.complete_db_creation:
-        target_list = [index_database, bt2_filter_idx]
-
     if args.build_db:
-        target_list = []  # TODO but this already exits!
-        if config["WITH_ENTREZ_QUERY"]:
-            target_list.append(entrez)
-        if config["WITH_REFSEQ_REP"]:
-            target_list.append(entrez_build_prok_refseq_rep)
-        if config["WITH_CUSTOM_SEQUENCES"]:
-            target_list.append(entrez_custom_seqs)
-        if config["WITH_CUSTOM_ACCESSIONS"]:
-            target_list.append(entrez_custom_accs)
+        if config["with_entrez_query"]:
+            target_list.append(
+                "{query}/bowtie/{query}_entrez.fasta.gz".format(
+                    query=config["query_name"]
+                )
+            )
+        if config["with_refseq_rep"]:
+            target_list.append(
+                "{query}/bowtie/refseq_rep_refseq_prok.fasta.gz".format(
+                    query=config["query_name"]
+                )
+            )
+        if config["with_custom_sequences"]:
+            target_list.append(
+                "{query}/bowtie/{query}_custom_seqs.fasta.gz".format(
+                    query=config["query_name"]
+                )
+            )
+        if config["with_custom_accessions"]:
+            target_list.append(
+                "{query}/bowtie/{query}_custom_acc.fasta.gz".format(
+                    query=config["query_name"]
+                )
+            )
 
     if args.index_db:
-        target_list = [index_database]
+        target_list.append(
+            "database/idx_database_{query}.done".format(query=config["query_name"])
+        )
 
     if args.aln_filter_index:
-        target_list = [bt2_filter_idx]
+        target_list.append(
+            "{query}/bowtie/bowtie_index.done".format(query=config["query_name"])
+        )
+
+    if args.complete_db_creation:
+        target_list.append(
+            "database/idx_database_{query}.done".format(query=config["query_name"])
+        )
+        target_list.append(
+            "{query}/bowtie/bowtie_index.done".format(query=config["query_name"])
+        )
 
     if args.aln_filter:
-        target_list = [bowtie]
+        bowtie = ""
+        if config["PE_MODERN"]:
+            bowtie = "{query}/fastq/PE/{sample}_mapq_pair.readlen".format(
+                query=config["query_name"], sample=config["sample_name"]
+            )
+        elif config["PE_ANCIENT"] or config["SE"]:
+            bowtie = "{query}/fastq/SE/{sample}_mapq.readlen".format(
+                query=config["query_name"], sample=config["sample_name"]
+            )
+        target_list.append(bowtie)
 
     if args.aln_meta:
-        target_list = [bowtie_meta]
+        target_list.append(
+            "{query}/sigma/{sample}_alignments.done".format(
+                query=config["query_name"], sample=config["sample_name"]
+            )
+        )
 
     if args.probabilities:
-        target_list = [metagenomics_probabilities]
+        target_list.append(
+            "{query}/probabilities/{sample}/{sample}_posterior_probabilities.csv".format(
+                query=config["query_name"], sample=config["sample_name"]
+            )
+        )
 
     if args.abundances:
-        target_list = [metagenomics_abundances]
+        target_list.append(
+            "{query}/probabilities/{sample}/{sample}_posterior_abundance.tsv".format(
+                query=config["query_name"], sample=config["sample_name"]
+            )
+        )
 
     if args.mapdamage:
-        target_list = [mapdamage]
+        target_list.append(
+            "{query}/mapdamage/{sample}_mapdamage.done".format(
+                query=config["query_name"], sample=config["sample_name"]
+            )
+        )
+
+    if args.sra_lookup:
+        if config["PE_MODERN"]:
+            config[
+                "fastq_R1"
+            ] = "fastq_inputs/PE_mod/{accession}_R1_adRm.fastq.gz".format(
+                accession=config["sample_name"]
+            )
+            config[
+                "fastq_R2"
+            ] = "fastq_inputs/PE_mod/{accession}_R2_adRm.fastq.gz".format(
+                accession=config["sample_name"]
+            )
+        elif config["PE_ANCIENT"] or config["SE"]:
+            config["fastq"] = "fastq_inputs/SE/{accession}_adRm.fastq.gz".format(
+                accession=config["sample_name"]
+            )
 
     # Print the details for the run params
+
+    defaults = {
+        "dry-run": False,
+        "entrez_batchsize": 5,
+        "entrez_rank": "species",
+        "mismatch_probability": 0.05,
+        "bowtie2_treads": 1,
+        "sra_lookup": False,
+        "with_refseq_rep": False,
+        "with_entrez_query": True,
+        "trim_adapters": False,
+        "mem_rescale_factor": 2.5,
+        "data_preprocess": False,
+        "build_db": False,
+        "index_db": False,
+        "aln_filter_index": False,
+        "aln_filter": False,
+        "aln_meta": False,
+        "probabilities": False,
+        "abundances": False,
+        "mapdamage": False,
+        "complete_db_creation": False,
+        "custom_acc_file": "",
+        "custom_seq_file": "",
+        "touch": False,
+        "cores": cpu_count(),
+        "no_lock": False,
+        "unlock": False,
+        "debug": False,
+    }
+
+    user_options = {k: v for k, v in config.items() if (k, v) not in defaults.items()}
+    print(user_options)
+    user = {
+        k: v
+        for k, v in user_options.items()
+        if k
+        not in [
+            "PE_ANCIENT",
+            "PE_MODERN",
+            "SE",
+            "with_custom_sequences",
+            "with_custom_accessions",
+        ]
+    }
 
     print("--------")
     print("RUN DETAILS")
     print("\n\tSnakefile: {}".format(snakefile))
     print("\n\tConfig Parameters:\n")
-    for (
-        key,
-        value,
-    ) in (
-        config.items()
-    ):  # TODO only print non-default settings, unless debug is turned on
-        print(f"{key:35}{value}")
+    if args.debug:
+        for (key, value,) in config.items():
+            print(f"{key:35}{value}")
+    else:
+        for (key, value,) in user.items():
+            print(f"{key:35}{value}")
+
     print("\n\tTarget Output Files:\n")
     for target in target_list:
         print(target)
@@ -231,15 +316,15 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="run snakemake workflows",
         usage="""run <config.yaml>
-    Run snakemake workflows, using the given workflow name & parameters file.
+    Run RIP workflows, using the given workflow name & parameters file.
     """,
     )
 
     parser.add_argument("config_yaml")
-    parser.add_argument("-n", "--dry-run", action="store_true")
+    parser.add_argument("--dry-run", action="store_true")
     parser.add_argument(
         "--query_name",
-        help="name of the query and the output directory <str>",
+        help="Name of the query and the output directory. Mandatory <str>",
         metavar="",
     )
     parser.add_argument(
@@ -248,101 +333,89 @@ if __name__ == "__main__":
         metavar="",
     )
     parser.add_argument(
-        "--entrez_email", help="email address for NCBI identification", metavar=""
+        "--entrez_email",
+        help="Email address for NCBI identification. Mandatory.",
+        metavar="",
     )
     parser.add_argument(
         "--entrez_batchsize",
-        help="batchsize for fetching records from NCBI",
+        help="Batchsize for fetching records from NCBI  <int> (default: 5)",
+        default=5,
         metavar="",
     )
     parser.add_argument(
         "--entrez_rank",
-        help="Taxonomic rank to perform the identifications on",
+        help="Taxonomic rank to perform the identifications on (genus, species, subspecies, serotype) "
+        "<str> (default: species)",
+        default="species",
         metavar="",
     )
     parser.add_argument("--sample_name", help="Sample name prefix", metavar="")
     parser.add_argument(
-        "--sample_fastq",  # TODO make less versose... e.g. --fastq is fine
+        "--fastq",
         help="Path to the fastq input file. Can be raw or with adapters " "removed",
         metavar="",
     )
     parser.add_argument(
-        "--sample_fastq_R1",
+        "--fastq_R1",
         help="Path to the mate 1 fastq input file, if reads are PE. "
         "Can be raw or with adapters removed",
         metavar="",
     )
     parser.add_argument(
-        "--sample_fastq_R2",
+        "--fastq_R2",
         help="Path to the mate 2 fastq input file, if reads are PE. "
         "Can be raw or with adapters removed",
         metavar="",
     )
     parser.add_argument(
         "--mismatch_probability",
-        help="base mismatch probability <float> (default: 0.05)",
+        help="Base mismatch probability <float> (default: 0.05)",
         metavar="",
         default=0.05,
     )
     parser.add_argument(
         "--bowtie2_treads",
-        help="threads for the bowtie2 alignments <int> (default: 1)",
-        metavar="",
+        help="Threads for the bowtie2 alignments <int> (default: 1)",
         default=1,
+        metavar="",
     )
     parser.add_argument(
-        "--SRA_LOOKUP",  # TODO all config settings should be lowercase
-        help="fetch raw data files from the SRA <bool> (default: False)",
+        "--sra_lookup",
+        help="Fetch raw data files from the SRA <bool> (default: False)",
+        default=False,
         metavar="",
     )
 
-    # TODO merge these 3 settings into 1 with 3 states (we should not allow the user to specify conflicting settings)
-    #   alternatively, PE vs SE is implied by setting either --fastq or --fastq_r1, so you might only need --collapse
     parser.add_argument(
-        "--PE_ANCIENT",
-        help="treat the data as paired end but use only COLLAPSED reads. \n"
-        "mandatory and mutually exclusive with PE_MODERN and SE",
+        "--input_mode",
+        help="Treat the data as paired end (PE), paired end collapsed (COLLAPSED) oe single end (SE) "
+        "reads. Mandatory. Default mode is collapsed reads.",
+        default="COLLAPSED",
         metavar="",
     )
+
     parser.add_argument(
-        "--PE_MODERN",
-        help="treat the data as paired end but use only COMPLETE PAIRS of "
-        "reads. \n "
-        "mandatory and mutually exclusive with PE_ANCIENT and SE",
-        metavar="",
-    )
-    parser.add_argument(
-        "--SE",
-        help="treat the data as single end. \n"
-        "mandatory and mutually exclusive with PE_ANCIENT and PE_MODERN",
-        metavar="",
-    )
-    parser.add_argument(
-        "--WITH_REFSEQ_REP",
-        help="use the prokaryotic representative species of the RefSeq DB "  # TODO use proper sentence case in all help messages
+        "--with_refseq_rep",
+        help="Use the prokaryotic representative species of the RefSeq DB "
         "for the species id pipeline. only species no strains. "
-        "either or both of WITH_REFSEQ_REP and "
-        "WITH_ENTREZ_QUERY should be set (default: True)",
-        metavar="",
+        "either or both of with_refseq_rep and "
+        "with_entrez_query should be set (default: False)",
+        default=False,
     )
     parser.add_argument(
-        "--WITH_ENTREZ_QUERY",
-        help="use the recordset returned from a specific entrez query in "
+        "--with_entrez_query",
+        help="Use the recordset returned from a specific entrez query in "
         "the species id pipeline. written in the NCBI query language "
-        "(copy it from the website).either or both of WITH_REFSEQ_REP and "
-        "WITH_ENTREZ_QUERY should be set (default: True)",
+        "(copy it from the website).either or both of with_refseq_rep and "
+        "with_entrez_query should be set (default: True)",
+        default=True,
         metavar="",
     )
     parser.add_argument(
-        "--WITH_DATA_PREPROCESSING",  # TODO why is this not more literal? e.g. --trim-adapters?
+        "--trim_adapters",
         help="Remove adapters from raw fastq files",
-        metavar="",
-    )
-
-    # TODO this setting is implicit... either they give a valid filename for --custom_seq_file or they do not
-    parser.add_argument(
-        "--WITH_CUSTOM_SEQUENCES",
-        help="Custom user defined fasta files will be used in the database <bool> (default False)",
+        default=False,
         metavar="",
     )
 
@@ -355,13 +428,6 @@ if __name__ == "__main__":
         default="",
     )
 
-    # TODO same issue as with --WITH_CUSTOM_SEQUENCES, this setting should not exist
-    parser.add_argument(
-        "--WITH_CUSTOM_ACCESSIONS",
-        help="Custom user defined accessions will be used in the database <bool> (default False)",
-        metavar="",
-    )
-
     parser.add_argument(
         "--custom_acc_file",
         help="TAB DELIMITED input file containing the the name of the taxon with no special characters, "
@@ -372,24 +438,24 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
-        "--SPECIFIC_GENERA",
+        "--specific_genera",
         nargs="+",
-        help="list containing the names of specific genera "
+        help="List containing the names of specific genera "
         "the abundances should be calculated "
-        'on <["genus"]>',
+        "on, separated by a space character <genus1 genus2 genus3 ...>",
         metavar="",
         default=[],
     )
     parser.add_argument(
-        "--MEM_RESOURCES_MB",  # TODO param names should be less verbose... e.g. --mem XXX is sufficient
-        help="max mem resources allowed to be used ofr indexing the input for "
+        "--mem_mb",
+        help="Max memory resources allowed to be used ofr indexing the input for "
         "the filtering alignment "
-        "(default: max available memory on the machine)",  # TODO show the actual default, like you do for --cores
+        "(default: max available memory {})".format(MAX_MEM_MB),
         metavar="",
     )
     parser.add_argument(
-        "--MEM_RESCALING_FACTOR",
-        help="factor to rescale/chunk the input file for the mutlifasta "
+        "--mem_rescale_factor",
+        help="Factor to rescale/chunk the input file for the mutlifasta "
         "index for the filtering alignment (default: 2.5)",
         metavar="",
         default=2.5,
@@ -405,7 +471,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--build_db",
         action="store_true",
-        help="ONly build the database from refseq and/or "
+        help="Only build the database from refseq and/or "
         "other sequences retrieved from an NCBI query",
     )
     parser.add_argument(
@@ -471,20 +537,17 @@ if __name__ == "__main__":
         "AND ALL of their dependencies  <bool> (default: False)",
     )
     parser.add_argument(
-        "-j",  # TODO why do none of the above settings have single letter param names? all or nothing, be consistent!
-        "--cores",  # TODO why are you using -j/--cores and not -c/--cores or -j/--jobs?
-        help="Number of cores for smk to use",  # TODO why mention snakemake? this the name of this software is RIP!
+        "--cores",
+        help="Number of cores for RIP to use",
         metavar="",
         default=cpu_count(),
     )
     parser.add_argument(
-        "-l",
         "--no_lock",
         action="store_true",
         help="Apply no lock to the working directory " " <bool> (default: False)",
     )
     parser.add_argument(
-        "-ul",
         "--unlock",
         action="store_true",
         help="Unlock the working directory after smk is "
@@ -492,10 +555,9 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
-        "-dg",
         "--debug",
         action="store_true",
-        help="Debug the smk workflow <bool> (default: False)",
+        help="Debug the RIP workflow <bool> (default: False)",
     )
 
     if len(sys.argv) == 1:

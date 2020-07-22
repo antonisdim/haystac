@@ -61,11 +61,11 @@ def get_mapdamage_out_dir_paths(wildcards):
     sequences = get_total_paths(
         wildcards,
         checkpoints,
-        config["WITH_ENTREZ_QUERY"],
-        config["WITH_REFSEQ_REP"],
-        config["WITH_CUSTOM_SEQUENCES"],
-        config["WITH_CUSTOM_ACCESSIONS"],
-        config["SPECIFIC_GENERA"],
+        config["with_entrez_query"],
+        config["with_refseq_rep"],
+        config["with_custom_sequences"],
+        config["with_custom_accessions"],
+        config["specific_genera"],
     )
 
     inputs = []
@@ -105,7 +105,6 @@ def get_mapdamage_out_dir_paths(wildcards):
         return inputs
 
 
-# TODO delete rules that are not used by the pipeline
 rule all_mapdamage:
     input:
         get_mapdamage_out_dir_paths,

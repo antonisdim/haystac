@@ -11,36 +11,33 @@ __license__ = "MIT"
 
 
 def get_inputs_for_adapterremoval_r1(wildcards):
-    # print(wildcards.accession)
 
-    # TODO there is no need for this input function... you can set config["sample_fastq_R1"] = "sra_data/PE/{accession}_R1.fastq.gz" when in SRA mode
-    if config["SRA_LOOKUP"]:
-        if config["PE_ANCIENT"] or config["PE_MODERN"]:
+    if config["sra_lookup"]:
+        if PE_MODERN or PE_ANCIENT:
             return "sra_data/PE/{accession}_R1.fastq.gz".format(
                 accession=wildcards.accession
             )
-        elif config["SE"]:
+        elif SE:
             return "sra_data/SE/{accession}.fastq.gz".format(
                 accession=wildcards.accession
             )
 
-    else:
-        if config["PE_ANCIENT"] or config["PE_MODERN"]:
-            return config["sample_fastq_R1"]
-        elif config["SE"]:
-            return config["sample_fastq"]
+    if config["PE_ANCIENT"] or config["PE_MODERN"]:
+        return config["fastq_R1"]
+    elif config["SE"]:
+        return config["fastq"]
 
 
 def get_inputs_for_adapterremoval_r2(wildcards):
-    if config["SRA_LOOKUP"]:
-        if config["PE_ANCIENT"] or config["PE_MODERN"]:
-            return "sra_data/PE/{accession}_R2.fastq.gz".format(
+
+    if config["sra_lookup"]:
+        if PE_MODERN or PE_ANCIENT:
+            return "sra_data/PE/{accession}_R1.fastq.gz".format(
                 accession=wildcards.accession
             )
 
     else:
-        if config["PE_ANCIENT"] or config["PE_MODERN"]:
-            return config["sample_fastq_R2"]
+        return config["fastq_R2"]
 
 
 rule adapterremoval_single_end:
@@ -57,8 +54,8 @@ rule adapterremoval_single_end:
         "The trimmed reads can be found in {output}, and the "
         "log file can be found in {log}."
     shell:
-        "AdapterRemoval --file1 {input} --basename fastq_inputs/SE/{wildcards.accession} --gzip --minlength 15 "
-        "--trimns; cat fastq_inputs/SE/{wildcards.accession}.truncated.gz 1> {output} 2> {log}"
+        "(AdapterRemoval --file1 {input} --basename fastq_inputs/SE/{wildcards.accession} --gzip --minlength 15 "
+        "--trimns; cat fastq_inputs/SE/{wildcards.accession}.truncated.gz 1> {output}) 2> {log}"
 
 
 rule adapterremoval_paired_end_ancient:
@@ -77,10 +74,10 @@ rule adapterremoval_paired_end_ancient:
         "The trimmed reads can be found in {output}, and the "
         "log file can be found in {log}."
     shell:
-        "AdapterRemoval --file1 {input.fastq_r1}  --file2 {input.fastq_r2} "
+        "(AdapterRemoval --file1 {input.fastq_r1}  --file2 {input.fastq_r2} "
         "--basename fastq_inputs/PE_anc/{wildcards.accession} --gzip --collapse-deterministic  --minlength 15 "
         "--trimns; cat fastq_inputs/PE_anc/{wildcards.accession}.collapsed.gz "
-        "fastq_inputs/PE_anc/{wildcards.accession}.collapsed.truncated.gz 1> {output} 2> {log}"
+        "fastq_inputs/PE_anc/{wildcards.accession}.collapsed.truncated.gz 1> {output}) 2> {log}"
 
 
 rule adapterremoval_paired_end_modern:
@@ -100,7 +97,7 @@ rule adapterremoval_paired_end_modern:
         "The trimmed reads can be found in {output.fastq_r1} and {output.fastq_r2}, and the "
         "log file can be found in {log}."
     shell:
-        "AdapterRemoval --file1 {input.fastq_r1}  --file2 {input.fastq_r2} "
+        "(AdapterRemoval --file1 {input.fastq_r1}  --file2 {input.fastq_r2} "
         "--basename fastq_inputs/PE_mod/{wildcards.accession} --gzip --minlength 15 --trimns; "
-        "cat fastq_inputs/PE_mod/{wildcards.accession}.pair1.truncated.gz 1> {output.fastq_r1} 2> {log}; "
-        "cat fastq_inputs/PE_mod/{wildcards.accession}.pair2.truncated.gz 1> {output.fastq_r2} 2> {log}"
+        "cat fastq_inputs/PE_mod/{wildcards.accession}.pair1.truncated.gz 1> {output.fastq_r1}; "
+        "cat fastq_inputs/PE_mod/{wildcards.accession}.pair2.truncated.gz 1> {output.fastq_r2}) 2> {log}"

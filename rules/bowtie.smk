@@ -13,7 +13,6 @@ from psutil import virtual_memory
 
 SUBSAMPLE_FIXED_READS = 200000
 
-# TODO these 3 flags are mutually exclusive, so they should be one setting, e.g. SEQUENCING_MODE = {COLLAPSE|PE|SE}
 PE_ANCIENT = config["PE_ANCIENT"]
 PE_MODERN = config["PE_MODERN"]
 SE = config["SE"]
@@ -35,11 +34,11 @@ def get_total_fasta_paths(wildcards):
     sequences = get_total_paths(
         wildcards,
         checkpoints,
-        config["WITH_ENTREZ_QUERY"],
-        config["WITH_REFSEQ_REP"],
-        config["WITH_CUSTOM_SEQUENCES"],
-        config["WITH_CUSTOM_ACCESSIONS"],
-        config["SPECIFIC_GENERA"],
+        config["with_entrez_query"],
+        config["with_refseq_rep"],
+        config["with_custom_sequences"],
+        config["with_custom_accessions"],
+        config["specific_genera"],
     )
 
     inputs = []
@@ -68,11 +67,11 @@ checkpoint calculate_bt2_idx_chunks:
         "{query}/bowtie/{query}_bt2_idx_chunk_num.txt",
     params:
         query="{query}",
-        mem_resources=float(config["MEM_RESOURCES_MB"]),
-        mem_rescaling_factor=config["MEM_RESCALING_FACTOR"],
+        mem_resources=float(config["mem_mb"]),
+        mem_rescale_factor=config["mem_rescale_factor"],
     message:
         "The number of index chunks for the filtering alignment are being calculated for query {params.query}. "
-        "The size rescaling factor for the chunk is {params.mem_rescaling_factor} for the given memory "
+        "The size rescaling factor for the chunk is {params.mem_rescale_factor} for the given memory "
         "resources {params.mem_resources}. The log file can be found in {log}."
     script:
         "../scripts/calculate_bt2_idx_chunks.py"
@@ -83,9 +82,7 @@ def get_bt2_idx_filter_chunk(wildcards):
     """Pick the files for the specific bt2 index chunk"""
 
     chunk_files = []
-    chunk_size = float(config["MEM_RESOURCES_MB"]) / float(
-        config["MEM_RESCALING_FACTOR"]
-    )
+    chunk_size = float(config["mem_mb"]) / float(config["mem_rescale_factor"])
     total_size = 0.0
 
     for fasta_file in get_total_fasta_paths(wildcards):
@@ -155,63 +152,28 @@ def get__bt2_idx_chunk_paths(wildcards):
 rule bowtie_index_done:
     input:
         get__bt2_idx_chunk_paths,
-    log:
-        "{query}/bowtie/bowtie_index.log", # TODO ditch all log files that are empty when there is no error
     output:
         "{query}/bowtie/bowtie_index.done",
     benchmark:
         repeat("benchmarks/bowtie_index_done_{query}", 1)
     message:
-        "The bowtie2 indices for all the chunks {input} have been built. The log file can be found in {log}."
+        "The bowtie2 indices for all the chunks {input} have been built."
     shell:
-        "if touch {output} 2> {log}; then rm {log}; fi"
+        "touch {output}"
 
 
 def get_inputs_for_bowtie_r1(wildcards):
 
-    if config["SRA_LOOKUP"]:
-        if PE_MODERN:
-            return "fastq_inputs/PE_mod/{sample}_R1_adRm.fastq.gz".format(
-                sample=wildcards.sample
-            )
-        elif PE_ANCIENT:
-            return "fastq_inputs/PE_anc/{sample}_adRm.fastq.gz".format(
-                sample=wildcards.sample
-            )
-        elif SE:
-            return "fastq_inputs/SE/{sample}_adRm.fastq.gz".format(
-                sample=wildcards.sample
-            )
-
-    else:
-        if PE_MODERN:
-            return config["sample_fastq_R1"]
-        elif PE_ANCIENT:
-            if config["WITH_DATA_PREPROCESSING"]:
-                return "fastq_inputs/PE_anc/{sample}_adRm.fastq.gz".format(
-                    sample=wildcards.sample
-                )
-            else:
-                return config["sample_fastq"]
-        elif SE:
-            if config["WITH_DATA_PREPROCESSING"]:
-                return "fastq_inputs/SE/{sample}_adRm.fastq.gz".format(
-                    sample=wildcards.sample
-                )
-            else:
-                return config["sample_fastq"]
+    if PE_MODERN:
+        return config["fastq_R1"]
+    elif PE_ANCIENT or SE:
+        return config["fastq"]
 
 
 def get_inputs_for_bowtie_r2(wildcards):
-    if config["SRA_LOOKUP"]:
-        if PE_MODERN:
-            return "fastq_inputs/PE_mod/{sample}_R2_adRm.fastq.gz".format(
-                sample=wildcards.sample
-            )
 
-    else:
-        if PE_MODERN:
-            return config["sample_fastq_R2"]
+    if PE_MODERN:
+        return config["fastq_R2"]
 
 
 rule bowtie_alignment_single_end:
@@ -262,8 +224,19 @@ rule bowtie_alignment_paired_end:
 def get_sorted_bam_paths(wildcards):
     """Get the sorted bam paths for each index chunk"""
 
-    get_chunk_num = checkpoints.calculate_bt2_idx_chunks.get(query=wildcards.query)
-    idx_chunk_total = ceil(float(open(get_chunk_num.output[0]).read().strip()))
+    # get_chunk_num = checkpoints.calculate_bt2_idx_chunks.get(query=wildcards.query)
+    # idx_chunk_total = ceil(float(open(get_chunk_num.output[0]).read().strip()))
+    idx_chunk_total = ceil(
+        float(
+            open(
+                "{query}/bowtie/{query}_bt2_idx_chunk_num.txt".format(
+                    query=wildcards.query
+                )
+            )
+            .read()
+            .strip()
+        )
+    )
 
     reads = ["PE"] if PE_MODERN else ["SE"]
 
@@ -321,8 +294,8 @@ rule extract_fastq_paired_end:
         "The log file can be found in {log}."
     shell:
         "( samtools view -h -F 4 {input} "
-        "| samtools fastq -c 6 -1 {wildcards.query}/fastq/PE/temp_R1.fastq.gz "
-        "-2 {wildcards.query}/fastq/PE/temp_R2.fastq.gz -0 /dev/null -s /dev/null -;"
+        "| samtools fastq -c 6 -1 {wildcards.query}/fastq/PE/{wildcards.sample}_temp_R1.fastq.gz "
+        "-2 {wildcards.query}/fastq/PE/{wildcards.sample}_temp_R2.fastq.gz -0 /dev/null -s /dev/null -;"
         "seqkit rmdup -n {wildcards.query}/fastq/PE/{wildcards.sample}_temp_R1.fastq.gz -o {output[0]}; "
         "seqkit rmdup -n {wildcards.query}/fastq/PE/{wildcards.sample}_temp_R2.fastq.gz -o {output[1]}; "
         "rm {wildcards.query}/fastq/PE/{wildcards.sample}_temp_R1.fastq.gz; "

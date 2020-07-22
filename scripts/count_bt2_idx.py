@@ -19,12 +19,12 @@ from psutil import virtual_memory
 MAX_MEM_MB = virtual_memory().total / (1024 ** 2)
 
 
-# if not MEM_RESOURCES_MB then MAX_MEM_MB
+# if not mem_mb then MAX_MEM_MB
 
 
 def count_bt2_idx(
     mem_resources,
-    mem_rescaling_factor,
+    mem_rescale_factor,
     input_file_list,
     query,
     output_dir,
@@ -32,10 +32,10 @@ def count_bt2_idx(
 ):
     """Calculates the number of chunks for the bt2 filter aln index - depricated"""
 
-    mem_resources_mb = mem_resources
+    mem_mb = mem_resources
 
-    if not mem_resources_mb:
-        mem_resources_mb = MAX_MEM_MB
+    if not mem_mb:
+        mem_mb = MAX_MEM_MB
 
     # read all the files necessary - 1 or 2 - and read the size of file the input function  is returning
 
@@ -46,14 +46,14 @@ def count_bt2_idx(
         file_size += os.stat(input_file).st_size / float(1024 ** 2)
 
     # see if mem_resources are x2.5 its size or based on any other rescaling factor
-    scaling_factor = mem_rescaling_factor
+    scaling_factor = mem_rescale_factor
 
     chunk_num = 1
     output_file_path = output_dir + query + "_chunk" + str(chunk_num) + ".fasta.gz"
 
     output_file_list = [output_file_path]
 
-    if not mem_resources_mb / float(file_size) >= float(scaling_factor):
+    if not mem_mb / float(file_size) >= float(scaling_factor):
 
         fout = bgzf.open(output_file_path, "wt")
         for input_file in input_file_list:
@@ -112,7 +112,7 @@ if __name__ == "__main__":
 
     count_bt2_idx(
         mem_resources=snakemake.params[2],
-        mem_rescaling_factor=snakemake.params[3],
+        mem_rescale_factor=snakemake.params[3],
         input_file_list=snakemake.input,
         query=snakemake.params[0],
         output_dir=snakemake.params[1],

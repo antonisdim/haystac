@@ -6,7 +6,7 @@ channels:
 dependencies:
   - python=3.6.7
   - pip=19.3.1
-  - snakemake=5.12.3
+  - snakemake=5.20.1
   - pysam=0.15.3
   - biopython=1.77
   - bowtie2=2.3.5.1

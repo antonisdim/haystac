@@ -12,7 +12,7 @@ from scripts.rip_utilities import get_total_paths, normalise_name
 
 
 def get_inputs_for_count_fastq_len(wildcards):
-    if config["SRA_LOOKUP"]:
+    if config["sra_lookup"]:
         if config["PE_MODERN"]:
             return "fastq_inputs/PE_mod/{sample}_R1_adRm.fastq.gz".format(
                 sample=wildcards.sample
@@ -28,11 +28,11 @@ def get_inputs_for_count_fastq_len(wildcards):
 
     else:
         if config["PE_MODERN"]:
-            return config["sample_fastq_R1"]
+            return config["fastq_R1"]
         elif config["PE_ANCIENT"]:
-            return config["sample_fastq"]
+            return config["fastq"]
         elif config["SE"]:
-            return config["sample_fastq"]
+            return config["fastq"]
 
 
 rule count_fastq_length:
@@ -100,11 +100,11 @@ def get_ts_tv_count_paths(wildcards):
     sequences = get_total_paths(
         wildcards,
         checkpoints,
-        config["WITH_ENTREZ_QUERY"],
-        config["WITH_REFSEQ_REP"],
-        config["WITH_CUSTOM_SEQUENCES"],
-        config["WITH_CUSTOM_ACCESSIONS"],
-        config["SPECIFIC_GENERA"],
+        config["with_entrez_query"],
+        config["with_refseq_rep"],
+        config["with_custom_sequences"],
+        config["with_custom_accessions"],
+        config["specific_genera"],
     )
 
     inputs = []
@@ -200,15 +200,13 @@ rule fasta_idx:
         "database/{orgname}/{accession}.fasta.gz",
     output:
         "database/{orgname}/{accession}.fasta.gz.fai",
-    log:
-        "database/{orgname}/{accession}.fasta.gz.fai.log", # TODO log file is not informative
     benchmark:
         repeat("benchmarks/fasta_idx_{orgname}_{accession}.benchmark.txt", 1)
     message:
         "Indexing fasta file with accession {wildcards.accession} for taxon {wildcards.orgname}. "
-        "The index can be found in {output}, and its log file can be found in {log}."
+        "The index can be found in {output}."
     shell:
-        "samtools faidx {input} 2> {log}"
+        "samtools faidx {input}"
 
 
 rule coverage_t_test:
@@ -242,11 +240,11 @@ def get_t_test_values_paths(wildcards):
     sequences = get_total_paths(
         wildcards,
         checkpoints,
-        config["WITH_ENTREZ_QUERY"],
-        config["WITH_REFSEQ_REP"],
-        config["WITH_CUSTOM_SEQUENCES"],
-        config["WITH_CUSTOM_ACCESSIONS"],
-        config["SPECIFIC_GENERA"],
+        config["with_entrez_query"],
+        config["with_refseq_rep"],
+        config["with_custom_sequences"],
+        config["with_custom_accessions"],
+        config["specific_genera"],
     )
 
     inputs = []

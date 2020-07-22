@@ -31,7 +31,7 @@ def entrez_pick_sequences(config, nuccore_file, taxa_file, output_file, query):
 
     print(selected_sequences, file=sys.stderr)
 
-    if os.path.isfile("database_inputs/prok_representative_genomes.txt"):
+    if config["with_refseq_rep"]:
         refseq_genomes = pd.read_csv(
             "{query}/entrez/{query}-refseq-genomes.tsv".format(query=query), sep="\t"
         )
@@ -75,7 +75,7 @@ def entrez_pick_sequences(config, nuccore_file, taxa_file, output_file, query):
     selected_sequences["species"] = selected_sequences["species"].str.replace("(", "")
     selected_sequences["species"] = selected_sequences["species"].str.replace(")", "")
 
-    if config["WITH_CUSTOM_SEQUENCES"]:
+    if config["with_custom_sequences"]:
         custom_fasta_paths = pd.read_csv(
             config["custom_seq_file"],
             sep="\t",
@@ -87,7 +87,7 @@ def entrez_pick_sequences(config, nuccore_file, taxa_file, output_file, query):
             (~selected_sequences["species"].isin(custom_fasta_paths["species"]))
         ]
 
-    if config["WITH_CUSTOM_ACCESSIONS"]:
+    if config["with_custom_accessions"]:
         custom_accessions = pd.read_csv(
             config["custom_acc_file"],
             sep="\t",

@@ -10,17 +10,21 @@ import os
 import sys
 
 
-def calculate_bt2_idx_chunks(mem_resources, mem_rescaling_factor, fasta_files, output):
+def calculate_bt2_idx_chunks(mem_resources, mem_rescale_factor, fasta_files, output):
     """Calculate the number of chunks that the db sequences are going to be split into"""
 
-    chunk_size = float(mem_resources) / float(mem_rescaling_factor)
+    chunk_size = float(mem_resources) / float(mem_rescale_factor)
     total_size = 0.0
     chunks = 1
 
-    # TODO handle edge case where mem_resources is so low we can't build an index for a single large fasta file
-
     for fasta_file in fasta_files:
         file_size = os.stat(fasta_file).st_size / (1024 ** 2)
+
+        if file_size >= mem_resources:
+            raise RuntimeError(
+                "Fasta file {} is bigger than the RAM resources provided. "
+                "Unfortunately an index cannot be built.".format(fasta_file)
+            )
 
         if total_size + file_size >= chunk_size:
             total_size = file_size
@@ -38,7 +42,7 @@ if __name__ == "__main__":
 
     calculate_bt2_idx_chunks(
         mem_resources=snakemake.params[1],
-        mem_rescaling_factor=snakemake.params[2],
+        mem_rescale_factor=snakemake.params[2],
         fasta_files=snakemake.input,
         output=snakemake.output[0],
     )

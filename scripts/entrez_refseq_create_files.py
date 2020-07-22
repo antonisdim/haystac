@@ -141,7 +141,7 @@ def entrez_refseq_create_files(
 
     header = ["species", "GBSeq_accession-version"]
 
-    if config["WITH_CUSTOM_SEQUENCES"]:
+    if config["with_custom_sequences"]:
         custom_fasta_paths = pd.read_csv(
             config["custom_seq_file"],
             sep="\t",
@@ -169,7 +169,7 @@ def entrez_refseq_create_files(
             (~nuccore_plasmids_exploded["species"].isin(custom_fasta_paths["species"]))
         ]
 
-    if config["WITH_CUSTOM_ACCESSIONS"]:
+    if config["with_custom_accessions"]:
         custom_accessions = pd.read_csv(
             config["custom_acc_file"],
             sep="\t",

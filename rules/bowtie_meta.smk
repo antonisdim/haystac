@@ -38,7 +38,7 @@ def get_idx_entrez(wildcards):
     """
     Get all the index paths for the taxa in our database from the entrez query.
     """
-    if not config["WITH_ENTREZ_QUERY"]:
+    if not config["with_entrez_query"]:
         return []
 
     pick_sequences = checkpoints.entrez_pick_sequences.get(query=wildcards.query)
@@ -67,7 +67,7 @@ def get_idx_ref_gen(wildcards):
     """
     Get all the index paths for the taxa in our database from the refseq rep and genbank.
     """
-    if not config["WITH_REFSEQ_REP"]:
+    if not config["with_refseq_rep"]:
         return []
 
     refseq_rep_prok = checkpoints.entrez_refseq_accessions.get(query=wildcards.query)
@@ -101,7 +101,7 @@ def get_idx_assembly(wildcards):
     """
     Get all the individual bam file paths for the taxa in our database.
     """
-    if not config["WITH_REFSEQ_REP"]:
+    if not config["with_refseq_rep"]:
         return []
 
     refseq_rep_prok = checkpoints.entrez_refseq_accessions.get(query=wildcards.query)
@@ -137,11 +137,11 @@ def get_idx_assembly(wildcards):
     return inputs
 
 
-def get_idx_custom_seqs():
+def get_idx_custom_seqs(wildcards):
     """
     Get all the individual bam file paths for the taxa in our database.
     """
-    if not config["WITH_CUSTOM_SEQUENCES"]:
+    if not config["with_custom_sequences"]:
         return []
 
     custom_fasta_paths = pd.read_csv(
@@ -169,11 +169,11 @@ def get_idx_custom_seqs():
     return inputs
 
 
-def get_idx_custom_acc():
+def get_idx_custom_acc(wildcards):
     """
     Get all the individual bam file paths for the taxa in our database.
     """
-    if not config["WITH_CUSTOM_ACCESSIONS"]:
+    if not config["with_custom_accessions"]:
         return []
 
     custom_accessions = pd.read_csv(
@@ -215,7 +215,7 @@ rule idx_database:
         "touch {output}"
 
 
-def get_min_score(input):
+def get_min_score(wildcards, input):
     """Get the min score dor the edit distance of the alignment."""
     return (
         round(float(open(input.readlen).read()) * float(config["mismatch_probability"]))
@@ -297,11 +297,11 @@ def get_bamfile_paths(wildcards):
     sequences = get_total_paths(
         wildcards,
         checkpoints,
-        config["WITH_ENTREZ_QUERY"],
-        config["WITH_REFSEQ_REP"],
-        config["WITH_CUSTOM_SEQUENCES"],
-        config["WITH_CUSTOM_ACCESSIONS"],
-        config["SPECIFIC_GENERA"],
+        config["with_entrez_query"],
+        config["with_refseq_rep"],
+        config["with_custom_sequences"],
+        config["with_custom_accessions"],
+        config["specific_genera"],
     )
 
     inputs = []

@@ -48,7 +48,7 @@ def get_paths_for_custom_seqs():
         )
 
     check_unique_taxa_in_custom_input(
-        config["WITH_CUSTOM_ACCESSIONS"], config["WITH_CUSTOM_SEQUENCES"]
+        config["with_custom_accessions"], config["with_custom_sequences"]
     )
 
     inputs = []
@@ -98,7 +98,7 @@ def get_paths_for_custom_acc():
         )
 
     check_unique_taxa_in_custom_input(
-        config["WITH_CUSTOM_ACCESSIONS"], config["WITH_CUSTOM_SEQUENCES"]
+        config["with_custom_accessions"], config["with_custom_sequences"]
     )
 
     inputs = []

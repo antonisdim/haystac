@@ -48,8 +48,8 @@ rule entrez_nuccore_query:
          #   use the `priority` attribute to force them to download in order
          #   see https://snakemake.readthedocs.io/en/stable/snakefiles/rules.html#priorities
     resources:
-        entrez_api=1,
-    priority: {chunk}
+        entrez_api=1, # priority:
+         #     chunk
     script:
         "../scripts/entrez_nuccore_query.py"
 
@@ -87,15 +87,13 @@ rule entrez_aggregate_nuccore:
         get_nuccore_chunks,
     output:
         "{query}/entrez/{query}-nuccore.tsv",
-    log:
-        "{query}/entrez/{query}-nuccore.log", # TODO log file is not informative
     benchmark:
         repeat("benchmarks/entrez_aggregate_nuccore_{query}.benchmark.txt", 1)
     message:
         "Concatenating all the temporary output files containing accession metadata fetched from the NCBI Nucleotide "
-        "database for query {wildcards.query}. The permanent output can be found in {output} and its log file in {log}."
+        "database for query {wildcards.query}. The permanent output can be found in {output}."
     shell:
-        "awk 'FNR>1 || NR==1' {input} 1> {output} 2> {log}"
+        "awk 'FNR>1 || NR==1' {input} 1> {output}"
 
 
 rule entrez_taxa_query:
@@ -117,7 +115,7 @@ rule entrez_taxa_query:
 
 def pick_after_refseq_prok(wildcards):
 
-    if config["WITH_REFSEQ_REP"]:
+    if config["with_refseq_rep"]:
         return "{query}/entrez/{query}-genbank-genomes.tsv".format(
             query=wildcards.query
         )

@@ -11,11 +11,11 @@ entrez_rank:
 
 sample_name:
   ''
-sample_fastq:
+fastq:
   []
-sample_fastq_R1:
+fastq_R1:
   []
-sample_fastq_R2:
+fastq_R2:
   []
 
 mismatch_probability:
@@ -24,37 +24,33 @@ mismatch_probability:
 bowtie2_treads:
   1
 
-SRA_LOOKUP:
+sra_lookup:
   True
-PE_ANCIENT:
-  False
-PE_MODERN:
-  True
-SE:
-  False
+input_mode:
+  "COLLAPSED"
 
-WITH_REFSEQ_REP:
+with_refseq_rep:
   True
-WITH_ENTREZ_QUERY:
+with_entrez_query:
   True
 
-SPECIFIC_GENERA:
+specific_genera:
   []
 
-MEM_RESOURCES_MB:
+mem_mb:
   80
-MEM_RESCALING_FACTOR:
+mem_rescale_factor:
   2.5
 
-WITH_DATA_PREPROCESSING:
+trim_adapters:
   True
 
-WITH_CUSTOM_SEQUENCES:
+with_custom_sequences:
   False
 custom_seq_file:
   custom_seq.txt
 
-WITH_CUSTOM_ACCESSIONS:
+with_custom_accessions:
   False
 custom_acc_file:
   custom_acc.txt

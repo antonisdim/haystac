@@ -17,7 +17,7 @@ import os
 
 
 def calculate_dirichlet_abundances(
-    ts_tv_file, pvaluesfile, total_sample_fastq_reads, sample_abundance
+    ts_tv_file, pvaluesfile, total_fastq_reads, sample_abundance
 ):
     """
     Function that calculates the mean posterior abundances of species in metagenomic samples/libraries.
@@ -30,8 +30,8 @@ def calculate_dirichlet_abundances(
         pvaluesfile
     )
     assert os.stat(
-        total_sample_fastq_reads
-    ).st_size, "The total fastq reads file is empty {}".format(total_sample_fastq_reads)
+        total_fastq_reads
+    ).st_size, "The total fastq reads file is empty {}".format(total_fastq_reads)
 
     # I calculate the coverage of each taxon from reads in its bam/pileup file. Let's go there
 
@@ -61,7 +61,7 @@ def calculate_dirichlet_abundances(
 
     # Add the non aligned filtered reads count in the Dark Matter category
 
-    total_fastq_reads = float(open(total_sample_fastq_reads, "r").read())
+    total_fastq_reads = float(open(total_fastq_reads, "r").read())
     reads_in_bams = len(ts_tv_matrix["Read_ID"].unique())
 
     remaining_dark_matter = total_fastq_reads - reads_in_bams
@@ -126,6 +126,6 @@ if __name__ == "__main__":
     calculate_dirichlet_abundances(
         ts_tv_file=snakemake.input[0],
         pvaluesfile=snakemake.input[1],
-        total_sample_fastq_reads=snakemake.input[2],
+        total_fastq_reads=snakemake.input[2],
         sample_abundance=snakemake.output[0],
     )

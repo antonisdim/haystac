@@ -18,7 +18,7 @@ def calculate_taxa_probabilities(
     ts_tv_matrix_file,
     params_file,
     sample_name,
-    total_sample_fastq_reads,
+    total_fastq_reads,
     outputfile,
     submatrices,
 ):
@@ -44,7 +44,7 @@ def calculate_taxa_probabilities(
         ts_tv_matrix_file,
         params_file,
         sample_name,
-        total_sample_fastq_reads,
+        total_fastq_reads,
         outputfile,
         submatrix="all taxa",
     )
@@ -85,11 +85,11 @@ def calculate_probabilities(
     ts_tv_matrix_file,
     params_file,
     sample_name,
-    total_sample_fastq_reads,
+    total_fastq_reads,
     outputfile,
     submatrix,
 ):
-    total_fastq_reads = float(open(total_sample_fastq_reads, "r").read())
+    total_fastq_reads = float(open(total_fastq_reads, "r").read())
 
     read_count = len(
         pd.read_csv(ts_tv_matrix_file, sep=",", usecols=["Read_ID"])["Read_ID"].unique()
@@ -159,7 +159,7 @@ if __name__ == "__main__":
         ts_tv_matrix_file=snakemake.input[0],
         params_file=snakemake.input[1],
         sample_name=snakemake.wildcards.sample,
-        total_sample_fastq_reads=snakemake.input[2],
+        total_fastq_reads=snakemake.input[2],
         outputfile=snakemake.output[0],
         submatrices=snakemake.params["submatrices"],
     )
