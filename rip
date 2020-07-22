@@ -44,18 +44,9 @@ def main(args):
     if os.path.exists(args.config_yaml):
         with open(args.config_yaml) as fin:
             config_yaml = yaml.safe_load(fin)
-    # else:
-    #     with open(os.path.join(thisdir, "config.yaml")) as fin:
-    #         config_yaml = yaml.safe_load(fin)
-    #
-    # if not config_yaml:
-    #     sys.stderr.write(
-    #         "Error: cannot find the config yaml file {}. You definitely need one, even if it's empty "
-    #         "and you want to specify all the parameters from the CLI flags\n".format(
-    #             args.config_yaml
-    #         )
-    #     )
-    #     sys.exit(-1)
+    else:
+        config_yaml = {}
+        print("no config provided")
 
     config_args = vars(args)
 
@@ -253,13 +244,13 @@ def main(args):
         k: v
         for k, v in user_options.items()
         if k
-           not in [
-               "PE_ANCIENT",
-               "PE_MODERN",
-               "SE",
-               "with_custom_sequences",
-               "with_custom_accessions",
-           ]
+        not in [
+            "PE_ANCIENT",
+            "PE_MODERN",
+            "SE",
+            "with_custom_sequences",
+            "with_custom_accessions",
+        ]
     }
 
     print("--------")
@@ -324,7 +315,7 @@ if __name__ == "__main__":
     # parser = subparsers.add_parser('sample_analysis', help='Sample analysis help message', add_help=False,
     #     parents=[parser])
 
-    parser.add_argument("--config_yaml")
+    parser.add_argument("--config_yaml", default="")
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument(
         "--query_name",
@@ -350,7 +341,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--entrez_rank",
         help="Taxonomic rank to perform the identifications on (genus, species, subspecies, serotype) "
-             "<str> (default: species)",
+        "<str> (default: species)",
         default="species",
         metavar="",
     )
@@ -363,13 +354,13 @@ if __name__ == "__main__":
     parser.add_argument(
         "--fastq_R1",
         help="Path to the mate 1 fastq input file, if reads are PE. "
-             "Can be raw or with adapters removed",
+        "Can be raw or with adapters removed",
         metavar="",
     )
     parser.add_argument(
         "--fastq_R2",
         help="Path to the mate 2 fastq input file, if reads are PE. "
-             "Can be raw or with adapters removed",
+        "Can be raw or with adapters removed",
         metavar="",
     )
     parser.add_argument(
@@ -394,7 +385,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--input_mode",
         help="Treat the data as paired end (PE), paired end collapsed (COLLAPSED) oe single end (SE) "
-             "reads. Mandatory. Default mode is collapsed reads.",
+        "reads. Mandatory. Default mode is collapsed reads.",
         default="COLLAPSED",
         metavar="",
     )
@@ -402,17 +393,17 @@ if __name__ == "__main__":
     parser.add_argument(
         "--with_refseq_rep",
         help="Use the prokaryotic representative species of the RefSeq DB "
-             "for the species id pipeline. only species no strains. "
-             "either or both of with_refseq_rep and "
-             "with_entrez_query should be set (default: False)",
+        "for the species id pipeline. only species no strains. "
+        "either or both of with_refseq_rep and "
+        "with_entrez_query should be set (default: False)",
         default=False,
     )
     parser.add_argument(
         "--with_entrez_query",
         help="Use the recordset returned from a specific entrez query in "
-             "the species id pipeline. written in the NCBI query language "
-             "(copy it from the website).either or both of with_refseq_rep and "
-             "with_entrez_query should be set (default: True)",
+        "the species id pipeline. written in the NCBI query language "
+        "(copy it from the website).either or both of with_refseq_rep and "
+        "with_entrez_query should be set (default: True)",
         default=True,
         metavar="",
     )
@@ -426,8 +417,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "--custom_seq_file",
         help="TAB DELIMITED input file containing the the name of the taxon with no special characters, "
-             "and an underscore '_' instead of spaces, a user defined accession code and the path of the fasta file. "
-             "The fasta file that the path point to can be either uncompressed or compressed with gzip/bgzip",
+        "and an underscore '_' instead of spaces, a user defined accession code and the path of the fasta file. "
+        "The fasta file that the path point to can be either uncompressed or compressed with gzip/bgzip",
         metavar="",
         default="",
     )
@@ -435,8 +426,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "--custom_acc_file",
         help="TAB DELIMITED input file containing the the name of the taxon with no special characters, "
-             "and an underscore '_' instead of spaces, a user defined valid NCBI nucleotide, assembly or WGS "
-             "accession code. ",
+        "and an underscore '_' instead of spaces, a user defined valid NCBI nucleotide, assembly or WGS "
+        "accession code. ",
         metavar="",
         default="",
     )
@@ -445,22 +436,23 @@ if __name__ == "__main__":
         "--specific_genera",
         nargs="+",
         help="List containing the names of specific genera "
-             "the abundances should be calculated "
-             "on, separated by a space character <genus1 genus2 genus3 ...>",
+        "the abundances should be calculated "
+        "on, separated by a space character <genus1 genus2 genus3 ...>",
         metavar="",
         default=[],
     )
     parser.add_argument(
         "--mem_mb",
         help="Max memory resources allowed to be used ofr indexing the input for "
-             "the filtering alignment "
-             "(default: max available memory {})".format(MAX_MEM_MB),
+        "the filtering alignment "
+        "(default: max available memory {})".format(MAX_MEM_MB),
+        default=MAX_MEM_MB,
         metavar="",
     )
     parser.add_argument(
         "--mem_rescale_factor",
         help="Factor to rescale/chunk the input file for the mutlifasta "
-             "index for the filtering alignment (default: 2.5)",
+        "index for the filtering alignment (default: 2.5)",
         metavar="",
         default=2.5,
     )
@@ -468,30 +460,30 @@ if __name__ == "__main__":
         "--data_preprocess",
         action="store_true",
         help="Only process raw fastq files, "
-             "including downloading fastq files from the SRA, "
-             "compressing them and removing any sequencing "
-             "adapters  <bool> (default: False)",
+        "including downloading fastq files from the SRA, "
+        "compressing them and removing any sequencing "
+        "adapters  <bool> (default: False)",
     )
     parser.add_argument(
         "--build_db",
         action="store_true",
         help="Only build the database from refseq and/or "
-             "other sequences retrieved from an NCBI query",
+        "other sequences retrieved from an NCBI query",
     )
     parser.add_argument(
         "--index_db",
         action="store_true",
         help="Index each taxon's reference genome that is "
-             "contained in the reference database, using bowtie2 "
-             " <bool> (default: False)",
+        "contained in the reference database, using bowtie2 "
+        " <bool> (default: False)",
     )
     parser.add_argument(
         "--aln_filter_index",
         action="store_true",
         help="Build the index required for the filtering "
-             "alignment step, out of all the sequences "
-             "contained in the reference database "
-             " <bool> (default: False)",
+        "alignment step, out of all the sequences "
+        "contained in the reference database "
+        " <bool> (default: False)",
     )
     parser.add_argument(
         "--aln_filter",
@@ -502,43 +494,43 @@ if __name__ == "__main__":
         "--aln_meta",
         action="store_true",
         help="Perform metagenomic alignments. "
-             "The aligned reads from the filtering alignment step "
-             "are aligned to each reference genomes separately "
-             "using bowtie2  <bool> (default: False)",
+        "The aligned reads from the filtering alignment step "
+        "are aligned to each reference genomes separately "
+        "using bowtie2  <bool> (default: False)",
     )
     parser.add_argument(
         "--probabilities",
         action="store_true",
         help="Taxon assignment posterior probabilities are "
-             "calculated for a given sample  <bool> "
-             "(default: False)",
+        "calculated for a given sample  <bool> "
+        "(default: False)",
     )
     parser.add_argument(
         "--abundances",
         action="store_true",
         help="Mean posterior abundances for each taxon in our "
-             "ref db, for a given sample, are calculated "
-             " <bool> (default: False)",
+        "ref db, for a given sample, are calculated "
+        " <bool> (default: False)",
     )
     parser.add_argument(
         "--mapdamage",
         action="store_true",
         help="Performs a chemical damage analysis, "
-             "by using mapDamage  <bool> (default: False)",
+        "by using mapDamage  <bool> (default: False)",
     )
 
     parser.add_argument(
         "--complete_db_creation",
         action="store_true",
         help="Builds the local database, indexes all the genomes individually, and prepares the filtering alignment"
-             "bowtie2 index <bool> (default: False)",
+        "bowtie2 index <bool> (default: False)",
     )
 
     parser.add_argument(
         "--touch",
         action="store_true",
         help="Touches the timestamps of the requested target files "
-             "AND ALL of their dependencies  <bool> (default: False)",
+        "AND ALL of their dependencies  <bool> (default: False)",
     )
     parser.add_argument(
         "--cores",
@@ -555,7 +547,7 @@ if __name__ == "__main__":
         "--unlock",
         action="store_true",
         help="Unlock the working directory after smk is "
-             "abruptly killed  <bool> (default: False)",
+        "abruptly killed  <bool> (default: False)",
     )
 
     parser.add_argument(
