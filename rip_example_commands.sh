@@ -34,6 +34,7 @@ rip database
   --output '/path/to/what/used/to/be/query_name'
   --refseq-rep              # optional, default False
   --query '<str>'           # optional, default ""
+  --query-file '<filename>' # optional, default ""
   --rank '<str>'            # optional, default "species"
   --sequences '<filename>'  # optional, default ""
   --accessions '<filename>' # optional, default ""
