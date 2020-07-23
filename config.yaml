@@ -1,57 +1,12 @@
-query_name:
-  refseq_rep
-entrez_query:
-  ("Yersinia"[Organism] OR "Yersinia"[Organism]) AND "complete genome"[All Fields]
-entrez_email:
-  evangelos-antonios.dimopoulos@hertford.ox.ac.uk
 entrez_batchsize:
   5
 entrez_rank:
   'species'
-
-sample_name:
-  ''
-fastq:
-  []
-fastq_R1:
-  []
-fastq_R2:
-  []
-
 mismatch_probability:
   0.05
-
 bowtie2_treads:
   1
-
-sra_lookup:
-  True
-input_mode:
-  "COLLAPSED"
-
-with_refseq_rep:
-  True
-with_entrez_query:
-  True
-
-specific_genera:
-  []
-
-mem_mb:
-  80
 mem_rescale_factor:
   2.5
-
-trim_adapters:
-  True
-
-with_custom_sequences:
-  False
-custom_seq_file:
-  custom_seq.txt
-
-with_custom_accessions:
-  False
-custom_acc_file:
-  custom_acc.txt
-
+cache:
+  ~/rip/
