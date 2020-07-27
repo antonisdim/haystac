@@ -12,9 +12,9 @@ __license__ = "MIT"
 
 rule get_sra_fastq_se:
     output:
-        temp("sra_data/SE/{accession}.fastq"),
+        temp(config["sample_output_dir"] + "/sra_data/SE/{accession}.fastq"),
     log:
-        temp("sra_data/SE/{accession}.log"),
+        temp(config["sample_output_dir"] + "/sra_data/SE/{accession}.log"),
     params:
         extra="",
     threads: 6
@@ -26,10 +26,10 @@ rule get_sra_fastq_se:
 
 rule get_sra_fastq_pe:
     output:
-        temp("sra_data/PE/{accession}_1.fastq"), # the wildcard name must be accession, pointing to an SRA number
-        temp("sra_data/PE/{accession}_2.fastq"),
+        temp(config["sample_output_dir"] + "/sra_data/PE/{accession}_1.fastq"), # the wildcard name must be accession, pointing to an SRA number
+        temp(config["sample_output_dir"] + "/sra_data/PE/{accession}_2.fastq"),
     log:
-        temp("sra_data/PE/{accession}.log"),
+        temp(config["sample_output_dir"] + "/sra_data/PE/{accession}.log"),
     params:
         extra="", # optional extra arguments
     threads: 6 # defaults to 6
@@ -41,9 +41,9 @@ rule get_sra_fastq_pe:
 
 rule compress_sra_fastq_se:
     input:
-        "sra_data/SE/{accession}.fastq",
+        config["sample_output_dir"] + "/sra_data/SE/{accession}.fastq",
     output:
-        "sra_data/SE/{accession}.fastq.gz",
+        config["sample_output_dir"] + "/sra_data/SE/{accession}.fastq.gz",
     message:
         "Compressing the raw fastq file {input} for accession {wildcards.accession} and storing it in {output}."
     shell:
@@ -52,11 +52,11 @@ rule compress_sra_fastq_se:
 
 rule compress_sra_fastq_pe:
     input:
-        r1="sra_data/PE/{accession}_1.fastq",
-        r2="sra_data/PE/{accession}_2.fastq",
+        r1=config["sample_output_dir"] + "/sra_data/PE/{accession}_1.fastq",
+        r2=config["sample_output_dir"] + "/sra_data/PE/{accession}_2.fastq",
     output:
-        r1="sra_data/PE/{accession}_R1.fastq.gz",
-        r2="sra_data/PE/{accession}_R2.fastq.gz",
+        r1=config["sample_output_dir"] + "/sra_data/PE/{accession}_R1.fastq.gz",
+        r2=config["sample_output_dir"] + "/sra_data/PE/{accession}_R2.fastq.gz",
     message:
         "Compressing the raw fastq files {input.r1} and {input.r2} for accession {wildcards.accession} "
         "and storing them in {output.r1} and {output.r2}."

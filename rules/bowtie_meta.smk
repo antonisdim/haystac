@@ -20,18 +20,27 @@ from scripts.rip_utilities import get_total_paths, normalise_name
 
 rule index_database_entrez:
     input:
-        "database/{orgname}/{accession}.fasta.gz",
+        config["genome_cache_folder"] + "/{orgname}/{accession}.fasta.gz",
     log:
-        "database/{orgname}/{accession}_index.log",
+        config["genome_cache_folder"] + "/{orgname}/{accession}_index.log",
     output:
-        expand("database/{orgname}/{accession}.{n}.bt2l", n=[1, 2, 3, 4], allow_missing=True),
-        expand("database/{orgname}/{accession}.rev.{n}.bt2l", n=[1, 2], allow_missing=True),
+        expand(
+            config["genome_cache_folder"] + "/{orgname}/{accession}.{n}.bt2l",
+            n=[1, 2, 3, 4],
+            allow_missing=True,
+        ),
+        expand(
+            config["genome_cache_folder"] + "/{orgname}/{accession}.rev.{n}.bt2l",
+            n=[1, 2],
+            allow_missing=True,
+        ),
     benchmark:
         repeat("benchmarks/index_database_{orgname}_{accession}.benchmark.txt", 1)
     message:
         "Preparing the bowtie2 index of genome {wildcards.accession} for taxon {wildcards.orgname}."
     shell:
-        "bowtie2-build --large-index {input} database/{wildcards.orgname}/{wildcards.accession} &> {log}"
+        "bowtie2-build --large-index {input} "+ config['genome_cache_folder']+
+        "/{wildcards.orgname}/{wildcards.accession} &> {log}"
 
 
 def get_idx_entrez(wildcards):
@@ -41,7 +50,7 @@ def get_idx_entrez(wildcards):
     if not config["with_entrez_query"]:
         return []
 
-    pick_sequences = checkpoints.entrez_pick_sequences.get(query=wildcards.query)
+    pick_sequences = checkpoints.entrez_pick_sequences.get()
     sequences = pd.read_csv(pick_sequences.output[0], sep="\t")
 
     if len(sequences) == 0:
@@ -55,7 +64,8 @@ def get_idx_entrez(wildcards):
             seq["GBSeq_accession-version"],
         )
         inputs.append(
-            "database/{orgname}/{accession}.1.bt2l".format(
+            config["genome_cache_folder"]
+            + "/{orgname}/{accession}.1.bt2l".format(
                 orgname=orgname, accession=accession
             )
         )
@@ -67,10 +77,10 @@ def get_idx_ref_gen(wildcards):
     """
     Get all the index paths for the taxa in our database from the refseq rep and genbank.
     """
-    if not config["with_refseq_rep"]:
+    if not config["refseq_rep"]:
         return []
 
-    refseq_rep_prok = checkpoints.entrez_refseq_accessions.get(query=wildcards.query)
+    refseq_rep_prok = checkpoints.entrez_refseq_accessions.get()
 
     refseq_genomes = pd.read_csv(refseq_rep_prok.output[0], sep="\t")
     genbank_genomes = pd.read_csv(refseq_rep_prok.output[1], sep="\t")
@@ -89,7 +99,8 @@ def get_idx_ref_gen(wildcards):
             seq["GBSeq_accession-version"],
         )
         inputs.append(
-            "database/{orgname}/{accession}.1.bt2l".format(
+            config["genome_cache_folder"]
+            + "/{orgname}/{accession}.1.bt2l".format(
                 orgname=orgname, accession=accession
             )
         )
@@ -101,16 +112,14 @@ def get_idx_assembly(wildcards):
     """
     Get all the individual bam file paths for the taxa in our database.
     """
-    if not config["with_refseq_rep"]:
+    if not config["refseq_rep"]:
         return []
 
-    refseq_rep_prok = checkpoints.entrez_refseq_accessions.get(query=wildcards.query)
+    refseq_rep_prok = checkpoints.entrez_refseq_accessions.get()
 
     assemblies = pd.read_csv(refseq_rep_prok.output[2], sep="\t")
 
-    invalid_assemblies = checkpoints.entrez_invalid_assemblies.get(
-        query=wildcards.query
-    )
+    invalid_assemblies = checkpoints.entrez_invalid_assemblies.get()
     invalid_assembly_sequences = pd.read_csv(invalid_assemblies.output[0], sep="\t")
 
     assemblies = assemblies[
@@ -129,7 +138,8 @@ def get_idx_assembly(wildcards):
             seq["GBSeq_accession-version"],
         )
         inputs.append(
-            "database/{orgname}/{accession}.1.bt2l".format(
+            config["genome_cache_folder"]
+            + "/{orgname}/{accession}.1.bt2l".format(
                 orgname=orgname, accession=accession
             )
         )
@@ -145,7 +155,7 @@ def get_idx_custom_seqs():
         return []
 
     custom_fasta_paths = pd.read_csv(
-        config["custom_seq_file"],
+        config["sequences"],
         sep="\t",
         header=None,
         names=["species", "accession", "path"],
@@ -161,7 +171,8 @@ def get_idx_custom_seqs():
             seq["accession"],
         )
         inputs.append(
-            "database/{orgname}/{accession}.1.bt2l".format(
+            config["genome_cache_folder"]
+            + "/{orgname}/{accession}.1.bt2l".format(
                 orgname=orgname, accession=accession
             )
         )
@@ -177,7 +188,7 @@ def get_idx_custom_acc():
         return []
 
     custom_accessions = pd.read_csv(
-        config["custom_acc_file"], sep="\t", header=None, names=["species", "accession"]
+        config["accessions"], sep="\t", header=None, names=["species", "accession"]
     )
 
     sequences = custom_accessions
@@ -190,7 +201,8 @@ def get_idx_custom_acc():
             seq["accession"],
         )
         inputs.append(
-            "database/{orgname}/{accession}.1.bt2l".format(
+            config["genome_cache_folder"]
+            + "/{orgname}/{accession}.1.bt2l".format(
                 orgname=orgname, accession=accession
             )
         )
@@ -205,10 +217,8 @@ rule idx_database:
         get_idx_assembly,
         get_idx_custom_seqs(),
         get_idx_custom_acc(),
-    log:
-        "database/idx_database_{query}.log",
     output:
-        "database/idx_database_{query}.done",
+        config["db_output"] + "/idx_database.done",
     message:
         "All the individual genome indices have been prepared."
     shell:
@@ -225,24 +235,24 @@ def get_min_score(wildcards, input):
 
 rule align_taxon_single_end:
     input:
-        fastq="{query}/fastq/SE/{sample}_mapq.fastq.gz", # bt2idx="database/{orgname}/{accession}.1.bt2l",
-        db_idx="database/{orgname}/{accession}.1.bt2l",
-        readlen="{query}/fastq/SE/{sample}_mapq.readlen",
+        fastq=config["analysis_output_dir"] + "/fastq/SE/{sample}_mapq.fastq.gz", # bt2idx="database/{orgname}/{accession}.1.bt2l",
+        db_idx=config["genome_cache_folder"] + "/{orgname}/{accession}.1.bt2l",
+        readlen=config["analysis_output_dir"] + "/fastq/SE/{sample}_mapq.readlen",
     log:
-        "{query}/sigma/{sample}/SE/{orgname}/{accession}.log",
+        config["analysis_output_dir"] + "/sigma/{sample}/SE/{orgname}/{accession}.log",
     output:
-        bam_file="{query}/sigma/{sample}/SE/{orgname}/{orgname}_{accession}.bam",
-        bai_file="{query}/sigma/{sample}/SE/{orgname}/{orgname}_{accession}.bam.bai",
+        bam_file=config["analysis_output_dir"] + "/sigma/{sample}/SE/{orgname}/{orgname}_{accession}.bam",
+        bai_file=config["analysis_output_dir"] + "/sigma/{sample}/SE/{orgname}/{orgname}_{accession}.bam.bai",
     benchmark:
         repeat(
-            "benchmarks/align_taxon_single_end_{query}_{sample}_{orgname}_{accession}.benchmark.txt",
+            "benchmarks/align_taxon_single_end_{sample}_{orgname}_{accession}.benchmark.txt",
             1,
         )
     params:
         min_score=get_min_score,
         min_frag_length=MIN_FRAG_LEN,
         max_frag_length=MAX_FRAG_LEN,
-    threads: config["bowtie2_treads"] # usually single threaded - the user can change it
+    threads: config["bowtie2_threads"] # usually single threaded - the user can change it
     message:
         "Aligning file {input.fastq} against genome {wildcards.accession} of taxon {wildcards.orgname} "
         "for sample {wildcards.sample}, with {threads} thread(s). The output bam file is stored in {output.bam_file} "
@@ -250,7 +260,9 @@ rule align_taxon_single_end:
     shell:
         "( bowtie2 --time --no-unal --no-discordant --no-mixed --ignore-quals --mp 6,6 --np 6 "
         "   --score-min L,{params.min_score},0.0 --gbar 1000 -q --threads {threads} "
-        '   -x database/"{wildcards.orgname}"/{wildcards.accession} '
+        "   -x " + config[
+            "genome_cache_folder"
+        ] + '/"{wildcards.orgname}"/{wildcards.accession} '
         "   -I {params.min_frag_length} -X {params.max_frag_length} "
         "   -U {input.fastq} "
         "| samtools sort -O bam -o {output.bam_file} ) 2> {log}; "
@@ -259,20 +271,20 @@ rule align_taxon_single_end:
 
 rule align_taxon_paired_end:
     input:
-        fastq_r1="{query}/fastq/PE/{sample}_R1_mapq.fastq.gz",
-        fastq_r2="{query}/fastq/PE/{sample}_R2_mapq.fastq.gz", # bt2idx="database/{orgname}/{accession}.1.bt2l",
-        db_idx="database/{orgname}/{accession}.1.bt2l",
-        readlen="{query}/fastq/PE/{sample}_mapq_pair.readlen",
+        fastq_r1=config["analysis_output_dir"] + "/fastq/PE/{sample}_R1_mapq.fastq.gz",
+        fastq_r2=config["analysis_output_dir"] + "/fastq/PE/{sample}_R2_mapq.fastq.gz", # bt2idx="database/{orgname}/{accession}.1.bt2l",
+        db_idx=config["genome_cache_folder"] + "/{orgname}/{accession}.1.bt2l",
+        readlen=config["analysis_output_dir"] + "/fastq/PE/{sample}_mapq_pair.readlen",
     log:
-        "{query}/sigma/{sample}/PE/{orgname}/{accession}.log",
+        config["analysis_output_dir"] + "/sigma/{sample}/PE/{orgname}/{accession}.log",
     output:
-        bam_file="{query}/sigma/{sample}/PE/{orgname}/{orgname}_{accession}.bam",
-        bai_file="{query}/sigma/{sample}/PE/{orgname}/{orgname}_{accession}.bam.bai",
+        bam_file=config["analysis_output_dir"] + "/sigma/{sample}/PE/{orgname}/{orgname}_{accession}.bam",
+        bai_file=config["analysis_output_dir"] + "/sigma/{sample}/PE/{orgname}/{orgname}_{accession}.bam.bai",
     params:
         min_score=get_min_score,
         min_frag_length=MIN_FRAG_LEN,
         max_frag_length=MAX_FRAG_LEN,
-    threads: config["bowtie2_treads"]
+    threads: config["bowtie2_threads"]
     message:
         "Aligning files {input.fastq_r1} and {input.fastq_r2} against genome {wildcards.accession} of "
         "taxon {wildcards.orgname} for sample {wildcards.sample}, with {threads} thread(s). "
@@ -281,7 +293,7 @@ rule align_taxon_paired_end:
     shell:
         "( bowtie2 --time --no-unal --no-discordant --no-mixed --ignore-quals --mp 6,6 --np 6 "
         "--score-min L,{params.min_score},0.0 --gbar 1000 -q --threads {threads} "
-        '-x database/"{wildcards.orgname}"/{wildcards.accession} '
+        "-x " + config["genome_cache_folder"] + '/"{wildcards.orgname}"/{wildcards.accession} '
         "-I {params.min_frag_length} -X {params.max_frag_length} "
         "-1 {input.fastq_r1} -2 {input.fastq_r2} "
         "| samtools sort -O bam -o {output.bam_file} ) 2> {log} "
@@ -298,10 +310,10 @@ def get_bamfile_paths(wildcards):
         wildcards,
         checkpoints,
         config["with_entrez_query"],
-        config["with_refseq_rep"],
+        config["refseq_rep"],
         config["with_custom_sequences"],
         config["with_custom_accessions"],
-        config["specific_genera"],
+        config["genera"],
     )
 
     inputs = []
@@ -314,8 +326,7 @@ def get_bamfile_paths(wildcards):
 
         if config["SE"] or config["PE_ANCIENT"]:
             inputs.append(
-                "{query}/sigma/{sample}/SE/{orgname}/{orgname}_{accession}.bam".format(
-                    query=wildcards.query,
+                config["analysis_output_dir"] + "/sigma/{sample}/SE/{orgname}/{orgname}_{accession}.bam".format(
                     sample=wildcards.sample,
                     orgname=orgname,
                     accession=accession,
@@ -323,8 +334,7 @@ def get_bamfile_paths(wildcards):
             )
         elif config["PE_MODERN"]:
             inputs.append(
-                "{query}/sigma/{sample}/PE/{orgname}/{orgname}_{accession}.bam".format(
-                    query=wildcards.query,
+                config["analysis_output_dir"] + "/sigma/{sample}/PE/{orgname}/{orgname}_{accession}.bam".format(
                     sample=wildcards.sample,
                     orgname=orgname,
                     accession=accession,
@@ -338,9 +348,9 @@ rule all_alignments:
     input:
         get_bamfile_paths,
     output:
-        "{query}/sigma/{sample}_alignments.done",
+        config["analysis_output_dir"] + "/sigma/{sample}_alignments.done",
     benchmark:
-        repeat("benchmarks/all_alignments_{query}_{sample}.benchmark.txt", 1)
+        repeat("benchmarks/all_alignments_{sample}.benchmark.txt", 1)
     message:
         "All metagenomic alignments are done."
     shell:

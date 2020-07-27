@@ -59,7 +59,7 @@ def entrez_download_sequence(accession, config, output_file, attempt=1, assembly
     """
     print("The sequences for the database are being downloaded ...", file=sys.stderr)
 
-    Entrez.email = config["entrez_email"]
+    Entrez.email = config["email"]
 
     if assembly:
         assembly_acc = get_assembly_acc_from_wgs_acc(accession)

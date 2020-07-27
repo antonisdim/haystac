@@ -24,7 +24,7 @@ def entrez_custom_sequences(config, taxon, output_file):
     if os.path.exists(config["custom_seq_file"]):
 
         custom_fasta_paths = pd.read_csv(
-            config["custom_seq_file"],
+            config["sequences"],
             sep="\t",
             header=None,
             names=["species", "accession", "path"],

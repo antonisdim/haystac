@@ -25,16 +25,14 @@ def get_total_paths(
     sequences = pd.DataFrame()
 
     if with_entrez_query:
-        pick_sequences = checkpoints.entrez_pick_sequences.get(query=wildcards.query)
+        pick_sequences = checkpoints.entrez_pick_sequences.get()
         sequences = pd.read_csv(pick_sequences.output[0], sep="\t")
 
         if len(sequences) == 0:
             raise RuntimeError("The entrez pick sequences file is empty.")
 
     if with_refseq_rep:
-        refseq_rep_prok = checkpoints.entrez_refseq_accessions.get(
-            query=wildcards.query
-        )
+        refseq_rep_prok = checkpoints.entrez_refseq_accessions.get()
 
         refseq_genomes = pd.read_csv(refseq_rep_prok.output.refseq_genomes, sep="\t")
         genbank_genomes = pd.read_csv(refseq_rep_prok.output.genbank_genomes, sep="\t")
@@ -44,9 +42,7 @@ def get_total_paths(
             refseq_rep_prok.output.genbank_plasmids, sep="\t"
         )
 
-        invalid_assemblies = checkpoints.entrez_invalid_assemblies.get(
-            query=wildcards.query
-        )
+        invalid_assemblies = checkpoints.entrez_invalid_assemblies.get()
         invalid_assembly_sequences = pd.read_csv(invalid_assemblies.output[0], sep="\t")
 
         assemblies = assemblies[

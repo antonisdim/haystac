@@ -13,10 +13,10 @@ import pandas as pd
 import os.path
 
 
-def entrez_pick_sequences(config, nuccore_file, taxa_file, output_file, query):
+def entrez_pick_sequences(config, nuccore_file, taxa_file, output_file):
     accessions = pd.read_csv(nuccore_file, sep="\t")
     taxa = pd.read_csv(taxa_file, sep="\t")
-    rank = config["entrez_rank"]
+    rank = config["rank"]
 
     print("read the accessions and the taxa", file=sys.stderr)
 
@@ -31,21 +31,21 @@ def entrez_pick_sequences(config, nuccore_file, taxa_file, output_file, query):
 
     print(selected_sequences, file=sys.stderr)
 
-    if config["with_refseq_rep"]:
+    if config["refseq_rep"]:
         refseq_genomes = pd.read_csv(
-            "{query}/entrez/{query}-refseq-genomes.tsv".format(query=query), sep="\t"
+            config["db_output"] + "/entrez/refseq-genomes.tsv", sep="\t"
         )
         genbank_genomes = pd.read_csv(
-            "{query}/entrez/{query}-genbank-genomes.tsv".format(query=query), sep="\t"
+            config["db_output"] + "/entrez/genbank-genomes.tsv", sep="\t"
         )
         assemblies = pd.read_csv(
-            "{query}/entrez/{query}-assemblies.tsv".format(query=query), sep="\t"
+            config["db_output"] + "/entrez/assemblies.tsv", sep="\t"
         )
         refseq_plasmids = pd.read_csv(
-            "{query}/entrez/{query}-refseq-plasmids.tsv".format(query=query), sep="\t"
+            config["db_output"] + "/entrez/refseq-plasmids.tsv", sep="\t"
         )
         genbank_plasmids = pd.read_csv(
-            "{query}/entrez/{query}-genbank-plasmids.tsv".format(query=query), sep="\t"
+            config["db_output"] + "/entrez/genbank-plasmids.tsv", sep="\t"
         )
 
         # the entrez query might give a different accession for a certain species than the refseq rep one and
@@ -77,7 +77,7 @@ def entrez_pick_sequences(config, nuccore_file, taxa_file, output_file, query):
 
     if config["with_custom_sequences"]:
         custom_fasta_paths = pd.read_csv(
-            config["custom_seq_file"],
+            config["sequences"],
             sep="\t",
             header=None,
             names=["species", "accession", "path"],
@@ -89,10 +89,7 @@ def entrez_pick_sequences(config, nuccore_file, taxa_file, output_file, query):
 
     if config["with_custom_accessions"]:
         custom_accessions = pd.read_csv(
-            config["custom_acc_file"],
-            sep="\t",
-            header=None,
-            names=["species", "accession"],
+            config["accessions"], sep="\t", header=None, names=["species", "accession"],
         )
 
         selected_sequences = selected_sequences[
@@ -111,5 +108,4 @@ if __name__ == "__main__":
         nuccore_file=snakemake.input[0],
         taxa_file=snakemake.input[1],
         output_file=snakemake.output[0],
-        query=snakemake.wildcards.query,
     )

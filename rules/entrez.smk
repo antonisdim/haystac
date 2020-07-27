@@ -20,30 +20,32 @@ from scripts.rip_utilities import normalise_name
 
 checkpoint entrez_find_accessions:
     output:
-        temp("{query}/entrez/{query}-accessions.tsv"),
+        temp(config["db_output"] + "/entrez/entrez-accessions.tsv"),
     log:
-        temp("{query}/entrez/{query}-accessions.log"),
+        temp(config["db_output"] + "/entrez/entrez-accessions.log"),
     benchmark:
-        repeat("benchmarks/entrez_find_accessions_{query}.benchmark.txt", 1)
+        repeat("benchmarks/entrez_find_accessions.benchmark.txt", 1)
     message:
-        "Finding all the accessions, whose metadata are going to be fetched, for query {wildcards.query}. "
+        "Finding all the accessions, whose metadata are going to be fetched, for the entrez query. "
         "The temporary output can be found in {output} and the its log file in {log}."
+    resources:
+        entrez_api=1,
     script:
         "../scripts/entrez_find_accessions.py"
 
 
 rule entrez_nuccore_query:
     input:
-        "{query}/entrez/{query}-accessions.tsv",
+        config["db_output"] + "/entrez/entrez-accessions.tsv",
     output:
-        temp("{query}/entrez/{query}_{chunk}-nuccore.tsv"),
+        temp(config["db_output"] + "/entrez/entrez_{chunk}-nuccore.tsv"),
     log:
-        "{query}/entrez/{query}_{chunk}-nuccore.log",
+        config["db_output"] + "/entrez/entrez_{chunk}-nuccore.log",
     benchmark:
-        repeat("benchmarks/entrez_nuccore_query_{query}_{chunk}.benchmark.txt", 1)
+        repeat("benchmarks/entrez_nuccore_query_entrez_{chunk}.benchmark.txt", 1)
     message:
         "Fetching sequence metadata from the NCBI Nucleotide database "
-        "for the accessions in chunk {wildcards.chunk} for query {wildcards.query}. "
+        "for the accessions in chunk {wildcards.chunk} for the NCBI entrez query. "
         "The temporary output can be found in {output} and its log file in {log}."
     resources:
         entrez_api=1,
@@ -57,7 +59,7 @@ def get_nuccore_chunks(wildcards):
     Get all the accession chunks for the {query}-nuccore.tsv file.
     """
 
-    pick_accessions = checkpoints.entrez_find_accessions.get(query=wildcards.query)
+    pick_accessions = checkpoints.entrez_find_accessions.get()
     sequences = pd.read_csv(pick_accessions.output[0], sep="\t")
 
     if len(sequences) == 0:
@@ -71,9 +73,8 @@ def get_nuccore_chunks(wildcards):
     inputs = []
     for chunk_num in range(int(tot_chunks)):
         inputs.append(
-            "{query}/entrez/{query}_{chunk}-nuccore.tsv".format(
-                query=wildcards.query, chunk=chunk_num
-            )
+            config["db_output"]
+            + "/entrez/entrez_{chunk}-nuccore.tsv".format(chunk=chunk_num)
         )
 
     return inputs
@@ -83,56 +84,56 @@ rule entrez_aggregate_nuccore:
     input:
         get_nuccore_chunks,
     output:
-        "{query}/entrez/{query}-nuccore.tsv",
+        config["db_output"] + "/entrez/entrez-nuccore.tsv",
     benchmark:
-        repeat("benchmarks/entrez_aggregate_nuccore_{query}.benchmark.txt", 1)
+        repeat("benchmarks/entrez_aggregate_nuccore_entrez.benchmark.txt", 1)
     message:
         "Concatenating all the temporary output files containing accession metadata fetched from the NCBI Nucleotide "
-        "database for query {wildcards.query}. The permanent output can be found in {output}."
+        "database for the entrez query. The permanent output can be found in {output}."
     shell:
         "awk 'FNR>1 || NR==1' {input} 1> {output}"
 
 
 rule entrez_taxa_query:
     input:
-        "{query}/entrez/{query}-nuccore.tsv",
+        config["db_output"] + "/entrez/entrez-nuccore.tsv",
     output:
-        "{query}/entrez/{query}-taxa.tsv",
+        config["db_output"] + "/entrez/entrez-taxa.tsv",
     log:
-        "{query}/entrez/{query}-taxa.log",
+        config["db_output"] + "/entrez/entrez-taxa.log",
     benchmark:
-        repeat("benchmarks/entrez_taxa_query_{query}.benchmark.txt", 1)
+        repeat("benchmarks/entrez_taxa_query_entrez.benchmark.txt", 1)
     message:
         "Querying the NCBI Taxonomy database to fetch taxonomic metadata, for all the different "
-        "taxa the NCBI Nucleotide returned accessions belong to, for query {wildcards.query}. "
+        "taxa the NCBI Nucleotide returned accessions belong to, for the entrez query. "
         "The output table can be found in {output} and its log file in {log}."
+    resources:
+        entrez_api=1,
     script:
         "../scripts/entrez_taxonomy_query.py"
 
 
 def pick_after_refseq_prok(wildcards):
 
-    if config["with_refseq_rep"]:
-        return "{query}/entrez/{query}-genbank-genomes.tsv".format(
-            query=wildcards.query
-        )
+    if config["refseq_rep"]:
+        return config["db_output"] + "/entrez/genbank-genomes.tsv"
     else:
-        return "{query}/entrez/{query}_1-nuccore.tsv"
+        return config["db_output"] + "/entrez/entrez_1-nuccore.tsv"
 
 
 checkpoint entrez_pick_sequences:
     input:
-        nuccore="{query}/entrez/{query}-nuccore.tsv",
-        taxonomy="{query}/entrez/{query}-taxa.tsv",
+        nuccore=config["db_output"] + "/entrez/entrez-nuccore.tsv",
+        taxonomy=config["db_output"] + "/entrez/entrez-taxa.tsv",
         priority=pick_after_refseq_prok,
     output:
-        "{query}/entrez/{query}-selected-seqs.tsv",
+        config["db_output"] + "/entrez/entrez-selected-seqs.tsv",
     log:
-        "{query}/entrez/{query}-selected-seqs.log",
+        config["db_output"] + "/entrez/entrez-selected-seqs.log",
     benchmark:
-        repeat("benchmarks/entrez_pick_sequences_{query}.benchmark.txt", 1)
+        repeat("benchmarks/entrez_pick_sequences_entrez.benchmark.txt", 1)
     message:
-        "Selecting the longest sequence per taxon for query {wildcards.query}. "
+        "Selecting the longest sequence per taxon for entrez query. "
         "Input tables with accession and taxonomic metadata can be found in "
         "{input.nuccore} and {input.taxonomy} respectively."
         "The output table can be found in {output} and its log file in {log}. "
@@ -142,9 +143,9 @@ checkpoint entrez_pick_sequences:
 
 rule entrez_download_sequence:
     output:
-        "database/{orgname}/{accession}.fasta.gz",
+        config["genome_cache_folder"] + "/{orgname}/{accession}.fasta.gz",
     log:
-        "database/{orgname}/{accession}.log",
+        config["genome_cache_folder"] + "/{orgname}/{accession}.log",
     benchmark:
         repeat("benchmarks/entrez_download_sequence_{orgname}_{accession}.benchmark.txt", 1)
     params:
@@ -178,7 +179,8 @@ def get_fasta_sequences(wildcards):
         accession = seq["GBSeq_accession-version"]
 
         inputs.append(
-            "database/{orgname}/{accession}.fasta.gz".format(
+            config["genome_cache_folder"]
+            + "/{orgname}/{accession}.fasta.gz".format(
                 orgname=orgname, accession=accession
             )
         )
@@ -190,13 +192,13 @@ rule entrez_multifasta:
     input:
         get_fasta_sequences,
     log:
-        "{query}/bowtie/{query}.log",
+        config["db_output"] + "/bowtie/entrez_query.log",
     output:
-        "{query}/bowtie/{query}_entrez.fasta.gz",
+        config["db_output"] + "/bowtie/entrez_query.fasta.gz",
     benchmark:
-        repeat("benchmarks/entrez_multifasta_{query}.benchmark.txt", 1)
+        repeat("benchmarks/entrez_multifasta_entrez_query.benchmark.txt", 1)
     message:
-        "Concatenating all the fasta sequences for all the taxa in {output} for query {wildcards.query}, and its "
+        "Concatenating all the fasta sequences for all the taxa in {output} for the entrez query, and its "
         "log file can be found in {log}."
     script:
         "../scripts/bowtie2_multifasta.py"

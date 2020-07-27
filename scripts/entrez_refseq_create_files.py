@@ -143,7 +143,7 @@ def entrez_refseq_create_files(
 
     if config["with_custom_sequences"]:
         custom_fasta_paths = pd.read_csv(
-            config["custom_seq_file"],
+            config["sequences"],
             sep="\t",
             header=None,
             names=["species", "accession", "path"],
@@ -171,10 +171,7 @@ def entrez_refseq_create_files(
 
     if config["with_custom_accessions"]:
         custom_accessions = pd.read_csv(
-            config["custom_acc_file"],
-            sep="\t",
-            header=None,
-            names=["species", "accession"],
+            config["accessions"], sep="\t", header=None, names=["species", "accession"],
         )
 
         genbank_exploded = genbank_exploded[

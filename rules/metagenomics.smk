@@ -12,17 +12,24 @@ from scripts.rip_utilities import get_total_paths, normalise_name
 
 
 def get_inputs_for_count_fastq_len(wildcards):
-    if config["sra_lookup"]:
+    if config["sra"] is not None:
+        # if config["sra_lookup"]:
         if config["PE_MODERN"]:
-            return "fastq_inputs/PE_mod/{sample}_R1_adRm.fastq.gz".format(
+            return config[
+                "sample_output_dir"
+            ] + "/fastq_inputs/PE_mod/{sample}_R1_adRm.fastq.gz".format(
                 sample=wildcards.sample
             )
         elif config["PE_ANCIENT"]:
-            return "fastq_inputs/PE_anc/{sample}_adRm.fastq.gz".format(
+            return config[
+                "sample_output_dir"
+            ] + "/fastq_inputs/PE_anc/{sample}_adRm.fastq.gz".format(
                 sample=wildcards.sample
             )
         elif config["SE"]:
-            return "fastq_inputs/SE/{sample}_adRm.fastq.gz".format(
+            return config[
+                "sample_output_dir"
+            ] + "/fastq_inputs/SE/{sample}_adRm.fastq.gz".format(
                 sample=wildcards.sample
             )
 
@@ -39,9 +46,9 @@ rule count_fastq_length:
     input:
         fastq=get_inputs_for_count_fastq_len,
     log:
-        "fastq_inputs/meta/{sample}.log",
+        config["sample_output_dir"] + "/fastq_inputs/meta/{sample}.log",
     output:
-        "fastq_inputs/meta/{sample}.size",
+        config["sample_output_dir"] + "/fastq_inputs/meta/{sample}.size",
     benchmark:
         repeat("benchmarks/count_fastq_length_{sample}.benchmark.txt", 1)
     message:
@@ -52,17 +59,14 @@ rule count_fastq_length:
 
 
 def get_bams_for_ts_tv_count(wildcards):
-    # TODO no need for this input function... make PE|SE a wildcard
     if config["PE_MODERN"]:
-        return "{query}/sigma/{sample}/PE/{orgname}/{orgname}_{accession}.bam".format(
-            query=wildcards.query,
+        return config["analysis_output_dir"] + "/sigma/{sample}/PE/{orgname}/{orgname}_{accession}.bam".format(
             sample=wildcards.sample,
             orgname=wildcards.orgname,
             accession=wildcards.accession,
         )
     elif config["PE_ANCIENT"] or config["SE"]:
-        return "{query}/sigma/{sample}/SE/{orgname}/{orgname}_{accession}.bam".format(
-            query=wildcards.query,
+        return config["analysis_output_dir"] + "/sigma/{sample}/SE/{orgname}/{orgname}_{accession}.bam".format(
             sample=wildcards.sample,
             orgname=wildcards.orgname,
             accession=wildcards.accession,
@@ -73,12 +77,12 @@ rule count_accession_ts_tv:
     input:
         get_bams_for_ts_tv_count,
     output:
-        "{query}/ts_tv_counts/{sample}/{orgname}_count_{accession}.csv",
+        config["analysis_output_dir"] + "/ts_tv_counts/{sample}/{orgname}_count_{accession}.csv",
     log:
-        "{query}/ts_tv_counts/{sample}/{orgname}_count_{accession}.log",
+        config["analysis_output_dir"] + "/ts_tv_counts/{sample}/{orgname}_count_{accession}.log",
     benchmark:
         repeat(
-            "benchmarks/count_accession_ts_tv_{query}_{sample}_{orgname}_{accession}.benchmark.txt",
+            "benchmarks/count_accession_ts_tv_{sample}_{orgname}_{accession}.benchmark.txt",
             1,
         )
     params:
@@ -101,10 +105,10 @@ def get_ts_tv_count_paths(wildcards):
         wildcards,
         checkpoints,
         config["with_entrez_query"],
-        config["with_refseq_rep"],
+        config["refseq_rep"],
         config["with_custom_sequences"],
         config["with_custom_accessions"],
-        config["specific_genera"],
+        config["genera"],
     )
 
     inputs = []
@@ -116,8 +120,7 @@ def get_ts_tv_count_paths(wildcards):
         )
 
         inputs.append(
-            "{query}/ts_tv_counts/{sample}/{orgname}_count_{accession}.csv".format(
-                query=wildcards.query,
+            config["analysis_output_dir"] + "/ts_tv_counts/{sample}/{orgname}_count_{accession}.csv".format(
                 sample=wildcards.sample,
                 orgname=orgname,
                 accession=accession,
@@ -131,11 +134,11 @@ rule initial_ts_tv:
     input:
         get_ts_tv_count_paths,
     output:
-        "{query}/ts_tv_counts/{sample}/all_ts_tv_counts.csv",
+        config["analysis_output_dir"] + "/ts_tv_counts/{sample}/all_ts_tv_counts.csv",
     log:
-        "{query}/ts_tv_counts/{sample}/all_ts_tv_counts.log",
+        config["analysis_output_dir"] + "/ts_tv_counts/{sample}/all_ts_tv_counts.log",
     benchmark:
-        repeat("benchmarks/initial_ts_tv_{query}_{sample}.benchmark.txt", 1)
+        repeat("benchmarks/initial_ts_tv_{sample}.benchmark.txt", 1)
     message:
         "Concatenating all the Ts and Tv count files {input} in {output} for sample {wildcards.sample}. "
         "Its log file can be found in {log}."
@@ -145,27 +148,27 @@ rule initial_ts_tv:
 
 def get_right_readlen(wildcards):
     if config["PE_MODERN"]:
-        return "{query}/fastq/PE/{sample}_mapq_pair.readlen".format(
-            query=wildcards.query, sample=wildcards.sample
+        return config["analysis_output_dir"] + "/fastq/PE/{sample}_mapq_pair.readlen".format(
+            sample=wildcards.sample
         )
     else:
-        return "{query}/fastq/SE/{sample}_mapq.readlen".format(
-            query=wildcards.query, sample=wildcards.sample
+        return config["analysis_output_dir"] + "/fastq/SE/{sample}_mapq.readlen".format(
+            sample=wildcards.sample
         )
 
 
 rule calculate_likelihoods:
     input:
-        "{query}/ts_tv_counts/{sample}/all_ts_tv_counts.csv",
+        config["analysis_output_dir"] + "/ts_tv_counts/{sample}/all_ts_tv_counts.csv",
         get_right_readlen,
         get_ts_tv_count_paths,
     output:
-        "{query}/probabilities/{sample}/{sample}_likelihood_ts_tv_matrix.csv",
-        "{query}/probabilities/{sample}/{sample}_probability_model_params.json",
+        config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_likelihood_ts_tv_matrix.csv",
+        config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_probability_model_params.json",
     log:
-        "{query}/probabilities/{sample}/{sample}_likelihood_ts_tv_matrix.log",
+        config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_likelihood_ts_tv_matrix.log",
     benchmark:
-        repeat("benchmarks/calculate_likelihoods_{query}_{sample}.benchmark.txt", 1)
+        repeat("benchmarks/calculate_likelihoods_{sample}.benchmark.txt", 1)
     message:
         "Calculating the likelihoods and performing the Dirichlet assignment of the reads for sample "
         "{wildcards.sample} to the taxa in our database. The output table can be found in {output}, "
@@ -176,15 +179,15 @@ rule calculate_likelihoods:
 
 rule calculate_taxa_probabilities:
     input:
-        "{query}/probabilities/{sample}/{sample}_likelihood_ts_tv_matrix.csv",
-        "{query}/probabilities/{sample}/{sample}_probability_model_params.json",
-        "fastq_inputs/meta/{sample}.size",
+        config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_likelihood_ts_tv_matrix.csv",
+        config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_probability_model_params.json",
+        config["sample_output_dir"] + "/fastq_inputs/meta/{sample}.size",
     output:
-        "{query}/probabilities/{sample}/{sample}_posterior_probabilities.csv",
+        config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_posterior_probabilities.csv",
     log:
-        "{query}/probabilities/{sample}/{sample}_posterior_probabilities.log",
+        config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_posterior_probabilities.log",
     benchmark:
-        repeat("benchmarks/calculate_taxa_probabilities_{query}_{sample}.benchmark.txt", 1)
+        repeat("benchmarks/calculate_taxa_probabilities_{sample}.benchmark.txt", 1)
     params:
         submatrices=False,
     message:
@@ -197,9 +200,9 @@ rule calculate_taxa_probabilities:
 
 rule fasta_idx:
     input:
-        "database/{orgname}/{accession}.fasta.gz",
+        config["genome_cache_folder"] + "/{orgname}/{accession}.fasta.gz",
     output:
-        "database/{orgname}/{accession}.fasta.gz.fai",
+        config["genome_cache_folder"] + "/{orgname}/{accession}.fasta.gz.fai",
     benchmark:
         repeat("benchmarks/fasta_idx_{orgname}_{accession}.benchmark.txt", 1)
     message:
@@ -211,15 +214,15 @@ rule fasta_idx:
 
 rule coverage_t_test:
     input:
-        "{query}/sigma/{sample}/{reads}/{orgname}/{orgname}_{accession}.bam",
-        "database/{orgname}/{accession}.fasta.gz.fai",
+        config["analysis_output_dir"] + "/sigma/{sample}/{reads}/{orgname}/{orgname}_{accession}.bam",
+        config["genome_cache_folder"] + "/{orgname}/{accession}.fasta.gz.fai",
     output:
-        "{query}/probabilities/{sample}/{orgname}_t_test_pvalue_{accession}_{reads}.txt",
+        config["analysis_output_dir"] + "/probabilities/{sample}/{orgname}_t_test_pvalue_{accession}_{reads}.txt",
     log:
-        "{query}/probabilities/{sample}/{orgname}_t_test_pvalue_{accession}_{reads}.log",
+        config["analysis_output_dir"] + "/probabilities/{sample}/{orgname}_t_test_pvalue_{accession}_{reads}.log",
     benchmark:
         repeat(
-            "benchmarks/coverage_t_test_{query}_{sample}_{orgname}_{accession}_{reads}.benchmark.txt",
+            "benchmarks/coverage_t_test_{sample}_{orgname}_{accession}_{reads}.benchmark.txt",
             1,
         )
     message:
@@ -241,10 +244,10 @@ def get_t_test_values_paths(wildcards):
         wildcards,
         checkpoints,
         config["with_entrez_query"],
-        config["with_refseq_rep"],
+        config["refseq_rep"],
         config["with_custom_sequences"],
         config["with_custom_accessions"],
-        config["specific_genera"],
+        config["genera"],
     )
 
     inputs = []
@@ -262,8 +265,7 @@ def get_t_test_values_paths(wildcards):
         )
 
         inputs.append(
-            "{query}/probabilities/{sample}/{orgname}_t_test_pvalue_{accession}_{reads}.txt".format(
-                query=wildcards.query,
+            config["analysis_output_dir"] + "/probabilities/{sample}/{orgname}_t_test_pvalue_{accession}_{reads}.txt".format(
                 sample=wildcards.sample,
                 orgname=orgname,
                 accession=accession,
@@ -278,11 +280,11 @@ rule cat_pvalues:
     input:
         get_t_test_values_paths,
     output:
-        "{query}/probabilities/{sample}/{sample}_t_test_pvalues.txt",
+        config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_t_test_pvalues.txt",
     log:
-        "{query}/probabilities/{sample}/{sample}_t_test_pvalues.log",
+        config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_t_test_pvalues.log",
     benchmark:
-        repeat("benchmarks/cat_pvalues_{query}_{sample}.benchmark.txt", 1)
+        repeat("benchmarks/cat_pvalues_{sample}.benchmark.txt", 1)
     message:
         "Concatenating all the T-Test p-value outputs for sample {wildcards.sample} "
         "into one file {output}. Its log file can be found in {log}."
@@ -292,15 +294,15 @@ rule cat_pvalues:
 
 rule calculate_dirichlet_abundances:
     input:
-        "{query}/probabilities/{sample}/{sample}_likelihood_ts_tv_matrix.csv",
-        "{query}/probabilities/{sample}/{sample}_t_test_pvalues.txt",
-        "fastq_inputs/meta/{sample}.size",
+        config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_likelihood_ts_tv_matrix.csv",
+        config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_t_test_pvalues.txt",
+        config["sample_output_dir"] + "/fastq_inputs/meta/{sample}.size",
     output:
-        "{query}/probabilities/{sample}/{sample}_posterior_abundance.tsv",
+        config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_posterior_abundance.tsv",
     log:
-        "{query}/probabilities/{sample}/{sample}_posterior_abundance.log",
+        config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_posterior_abundance.log",
     benchmark:
-        repeat("benchmarks/calculate_dirichlet_abundances_{query}_{sample}.benchmark.txt", 1)
+        repeat("benchmarks/calculate_dirichlet_abundances_{sample}.benchmark.txt", 1)
     message:
         "Calculating the mean posterior abundance for sample {wildcards.sample}. The outputted abundance table can be "
         "found in {output}, and its log file can be found in {log}."

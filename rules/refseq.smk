@@ -17,9 +17,9 @@ REFSEQ_REP_URL = "https://ftp.ncbi.nlm.nih.gov/genomes/GENOME_REPORTS/prok_repre
 
 rule download_refseq_representative_table:
     output:
-        "database_inputs/prok_representative_genomes.txt",
+        config["db_output"] + "/database_inputs/prok_representative_genomes.txt",
     log:
-        "database_inputs/prok_representative_genomes.log",
+        config["db_output"] + "/database_inputs/prok_representative_genomes.log",
     benchmark:
         repeat("benchmarks/prok_report_download.benchmark.txt", 3)
     message:
@@ -31,17 +31,17 @@ rule download_refseq_representative_table:
 
 checkpoint entrez_refseq_accessions:
     input:
-        "database_inputs/prok_representative_genomes.txt",
+        config["db_output"] + "/database_inputs/prok_representative_genomes.txt",
     log:
-        "{query}/entrez/{query}-refseq-seqs.log",
+        config["db_output"] + "/entrez/refseq-rep-seqs.log",
     output:
-        refseq_genomes="{query}/entrez/{query}-refseq-genomes.tsv",
-        genbank_genomes="{query}/entrez/{query}-genbank-genomes.tsv",
-        assemblies="{query}/entrez/{query}-assemblies.tsv",
-        refseq_plasmids="{query}/entrez/{query}-refseq-plasmids.tsv",
-        genbank_plasmids="{query}/entrez/{query}-genbank-plasmids.tsv",
+        refseq_genomes=config["db_output"] + "/entrez/refseq-genomes.tsv",
+        genbank_genomes=config["db_output"] + "/entrez/genbank-genomes.tsv",
+        assemblies=config["db_output"] + "/entrez/assemblies.tsv",
+        refseq_plasmids=config["db_output"] + "/entrez/refseq-plasmids.tsv",
+        genbank_plasmids=config["db_output"] + "/entrez/genbank-plasmids.tsv",
     benchmark:
-        repeat("benchmarks/entrez_refseq_accessions_{query}.benchmark.txt", 3)
+        repeat("benchmarks/entrez_refseq_rep_accessions.benchmark.txt", 3)
     message:
         "Splitting the representative RefSeq table in smaller tables. Table for species whose sequences "
         "can be found in RefSeq:"
@@ -56,16 +56,18 @@ checkpoint entrez_refseq_accessions:
 
 checkpoint entrez_invalid_assemblies:
     input:
-        "{query}/entrez/{query}-assemblies.tsv",
+        config["db_output"] + "/entrez/assemblies.tsv",
     log:
-        "{query}/entrez/{query}-invalid-assemblies.log",
+        config["db_output"] + "/entrez/invalid-assemblies.log",
     output:
-        "{query}/entrez/{query}-invalid-assemblies.tsv",
+        config["db_output"] + "/entrez/invalid-assemblies.tsv",
     benchmark:
-        repeat("benchmarks/entrez_valid_assemblies_{query}.benchmark.txt", 1)
+        repeat("benchmarks/entrez_valid_assemblies.benchmark.txt", 1)
     message:
         "Finding assemblies that are not part of the RefSeq database for the accessions in {input}. "
         "The output table can be found in {output} and its log file in {log}."
+    resources:
+        entrez_api=1,
     script:
         "../scripts/entrez_invalid_assemblies.py"
 
@@ -94,7 +96,8 @@ def get_refseq_genome_sequences(wildcards):
             seq["GBSeq_accession-version"],
         )
         inputs.append(
-            "database/{orgname}/{accession}.fasta.gz".format(
+            config["genome_cache_folder"]
+            + "/{orgname}/{accession}.fasta.gz".format(
                 orgname=orgname, accession=accession
             )
         )
@@ -106,11 +109,11 @@ rule entrez_refseq_genbank_multifasta:
     input:
         get_refseq_genome_sequences,
     log:
-        "{query}/bowtie/{query}_refseq_genbank.log",
+        config["db_output"] + "/bowtie/refseq_genbank.log",
     output:
-        "{query}/bowtie/{query}_refseq_genbank.fasta.gz",
+        config["db_output"] + "/bowtie/refseq_genbank.fasta.gz",
     benchmark:
-        repeat("benchmarks/entrez_refseq_genbank_multifasta_{query}.benchmark.txt", 1)
+        repeat("benchmarks/entrez_refseq_genbank_multifasta_.benchmark.txt", 1)
     message:
         "Concatenating all the fasta sequences for all the taxa that can be found in RefSeq and Genbank "
         "in {output}, and its log file can be found in {log}."
@@ -120,9 +123,9 @@ rule entrez_refseq_genbank_multifasta:
 
 rule entrez_download_assembly_sequence:
     output:
-        "database/{orgname}/{accession}.fasta.gz",
+        config["genome_cache_folder"] + "/{orgname}/{accession}.fasta.gz",
     log:
-        "database/{orgname}/{accession}.log",
+        config["genome_cache_folder"] + "/{orgname}/{accession}.log",
     benchmark:
         repeat(
             "benchmarks/entrez_download_assembly_sequence_{orgname}_{accession}.benchmark.txt",
@@ -170,7 +173,8 @@ def get_assembly_genome_sequences(wildcards):
             seq["GBSeq_accession-version"],
         )
         inputs.append(
-            "database/{orgname}/{accession}.fasta.gz".format(
+            config["genome_cache_folder"]
+            + "/{orgname}/{accession}.fasta.gz".format(
                 orgname=orgname, accession=accession
             )
         )
@@ -182,11 +186,11 @@ rule entrez_assembly_multifasta:
     input:
         get_assembly_genome_sequences,
     log:
-        "{query}/bowtie/{query}_assemblies.log",
+        config["db_output"] + "/bowtie/assemblies.log",
     output:
-        "{query}/bowtie/{query}_assemblies.fasta.gz",
+        config["db_output"] + "/bowtie/assemblies.fasta.gz",
     benchmark:
-        repeat("benchmarks/entrez_assembly_multifasta_{query}.benchmark.txt", 1)
+        repeat("benchmarks/entrez_assembly_multifasta.benchmark.txt", 1)
     message:
         "Concatenating all the fasta sequences for all the taxa that can be found in the Assembly database "
         "in {output}, and its log file can be found in {log}."
@@ -196,14 +200,14 @@ rule entrez_assembly_multifasta:
 
 rule entrez_refseq_prok_multifasta:
     input:
-        assemblies="{query}/bowtie/{query}_assemblies.fasta.gz",
-        refseq="{query}/bowtie/{query}_refseq_genbank.fasta.gz",
+        assemblies=config["db_output"] + "/bowtie/assemblies.fasta.gz",
+        refseq=config["db_output"] + "/bowtie/refseq_genbank.fasta.gz",
     log:
-        "{query}/bowtie/{query}_refseq_prok.log",
+        config["db_output"] + "/bowtie/refseq_prok.log",
     output:
-        "{query}/bowtie/{query}_refseq_prok.fasta.gz",
+        config["db_output"] + "/bowtie/refseq_prok.fasta.gz",
     benchmark:
-        repeat("benchmarks/entrez_refseq_prok_multifasta_{query}.benchmark.txt", 1)
+        repeat("benchmarks/entrez_refseq_prok_multifasta.benchmark.txt", 1)
     message:
         "Concatenating input files {input.assemblies} and {input.refseq} in {output}. "
         "Its log file can be found in {log}."

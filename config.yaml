@@ -1,12 +1,10 @@
-entrez_batchsize:
+batchsize:
   5
-entrez_rank:
+rank:
   'species'
 mismatch_probability:
   0.05
-bowtie2_treads:
+bowtie2_threads:
   1
-mem_rescale_factor:
+bowtie2_scaling:
   2.5
-cache:
-  ~/rip/

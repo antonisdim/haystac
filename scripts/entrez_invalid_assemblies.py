@@ -25,7 +25,7 @@ MAX_RETRY_ATTEMPTS = 3
 def entrez_invalid_assemblies(config, assemblies, output):
     assemblies_file = pd.read_csv(assemblies, sep="\t")
 
-    Entrez.email = config["entrez_email"]
+    Entrez.email = config["email"]
 
     with open(output, "w") as fout:
         columns = ["species", "GBSeq_accession-version"]

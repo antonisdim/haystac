@@ -16,11 +16,11 @@ from scripts.rip_utilities import normalise_name, check_unique_taxa_in_custom_in
 
 rule entrez_custom_sequences:
     input:
-        config["custom_seq_file"],
+        config["sequences"],
     log:
-        "database/{orgname}/custom_seq-{accession}.log",
+        config["genome_cache_folder"] + "/{orgname}/custom_seq-{accession}.log",
     output:
-        "database/{orgname}/custom_seq-{accession}.fasta.gz",
+        config["genome_cache_folder"] + "/{orgname}/custom_seq-{accession}.fasta.gz",
     message:
         "Incorporating the user provided fasta sequence {wildcards.accession} for taxon {wildcards.orgname}. "
         "The provided sequence can be found in {output} and its log file in {log}."
@@ -31,7 +31,7 @@ rule entrez_custom_sequences:
 def get_paths_for_custom_seqs():
 
     custom_fasta_paths = pd.read_csv(
-        config["custom_seq_file"],
+        config["sequences"],
         sep="\t",
         header=None,
         names=["species", "accession", "path"],
@@ -47,9 +47,7 @@ def get_paths_for_custom_seqs():
             "Please only provide your favourite sequence for each taxon."
         )
 
-    check_unique_taxa_in_custom_input(
-        config["with_custom_accessions"], config["with_custom_sequences"]
-    )
+    check_unique_taxa_in_custom_input(config["accessions"], config["sequences"])
 
     inputs = []
 
@@ -59,7 +57,8 @@ def get_paths_for_custom_seqs():
             seq["accession"],
         )
         inputs.append(
-            "database/{orgname}/custom_seq-{accession}.fasta.gz".format(
+            config["genome_cache_folder"]
+            + "/{orgname}/custom_seq-{accession}.fasta.gz".format(
                 orgname=orgname, accession=accession
             )
         )
@@ -71,9 +70,9 @@ rule entrez_aggregate_custom_seqs:
     input:
         get_paths_for_custom_seqs,
     log:
-        "{query}/bowtie/{query}_custom_seqs.log",
+        config["db_output"] + "/bowtie/{query}_custom_seqs.log",
     output:
-        "{query}/bowtie/{query}_custom_seqs.fasta.gz",
+        config["db_output"] + "/bowtie/{query}_custom_seqs.fasta.gz",
     message:
         "Concatenating all the user provided sequences {input} in {output}. "
         "Its log file can be found in {log}."
@@ -97,9 +96,7 @@ def get_paths_for_custom_acc():
             "Please only provide your favourite sequence for each taxon."
         )
 
-    check_unique_taxa_in_custom_input(
-        config["with_custom_accessions"], config["with_custom_sequences"]
-    )
+    check_unique_taxa_in_custom_input(config["accessions"], config["sequences"])
 
     inputs = []
 
@@ -109,7 +106,8 @@ def get_paths_for_custom_acc():
             seq["accession"],
         )
         inputs.append(
-            "database/{orgname}/{accession}.fasta.gz".format(
+            config["genome_cache_folder"]
+            + "/{orgname}/{accession}.fasta.gz".format(
                 orgname=orgname, accession=accession
             )
         )
@@ -121,9 +119,9 @@ rule entrez_aggregate_custom_acc:
     input:
         get_paths_for_custom_acc,
     log:
-        "{query}/bowtie/{query}_custom_acc.log",
+        config["db_output"] + "/bowtie/{query}_custom_acc.log",
     output:
-        "{query}/bowtie/{query}_custom_acc.fasta.gz",
+        config["db_output"] + "/bowtie/{query}_custom_acc.fasta.gz",
     message:
         "Concatenating all the sequences from user provided accessions {input} in {output}. "
         "Its log file can be found in {log}."

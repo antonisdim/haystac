@@ -60,7 +60,7 @@ def entrez_nuccore_query(input_file, config, query_chunk_num, output_file, attem
     """
 
     time.sleep(int(query_chunk_num) // 3)
-    Entrez.email = config["entrez_email"]
+    Entrez.email = config["email"]
 
     accessions = pd.read_csv(input_file, sep="\t").squeeze().to_list()
     entrez_query_list = next(
@@ -78,7 +78,7 @@ def entrez_nuccore_query(input_file, config, query_chunk_num, output_file, attem
         file=sys.stderr,
     )
 
-    retmax = config["entrez_batchsize"]
+    retmax = config["batchsize"]
     counter = 0
     dictwriter_counter = 0
 

@@ -25,9 +25,9 @@ from scripts.entrez_utils import (
 
 
 def entrez_find_accessions(config, output_file):
-    Entrez.email = config["entrez_email"]
+    Entrez.email = config["email"]
 
-    entrez_query = config["entrez_query"]
+    entrez_query = config["query"]
 
     handle = Entrez.esearch(
         db=ENTREZ_DB_NUCCORE,

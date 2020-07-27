@@ -318,11 +318,7 @@ if __name__ == "__main__":
     Run RIP workflows, using the given workflow name & parameters file.
     """,
     )
-    #
-    # subparsers = parser.add_subparsers(help='sub-command help', title="actions")
-    # parser = subparsers.add_parser('db_creation', help='DB creation help message', add_help=False, parents=[parser])
-    # parser = subparsers.add_parser('sample_analysis', help='Sample analysis help message', add_help=False,
-    #     parents=[parser])
+
 
     parser.add_argument("--config_yaml", default="")
     parser.add_argument("--dry-run", action="store_true")

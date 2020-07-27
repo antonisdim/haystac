@@ -34,8 +34,8 @@ def entrez_taxonomy_query(config, nuccore_file, output_file):
         nuccore_file
     ).st_size, "The nuccore_query count file is empty {}".format(nuccore_file)
 
-    Entrez.email = config["entrez_email"]
-    retmax = config["entrez_batchsize"]
+    Entrez.email = config["email"]
+    retmax = config["batchsize"]
 
     # load the unique list of taxa from the nuccore resultset
     accessions = pd.read_csv(
