@@ -16,18 +16,26 @@ from scripts.rip_utilities import get_total_paths, normalise_name
 
 rule dedup_merged_mapdamage:
     input:
-        bam=config["analysis_output_dir"] + "/sigma/{sample}/{reads}/{orgname}/{orgname}_{accession}.bam",
+        bam=(
+            config["analysis_output_dir"]
+            + "/sigma/{sample}/{reads}/{orgname}/{orgname}_{accession}.bam"
+        ),
     log:
-        config["analysis_output_dir"] + "/mapdamage/{sample}/rmdup_bam/{reads}/{orgname}/{orgname}_{accession}_rmdup.log",
+        config[
+            "analysis_output_dir"
+        ] + "/mapdamage/{sample}/rmdup_bam/{reads}/{orgname}/{orgname}_{accession}_rmdup.log",
     output:
-        config["analysis_output_dir"] + "/mapdamage/{sample}/rmdup_bam/{reads}/{orgname}/{orgname}_{accession}_rmdup.bam",
+        config[
+            "analysis_output_dir"
+        ] + "/mapdamage/{sample}/rmdup_bam/{reads}/{orgname}/{orgname}_{accession}_rmdup.bam",
     benchmark:
         repeat(
-            "benchmarks/dedup_merged_{sample}_{reads}_{orgname}_{accession}.benchmark.txt",
-            1,
+            "benchmarks/dedup_merged_{sample}_{reads}_{orgname}_{accession}.benchmark.txt", 1,
         )
     params:
-        output=config["analysis_output_dir"] + "/mapdamage/{sample}/rmdup_bam/{reads}/{orgname}/",
+        output=(
+            config["analysis_output_dir"] + "/mapdamage/{sample}/rmdup_bam/{reads}/{orgname}/"
+        ),
     message:
         "Removing duplicate reads that were aligned against genome {wildcards.accession} "
         "for taxon {wildcards.orgname}, for sample {wildcards.sample}. The unique aligned reads can be found "
@@ -38,12 +46,17 @@ rule dedup_merged_mapdamage:
 
 rule run_mapdamage:
     input:
-        bam=config["analysis_output_dir"] + "/mapdamage/{sample}/rmdup_bam/{reads}/{orgname}/{orgname}_{accession}_rmdup.bam",
+        bam=(
+            config["analysis_output_dir"]
+            + "/mapdamage/{sample}/rmdup_bam/{reads}/{orgname}/{orgname}_{accession}_rmdup.bam"
+        ),
         ref_genome=config["genome_cache_folder"] + "/{orgname}/{accession}.fasta.gz",
     log:
         config["analysis_output_dir"] + "/mapdamage/{sample}/{reads}/{orgname}_{accession}.log",
     output:
-        directory(config["analysis_output_dir"] + "/mapdamage/{sample}/{reads}/{orgname}-{accession}"),
+        directory(
+            config["analysis_output_dir"] + "/mapdamage/{sample}/{reads}/{orgname}-{accession}"
+        ),
     message:
         "Performing a mapDamage analysis on unique aligned reads against genome {wildcards.accession} "
         "for taxon {wildcards.orgname}, for sample {wildcards.sample}. The output can be found in {output}, "
@@ -83,7 +96,8 @@ def get_mapdamage_out_dir_paths(wildcards):
         )
 
         inputs.append(
-            config["analysis_output_dir"] + "/mapdamage/{sample}/{reads}/{orgname}-{accession}".format(
+            config["analysis_output_dir"]
+            + "/mapdamage/{sample}/{reads}/{orgname}-{accession}".format(
                 sample=wildcards.sample,
                 orgname=orgname,
                 accession=accession,

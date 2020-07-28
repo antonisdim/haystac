@@ -60,13 +60,17 @@ rule count_fastq_length:
 
 def get_bams_for_ts_tv_count(wildcards):
     if config["PE_MODERN"]:
-        return config["analysis_output_dir"] + "/sigma/{sample}/PE/{orgname}/{orgname}_{accession}.bam".format(
+        return config[
+            "analysis_output_dir"
+        ] + "/sigma/{sample}/PE/{orgname}/{orgname}_{accession}.bam".format(
             sample=wildcards.sample,
             orgname=wildcards.orgname,
             accession=wildcards.accession,
         )
     elif config["PE_ANCIENT"] or config["SE"]:
-        return config["analysis_output_dir"] + "/sigma/{sample}/SE/{orgname}/{orgname}_{accession}.bam".format(
+        return config[
+            "analysis_output_dir"
+        ] + "/sigma/{sample}/SE/{orgname}/{orgname}_{accession}.bam".format(
             sample=wildcards.sample,
             orgname=wildcards.orgname,
             accession=wildcards.accession,
@@ -82,8 +86,7 @@ rule count_accession_ts_tv:
         config["analysis_output_dir"] + "/ts_tv_counts/{sample}/{orgname}_count_{accession}.log",
     benchmark:
         repeat(
-            "benchmarks/count_accession_ts_tv_{sample}_{orgname}_{accession}.benchmark.txt",
-            1,
+            "benchmarks/count_accession_ts_tv_{sample}_{orgname}_{accession}.benchmark.txt", 1,
         )
     params:
         pairs=config["PE_MODERN"],
@@ -120,10 +123,9 @@ def get_ts_tv_count_paths(wildcards):
         )
 
         inputs.append(
-            config["analysis_output_dir"] + "/ts_tv_counts/{sample}/{orgname}_count_{accession}.csv".format(
-                sample=wildcards.sample,
-                orgname=orgname,
-                accession=accession,
+            config["analysis_output_dir"]
+            + "/ts_tv_counts/{sample}/{orgname}_count_{accession}.csv".format(
+                sample=wildcards.sample, orgname=orgname, accession=accession,
             )
         )
 
@@ -148,9 +150,9 @@ rule initial_ts_tv:
 
 def get_right_readlen(wildcards):
     if config["PE_MODERN"]:
-        return config["analysis_output_dir"] + "/fastq/PE/{sample}_mapq_pair.readlen".format(
-            sample=wildcards.sample
-        )
+        return config[
+            "analysis_output_dir"
+        ] + "/fastq/PE/{sample}_mapq_pair.readlen".format(sample=wildcards.sample)
     else:
         return config["analysis_output_dir"] + "/fastq/SE/{sample}_mapq.readlen".format(
             sample=wildcards.sample
@@ -163,10 +165,16 @@ rule calculate_likelihoods:
         get_right_readlen,
         get_ts_tv_count_paths,
     output:
-        config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_likelihood_ts_tv_matrix.csv",
-        config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_probability_model_params.json",
+        config[
+            "analysis_output_dir"
+        ] + "/probabilities/{sample}/{sample}_likelihood_ts_tv_matrix.csv",
+        config[
+            "analysis_output_dir"
+        ] + "/probabilities/{sample}/{sample}_probability_model_params.json",
     log:
-        config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_likelihood_ts_tv_matrix.log",
+        config[
+            "analysis_output_dir"
+        ] + "/probabilities/{sample}/{sample}_likelihood_ts_tv_matrix.log",
     benchmark:
         repeat("benchmarks/calculate_likelihoods_{sample}.benchmark.txt", 1)
     message:
@@ -179,13 +187,21 @@ rule calculate_likelihoods:
 
 rule calculate_taxa_probabilities:
     input:
-        config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_likelihood_ts_tv_matrix.csv",
-        config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_probability_model_params.json",
+        config[
+            "analysis_output_dir"
+        ] + "/probabilities/{sample}/{sample}_likelihood_ts_tv_matrix.csv",
+        config[
+            "analysis_output_dir"
+        ] + "/probabilities/{sample}/{sample}_probability_model_params.json",
         config["sample_output_dir"] + "/fastq_inputs/meta/{sample}.size",
     output:
-        config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_posterior_probabilities.csv",
+        config[
+            "analysis_output_dir"
+        ] + "/probabilities/{sample}/{sample}_posterior_probabilities.csv",
     log:
-        config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_posterior_probabilities.log",
+        config[
+            "analysis_output_dir"
+        ] + "/probabilities/{sample}/{sample}_posterior_probabilities.log",
     benchmark:
         repeat("benchmarks/calculate_taxa_probabilities_{sample}.benchmark.txt", 1)
     params:
@@ -214,12 +230,18 @@ rule fasta_idx:
 
 rule coverage_t_test:
     input:
-        config["analysis_output_dir"] + "/sigma/{sample}/{reads}/{orgname}/{orgname}_{accession}.bam",
+        config[
+            "analysis_output_dir"
+        ] + "/sigma/{sample}/{reads}/{orgname}/{orgname}_{accession}.bam",
         config["genome_cache_folder"] + "/{orgname}/{accession}.fasta.gz.fai",
     output:
-        config["analysis_output_dir"] + "/probabilities/{sample}/{orgname}_t_test_pvalue_{accession}_{reads}.txt",
+        config[
+            "analysis_output_dir"
+        ] + "/probabilities/{sample}/{orgname}_t_test_pvalue_{accession}_{reads}.txt",
     log:
-        config["analysis_output_dir"] + "/probabilities/{sample}/{orgname}_t_test_pvalue_{accession}_{reads}.log",
+        config[
+            "analysis_output_dir"
+        ] + "/probabilities/{sample}/{orgname}_t_test_pvalue_{accession}_{reads}.log",
     benchmark:
         repeat(
             "benchmarks/coverage_t_test_{sample}_{orgname}_{accession}_{reads}.benchmark.txt",
@@ -265,7 +287,8 @@ def get_t_test_values_paths(wildcards):
         )
 
         inputs.append(
-            config["analysis_output_dir"] + "/probabilities/{sample}/{orgname}_t_test_pvalue_{accession}_{reads}.txt".format(
+            config["analysis_output_dir"]
+            + "/probabilities/{sample}/{orgname}_t_test_pvalue_{accession}_{reads}.txt".format(
                 sample=wildcards.sample,
                 orgname=orgname,
                 accession=accession,
@@ -294,13 +317,19 @@ rule cat_pvalues:
 
 rule calculate_dirichlet_abundances:
     input:
-        config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_likelihood_ts_tv_matrix.csv",
+        config[
+            "analysis_output_dir"
+        ] + "/probabilities/{sample}/{sample}_likelihood_ts_tv_matrix.csv",
         config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_t_test_pvalues.txt",
         config["sample_output_dir"] + "/fastq_inputs/meta/{sample}.size",
     output:
-        config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_posterior_abundance.tsv",
+        config[
+            "analysis_output_dir"
+        ] + "/probabilities/{sample}/{sample}_posterior_abundance.tsv",
     log:
-        config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_posterior_abundance.log",
+        config[
+            "analysis_output_dir"
+        ] + "/probabilities/{sample}/{sample}_posterior_abundance.log",
     benchmark:
         repeat("benchmarks/calculate_dirichlet_abundances_{sample}.benchmark.txt", 1)
     message:

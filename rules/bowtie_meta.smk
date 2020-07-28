@@ -241,12 +241,17 @@ rule align_taxon_single_end:
     log:
         config["analysis_output_dir"] + "/sigma/{sample}/SE/{orgname}/{accession}.log",
     output:
-        bam_file=config["analysis_output_dir"] + "/sigma/{sample}/SE/{orgname}/{orgname}_{accession}.bam",
-        bai_file=config["analysis_output_dir"] + "/sigma/{sample}/SE/{orgname}/{orgname}_{accession}.bam.bai",
+        bam_file=(
+            config["analysis_output_dir"]
+            + "/sigma/{sample}/SE/{orgname}/{orgname}_{accession}.bam"
+        ),
+        bai_file=(
+            config["analysis_output_dir"]
+            + "/sigma/{sample}/SE/{orgname}/{orgname}_{accession}.bam.bai"
+        ),
     benchmark:
         repeat(
-            "benchmarks/align_taxon_single_end_{sample}_{orgname}_{accession}.benchmark.txt",
-            1,
+            "benchmarks/align_taxon_single_end_{sample}_{orgname}_{accession}.benchmark.txt", 1,
         )
     params:
         min_score=get_min_score,
@@ -278,8 +283,14 @@ rule align_taxon_paired_end:
     log:
         config["analysis_output_dir"] + "/sigma/{sample}/PE/{orgname}/{accession}.log",
     output:
-        bam_file=config["analysis_output_dir"] + "/sigma/{sample}/PE/{orgname}/{orgname}_{accession}.bam",
-        bai_file=config["analysis_output_dir"] + "/sigma/{sample}/PE/{orgname}/{orgname}_{accession}.bam.bai",
+        bam_file=(
+            config["analysis_output_dir"]
+            + "/sigma/{sample}/PE/{orgname}/{orgname}_{accession}.bam"
+        ),
+        bai_file=(
+            config["analysis_output_dir"]
+            + "/sigma/{sample}/PE/{orgname}/{orgname}_{accession}.bam.bai"
+        ),
     params:
         min_score=get_min_score,
         min_frag_length=MIN_FRAG_LEN,
@@ -326,18 +337,16 @@ def get_bamfile_paths(wildcards):
 
         if config["SE"] or config["PE_ANCIENT"]:
             inputs.append(
-                config["analysis_output_dir"] + "/sigma/{sample}/SE/{orgname}/{orgname}_{accession}.bam".format(
-                    sample=wildcards.sample,
-                    orgname=orgname,
-                    accession=accession,
+                config["analysis_output_dir"]
+                + "/sigma/{sample}/SE/{orgname}/{orgname}_{accession}.bam".format(
+                    sample=wildcards.sample, orgname=orgname, accession=accession,
                 )
             )
         elif config["PE_MODERN"]:
             inputs.append(
-                config["analysis_output_dir"] + "/sigma/{sample}/PE/{orgname}/{orgname}_{accession}.bam".format(
-                    sample=wildcards.sample,
-                    orgname=orgname,
-                    accession=accession,
+                config["analysis_output_dir"]
+                + "/sigma/{sample}/PE/{orgname}/{orgname}_{accession}.bam".format(
+                    sample=wildcards.sample, orgname=orgname, accession=accession,
                 )
             )
 

@@ -131,7 +131,7 @@ The most commonly used git commands are:
         parser.add_argument(
             "--genome-cache-folder",
             help="Path where all the genomes that are downloaded and/or used by rip are being stored. "
-                 "(default ~/rip_genomes/)",
+            "(default ~/rip_genomes/)",
             metavar="",
         )
 
@@ -158,7 +158,7 @@ The most commonly used git commands are:
         parser.add_argument(
             "--bowtie2-scaling",
             help="Factor to rescale/chunk the input file for the mutlifasta "
-                 "index for the filtering alignment (default: 2.5)",
+            "index for the filtering alignment (default: 2.5)",
             type=float,
             metavar="",
         )
@@ -245,9 +245,9 @@ The most commonly used git commands are:
         parser.add_argument(
             "--refseq-rep",
             help="Use the prokaryotic representative species of the RefSeq DB "
-                 "for the species id pipeline. only species no strains. "
-                 "either or both of with_refseq_rep and "
-                 "with_entrez_query should be set (default: False)",
+            "for the species id pipeline. only species no strains. "
+            "either or both of with_refseq_rep and "
+            "with_entrez_query should be set (default: False)",
             default=False,
         )
         parser.add_argument(
@@ -261,15 +261,15 @@ The most commonly used git commands are:
         parser.add_argument(
             "--rank",
             help="Taxonomic rank to perform the identifications on (genus, species, subspecies, serotype) "
-                 "<str> (default: species)",
+            "<str> (default: species)",
             default="species",
             metavar="",
         )
         parser.add_argument(
             "--sequences",
             help="TAB DELIMITED input file containing the the name of the taxon with no special characters, "
-                 "and an underscore '_' instead of spaces, a user defined accession code and the path of the fasta file. "
-                 "The fasta file that the path point to can be either uncompressed or compressed with gzip/bgzip",
+            "and an underscore '_' instead of spaces, a user defined accession code and the path of the fasta file. "
+            "The fasta file that the path point to can be either uncompressed or compressed with gzip/bgzip",
             metavar="",
             default="",
         )
@@ -277,8 +277,8 @@ The most commonly used git commands are:
         parser.add_argument(
             "--accessions",
             help="TAB DELIMITED input file containing the the name of the taxon with no special characters, "
-                 "and an underscore '_' instead of spaces, a user defined valid NCBI nucleotide, assembly or WGS "
-                 "accession code. ",
+            "and an underscore '_' instead of spaces, a user defined valid NCBI nucleotide, assembly or WGS "
+            "accession code. ",
             metavar="",
             default="",
         )
@@ -287,8 +287,8 @@ The most commonly used git commands are:
             "--genera",
             nargs="+",
             help="List containing the names of specific genera "
-                 "the abundances should be calculated "
-                 "on, separated by a space character <genus1 genus2 genus3 ...>",
+            "the abundances should be calculated "
+            "on, separated by a space character <genus1 genus2 genus3 ...>",
             metavar="",
             default=[],
         )
@@ -302,8 +302,8 @@ The most commonly used git commands are:
         parser.add_argument(
             "--mem",
             help="Max memory resources allowed to be used ofr indexing the input for "
-                 "the filtering alignment "
-                 "(default: max available memory {})".format(MAX_MEM_MB),
+            "the filtering alignment "
+            "(default: max available memory {})".format(MAX_MEM_MB),
             default=MAX_MEM_MB,
             metavar="",
         )
@@ -311,7 +311,7 @@ The most commonly used git commands are:
             "--unlock",
             action="store_true",
             help="Unlock the working directory after smk is "
-                 "abruptly killed  <bool> (default: False)",
+            "abruptly killed  <bool> (default: False)",
         )
         parser.add_argument(
             "--debug",
@@ -545,7 +545,7 @@ The most commonly used git commands are:
         parser.add_argument(
             "--sample-prefix",
             help="Sample prefix for all the future analysis. Optional if SRA accession is provided instead"
-                 " <str>",
+            " <str>",
             metavar="",
             default="",
         )
@@ -564,13 +564,13 @@ The most commonly used git commands are:
         parser.add_argument(
             "--fastq-r1",
             help="Path to the mate 1 fastq input file, if reads are PE. "
-                 "Can be raw or with adapters removed",
+            "Can be raw or with adapters removed",
             metavar="",
         )
         parser.add_argument(
             "--fastq-r2",
             help="Path to the mate 2 fastq input file, if reads are PE. "
-                 "Can be raw or with adapters removed",
+            "Can be raw or with adapters removed",
             metavar="",
         )
 
@@ -608,8 +608,8 @@ The most commonly used git commands are:
         parser.add_argument(
             "--mem",
             help="Max memory resources allowed to be used ofr indexing the input for "
-                 "the filtering alignment "
-                 "(default: max available memory {})".format(MAX_MEM_MB),
+            "the filtering alignment "
+            "(default: max available memory {})".format(MAX_MEM_MB),
             default=MAX_MEM_MB,
             metavar="",
         )
@@ -617,7 +617,7 @@ The most commonly used git commands are:
             "--unlock",
             action="store_true",
             help="Unlock the working directory after smk is "
-                 "abruptly killed  <bool> (default: False)",
+            "abruptly killed  <bool> (default: False)",
         )
         parser.add_argument(
             "--debug",
@@ -703,8 +703,8 @@ The most commonly used git commands are:
         sample_config["SE"] = False
 
         if (
-                sample_config["fastq_r1"] is not None
-                and sample_config["fastq_r2"] is not None
+            sample_config["fastq_r1"] is not None
+            and sample_config["fastq_r2"] is not None
         ):
             if sample_config["collapse"]:
                 sample_config["PE_ANCIENT"] = True
@@ -715,7 +715,7 @@ The most commonly used git commands are:
             sample_config["SE"] = True
 
         if (sample_config["fastq_r1"] or sample_config["fastq_r2"] is not None) and (
-                sample_config["fastq"] is not None
+            sample_config["fastq"] is not None
         ):
             raise RuntimeError("Please use a correct combination of PE or SE reads.")
 
@@ -727,8 +727,8 @@ The most commonly used git commands are:
                 "IdList"
             ]
             if (
-                    "paired"
-                    in str(Entrez.read(Entrez.esummary(db="sra", id=sra_id))).lower()
+                "paired"
+                in str(Entrez.read(Entrez.esummary(db="sra", id=sra_id))).lower()
             ):
                 if sample_config["collapse"]:
                     print(sample_config["collapse"])
@@ -749,20 +749,20 @@ The most commonly used git commands are:
         if sample_config["trim_adapters"]:
             if sample_config["PE_MODERN"]:
                 data_preprocessing = sample_config[
-                                         "sample_output_dir"
-                                     ] + "/fastq_inputs/PE_mod/{sample}_R1_adRm.fastq.gz".format(
+                    "sample_output_dir"
+                ] + "/fastq_inputs/PE_mod/{sample}_R1_adRm.fastq.gz".format(
                     sample=sample_config["sample_prefix"]
                 )
             elif sample_config["PE_ANCIENT"]:
                 data_preprocessing = sample_config[
-                                         "sample_output_dir"
-                                     ] + "/fastq_inputs/PE_anc/{sample}_adRm.fastq.gz".format(
+                    "sample_output_dir"
+                ] + "/fastq_inputs/PE_anc/{sample}_adRm.fastq.gz".format(
                     sample=sample_config["sample_prefix"]
                 )
             elif sample_config["SE"]:
                 data_preprocessing = sample_config[
-                                         "sample_output_dir"
-                                     ] + "/fastq_inputs/SE/{sample}_adRm.fastq.gz".format(
+                    "sample_output_dir"
+                ] + "/fastq_inputs/SE/{sample}_adRm.fastq.gz".format(
                     sample=sample_config["sample_prefix"]
                 )
             target_list.append(data_preprocessing)
@@ -864,8 +864,8 @@ The most commonly used git commands are:
             "--genera",
             nargs="+",
             help="List containing the names of specific genera "
-                 "the abundances should be calculated "
-                 "on, separated by a space character <genus1 genus2 genus3 ...>",
+            "the abundances should be calculated "
+            "on, separated by a space character <genus1 genus2 genus3 ...>",
             metavar="",
             default=[],
         )
@@ -882,8 +882,8 @@ The most commonly used git commands are:
         parser.add_argument(
             "--mem",
             help="Max memory resources allowed to be used ofr indexing the input for "
-                 "the filtering alignment "
-                 "(default: max available memory {})".format(MAX_MEM_MB),
+            "the filtering alignment "
+            "(default: max available memory {})".format(MAX_MEM_MB),
             default=MAX_MEM_MB,
             metavar="",
         )
@@ -891,7 +891,7 @@ The most commonly used git commands are:
             "--unlock",
             action="store_true",
             help="Unlock the working directory after smk is "
-                 "abruptly killed  <bool> (default: False)",
+            "abruptly killed  <bool> (default: False)",
         )
         parser.add_argument(
             "--debug",
@@ -940,10 +940,19 @@ The most commonly used git commands are:
 
         analysis_args = vars(args)
 
-        analysis_defaults = {'mode': None, 'database': None, 'sample': None, 'genera': [],
-                           'analysis_output_dir': None, 'cores': cpu_count(), 'mem': MAX_MEM_MB, 'unlock': False,
-                           'debug': False,
-                           'snakemake': None, 'dry_run':False}
+        analysis_defaults = {
+            "mode": None,
+            "database": None,
+            "sample": None,
+            "genera": [],
+            "analysis_output_dir": None,
+            "cores": cpu_count(),
+            "mem": MAX_MEM_MB,
+            "unlock": False,
+            "debug": False,
+            "snakemake": None,
+            "dry_run": False,
+        }
 
         analysis_config = {k: v for k, v in analysis_defaults.items()}
         analysis_config.update((k, v) for k, v in database_config.items())
@@ -961,62 +970,76 @@ The most commonly used git commands are:
         elif "./" in analysis_config["analysis_output_dir"]:
             analysis_config["analysis_output_dir"] = os.path.join(
                 os.getcwd(),
-                analysis_config["analysis_output_dir"].rstrip("/").lstrip(".").lstrip("/"),
+                analysis_config["analysis_output_dir"]
+                .rstrip("/")
+                .lstrip(".")
+                .lstrip("/"),
             )
         else:
             analysis_config["analysis_output_dir"] = (
-                analysis_config["analysis_output_dir"].rstrip("/").lstrip(".").lstrip("/")
+                analysis_config["analysis_output_dir"]
+                .rstrip("/")
+                .lstrip(".")
+                .lstrip("/")
             )
 
         print(analysis_config)
 
         target_list = []
 
-        if args.mode == 'filter':
+        if args.mode == "filter":
             bowtie = ""
             if analysis_config["PE_MODERN"]:
-                bowtie = analysis_config["analysis_output_dir"] + "/fastq/PE/{sample}_mapq_pair.readlen".format(
+                bowtie = analysis_config[
+                    "analysis_output_dir"
+                ] + "/fastq/PE/{sample}_mapq_pair.readlen".format(
                     sample=analysis_config["sample_prefix"]
                 )
             elif analysis_config["PE_ANCIENT"] or analysis_config["SE"]:
-                bowtie = analysis_config["analysis_output_dir"] + "/fastq/SE/{sample}_mapq.readlen".format(
+                bowtie = analysis_config[
+                    "analysis_output_dir"
+                ] + "/fastq/SE/{sample}_mapq.readlen".format(
                     sample=analysis_config["sample_prefix"]
                 )
             target_list.append(bowtie)
 
-        if args.mode == 'align':
+        if args.mode == "align":
             target_list.append(
-                analysis_config["analysis_output_dir"] + "/sigma/{sample}_alignments.done".format(
+                analysis_config["analysis_output_dir"]
+                + "/sigma/{sample}_alignments.done".format(
                     sample=analysis_config["sample_prefix"]
                 )
             )
 
-        if args.mode == 'likelihoods':
+        if args.mode == "likelihoods":
             target_list.append(
-                analysis_config[
-                    "analysis_output_dir"] + "/probabilities/{sample}/{sample}_likelihood_ts_tv_matrix.csv".format(
+                analysis_config["analysis_output_dir"]
+                + "/probabilities/{sample}/{sample}_likelihood_ts_tv_matrix.csv".format(
                     sample=analysis_config["sample_prefix"]
                 )
             )
 
-        if args.mode == 'probabilities':
+        if args.mode == "probabilities":
             target_list.append(
-                analysis_config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_posterior_probabilities.csv".format(
+                analysis_config["analysis_output_dir"]
+                + "/probabilities/{sample}/{sample}_posterior_probabilities.csv".format(
                     sample=analysis_config["sample_prefix"]
                 )
             )
 
-        if args.mode == 'abundances':
+        if args.mode == "abundances":
 
             target_list.append(
-                analysis_config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_posterior_abundance.tsv".format(
+                analysis_config["analysis_output_dir"]
+                + "/probabilities/{sample}/{sample}_posterior_abundance.tsv".format(
                     sample=analysis_config["sample_prefix"]
                 )
             )
 
-        if args.mode == 'mapdamage':
+        if args.mode == "mapdamage":
             target_list.append(
-                analysis_config["analysis_output_dir"] + "/mapdamage/{sample}_mapdamage.done".format(
+                analysis_config["analysis_output_dir"]
+                + "/mapdamage/{sample}_mapdamage.done".format(
                     sample=analysis_config["sample_prefix"]
                 )
             )
