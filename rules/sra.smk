@@ -20,6 +20,8 @@ rule get_sra_fastq_se:
     threads: 6
     message:
         "Download SRA file {output} for accession {wildcards.accession}. The log file can be found in {log}."
+    conda:
+        "../envs/sra_tools.yaml"
     wrapper:
         "0.51.2/bio/sra-tools/fasterq-dump" # TODO we're not using wrappers anywhere else... be consistent!
 
@@ -35,6 +37,8 @@ rule get_sra_fastq_pe:
     threads: 6 # defaults to 6
     message:
         "Download SRA files {output} for accession {wildcards.accession}. The log file can be found in {log}."
+    conda:
+        "../envs/sra_tools.yaml"
     wrapper:
         "0.51.2/bio/sra-tools/fasterq-dump" # TODO we're not using wrappers anywhere else... be consistent!
 

@@ -62,6 +62,8 @@ rule adapterremoval_single_end:
         "Trimming sequencing adapters from file {input.fastq}, using AdapterRemoval. "
         "The trimmed reads can be found in {output}, and the "
         "log file can be found in {log}."
+    conda:
+        "../envs/adapterremoval.yaml"
     shell:
         "(AdapterRemoval --file1 {input} --basename " + config[
             "sample_output_dir"
@@ -87,6 +89,8 @@ rule adapterremoval_paired_end_ancient:
         "using AdapterRemoval. "
         "The trimmed reads can be found in {output}, and the "
         "log file can be found in {log}."
+    conda:
+        "../envs/adapterremoval.yaml"
     shell:
         "(AdapterRemoval --file1 {input.fastq_r1}  --file2 {input.fastq_r2} "
         "--basename "+ config['sample_output_dir']+"/fastq_inputs/PE_anc/{wildcards.accession} --gzip --collapse-deterministic  --minlength 15 "
@@ -115,6 +119,8 @@ rule adapterremoval_paired_end_modern:
         "using AdapterRemoval. "
         "The trimmed reads can be found in {output.fastq_r1} and {output.fastq_r2}, and the "
         "log file can be found in {log}."
+    conda:
+        "../envs/adapterremoval.yaml"
     shell:
         "(AdapterRemoval --file1 {input.fastq_r1}  --file2 {input.fastq_r2} "
         "--basename " + config[

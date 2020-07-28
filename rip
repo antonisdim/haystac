@@ -26,12 +26,6 @@ thisdir = os.path.abspath(os.path.dirname(__file__))
 MAX_ENTREZ_REQUESTS = 3
 
 
-# TODO come up with solution so we don't need to activate the conda environment if we split the environment file into
-#  smaller ones and assign them to the individual rules, then we don't need to pre-build the environment
-#  https://snakemake.readthedocs.io/en/stable/tutorial/additional_features.html#automatic-deployment-of-software
-#  -dependencies
-
-
 def main(args):
     # first, find the Snakefile
     snakefile = os.path.join(thisdir, "Snakefile")

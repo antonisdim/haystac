@@ -81,7 +81,7 @@ def entrez_efetch(db, retmode, rettype, webenv, query_key, attempt=1):
 def guts_of_entrez(db, retmode, rettype, chunk, batch_size):
     # print info about number of records
     print(
-        "Downloading {} entries from NCBI {} database in batches of {} entries...\n".format(
+        "Downloading {} entries from the NCBI {} database in batches of {} entries...\n".format(
             len(chunk), db, batch_size
         ),
         file=sys.stderr,

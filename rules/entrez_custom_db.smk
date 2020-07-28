@@ -24,6 +24,8 @@ rule entrez_custom_sequences:
     message:
         "Incorporating the user provided fasta sequence {wildcards.accession} for taxon {wildcards.orgname}. "
         "The provided sequence can be found in {output} and its log file in {log}."
+    conda:
+        "../envs/entrez.yaml"
     script:
         "../scripts/entrez_custom_sequences.py"
 
@@ -76,6 +78,8 @@ rule entrez_aggregate_custom_seqs:
     message:
         "Concatenating all the user provided sequences {input} in {output}. "
         "Its log file can be found in {log}."
+    conda:
+        "../envs/bt2_multifasta.yaml"
     script:
         "../scripts/bowtie2_multifasta.py"
 
@@ -125,5 +129,7 @@ rule entrez_aggregate_custom_acc:
     message:
         "Concatenating all the sequences from user provided accessions {input} in {output}. "
         "Its log file can be found in {log}."
+    conda:
+        "../envs/bt2_multifasta.yaml"
     script:
         "../scripts/bowtie2_multifasta.py"

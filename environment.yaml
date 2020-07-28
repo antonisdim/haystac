@@ -14,14 +14,14 @@ dependencies:
   - dedup=0.12.5
   - scipy=1.4.1
   - seqtk=1.3
-  - wget  # TODO add version number
+  - wget=1.20.1
   - adapterremoval=2.3.1
   - sra-tools=2.9.1
-  - r-inline  # TODO add version number
-  - r-gam  # TODO add version number
-  - r-RcppGSL  # TODO add version number
-  - r-ggplot2  # TODO add version number
-  - r-Rcpp  # TODO add version number
-  - seqkit  # TODO add version number
+  - r-inline=0.3.15
+  - r-gam=1.16.1
+  - r-RcppGSL=0.3.8
+  - r-ggplot2=2_3.3.0
+  - r-Rcpp=1.0.4.6
+  - seqkit=0.13.2
   - pip:
-      - git+git://github.com/ginolhac/mapDamage.git   # TODO pin to a specific commit
+      - git+git://github.com/ginolhac/mapDamage.git@31f8dd1800b61a3e29375531e01a3e3fb115dc79

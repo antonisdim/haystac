@@ -25,6 +25,8 @@ rule download_refseq_representative_table:
     message:
         "Downloading the list of representative species from RefSeq in {output}. "
         "Its log file can be found in {log}."
+    conda:
+        "../envs/wget.yaml"
     shell:
         "wget -O {output} {REFSEQ_REP_URL} 2> {log}"
 
@@ -68,6 +70,8 @@ checkpoint entrez_invalid_assemblies:
         "The output table can be found in {output} and its log file in {log}."
     resources:
         entrez_api=1,
+    conda:
+        "../envs/entrez.yaml"
     script:
         "../scripts/entrez_invalid_assemblies.py"
 
@@ -117,31 +121,10 @@ rule entrez_refseq_genbank_multifasta:
     message:
         "Concatenating all the fasta sequences for all the taxa that can be found in RefSeq and Genbank "
         "in {output}, and its log file can be found in {log}."
+    conda:
+        "../envs/bt2_multifasta.yaml"
     script:
         "../scripts/bowtie2_multifasta.py"
-
-
-rule entrez_download_assembly_sequence:
-    output:
-        config["genome_cache_folder"] + "/{orgname}/{accession}.fasta.gz",
-    log:
-        config["genome_cache_folder"] + "/{orgname}/{accession}.log",
-    benchmark:
-        repeat(
-            "benchmarks/entrez_download_assembly_sequence_{orgname}_{accession}.benchmark.txt",
-            1,
-        )
-    params:
-        assembly=True,
-    wildcard_constraints:
-        accession="[^._]+", # TODO refactor this so we're not reliant on the style of the accession (low priority)
-    message:
-        "Downloading accession {wildcards.accession} for taxon {wildcards.orgname}. "
-        "The downloaded fasta sequence can be found in {output} and its log file in {log}."
-    resources:
-        entrez_api=1,
-    script:
-        "../scripts/entrez_download_sequence.py"
 
 
 def get_assembly_genome_sequences(wildcards):
@@ -194,6 +177,8 @@ rule entrez_assembly_multifasta:
     message:
         "Concatenating all the fasta sequences for all the taxa that can be found in the Assembly database "
         "in {output}, and its log file can be found in {log}."
+    conda:
+        "../envs/bt2_multifasta.yaml"
     script:
         "../scripts/bowtie2_multifasta.py"
 

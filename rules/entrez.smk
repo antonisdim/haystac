@@ -30,6 +30,8 @@ checkpoint entrez_find_accessions:
         "The temporary output can be found in {output} and the its log file in {log}."
     resources:
         entrez_api=1,
+    conda:
+        "../envs/entrez.yaml"
     script:
         "../scripts/entrez_find_accessions.py"
 
@@ -49,6 +51,8 @@ rule entrez_nuccore_query:
         "The temporary output can be found in {output} and its log file in {log}."
     resources:
         entrez_api=1,
+    conda:
+        "../envs/entrez.yaml"
     script:
         "../scripts/entrez_nuccore_query.py"
 
@@ -109,6 +113,8 @@ rule entrez_taxa_query:
         "The output table can be found in {output} and its log file in {log}."
     resources:
         entrez_api=1,
+    conda:
+        "../envs/entrez.yaml"
     script:
         "../scripts/entrez_taxonomy_query.py"
 
@@ -137,6 +143,8 @@ checkpoint entrez_pick_sequences:
         "Input tables with accession and taxonomic metadata can be found in "
         "{input.nuccore} and {input.taxonomy} respectively."
         "The output table can be found in {output} and its log file in {log}. "
+    conda:
+        "../envs/entrez.yaml"
     script:
         "../scripts/entrez_pick_sequences.py"
 
@@ -150,13 +158,13 @@ rule entrez_download_sequence:
         repeat("benchmarks/entrez_download_sequence_{orgname}_{accession}.benchmark.txt", 1)
     params:
         assembly=False,
-    wildcard_constraints:
-        accession="\w+\.\d+", # TODO refactor this so we're not reliant on the style of the accession (low priority)
     message:
         "Downloading accession {wildcards.accession} for taxon {wildcards.orgname}. "
         "The downloaded fasta sequence can be found in {output} and its log file in {log}."
     resources:
         entrez_api=1,
+    conda:
+        "../envs/entrez.yaml"
     script:
         "../scripts/entrez_download_sequence.py"
 
@@ -200,5 +208,7 @@ rule entrez_multifasta:
     message:
         "Concatenating all the fasta sequences for all the taxa in {output} for the entrez query, and its "
         "log file can be found in {log}."
+    conda:
+        "../envs/bt2_multifasta.yaml"
     script:
         "../scripts/bowtie2_multifasta.py"

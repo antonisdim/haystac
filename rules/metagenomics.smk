@@ -54,6 +54,8 @@ rule count_fastq_length:
     message:
         "Counting the number of reads for sample {wildcards.sample} and storing the result in {output}. "
         "Its log file can be found in {log}."
+    conda:
+        "../envs/seqtk.yaml"
     shell:
         "(seqtk seq -A {input.fastq} | grep -v '^>' | wc -l 1> {output} ) 2> {log}"
 
@@ -95,6 +97,8 @@ rule count_accession_ts_tv:
         "for taxon {wildcards.orgname} from input file {input}. "
         "The file with the mismatch counts can be found in {output} and its "
         "log file can be found in {log}."
+    conda:
+        "../envs/count_accessions.yaml"
     script:
         "../scripts/count_accession_ts_tv.py"
 
@@ -144,6 +148,8 @@ rule initial_ts_tv:
     message:
         "Concatenating all the Ts and Tv count files {input} in {output} for sample {wildcards.sample}. "
         "Its log file can be found in {log}."
+    conda:
+        "../envs/python.yaml"
     script:
         "../scripts/concat_files.py"
 
@@ -181,6 +187,8 @@ rule calculate_likelihoods:
         "Calculating the likelihoods and performing the Dirichlet assignment of the reads for sample "
         "{wildcards.sample} to the taxa in our database. The output table can be found in {output}, "
         "and its log file can be found in {log}."
+    conda:
+        "../envs/maths.yaml"
     script:
         "../scripts/calculate_likelihoods.py" #todo ask Evan to check if they are the same with the SQL commands
 
@@ -210,6 +218,8 @@ rule calculate_taxa_probabilities:
         "Calculating the assignment posterior probabilities for sample {wildcards.sample}, using the likelihood table"
         "calculated in the previous step. The assignment probabilities file can be found in {output}, "
         "and its log file can be found in {log}."
+    conda:
+        "../envs/maths.yaml"
     script:
         "../scripts/calculate_taxa_probabilities.py"
 
@@ -224,6 +234,8 @@ rule fasta_idx:
     message:
         "Indexing fasta file with accession {wildcards.accession} for taxon {wildcards.orgname}. "
         "The index can be found in {output}."
+    conda:
+        "../envs/samtools.yaml"
     shell:
         "samtools faidx {input}"
 
@@ -252,6 +264,8 @@ rule coverage_t_test:
         "assigned to taxon {wildcards.orgname} for accession "
         "{wildcards.accession} represent a random sample pf its genome or whether they are clustering around certain "
         "genomic region. The output value can be found in {output} and its log file can be found in {log}."
+    conda:
+        "../envs/maths.yaml"
     script:
         "../scripts/coverage_t_test.py"
 
@@ -311,6 +325,8 @@ rule cat_pvalues:
     message:
         "Concatenating all the T-Test p-value outputs for sample {wildcards.sample} "
         "into one file {output}. Its log file can be found in {log}."
+    conda:
+        "../envs/python.yaml"
     script:
         "../scripts/concat_files.py"
 
@@ -335,5 +351,7 @@ rule calculate_dirichlet_abundances:
     message:
         "Calculating the mean posterior abundance for sample {wildcards.sample}. The outputted abundance table can be "
         "found in {output}, and its log file can be found in {log}."
+    conda:
+        "../envs/maths.yaml"
     script:
         "../scripts/calculate_dirichlet_abundances.py"

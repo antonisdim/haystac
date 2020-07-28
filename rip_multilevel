@@ -533,6 +533,7 @@ The most commonly used git commands are:
             unlock=args.unlock,
             show_failed_logs=args.debug,
             resources={"entrez_api": MAX_ENTREZ_REQUESTS},
+            use_conda=True,
         )
 
         # translate "success" into shell exit code of 0
@@ -829,6 +830,7 @@ The most commonly used git commands are:
             unlock=args.unlock,
             show_failed_logs=args.debug,
             resources={"entrez_api": MAX_ENTREZ_REQUESTS},
+            use_conda=True,
         )
 
         # translate "success" into shell exit code of 0
@@ -1106,6 +1108,7 @@ The most commonly used git commands are:
             unlock=args.unlock,
             show_failed_logs=args.debug,
             resources={"entrez_api": MAX_ENTREZ_REQUESTS},
+            use_conda=True,
         )
 
         # translate "success" into shell exit code of 0

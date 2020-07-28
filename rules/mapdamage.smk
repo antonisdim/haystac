@@ -40,6 +40,8 @@ rule dedup_merged_mapdamage:
         "Removing duplicate reads that were aligned against genome {wildcards.accession} "
         "for taxon {wildcards.orgname}, for sample {wildcards.sample}. The unique aligned reads can be found "
         "in {output} and the log file can be found in {log}."
+    conda:
+        "../envs/dedup.yaml"
     shell:
         "dedup --merged --input {input.bam} --output {params.output} &> {log}"
 
@@ -61,6 +63,8 @@ rule run_mapdamage:
         "Performing a mapDamage analysis on unique aligned reads against genome {wildcards.accession} "
         "for taxon {wildcards.orgname}, for sample {wildcards.sample}. The output can be found in {output}, "
         "and its log file can be found in {log}."
+    conda:
+        "../envs/mapdamage.yaml"
     shell:
         "mapDamage -i {input.bam} -r {input.ref_genome} -d {output} --merge-libraries 2> {log}"
 
