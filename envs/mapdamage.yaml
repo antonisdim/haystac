@@ -1,7 +1,5 @@
 channels:
   - conda-forge
-  - bioconda
-  - defaults
   - r
 dependencies:
   - r-inline=0.3.15
