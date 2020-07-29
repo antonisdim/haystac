@@ -32,15 +32,15 @@ rule align_taxon_single_end:
         db_idx=config["genome_cache_folder"] + "/{orgname}/{accession}.1.bt2l",
         readlen=config["analysis_output_dir"] + "/fastq/SE/{sample}_mapq.readlen",
     log:
-        config["analysis_output_dir"] + "/sigma/{sample}/SE/{orgname}/{accession}.log",
+        config["analysis_output_dir"] + "/alignments/{sample}/SE/{orgname}/{accession}.log",
     output:
         bam_file=(
             config["analysis_output_dir"]
-            + "/sigma/{sample}/SE/{orgname}/{orgname}_{accession}.bam"
+            + "/alignments/{sample}/SE/{orgname}/{orgname}_{accession}.bam"
         ),
         bai_file=(
             config["analysis_output_dir"]
-            + "/sigma/{sample}/SE/{orgname}/{orgname}_{accession}.bam.bai"
+            + "/alignments/{sample}/SE/{orgname}/{orgname}_{accession}.bam.bai"
         ),
     benchmark:
         repeat(
@@ -76,15 +76,15 @@ rule align_taxon_paired_end:
         db_idx=config["genome_cache_folder"] + "/{orgname}/{accession}.1.bt2l",
         readlen=config["analysis_output_dir"] + "/fastq/PE/{sample}_mapq_pair.readlen",
     log:
-        config["analysis_output_dir"] + "/sigma/{sample}/PE/{orgname}/{accession}.log",
+        config["analysis_output_dir"] + "/alignments/{sample}/PE/{orgname}/{accession}.log",
     output:
         bam_file=(
             config["analysis_output_dir"]
-            + "/sigma/{sample}/PE/{orgname}/{orgname}_{accession}.bam"
+            + "/alignments/{sample}/PE/{orgname}/{orgname}_{accession}.bam"
         ),
         bai_file=(
             config["analysis_output_dir"]
-            + "/sigma/{sample}/PE/{orgname}/{orgname}_{accession}.bam.bai"
+            + "/alignments/{sample}/PE/{orgname}/{orgname}_{accession}.bam.bai"
         ),
     params:
         min_score=get_min_score,
@@ -135,14 +135,14 @@ def get_bamfile_paths(wildcards):
         if config["SE"] or config["PE_ANCIENT"]:
             inputs.append(
                 config["analysis_output_dir"]
-                + "/sigma/{sample}/SE/{orgname}/{orgname}_{accession}.bam".format(
+                + "/alignments/{sample}/SE/{orgname}/{orgname}_{accession}.bam".format(
                     sample=wildcards.sample, orgname=orgname, accession=accession,
                 )
             )
         elif config["PE_MODERN"]:
             inputs.append(
                 config["analysis_output_dir"]
-                + "/sigma/{sample}/PE/{orgname}/{orgname}_{accession}.bam".format(
+                + "/alignments/{sample}/PE/{orgname}/{orgname}_{accession}.bam".format(
                     sample=wildcards.sample, orgname=orgname, accession=accession,
                 )
             )
@@ -154,7 +154,7 @@ rule all_alignments:
     input:
         get_bamfile_paths,
     output:
-        config["analysis_output_dir"] + "/sigma/{sample}_alignments.done",
+        config["analysis_output_dir"] + "/alignments/{sample}_alignments.done",
     benchmark:
         repeat("benchmarks/all_alignments_{sample}.benchmark.txt", 1)
     message:

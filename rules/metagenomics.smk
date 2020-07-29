@@ -64,7 +64,7 @@ def get_bams_for_ts_tv_count(wildcards):
     if config["PE_MODERN"]:
         return config[
             "analysis_output_dir"
-        ] + "/sigma/{sample}/PE/{orgname}/{orgname}_{accession}.bam".format(
+        ] + "/alignments/{sample}/PE/{orgname}/{orgname}_{accession}.bam".format(
             sample=wildcards.sample,
             orgname=wildcards.orgname,
             accession=wildcards.accession,
@@ -72,7 +72,7 @@ def get_bams_for_ts_tv_count(wildcards):
     elif config["PE_ANCIENT"] or config["SE"]:
         return config[
             "analysis_output_dir"
-        ] + "/sigma/{sample}/SE/{orgname}/{orgname}_{accession}.bam".format(
+        ] + "/alignments/{sample}/SE/{orgname}/{orgname}_{accession}.bam".format(
             sample=wildcards.sample,
             orgname=wildcards.orgname,
             accession=wildcards.accession,
@@ -244,7 +244,7 @@ rule coverage_t_test:
     input:
         config[
             "analysis_output_dir"
-        ] + "/sigma/{sample}/{reads}/{orgname}/{orgname}_{accession}.bam",
+        ] + "/alignments/{sample}/{reads}/{orgname}/{orgname}_{accession}.bam",
         config["genome_cache_folder"] + "/{orgname}/{accession}.fasta.gz.fai",
     output:
         config[

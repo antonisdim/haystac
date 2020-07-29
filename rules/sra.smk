@@ -22,8 +22,8 @@ rule get_sra_fastq_se:
         "Download SRA file {output} for accession {wildcards.accession}. The log file can be found in {log}."
     conda:
         "../envs/sra_tools.yaml"
-    wrapper:
-        "0.51.2/bio/sra-tools/fasterq-dump" # TODO we're not using wrappers anywhere else... be consistent!
+    shell:
+        "fasterq-dump --split-files {wildcards.accession} --outdir " + config["sample_output_dir"] + "/sra_data/SE/",
 
 
 rule get_sra_fastq_pe:
@@ -39,8 +39,8 @@ rule get_sra_fastq_pe:
         "Download SRA files {output} for accession {wildcards.accession}. The log file can be found in {log}."
     conda:
         "../envs/sra_tools.yaml"
-    wrapper:
-        "0.51.2/bio/sra-tools/fasterq-dump" # TODO we're not using wrappers anywhere else... be consistent!
+    shell:
+        "fasterq-dump --split-files {wildcards.accession} --outdir " + config["sample_output_dir"] + "/sra_data/PE/"
 
 
 rule compress_sra_fastq_se:

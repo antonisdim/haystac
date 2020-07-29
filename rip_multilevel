@@ -7,6 +7,7 @@ __copyright__ = "Copyright 2020, University of Oxford"
 __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
+import argcomplete
 import argparse
 import os.path
 import re
@@ -95,7 +96,7 @@ def interactive_config_input():
 class Rip(object):
     def __init__(self):
         parser = argparse.ArgumentParser(
-            description="Pretends to be git",
+            description="RIP program for metagenomic profiling and species identification",
             usage="""rip <command> [<args>]
 
 The most commonly used git commands are:
@@ -105,10 +106,12 @@ The most commonly used git commands are:
    analyse            Analyse a sample (species identification or metagenomic assignments)
 """,
         )
-        parser.add_argument("command", help="Subcommand to run")
+        parser.add_argument("command", choices=['config', 'database', 'sample', 'analyse'], help="Subcommand to run")
 
         # parse_args defaults to [1:] for args, but you need to
         # exclude the rest of the args too, or validation will fail
+
+        argcomplete.autocomplete(parser)
         args = parser.parse_args(sys.argv[1:2])
         if not hasattr(self, args.command):
             print("Unrecognized command")
@@ -165,6 +168,7 @@ The most commonly used git commands are:
 
         # now that we're inside a subcommand, ignore the first
         # TWO argvs, ie the command (git) and the subcommand (commit)
+        argcomplete.autocomplete(parser)
         args = parser.parse_args(sys.argv[2:])
 
         print("Checking rip configuration options.")
@@ -324,6 +328,11 @@ The most commonly used git commands are:
             metavar="",  # todo don't know how to do that
         )
 
+        # now that we're inside a subcommand, ignore the first
+        # TWO argvs, ie the command (git) and the subcommand (commit)
+        argcomplete.autocomplete(parser)
+        args = parser.parse_args(sys.argv[2:])
+
         if len(sys.argv) == 2:
             parser.print_help()
             parser.exit()
@@ -333,9 +342,6 @@ The most commonly used git commands are:
             sys.stderr.write("Error: cannot find Snakefile at {}\n".format(snakefile))
             sys.exit(-1)
 
-        # now that we're inside a subcommand, ignore the first
-        # TWO argvs, ie the command (git) and the subcommand (commit)
-        args = parser.parse_args(sys.argv[2:])
         print("Running db creation, option={}".format(args.mode))
 
         # actual arg parsing
@@ -630,6 +636,9 @@ The most commonly used git commands are:
         )
         parser.add_argument("--dry-run", action="store_true")
 
+        argcomplete.autocomplete(parser)
+        args = parser.parse_args(sys.argv[2:])
+
         if len(sys.argv) == 2:
             parser.print_help()
             parser.exit()
@@ -638,8 +647,6 @@ The most commonly used git commands are:
         if not os.path.exists(snakefile):
             sys.stderr.write("Error: cannot find Snakefile at {}\n".format(snakefile))
             sys.exit(-1)
-
-        args = parser.parse_args(sys.argv[2:])
 
         repo_config_file = os.path.join(thisdir, "config.yaml")
         user_config_file = os.path.join(str(Path.home()), ".rip", "config.yaml")
@@ -905,12 +912,14 @@ The most commonly used git commands are:
         )
         parser.add_argument("--dry-run", action="store_true")
 
+        argcomplete.autocomplete(parser)
         args = parser.parse_args(sys.argv[2:])
-        print("The selected mode for sample analysis is {}".format(args.mode))
 
         if len(sys.argv) == 2:
             parser.print_help()
             parser.exit()
+
+        print("The selected mode for sample analysis is {}".format(args.mode))
 
         snakefile = os.path.join(thisdir, "Snakefile")
         if not os.path.exists(snakefile):
