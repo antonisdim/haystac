@@ -1,0 +1,14 @@
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+  - r
+dependencies:
+  - r-inline=0.3.15
+  - r-gam=1.16.1
+  - r-RcppGSL=0.3.8
+  - r-ggplot2=2_3.3.0
+  - r-Rcpp=1.0.4.6
+  - pip=19.3.1
+  - pip:
+      - git+git://github.com/ginolhac/mapDamage.git@31f8dd1800b61a3e29375531e01a3e3fb115dc79

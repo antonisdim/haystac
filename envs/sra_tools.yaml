@@ -1,0 +1,4 @@
+channels:
+  - bioconda
+dependencies:
+  - sra-tools=2.9.1

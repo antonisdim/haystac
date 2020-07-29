@@ -1,0 +1,5 @@
+channels:
+  - bioconda
+dependencies:
+  - samtools=1.9
+  - seqkit=0.13.2

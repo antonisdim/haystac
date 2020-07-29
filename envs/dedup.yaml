@@ -1,0 +1,4 @@
+channels:
+  - bioconda
+dependencies:
+  - dedup=0.12.5
