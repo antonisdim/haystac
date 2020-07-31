@@ -12,6 +12,7 @@ import pandas as pd
 MIN_FRAG_LEN = 0
 MAX_FRAG_LEN = 1000
 META_ALN_MIN_SCORE_CONSTANT = -6
+MESSAGE_SUFFIX = "(output: {output} and log: {log})" if config["debug"] else ""
 
 ##### Target rules #####
 
@@ -52,9 +53,7 @@ rule align_taxon_single_end:
         max_frag_length=MAX_FRAG_LEN,
     threads: config["bowtie2_threads"] # usually single threaded - the user can change it
     message:
-        "Aligning file {input.fastq} against genome {wildcards.accession} of taxon {wildcards.orgname} "
-        "for sample {wildcards.sample}, with {threads} thread(s). The output bam file is stored in {output.bam_file} "
-        "and the log file can be found here {log}."
+        "Aligning the filtered reads from sample {wildcards.sample} against taxon {wildcards.orgname} {MESSAGE_SUFFIX}"
     conda:
         "../envs/bowtie2.yaml"
     shell:
@@ -92,10 +91,7 @@ rule align_taxon_paired_end:
         max_frag_length=MAX_FRAG_LEN,
     threads: config["bowtie2_threads"]
     message:
-        "Aligning files {input.fastq_r1} and {input.fastq_r2} against genome {wildcards.accession} of "
-        "taxon {wildcards.orgname} for sample {wildcards.sample}, with {threads} thread(s). "
-        "The output bam file is stored in {output.bam_file} "
-        "and the log file can be found here {log}."
+        "Aligning the filtered reads from sample {wildcards.sample} against taxon {wildcards.orgname} {MESSAGE_SUFFIX}"
     conda:
         "../envs/bowtie2.yaml"
     shell:

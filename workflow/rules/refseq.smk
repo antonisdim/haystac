@@ -11,6 +11,7 @@ import pandas as pd
 from scripts.rip_utilities import normalise_name
 
 REFSEQ_REP_URL = "https://ftp.ncbi.nlm.nih.gov/genomes/GENOME_REPORTS/prok_representative_genomes.txt"
+MESSAGE_SUFFIX = "(output: {output} and log: {log})" if config["debug"] else ""
 
 ##### Target rules #####
 
@@ -23,8 +24,7 @@ rule download_refseq_representative_table:
     benchmark:
         repeat("benchmarks/prok_report_download.benchmark.txt", 3)
     message:
-        "Downloading the list of representative species from RefSeq in {output}. "
-        "Its log file can be found in {log}."
+        "Downloading the list of representative species from RefSeq {MESSAGE_SUFFIX}"
     conda:
         "../envs/wget.yaml"
     shell:
@@ -45,13 +45,7 @@ checkpoint entrez_refseq_accessions:
     benchmark:
         repeat("benchmarks/entrez_refseq_rep_accessions.benchmark.txt", 3)
     message:
-        "Splitting the representative RefSeq table in smaller tables. Table for species whose sequences "
-        "can be found in RefSeq:"
-        "{output.refseq_genomes}, table for species whose plasmid sequences can be found in RefSeq: "
-        "{output.refseq_plasmids}, table for species whose sequences can be found in Genbank: {output.genbank_genomes}, "
-        "table for species whose plasmid sequences can be found in Genbank: {output.genbank_plasmids}, "
-        "table for species whose sequences can be found in the Assembly database: {output.assemblies}. "
-        "The log file can be found in {log}."
+        "Splitting the representative RefSeq table in smaller tables {MESSAGE_SUFFIX}"
     script:
         "../scripts/entrez_refseq_create_files.py"
 
@@ -66,8 +60,7 @@ checkpoint entrez_invalid_assemblies:
     benchmark:
         repeat("benchmarks/entrez_valid_assemblies.benchmark.txt", 1)
     message:
-        "Finding assemblies that are not part of the RefSeq database for the accessions in {input}. "
-        "The output table can be found in {output} and its log file in {log}."
+        "Finding if assemblies are not part of the RefSeq database {MESSAGE_SUFFIX}"
     resources:
         entrez_api=1,
     conda:
@@ -119,8 +112,7 @@ rule entrez_refseq_genbank_multifasta:
     benchmark:
         repeat("benchmarks/entrez_refseq_genbank_multifasta_.benchmark.txt", 1)
     message:
-        "Concatenating all the fasta sequences for all the taxa that can be found in RefSeq and Genbank "
-        "in {output}, and its log file can be found in {log}."
+        "Concatenating all the fasta sequences for all the taxa that can be found in RefSeq and Genbank {MESSAGE_SUFFIX}"
     conda:
         "../envs/bt2_multifasta.yaml"
     script:
@@ -173,8 +165,7 @@ rule entrez_assembly_multifasta:
     benchmark:
         repeat("benchmarks/entrez_assembly_multifasta.benchmark.txt", 1)
     message:
-        "Concatenating all the fasta sequences for all the taxa that can be found in the Assembly database "
-        "in {output}, and its log file can be found in {log}."
+        "Concatenating all the fasta sequences for all the taxa that can be found in the Assembly database {MESSAGE_SUFFIX}"
     conda:
         "../envs/bt2_multifasta.yaml"
     script:
@@ -192,7 +183,6 @@ rule entrez_refseq_prok_multifasta:
     benchmark:
         repeat("benchmarks/entrez_refseq_prok_multifasta.benchmark.txt", 1)
     message:
-        "Concatenating input files {input.assemblies} and {input.refseq} in {output}. "
-        "Its log file can be found in {log}."
+        "Concatenating input files {input.assemblies} and {input.refseq} {MESSAGE_SUFFIX}"
     shell:
         "cat {input.assemblies} {input.refseq} > {output}"

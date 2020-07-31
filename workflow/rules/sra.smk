@@ -6,6 +6,7 @@ __copyright__ = "Copyright 2020, University of Oxford"
 __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
+MESSAGE_SUFFIX = "(output: {output} and log: {log})" if config["debug"] else ""
 
 ##### Target rules #####
 
@@ -19,7 +20,7 @@ rule get_sra_fastq_se:
         extra="",
     threads: 6
     message:
-        "Download SRA file {output} for accession {wildcards.accession}. The log file can be found in {log}."
+        "Download SRA file for accession {wildcards.accession} {MESSAGE_SUFFIX}"
     conda:
         "../envs/sra_tools.yaml"
     shell:
@@ -36,7 +37,7 @@ rule get_sra_fastq_pe:
         extra="", # optional extra arguments
     threads: 6 # defaults to 6
     message:
-        "Download SRA files {output} for accession {wildcards.accession}. The log file can be found in {log}."
+        "Download SRA files for accession {wildcards.accession} {MESSAGE_SUFFIX}"
     conda:
         "../envs/sra_tools.yaml"
     shell:
@@ -49,7 +50,7 @@ rule compress_sra_fastq_se:
     output:
         config["sample_output_dir"] + "/sra_data/SE/{accession}.fastq.gz",
     message:
-        "Compressing the raw fastq file {input} for accession {wildcards.accession} and storing it in {output}."
+        "Compressing the raw fastq file {input} {MESSAGE_SUFFIX}"
     shell:
         "gzip -c {input} 1> {output}"
 
@@ -62,8 +63,7 @@ rule compress_sra_fastq_pe:
         r1=config["sample_output_dir"] + "/sra_data/PE/{accession}_R1.fastq.gz",
         r2=config["sample_output_dir"] + "/sra_data/PE/{accession}_R2.fastq.gz",
     message:
-        "Compressing the raw fastq files {input.r1} and {input.r2} for accession {wildcards.accession} "
-        "and storing them in {output.r1} and {output.r2}."
+        "Compressing the raw fastq files {input.r1} and {input.r2} {MESSAGE_SUFFIX}"
     shell:
         "gzip -c {input.r1} 1> {output.r1}; "
         "gzip -c {input.r2} 1> {output.r2}"

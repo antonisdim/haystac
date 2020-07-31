@@ -10,6 +10,7 @@ import os
 import sys
 import pandas as pd
 
+MESSAGE_SUFFIX = "(output: {output} and log: {log})" if config["debug"] else ""
 
 ##### Target rules #####
 
@@ -27,8 +28,7 @@ checkpoint entrez_find_accessions:
     benchmark:
         repeat("benchmarks/entrez_find_accessions.benchmark.txt", 1)
     message:
-        "Finding all the accessions, whose metadata are going to be fetched, for the entrez query. "
-        "The temporary output can be found in {output} and the its log file in {log}."
+        "Finding all the accessions, whose metadata are going to be fetched, for the entrez query {MESSAGE_SUFFIX}"
     resources:
         entrez_api=1,
     conda:
@@ -47,9 +47,8 @@ rule entrez_nuccore_query:
     benchmark:
         repeat("benchmarks/entrez_nuccore_query_entrez_{chunk}.benchmark.txt", 1)
     message:
-        "Fetching sequence metadata from the NCBI Nucleotide database "
-        "for the accessions in chunk {wildcards.chunk} for the NCBI entrez query. "
-        "The temporary output can be found in {output} and its log file in {log}."
+        "Fetching sequence metadata from the NCBI Nucleotide database for accession chunk {wildcards.chunk} "
+        "{MESSAGE_SUFFIX}"
     resources:
         entrez_api=1,
     conda:
@@ -93,8 +92,8 @@ rule entrez_aggregate_nuccore:
     benchmark:
         repeat("benchmarks/entrez_aggregate_nuccore_entrez.benchmark.txt", 1)
     message:
-        "Concatenating all the temporary output files containing accession metadata fetched from the NCBI Nucleotide "
-        "database for the entrez query. The permanent output can be found in {output}."
+        "Concatenating all the temporary output files containing accession metadata from the NCBI Nucleotide "
+        "database {MESSAGE_SUFFIX}"
     shell:
         "awk 'FNR>1 || NR==1' {input} 1> {output}"
 
@@ -109,9 +108,7 @@ rule entrez_taxa_query:
     benchmark:
         repeat("benchmarks/entrez_taxa_query_entrez.benchmark.txt", 1)
     message:
-        "Querying the NCBI Taxonomy database to fetch taxonomic metadata, for all the different "
-        "taxa the NCBI Nucleotide returned accessions belong to, for the entrez query. "
-        "The output table can be found in {output} and its log file in {log}."
+        "Querying the NCBI Taxonomy database and fetching taxonomic metadata {MESSAGE_SUFFIX}"
     resources:
         entrez_api=1,
     conda:
@@ -140,10 +137,7 @@ checkpoint entrez_pick_sequences:
     benchmark:
         repeat("benchmarks/entrez_pick_sequences_entrez.benchmark.txt", 1)
     message:
-        "Selecting the longest sequence per taxon for entrez query. "
-        "Input tables with accession and taxonomic metadata can be found in "
-        "{input.nuccore} and {input.taxonomy} respectively."
-        "The output table can be found in {output} and its log file in {log}. "
+        "Selecting the longest sequence per taxon in the entrez query {MESSAGE_SUFFIX}"
     conda:
         "../envs/entrez.yaml"
     script:
@@ -175,8 +169,7 @@ rule entrez_download_sequence:
         url=get_rsync_url,
         temp_out=config["genome_cache_folder"] + "/temp_{accession}.fasta.gz"
     message:
-        "Downloading accession {wildcards.accession} for taxon {wildcards.orgname}. "
-        "The downloaded fasta sequence can be found in {output} and its log file in {log}."
+        "Downloading accession {wildcards.accession} for taxon {wildcards.orgname} {MESSAGE_SUFFIX}"
     resources:
         entrez_api=1,
     conda:
@@ -226,8 +219,7 @@ rule entrez_multifasta:
     benchmark:
         repeat("benchmarks/entrez_multifasta_entrez_query.benchmark.txt", 1)
     message:
-        "Concatenating all the fasta sequences for all the taxa in {output} for the entrez query, and its "
-        "log file can be found in {log}."
+        "Concatenating all the fasta sequences for all the taxa of the entrez query {MESSAGE_SUFFIX}"
     conda:
         "../envs/bt2_multifasta.yaml"
     script:

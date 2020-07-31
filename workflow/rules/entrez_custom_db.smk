@@ -7,12 +7,11 @@ __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
 import pandas as pd
-
-##### Target rules #####
-
-
 from scripts.rip_utilities import normalise_name, check_unique_taxa_in_custom_input
 
+MESSAGE_SUFFIX = "(output: {output} and log: {log})" if config["debug"] else ""
+
+##### Target rules #####
 
 rule entrez_custom_sequences:
     input:
@@ -22,8 +21,8 @@ rule entrez_custom_sequences:
     output:
         config["genome_cache_folder"] + "/{orgname}/custom_seq-{accession}.fasta.gz",
     message:
-        "Incorporating the user provided fasta sequence {wildcards.accession} for taxon {wildcards.orgname}. "
-        "The provided sequence can be found in {output} and its log file in {log}."
+        "Adding the user provided fasta sequence {wildcards.accession} for taxon {wildcards.orgname} to the "
+        "database {MESSAGE_SUFFIX}"
     conda:
         "../envs/entrez.yaml"
     script:
@@ -76,8 +75,7 @@ rule entrez_aggregate_custom_seqs:
     output:
         config["db_output"] + "/bowtie/{query}_custom_seqs.fasta.gz",
     message:
-        "Concatenating all the user provided sequences {input} in {output}. "
-        "Its log file can be found in {log}."
+        "Concatenating all the user provided sequences {MESSAGE_SUFFIX}"
     conda:
         "../envs/bt2_multifasta.yaml"
     script:
@@ -127,8 +125,7 @@ rule entrez_aggregate_custom_acc:
     output:
         config["db_output"] + "/bowtie/{query}_custom_acc.fasta.gz",
     message:
-        "Concatenating all the sequences from user provided accessions {input} in {output}. "
-        "Its log file can be found in {log}."
+        "Concatenating all the sequences from user provided accessions {MESSAGE_SUFFIX}"
     conda:
         "../envs/bt2_multifasta.yaml"
     script:

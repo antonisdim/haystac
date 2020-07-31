@@ -10,7 +10,7 @@ from math import ceil
 
 
 SUBSAMPLE_FIXED_READS = 200000
-
+MESSAGE_SUFFIX = "(output: {output} and log: {log})" if config["debug"] else ""
 
 ##### Target rules #####
 
@@ -73,9 +73,8 @@ rule bowtie_alignment_single_end:
         index=config["db_output"] + "/bowtie/chunk{chunk_num}",
     threads: config["bowtie2_threads"]
     message:
-        "The filtering alignment for file {input.fastq}, of sample {wildcards.sample}, "
-        "for index chunk number {wildcards.chunk_num} is being executed, "
-        "with number {threads} of threads. The log file can be found in {log}."
+        "The filtering alignment for sample {wildcards.sample}, for index chunk number {wildcards.chunk_num} "
+        "is being executed {MESSAGE_SUFFIX}"
     conda:
         "../envs/bowtie2.yaml"
     shell:
@@ -100,9 +99,8 @@ rule bowtie_alignment_paired_end:
         index=config["db_output"] + "/bowtie/chunk{chunk_num}",
     threads: config["bowtie2_threads"]
     message:
-        "The filtering alignment for files {input.fastq_r1} and {input.fastq_r2}, of sample {wildcards.sample}, "
-        "for index chunk number {wildcards.chunk_num} is being executed, "
-        "with number {threads} of threads. The log file can be found in {log}."
+        "The filtering alignment for sample {wildcards.sample}, for index chunk number {wildcards.chunk_num} "
+        "is being executed {MESSAGE_SUFFIX}"
     conda:
         "../envs/bowtie2.yaml"
     shell:
@@ -140,8 +138,8 @@ rule merge_bams:
     output:
         config["analysis_output_dir"] + "/bam/{read_mode}_{sample}_sorted.bam",
     message:
-        "Merging the bam files ({input}) produced by the filtering alignment stage for sample {wildcards.sample}. "
-        "The log file can be found in {log}."
+        "Merging the bam files produced by the filtering alignment stage for sample {wildcards.sample} "
+        "{MESSAGE_SUFFIX}"
     conda:
         "../envs/samtools.yaml.yaml"
     shell:
@@ -177,8 +175,7 @@ rule extract_fastq_paired_end:
     benchmark:
         repeat("benchmarks/extract_fastq_paired_end_{sample}.benchmark.txt", 1)
     message:
-        "Extracting all the aligned reads for sample {wildcards.sample} and storing them in {output}. "
-        "The log file can be found in {log}."
+        "Extracting the aligned reads for sample {wildcards.sample} {MESSAGE_SUFFIX}"
     conda:
         "../envs/extract_fastq.yaml"
     shell:
@@ -213,8 +210,7 @@ rule average_fastq_read_len_single_end:
     benchmark:
         repeat("benchmarks/average_fastq_read_len_single_end_{sample}.benchmark.txt", 1)
     message:
-        "Calculating the average read length for sample {wildcards.sample} from file {input} "
-        "and storing its value in {output}. The log file can be found in {log}."
+        "Calculating the average read length for sample {wildcards.sample} {MESSAGE_SUFFIX}"
     conda:
         "../envs/seqtk.yaml"
     shell:
@@ -235,8 +231,7 @@ rule average_fastq_read_len_paired_end:
     benchmark:
         repeat("benchmarks/average_fastq_read_len_paired_end_{sample}.benchmark.txt", 1)
     message:
-        "Calculating the average read length for sample {wildcards.sample} from files {input.mate1} and {input.mate2} "
-        "and storing its value in {output}. The log file can be found in {log}."
+        "Calculating the average read length for sample {wildcards.sample} {MESSAGE_SUFFIX}"
     conda:
         "../envs/seqtk.yaml"
     shell:

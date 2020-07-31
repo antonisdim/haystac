@@ -7,8 +7,9 @@ __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
 
-##### Target rules #####
+MESSAGE_SUFFIX = "(output: {output} and log: {log})" if config["debug"] else ""
 
+##### Target rules #####
 
 def get_inputs_for_adapterremoval_r1(wildcards):
 
@@ -59,9 +60,7 @@ rule adapterremoval_single_end:
     benchmark:
         repeat("benchmarks/adapterremoval_single_end_{accession}.benchmark.txt", 1)
     message:
-        "Trimming sequencing adapters from file {input.fastq}, using AdapterRemoval. "
-        "The trimmed reads can be found in {output}, and the "
-        "log file can be found in {log}."
+        "Trimming sequencing adapters from file {input.fastq} {MESSAGE_SUFFIX}"
     conda:
         "../envs/adapterremoval.yaml"
     shell:
@@ -85,10 +84,8 @@ rule adapterremoval_paired_end_ancient:
     benchmark:
         repeat("benchmarks/adapterremoval_paired_end_ancient_{accession}.benchmark.txt", 1)
     message:
-        "Trimming sequencing adapters and collapsing reads from files {input.fastq_r1} and {input.fastq_r2}, "
-        "using AdapterRemoval. "
-        "The trimmed reads can be found in {output}, and the "
-        "log file can be found in {log}."
+        "Trimming sequencing adapters and collapsing reads from files {input.fastq_r1} and {input.fastq_r2} "
+        "{MESSAGE_SUFFIX}"
     conda:
         "../envs/adapterremoval.yaml"
     shell:
@@ -115,10 +112,8 @@ rule adapterremoval_paired_end_modern:
     benchmark:
         repeat("benchmarks/adapterremoval_paired_end_modern_{accession}.benchmark.txt", 1)
     message:
-        "Trimming sequencing adapters from files {input.fastq_r1} and {input.fastq_r2}, "
-        "using AdapterRemoval. "
-        "The trimmed reads can be found in {output.fastq_r1} and {output.fastq_r2}, and the "
-        "log file can be found in {log}."
+        "Trimming sequencing adapters from files {input.fastq_r1} and {input.fastq_r2} "
+        "{MESSAGE_SUFFIX}"
     conda:
         "../envs/adapterremoval.yaml"
     shell:

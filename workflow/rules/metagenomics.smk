@@ -8,6 +8,8 @@ __license__ = "MIT"
 
 from scripts.rip_utilities import get_total_paths, normalise_name
 
+MESSAGE_SUFFIX = "(output: {output} and log: {log})" if config["debug"] else ""
+
 ##### Target rules #####
 
 
@@ -52,8 +54,7 @@ rule count_fastq_length:
     benchmark:
         repeat("benchmarks/count_fastq_length_{sample}.benchmark.txt", 1)
     message:
-        "Counting the number of reads for sample {wildcards.sample} and storing the result in {output}. "
-        "Its log file can be found in {log}."
+        "Counting the number of reads in sample {wildcards.sample} {MESSAGE_SUFFIX}"
     conda:
         "../envs/seqtk.yaml"
     shell:
@@ -93,10 +94,7 @@ rule count_accession_ts_tv:
     params:
         pairs=config["PE_MODERN"],
     message:
-        "Counting the number of transitions and transversions per read for genome {wildcards.accession} "
-        "for taxon {wildcards.orgname} from input file {input}. "
-        "The file with the mismatch counts can be found in {output} and its "
-        "log file can be found in {log}."
+        "Counting the number of transitions and transversions per read for taxon {wildcards.orgname} {MESSAGE_SUFFIX}"
     conda:
         "../envs/count_accessions.yaml"
     script:
@@ -146,8 +144,7 @@ rule initial_ts_tv:
     benchmark:
         repeat("benchmarks/initial_ts_tv_{sample}.benchmark.txt", 1)
     message:
-        "Concatenating all the Ts and Tv count files {input} in {output} for sample {wildcards.sample}. "
-        "Its log file can be found in {log}."
+        "Concatenating all the Ts and Tv count files for sample {wildcards.sample} {MESSAGE_SUFFIX}"
     conda:
         "../envs/python.yaml"
     script:
@@ -184,9 +181,8 @@ rule calculate_likelihoods:
     benchmark:
         repeat("benchmarks/calculate_likelihoods_{sample}.benchmark.txt", 1)
     message:
-        "Calculating the likelihoods and performing the Dirichlet assignment of the reads for sample "
-        "{wildcards.sample} to the taxa in our database. The output table can be found in {output}, "
-        "and its log file can be found in {log}."
+        "Calculating the likelihoods and performing the Dirichlet assignment of the reads in sample "
+        "{wildcards.sample} to the taxa in our database {MESSAGE_SUFFIX}"
     conda:
         "../envs/maths.yaml"
     script:
@@ -215,9 +211,7 @@ rule calculate_taxa_probabilities:
     params:
         submatrices=False,
     message:
-        "Calculating the assignment posterior probabilities for sample {wildcards.sample}, using the likelihood table"
-        "calculated in the previous step. The assignment probabilities file can be found in {output}, "
-        "and its log file can be found in {log}."
+        "Calculating the taxonomic assignment posterior probabilities for sample {wildcards.sample} {MESSAGE_SUFFIX}"
     conda:
         "../envs/maths.yaml"
     script:
@@ -232,8 +226,7 @@ rule fasta_idx:
     benchmark:
         repeat("benchmarks/fasta_idx_{orgname}_{accession}.benchmark.txt", 1)
     message:
-        "Indexing fasta file with accession {wildcards.accession} for taxon {wildcards.orgname}. "
-        "The index can be found in {output}."
+        "Indexing fasta file with accession {wildcards.accession} for taxon {wildcards.orgname} {MESSAGE_SUFFIX}"
     conda:
         "../envs/samtools.yaml"
     shell:
@@ -260,10 +253,8 @@ rule coverage_t_test:
             1,
         )
     message:
-        "Performing a T-Test to assess whether the reads of sample {wildcards.sample} "
-        "assigned to taxon {wildcards.orgname} for accession "
-        "{wildcards.accession} represent a random sample pf its genome or whether they are clustering around certain "
-        "genomic region. The output value can be found in {output} and its log file can be found in {log}."
+        "Performing a T-Test to assess whether if reads from sample {wildcards.sample} represent "
+        "a random genome sample of taxon {wildcards.orgname} {MESSAGE_SUFFIX}"
     conda:
         "../envs/maths.yaml"
     script:
@@ -323,8 +314,7 @@ rule cat_pvalues:
     benchmark:
         repeat("benchmarks/cat_pvalues_{sample}.benchmark.txt", 1)
     message:
-        "Concatenating all the T-Test p-value outputs for sample {wildcards.sample} "
-        "into one file {output}. Its log file can be found in {log}."
+        "Concatenating all the T-Test p-value outputs for sample {wildcards.sample} {MESSAGE_SUFFIX}"
     conda:
         "../envs/python.yaml"
     script:
@@ -349,8 +339,7 @@ rule calculate_dirichlet_abundances:
     benchmark:
         repeat("benchmarks/calculate_dirichlet_abundances_{sample}.benchmark.txt", 1)
     message:
-        "Calculating the mean posterior abundance for sample {wildcards.sample}. The outputted abundance table can be "
-        "found in {output}, and its log file can be found in {log}."
+        "Calculating the mean posterior abundance for sample {wildcards.sample} {MESSAGE_SUFFIX}"
     conda:
         "../envs/maths.yaml"
     script:

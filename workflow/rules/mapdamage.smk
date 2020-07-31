@@ -11,6 +11,9 @@ import pandas as pd
 
 from scripts.rip_utilities import get_total_paths, normalise_name
 
+
+MESSAGE_SUFFIX = "(output: {output} and log: {log})" if config["debug"] else ""
+
 ##### Target rules #####
 
 
@@ -37,9 +40,8 @@ rule dedup_merged_mapdamage:
             config["analysis_output_dir"] + "/mapdamage/{sample}/rmdup_bam/{reads}/{orgname}/"
         ),
     message:
-        "Removing duplicate reads that were aligned against genome {wildcards.accession} "
-        "for taxon {wildcards.orgname}, for sample {wildcards.sample}. The unique aligned reads can be found "
-        "in {output} and the log file can be found in {log}."
+        "Removing duplicate reads that were aligned to taxon {wildcards.orgname}, for sample {wildcards.sample} "
+        "{MESSAGE_SUFFIX}"
     conda:
         "../envs/dedup.yaml"
     shell:
@@ -60,9 +62,7 @@ rule run_mapdamage:
             config["analysis_output_dir"] + "/mapdamage/{sample}/{reads}/{orgname}-{accession}"
         ),
     message:
-        "Performing a mapDamage analysis on unique aligned reads against genome {wildcards.accession} "
-        "for taxon {wildcards.orgname}, for sample {wildcards.sample}. The output can be found in {output}, "
-        "and its log file can be found in {log}."
+        "Performing a mapDamage analysis for taxon {wildcards.orgname}, for sample {wildcards.sample} {MESSAGE_SUFFIX}"
     conda:
         "../envs/mapdamage.yaml"
     shell:
@@ -130,6 +130,6 @@ rule all_mapdamage:
     benchmark:
         repeat("benchmarks/all_alignments_{sample}.benchmark.txt", 1)
     message:
-        "MapDamage analysis have been performed for all the taxa in our database for sample {wildcards.sample}."
+        "A mapDamage analysis has been performed for all the taxa in the database for sample {wildcards.sample}."
     shell:
         "touch {output}"

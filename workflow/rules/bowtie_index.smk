@@ -14,7 +14,7 @@ from psutil import virtual_memory
 
 MEGABYTE = float(1024 ** 2)
 MAX_MEM_MB = virtual_memory().total / MEGABYTE
-
+MESSAGE_SUFFIX = "(output: {output} and log: {log})" if config["debug"] else ""
 
 ##### Target rules #####
 
@@ -66,9 +66,7 @@ checkpoint calculate_bt2_idx_chunks:
         mem_resources=float(config["mem"]),
         mem_rescale_factor=config["bowtie2_scaling"],
     message:
-        "The number of index chunks for the filtering alignment are being calculated for query {params.query}. "
-        "The size rescaling factor for the chunk is {params.mem_rescale_factor} for the given memory "
-        "resources {params.mem_resources}. The log file can be found in {log}."
+        "The number of index chunks needed for the filtering alignment are being calculated {MESSAGE_SUFFIX}"
     conda:
         "../envs/calc_bt2_idx_chunks.yaml"
     script:
@@ -104,8 +102,7 @@ rule create_bt2_idx_filter_chunk:
     output:
         config["db_output"] + "/bowtie/chunk{chunk_num}.fasta.gz",
     message:
-        "Creating fasta chunk {wildcards.chunk_num} for the filtering alignment bowtie2 index for "
-        "the given query.The output can be found in {output} and its log can be found in {log}."
+        "Creating chunk {wildcards.chunk_num} of the genome database index {MESSAGE_SUFFIX}"
     conda:
         "../envs/bt2_multifasta.yaml"
     script:
@@ -131,7 +128,7 @@ rule bowtie_index:
     benchmark:
         repeat("benchmarks/bowtie_index_chunk{chunk_num}.benchmark.txt", 1)
     message:
-        "Bowtie2 index for chunk {input.fasta_chunk} is being built. The log file can be found in {log}."
+        "Bowtie2 index for chunk {input.fasta_chunk} is being built {MESSAGE_SUFFIX}"
     conda:
         "../envs/bowtie2.yaml"
     shell:
@@ -160,6 +157,6 @@ rule bowtie_index_done:
     benchmark:
         repeat("benchmarks/bowtie_index_done", 1)
     message:
-        "The bowtie2 indices for all the chunks {input} have been built."
+        "The bowtie2 indices of the genome database have been built."
     shell:
         "touch {output}"

@@ -13,6 +13,10 @@ import pandas as pd
 
 from scripts.rip_utilities import get_total_paths, normalise_name
 
+MESSAGE_SUFFIX = "(output: {output} and log: {log})" if config["debug"] else ""
+
+##### Target rules #####
+
 
 rule index_database_entrez:
     input:
@@ -33,7 +37,7 @@ rule index_database_entrez:
     benchmark:
         repeat("benchmarks/index_database_{orgname}_{accession}.benchmark.txt", 1)
     message:
-        "Preparing the bowtie2 index of genome {wildcards.accession} for taxon {wildcards.orgname}."
+        "Preparing the bowtie2 index for genome {wildcards.accession} of taxon {wildcards.orgname}."
     conda:
         "../envs/bowtie2.yaml"
     shell:
