@@ -13,11 +13,16 @@ import sys
 def calculate_bt2_idx_chunks(mem_resources, mem_rescale_factor, fasta_files, output):
     """Calculate the number of chunks that the db sequences are going to be split into"""
 
+    fasta_paths_random = []
+    with open(str(fasta_files), "r") as fin:
+        for line in fin:
+            fasta_paths_random.append(line.strip())
+
     chunk_size = float(mem_resources) / float(mem_rescale_factor)
     total_size = 0.0
     chunks = 1
 
-    for fasta_file in fasta_files:
+    for fasta_file in fasta_paths_random:
         file_size = os.stat(fasta_file).st_size / (1024 ** 2)
 
         if file_size >= mem_resources:

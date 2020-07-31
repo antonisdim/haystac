@@ -54,9 +54,24 @@ def get_total_fasta_paths(wildcards):
     return inputs
 
 
-checkpoint calculate_bt2_idx_chunks:
+rule random_db_paths:
     input:
         get_total_fasta_paths,
+    log:
+        config["db_output"] + "/bowtie/bt2_random_fasta_paths.log",
+    output:
+        config["db_output"] + "/bowtie/bt2_random_fasta_paths.txt",
+    message:
+        "The database genomes are being placed in a random order {MESSAGE_SUFFIX}"
+    conda:
+        "../envs/python.yaml"
+    script:
+        "../scripts/random_db_paths.py"
+
+
+checkpoint calculate_bt2_idx_chunks:
+    input:
+        config["db_output"] + "/bowtie/bt2_random_fasta_paths.txt",
     log:
         config["db_output"] + "/bowtie/bt2_idx_chunk_num.log",
     output:
@@ -77,11 +92,16 @@ def get_bt2_idx_filter_chunk(wildcards):
 
     """Pick the files for the specific bt2 index chunk"""
 
+    fasta_paths_random = []
+    with open(config["db_output"] + "/bowtie/bt2_random_fasta_paths.txt", "r") as fin:
+        for line in fin:
+            fasta_paths_random.append(line.strip())
+
     chunk_files = []
     chunk_size = float(config["mem"]) / float(config["bowtie2_scaling"])
     total_size = 0.0
 
-    for fasta_file in get_total_fasta_paths(wildcards):
+    for fasta_file in fasta_paths_random:
         total_size += os.stat(fasta_file).st_size / MEGABYTE
 
         chunk = (total_size // chunk_size) + 1
@@ -132,8 +152,7 @@ rule bowtie_index:
     conda:
         "../envs/bowtie2.yaml"
     shell:
-        "bowtie2-build --large-index {input.fasta_chunk} "+
-         config['db_output']+"/bowtie/chunk{wildcards.chunk_num} &> {log}"
+        "bowtie2-build --large-index {input.fasta_chunk} {config[db_output]}/bowtie/chunk{wildcards.chunk_num} &> {log}"
 
 
 def get__bt2_idx_chunk_paths(wildcards):

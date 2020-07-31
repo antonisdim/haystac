@@ -180,24 +180,12 @@ rule extract_fastq_paired_end:
         "../envs/extract_fastq.yaml"
     shell:
         "( samtools view -h -F 4 {input} "
-        "| samtools fastq -c 6 -1 " + config[
-            "analysis_output_dir"
-        ] + "/fastq/PE/{wildcards.sample}_temp_R1.fastq.gz "
-        "-2 " + config[
-            "analysis_output_dir"
-        ] + "/fastq/PE/{wildcards.sample}_temp_R2.fastq.gz -0 /dev/null -s /dev/null -;"
-        "seqkit rmdup -n " + config[
-            "analysis_output_dir"
-        ] + "/fastq/PE/{wildcards.sample}_temp_R1.fastq.gz -o {output[0]}; "
-        "seqkit rmdup -n " + config[
-            "analysis_output_dir"
-        ] + "/fastq/PE/{wildcards.sample}_temp_R2.fastq.gz -o {output[1]}; "
-        "rm " + config[
-            "analysis_output_dir"
-        ] + "/fastq/PE/{wildcards.sample}_temp_R1.fastq.gz; "
-        "rm " + config[
-            "analysis_output_dir"
-        ] + "/fastq/PE/{wildcards.sample}_temp_R2.fastq.gz ) 2> {log}"
+        "| samtools fastq -c 6 -1 {config[analysis_output_dir]}/fastq/PE/{wildcards.sample}_temp_R1.fastq.gz "
+        "-2 {config[analysis_output_dir]}/fastq/PE/{wildcards.sample}_temp_R2.fastq.gz -0 /dev/null -s /dev/null -;"
+        "seqkit rmdup -n {config[analysis_output_dir]}/fastq/PE/{wildcards.sample}_temp_R1.fastq.gz -o {output[0]}; "
+        "seqkit rmdup -n {config[analysis_output_dir]}/fastq/PE/{wildcards.sample}_temp_R2.fastq.gz -o {output[1]}; "
+        "unlink {config[analysis_output_dir]}/fastq/PE/{wildcards.sample}_temp_R1.fastq.gz; "
+        "unlink {config[analysis_output_dir]}/fastq/PE/{wildcards.sample}_temp_R2.fastq.gz ) 2> {log}"
 
 
 rule average_fastq_read_len_single_end:

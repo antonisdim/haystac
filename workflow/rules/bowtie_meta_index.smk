@@ -41,8 +41,7 @@ rule index_database_entrez:
     conda:
         "../envs/bowtie2.yaml"
     shell:
-        "bowtie2-build --large-index {input} "+ config['genome_cache_folder']+
-        "/{wildcards.orgname}/{wildcards.accession} &> {log}"
+        "bowtie2-build --large-index {input} {config[genome_cache_folder]}/{wildcards.orgname}/{wildcards.accession} &> {log}"
 
 
 def get_idx_entrez(wildcards):
