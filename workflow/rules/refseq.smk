@@ -80,7 +80,7 @@ def get_refseq_genome_sequences(wildcards):
     """
     Get all the FASTA sequences for the multi-FASTA file.
     """
-    pick_sequences = checkpoints.entrez_refseq_accessions.get(query=wildcards.query)
+    pick_sequences = checkpoints.entrez_refseq_accessions.get()
     refseq_sequences = pd.read_csv(pick_sequences.output.refseq_genomes, sep="\t")
     genbank_sequences = pd.read_csv(pick_sequences.output.genbank_genomes, sep="\t")
     refseq_plasmids = pd.read_csv(pick_sequences.output.refseq_plasmids, sep="\t")
@@ -131,15 +131,13 @@ def get_assembly_genome_sequences(wildcards):
     """
     Get all the FASTA sequences for the multi-FASTA file.
     """
-    pick_sequences = checkpoints.entrez_refseq_accessions.get(query=wildcards.query)
+    pick_sequences = checkpoints.entrez_refseq_accessions.get()
     assembly_sequences = pd.read_csv(pick_sequences.output.assemblies, sep="\t")
 
     if len(assembly_sequences) == 0:
         raise RuntimeError("The entrez pick sequences file is empty.")
 
-    invalid_assemblies = checkpoints.entrez_invalid_assemblies.get(
-        query=wildcards.query
-    )
+    invalid_assemblies = checkpoints.entrez_invalid_assemblies.get()
     invalid_assembly_sequences = pd.read_csv(invalid_assemblies.output[0], sep="\t")
 
     assembly_sequences = assembly_sequences[

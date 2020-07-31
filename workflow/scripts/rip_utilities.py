@@ -7,6 +7,19 @@ __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
 import pandas as pd
+from Bio import Entrez
+import sys
+import os
+import urllib.error
+import time
+
+sys.path.append(os.getcwd())
+sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+
+from scripts.entrez_utils import ENTREZ_DB_ASSEMBLY
+
+TOO_MANY_REQUESTS_WAIT = 20
+MAX_RETRY_ATTEMPTS = 5
 
 
 def get_total_paths(
@@ -126,3 +139,52 @@ def check_unique_taxa_in_custom_input(with_custom_accessions, with_custom_sequen
                 "custom accessions file. Please pick and keep ONLY one entry from both of these files. "
                 "You can only have 1 sequence per chosen taxon in your database."
             )
+
+
+def get_accession_ftp_path(accession, config, attempt=1):
+    """Get a valid NCBI ftp path from an accession."""
+
+    Entrez.email = config["email"]
+    try:
+        handle = Entrez.esearch(
+            db=ENTREZ_DB_ASSEMBLY, term=accession + ' AND "latest refseq"[filter]'
+        )
+        # or handle = Entrez.esearch(db=ENTREZ_DB_ASSEMBLY,
+        # term=accession + ' AND ((latest[filter] OR "latest refseq"[filter])')
+        assembly_record = Entrez.read(handle)
+        esummary_handle = Entrez.esummary(
+            db=ENTREZ_DB_ASSEMBLY, id=assembly_record["IdList"], report="full"
+        )
+        esummary_record = Entrez.read(esummary_handle, validate=False)
+        refseq_ftp = esummary_record["DocumentSummarySet"]["DocumentSummary"][0][
+            "FtpPath_RefSeq"
+        ]
+        genbank_ftp = esummary_record["DocumentSummarySet"]["DocumentSummary"][0][
+            "FtpPath_GenBank"
+        ]
+
+        if refseq_ftp != "":
+            return refseq_ftp
+        else:
+            return genbank_ftp
+
+    except urllib.error.HTTPError as e:
+        if e.code == 429:
+
+            attempt += 1
+
+            if attempt > MAX_RETRY_ATTEMPTS:
+                print(
+                    "Exceeded maximum attempts {}...".format(attempt), file=sys.stderr
+                )
+                return None
+            else:
+                time.sleep(TOO_MANY_REQUESTS_WAIT)
+                entrez_download_sequence(accession, email, output_file, attempt)
+
+        else:
+            raise RuntimeError(
+                "There was a urllib.error.HTTPError with code {}".format(e)
+            )
+
+

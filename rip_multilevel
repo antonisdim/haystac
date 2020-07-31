@@ -127,39 +127,39 @@ The most commonly used git commands are:
         # prefixing the argument with -- means it's optional
 
         parser.add_argument(
-            "--email",
+            '-e', "--email",
             help="Email address for NCBI identification. Mandatory.",
             metavar="",
         )
         parser.add_argument(
-            "--genome-cache-folder",
+            '-gc', "--genome-cache-folder",
             help="Path where all the genomes that are downloaded and/or used by rip are being stored. "
             "(default ~/rip_genomes/)",
             metavar="",
         )
 
         parser.add_argument(
-            "--batchsize",
+            '-b', "--batchsize",
             help="Batchsize for fetching records from NCBI  <int> (default: 5)",
             type=int,
             metavar="",
         )
 
         parser.add_argument(
-            "--mismatch-probability",
+            '-mp', "--mismatch-probability",
             help="Base mismatch probability <float> (default: 0.05)",
             type=float,
             metavar="",
         )
         parser.add_argument(
-            "--bowtie2-threads",
+            '-t', "--bowtie2-threads",
             help="Threads for the bowtie2 alignments <int> (default: 1)",
             type=int,
             metavar="",
         )
 
         parser.add_argument(
-            "--bowtie2-scaling",
+            '-s', "--bowtie2-scaling",
             help="Factor to rescale/chunk the input file for the mutlifasta "
             "index for the filtering alignment (default: 2.5)",
             type=float,
@@ -177,7 +177,7 @@ The most commonly used git commands are:
 
         config_args = vars(args)
 
-        repo_config_file = os.path.join(thisdir, "config.yaml")
+        repo_config_file = os.path.join(thisdir, 'config', "config.yaml")
 
         if os.path.exists(repo_config_file):
             with open(repo_config_file) as fin:
@@ -236,7 +236,7 @@ The most commonly used git commands are:
         parser.add_argument("--dry-run", action="store_true")
 
         parser.add_argument(
-            "--mode",
+            '-m', "--mode",
             choices=["fetch", "index", "build"],
             help="Database creation mode for rip",
             metavar="",
@@ -244,10 +244,10 @@ The most commonly used git commands are:
         )
 
         parser.add_argument(
-            "--db-output", help="/path/to/what/used/to/be/query_name", metavar="",
+            '-o', "--db-output", help="/path/to/what/used/to/be/query_name", metavar="",
         )
         parser.add_argument(
-            "--refseq-rep",
+            '-R', "--refseq-rep",
             help="Use the prokaryotic representative species of the RefSeq DB "
             "for the species id pipeline. only species no strains. "
             "either or both of with_refseq_rep and "
@@ -255,22 +255,22 @@ The most commonly used git commands are:
             default=False,
         )
         parser.add_argument(
-            "--query", help="Actual NCBI query in the NCBI query language", metavar="",
+            '-q', "--query", help="Actual NCBI query in the NCBI query language", metavar="",
         )
         parser.add_argument(
-            "--query-file",  # todo check what Evan meant here
+            '-Q', "--query-file",  # todo check what Evan meant here
             help="Actual NCBI query in the NCBI query language",
             metavar="",
         )
         parser.add_argument(
-            "--rank",
+            '-r', "--rank",
             help="Taxonomic rank to perform the identifications on (genus, species, subspecies, serotype) "
             "<str> (default: species)",
             default="species",
             metavar="",
         )
         parser.add_argument(
-            "--sequences",
+            '-s', "--sequences",
             help="TAB DELIMITED input file containing the the name of the taxon with no special characters, "
             "and an underscore '_' instead of spaces, a user defined accession code and the path of the fasta file. "
             "The fasta file that the path point to can be either uncompressed or compressed with gzip/bgzip",
@@ -279,7 +279,7 @@ The most commonly used git commands are:
         )
 
         parser.add_argument(
-            "--accessions",
+            '-a', "--accessions",
             help="TAB DELIMITED input file containing the the name of the taxon with no special characters, "
             "and an underscore '_' instead of spaces, a user defined valid NCBI nucleotide, assembly or WGS "
             "accession code. ",
@@ -288,7 +288,7 @@ The most commonly used git commands are:
         )
 
         parser.add_argument(
-            "--genera",
+            '-g', "--genera",
             nargs="+",
             help="List containing the names of specific genera "
             "the abundances should be calculated "
@@ -298,13 +298,13 @@ The most commonly used git commands are:
         )
 
         parser.add_argument(
-            "--cores",
+            '-c', "--cores",
             help="Number of cores for RIP to use",
             metavar="",
             default=cpu_count(),
         )
         parser.add_argument(
-            "--mem",
+            '-M', "--mem",
             help="Max memory resources allowed to be used ofr indexing the input for "
             "the filtering alignment "
             "(default: max available memory {})".format(MAX_MEM_MB),
@@ -312,18 +312,18 @@ The most commonly used git commands are:
             metavar="",
         )
         parser.add_argument(
-            "--unlock",
+            '-u', "--unlock",
             action="store_true",
             help="Unlock the working directory after smk is "
             "abruptly killed  <bool> (default: False)",
         )
         parser.add_argument(
-            "--debug",
+            '-d', "--debug",
             action="store_true",
             help="Debug the RIP workflow <bool> (default: False)",
         )
         parser.add_argument(
-            "--snakemake",
+            '-smk', "--snakemake",
             help="Snakemake flags (default: '')",
             metavar="",  # todo don't know how to do that
         )
@@ -337,7 +337,7 @@ The most commonly used git commands are:
             parser.print_help()
             parser.exit()
 
-        snakefile = os.path.join(thisdir, "Snakefile_db")
+        snakefile = os.path.join(thisdir, 'workflow', "Snakefile_db")
         if not os.path.exists(snakefile):
             sys.stderr.write("Error: cannot find Snakefile at {}\n".format(snakefile))
             sys.exit(-1)
@@ -346,7 +346,7 @@ The most commonly used git commands are:
 
         # actual arg parsing
 
-        repo_config_file = os.path.join(thisdir, "config.yaml")
+        repo_config_file = os.path.join(thisdir, 'config', "config.yaml")
         user_config_file = os.path.join(str(Path.home()), ".rip", "config.yaml")
 
         if not os.path.exists(user_config_file):
@@ -497,6 +497,8 @@ The most commonly used git commands are:
                 with open(database_build_yaml, "w") as outfile:
                     yaml.safe_dump(database_config, outfile, default_flow_style=False)
 
+        database_config['workflow_dir'] = os.path.join(thisdir, 'workflow')
+
         user_options = {
             k: v
             for k, v in database_args.items()
@@ -523,9 +525,11 @@ The most commonly used git commands are:
         if args.debug:
             printshellcmds = True
             keepgoing = False
+            restart_times = 0
         else:
             printshellcmds = False
             keepgoing = True
+            restart_times = 3
 
         status = snakemake.snakemake(
             snakefile,
@@ -535,7 +539,7 @@ The most commonly used git commands are:
             dryrun=args.dry_run,
             cores=int(args.cores),
             keepgoing=keepgoing,
-            restart_times=3,  # TODO find a better solution to this... 15 is way too many!
+            restart_times=restart_times,  # TODO find a better solution to this... 15 is way too many!
             unlock=args.unlock,
             show_failed_logs=args.debug,
             resources={"entrez_api": MAX_ENTREZ_REQUESTS},
@@ -550,70 +554,70 @@ The most commonly used git commands are:
         parser = argparse.ArgumentParser(description="Prepare a sample for analysis")
 
         parser.add_argument(
-            "--sample-prefix",
+            '-p', "--sample-prefix",
             help="Sample prefix for all the future analysis. Optional if SRA accession is provided instead"
             " <str>",
             metavar="",
             default="",
         )
         parser.add_argument(
-            "--sample-output-dir",
+            '-o', "--sample-output-dir",
             help="/path/to/sample <str>",  # todo it's the path to fastq_inputs, check with Evan
             metavar="",
             default="",
         )
 
         parser.add_argument(
-            "--fastq",
+            '-f', "--fastq",
             help="Path to the fastq input file. Can be raw or with adapters " "removed",
             metavar="",
         )
         parser.add_argument(
-            "--fastq-r1",
+            '-f1', "--fastq-r1",
             help="Path to the mate 1 fastq input file, if reads are PE. "
             "Can be raw or with adapters removed",
             metavar="",
         )
         parser.add_argument(
-            "--fastq-r2",
+            '-f2', "--fastq-r2",
             help="Path to the mate 2 fastq input file, if reads are PE. "
             "Can be raw or with adapters removed",
             metavar="",
         )
 
         parser.add_argument(
-            "--sra",
+            '-SA', "--sra",
             help="Fetch raw data files from the SRA using the provided accession code <str>",
             metavar="",
         )
 
         parser.add_argument(
-            "--collapse",
+            '-C', "--collapse",
             help="Collapse paired end reads <bool> (default: False)",
             default=False,
             action="store_true",
         )
         parser.add_argument(
-            "--trim_adapters",
+            '-T', "--trim_adapters",
             help="Remove adapters from raw fastq files <bool> (default: True)",
             default=True,
             metavar="",
         )
         parser.add_argument(
-            "--adaperremoval-flags",
+            '-TF', "--adaperremoval-flags",
             help="Additional flags to provide to Adapterremoval <str>",
             default="",
             metavar="",
         )
 
         parser.add_argument(
-            "--cores",
+            '-c', "--cores",
             help="Number of cores for RIP to use",
             metavar="",
             default=cpu_count(),
         )
         parser.add_argument(
-            "--mem",
+            '-M', "--mem",
             help="Max memory resources allowed to be used ofr indexing the input for "
             "the filtering alignment "
             "(default: max available memory {})".format(MAX_MEM_MB),
@@ -621,18 +625,18 @@ The most commonly used git commands are:
             metavar="",
         )
         parser.add_argument(
-            "--unlock",
+            '-u', "--unlock",
             action="store_true",
             help="Unlock the working directory after smk is "
             "abruptly killed  <bool> (default: False)",
         )
         parser.add_argument(
-            "--debug",
+            '-d', "--debug",
             action="store_true",
             help="Debug the RIP workflow <bool> (default: False)",
         )
         parser.add_argument(
-            "--snakemake", help="Snakemake flags (default: '')", metavar="",
+            '-smk', "--snakemake", help="Snakemake flags (default: '')", metavar="",
         )
         parser.add_argument("--dry-run", action="store_true")
 
@@ -643,12 +647,12 @@ The most commonly used git commands are:
             parser.print_help()
             parser.exit()
 
-        snakefile = os.path.join(thisdir, "Snakefile_sample")
+        snakefile = os.path.join(thisdir, 'workflow', "Snakefile_sample")
         if not os.path.exists(snakefile):
             sys.stderr.write("Error: cannot find Snakefile at {}\n".format(snakefile))
             sys.exit(-1)
 
-        repo_config_file = os.path.join(thisdir, "config.yaml")
+        repo_config_file = os.path.join(thisdir, 'config', "config.yaml")
         user_config_file = os.path.join(str(Path.home()), ".rip", "config.yaml")
 
         if not os.path.exists(user_config_file):
@@ -794,6 +798,8 @@ The most commonly used git commands are:
             with open(sample_yaml, "w") as outfile:
                 yaml.safe_dump(sample_options, outfile, default_flow_style=False)
 
+        sample_config['workflow_dir'] = os.path.join(thisdir, 'workflow')
+
         user_options = {
             k: v
             for k, v in sample_args.items()
@@ -821,9 +827,11 @@ The most commonly used git commands are:
         if args.debug:
             printshellcmds = True
             keepgoing = False
+            restart_times = 0
         else:
             printshellcmds = False
             keepgoing = True
+            restart_times = 3
 
         status = snakemake.snakemake(
             snakefile,
@@ -833,7 +841,7 @@ The most commonly used git commands are:
             dryrun=args.dry_run,
             cores=int(args.cores),
             keepgoing=keepgoing,
-            restart_times=3,  # TODO find a better solution to this... 15 is way too many!
+            restart_times=restart_times,  # TODO find a better solution to this... 15 is way too many!
             unlock=args.unlock,
             show_failed_logs=args.debug,
             resources={"entrez_api": MAX_ENTREZ_REQUESTS},
@@ -847,7 +855,7 @@ The most commonly used git commands are:
         parser = argparse.ArgumentParser(description="Analyse a sample")
         # NOT prefixing the argument with -- means it's not optional
         parser.add_argument(
-            "--mode",
+            '-m', "--mode",
             choices=[
                 "filter",
                 "align",
@@ -860,17 +868,17 @@ The most commonly used git commands are:
             metavar="",
         )
         parser.add_argument(
-            "--database",
+            '-D', "--database",
             help="Path to the database used for the sample analysis. MANDATORY",
             metavar="",
         )
         parser.add_argument(
-            "--sample",
+            '-S', "--sample",
             help="Path to the sample parameter file. Optional",  # todo check with Evan about it
             metavar="",
         )
         parser.add_argument(
-            "--genera",
+            '-g', "--genera",
             nargs="+",
             help="List containing the names of specific genera "
             "the abundances should be calculated "
@@ -879,17 +887,17 @@ The most commonly used git commands are:
             default=[],
         )
         parser.add_argument(
-            "--analysis-output-dir", help="Path to results directory.", metavar="",
+            '-o', "--analysis-output-dir", help="Path to results directory.", metavar="",
         )
 
         parser.add_argument(
-            "--cores",
+            '-c', "--cores",
             help="Number of cores for RIP to use",
             metavar="",
             default=cpu_count(),
         )
         parser.add_argument(
-            "--mem",
+            '-M', "--mem",
             help="Max memory resources allowed to be used ofr indexing the input for "
             "the filtering alignment "
             "(default: max available memory {})".format(MAX_MEM_MB),
@@ -897,18 +905,18 @@ The most commonly used git commands are:
             metavar="",
         )
         parser.add_argument(
-            "--unlock",
+            '-u', "--unlock",
             action="store_true",
             help="Unlock the working directory after smk is "
             "abruptly killed  <bool> (default: False)",
         )
         parser.add_argument(
-            "--debug",
+            '-d', "--debug",
             action="store_true",
             help="Debug the RIP workflow <bool> (default: False)",
         )
         parser.add_argument(
-            "--snakemake", help="Snakemake flags (default: '')", metavar="",
+            '-smk', "--snakemake", help="Snakemake flags (default: '')", metavar="",
         )
         parser.add_argument("--dry-run", action="store_true")
 
@@ -921,12 +929,12 @@ The most commonly used git commands are:
 
         print("The selected mode for sample analysis is {}".format(args.mode))
 
-        snakefile = os.path.join(thisdir, "Snakefile")
+        snakefile = os.path.join(thisdir, 'workflow', "Snakefile")
         if not os.path.exists(snakefile):
             sys.stderr.write("Error: cannot find Snakefile at {}\n".format(snakefile))
             sys.exit(-1)
 
-        repo_config_file = os.path.join(thisdir, "config.yaml")
+        repo_config_file = os.path.join(thisdir, 'config', "config.yaml")
         user_config_file = os.path.join(str(Path.home()), ".rip", "config.yaml")
 
         if not os.path.exists(user_config_file):
@@ -1074,6 +1082,8 @@ The most commonly used git commands are:
             with open(analysis_yaml, "w") as outfile:
                 yaml.safe_dump(analysis_options, outfile, default_flow_style=False)
 
+        analysis_config['workflow_dir'] = os.path.join(thisdir, 'workflow')
+
         user_options = {
             k: v
             for k, v in analysis_args.items()
@@ -1101,9 +1111,11 @@ The most commonly used git commands are:
         if args.debug:
             printshellcmds = True
             keepgoing = False
+            restart_times = 0
         else:
             printshellcmds = False
             keepgoing = True
+            restart_times = 3
 
         status = snakemake.snakemake(
             snakefile,
@@ -1113,7 +1125,7 @@ The most commonly used git commands are:
             dryrun=args.dry_run,
             cores=int(args.cores),
             keepgoing=keepgoing,
-            restart_times=3,  # TODO find a better solution to this... 15 is way too many!
+            restart_times=restart_times,  # TODO find a better solution to this... 15 is way too many!
             unlock=args.unlock,
             show_failed_logs=args.debug,
             resources={"entrez_api": MAX_ENTREZ_REQUESTS},

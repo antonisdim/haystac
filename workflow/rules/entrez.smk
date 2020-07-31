@@ -15,7 +15,8 @@ import pandas as pd
 
 
 from scripts.entrez_nuccore_query import CHUNK_SIZE
-from scripts.rip_utilities import normalise_name
+from scripts.rip_utilities import normalise_name, get_accession_ftp_path
+
 
 
 checkpoint entrez_find_accessions:
@@ -149,6 +150,19 @@ checkpoint entrez_pick_sequences:
         "../scripts/entrez_pick_sequences.py"
 
 
+def get_rsync_url(wildcards):
+    """Function to get NCBI urls for the database genomes"""
+
+    try:
+        url = get_accession_ftp_path(wildcards.accession, config)
+        file_url = os.path.join(url, os.path.basename(url) + "_genomic.fna.gz") # .replace("ftp://", "rsync://")
+        print(url)
+        print(file_url)
+        return file_url
+    except RuntimeError:
+        return ''
+
+
 rule entrez_download_sequence:
     output:
         config["genome_cache_folder"] + "/{orgname}/{accession}.fasta.gz",
@@ -158,15 +172,21 @@ rule entrez_download_sequence:
         repeat("benchmarks/entrez_download_sequence_{orgname}_{accession}.benchmark.txt", 1)
     params:
         assembly=False,
+        url=get_rsync_url,
+        temp_out=config["genome_cache_folder"] + "/temp_{accession}.fasta.gz"
     message:
         "Downloading accession {wildcards.accession} for taxon {wildcards.orgname}. "
         "The downloaded fasta sequence can be found in {output} and its log file in {log}."
     resources:
         entrez_api=1,
     conda:
-        "../envs/entrez.yaml"
-    script:
-        "../scripts/entrez_download_sequence.py"
+        "../envs/seq_download.yaml"
+    shell:
+        "([ -n \"{params.url}\" ] && (wget -q -O {params.temp_out} {params.url} ; "
+        "gunzip -c {params.temp_out} | bgzip -f > {output}); unlink {params.temp_out} || "
+        "python {config[workflow_dir]}/scripts/entrez_download_sequence.py "
+        "--accession {wildcards.accession} --email {config[email]} --output_file {output}) > {log}"
+
 
 
 # noinspection PyUnresolvedReferences
@@ -174,7 +194,7 @@ def get_fasta_sequences(wildcards):
     """
     Get all the FASTA sequences for the multi-FASTA file.
     """
-    pick_sequences = checkpoints.entrez_pick_sequences.get(query=wildcards.query)
+    pick_sequences = checkpoints.entrez_pick_sequences.get()
     sequences = pd.read_csv(pick_sequences.output[0], sep="\t")
 
     if len(sequences) == 0:
