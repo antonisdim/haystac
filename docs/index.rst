@@ -18,14 +18,14 @@ RIP can be installed though pip, bioconda, and you can download the source from 
 
 Pip
 
-	pip install rip
+    pip install rip
 
 Conda
 
-	conda install -c bioconda rip
+    conda install -c bioconda rip
 
 Git 
-	git clone rip 
+    git clone rip 
 
 
 Tutorial
@@ -44,7 +44,7 @@ After deciding what taxa we would like to include in our database we need to con
 
 For example if we would like to build a database of the complete genomes of the species of the Yersinia genus we can use the following command 
 
-	rip_multilevel database --query '("Yersinia"[Organism] OR "Yersinia"[Organism]) AND "complete genome"[All Fields]' --db-output ./yersinia_example
+    rip_multilevel database --query '("Yersinia"[Organism] OR "Yersinia"[Organism]) AND "complete genome"[All Fields]' --db-output ./yersinia_example
 
 For each species (or any other user defined taxonomic rank), the longest sequence per taxon will be used to populate our database. 
 
@@ -53,7 +53,7 @@ Representative RefSeq species
 
 When constructing a database there is always the option to include the species of the Representative RefSeq database as well. All you need to do is include the corresponding flag in your command. 
 
-	rip_multilevel database --query '("Yersinia"[Organism] OR "Yersinia"[Organism]) AND "complete genome"[All Fields]' --db-output ./yersinia_example --refseq-rep True
+    rip_multilevel database --query '("Yersinia"[Organism] OR "Yersinia"[Organism]) AND "complete genome"[All Fields]' --db-output ./yersinia_example --refseq-rep True
 
 Providing custom accessions 
 ---------------------------
@@ -62,12 +62,12 @@ It is also possible to provide your own accessions for a selected species/taxon.
 
 Here is an example of such a file:
 
-	Felis_silvestris_silvestris	NC_028310.1
-	Felis_silvestris_lybica	KP202275.1
-	
+    Felis_silvestris_silvestris	NC_028310.1
+    Felis_silvestris_lybica	KP202275.1
+
 The we can simply run the following command 
 
-rip_multilevel database --query '("Yersinia"[Organism] OR "Yersinia"[Organism]) AND "complete genome"[All Fields]' --db-output ./yersinia_example --accessions acc_example.txt
+    rip_multilevel database --query '("Yersinia"[Organism] OR "Yersinia"[Organism]) AND "complete genome"[All Fields]' --db-output ./yersinia_example --accessions acc_example.txt
 
 Providing custom sequences
 --------------------------
@@ -76,11 +76,11 @@ It is also possible to provide your own sequences for a taxon. To do that you wi
 
 Here is an example of such a file:
 
-	Felis_silvestris_silvestris	user_seq_1	/path/to/fasta/file
+    Felis_silvestris_silvestris	user_seq_1	/path/to/fasta/file
 
 The we can simply run the following command 
 
-	rip_multilevel database --query '("Yersinia"[Organism] OR "Yersinia"[Organism]) AND "complete genome"[All Fields]' --db-output ./yersinia_example --sequences seq_example.txt
+    rip_multilevel database --query '("Yersinia"[Organism] OR "Yersinia"[Organism]) AND "complete genome"[All Fields]' --db-output ./yersinia_example --sequences seq_example.txt
 
 Combinations
 ------------
@@ -102,8 +102,8 @@ If mode `fetch` is run first the mode `index` should be run subsequently, and no
 
 Here is an example of building a database in two steps instead of one 
 
-	rip_multilevel database --mode fetch --query '("Yersinia"[Organism] OR "Yersinia"[Organism]) AND "complete genome"[All Fields]' --db-output ./yersinia_example
-	rip_multilevel database --mode build --db-output ./yersinia_example
+    rip_multilevel database --mode fetch --query '("Yersinia"[Organism] OR "Yersinia"[Organism]) AND "complete genome"[All Fields]' --db-output ./yersinia_example
+    rip_multilevel database --mode build --db-output ./yersinia_example
 
 Preparing a sample for analysis
 -------------------------------
@@ -116,7 +116,7 @@ If you have SE or already collapsed reads you only need to specify a file path f
 
 Here is an example of downloading reads from the SRA, trimming sequencing adapters and collapsing reads. 
 
-	rip_multilevel sample --sra SRR12157896 --collapse --sample-output-dir samples
+    rip_multilevel sample --sra SRR12157896 --collapse --sample-output-dir samples
 
 Sample analysis
 ---------------
@@ -130,7 +130,7 @@ The first step for the sample analysis is to filter in all the reads that align 
 
 Here is an example command 
 
-	rip_multilevel analyse --mode filter --database yersinia_example/database_build_config.yaml --sample ./samples/SRR12157896_config.yaml --analysis-output-dir ./analysis_output
+    rip_multilevel analyse --mode filter --database yersinia_example/database_build_config.yaml --sample ./samples/SRR12157896_config.yaml --analysis-output-dir ./analysis_output
 
 Database Alignments
 -------------------
@@ -140,14 +140,14 @@ After we have filtered our libraries we can align the filtered reads against all
 
 For example
 
-	rip_multilevel analyse --mode align --database yersinia_example/database_build_config.yaml --sample ./samples/SRR12157896_config.yaml --analysis-output-dir ./analysis_output
+    rip_multilevel analyse --mode align --database yersinia_example/database_build_config.yaml --sample ./samples/SRR12157896_config.yaml --analysis-output-dir ./analysis_output
 
 Likelihood calculation
 ----------------------
 
 After all the metagenomic individual alignments have been competed, the number of transitions and transversions will be calculated for every read that has aligned against any of the reference genomes in our database. Then the likelihoods and posterior probabilities for each read being sampled for a given reference genome will be calculated. For this step we can use the `likelihoods` mode of `rip analyse`.
 
-	rip_multilevel analyse --mode likelihoods --database yersinia_example/database_build_config.yaml --sample ./samples/SRR12157896_config.yaml --analysis-output-dir ./analysis_output
+    rip_multilevel analyse --mode likelihoods --database yersinia_example/database_build_config.yaml --sample ./samples/SRR12157896_config.yaml --analysis-output-dir ./analysis_output
 
 Single organism sample or metagenome ? 
 --------------------------------------
@@ -159,14 +159,14 @@ Assignment Probability Calculation
 
 In order to calculate posterior assignment probabilities we can run the following command
 
-	rip_multilevel analyse --mode probabilities --database yersinia_example/database_build_config.yaml --sample ./samples/SRR12157896_config.yaml --analysis-output-dir ./analysis_output
+    rip_multilevel analyse --mode probabilities --database yersinia_example/database_build_config.yaml --sample ./samples/SRR12157896_config.yaml --analysis-output-dir ./analysis_output
 
 Mean Posterior Abundances
 -------------------------
 
 In order to calculate mean posterior abundances we can run the following command 
 
-	rip_multilevel analyse --mode abundances --database yersinia_example/database_build_config.yaml --sample ./samples/SRR12157896_config.yaml --analysis-output-dir ./analysis_output
+    rip_multilevel analyse --mode abundances --database yersinia_example/database_build_config.yaml --sample ./samples/SRR12157896_config.yaml --analysis-output-dir ./analysis_output
 
 Mapdamage analysis
 ------------------
@@ -175,7 +175,7 @@ If our samples are ancient we can use mapDamage to estimate the level of deamina
 
 Here is an example command 
 
-	rip_multilevel analyse --mode mapdamage --database yersinia_example/database_build_config.yaml --sample ./samples/SRR12157896_config.yaml --analysis-output-dir ./analysis_output
+    rip_multilevel analyse --mode mapdamage --database yersinia_example/database_build_config.yaml --sample ./samples/SRR12157896_config.yaml --analysis-output-dir ./analysis_output
 
 Important note
 --------------
@@ -188,118 +188,118 @@ Command Line Interface
 rip config
 ----------
 
-  -h, --help            show this help message and exit
-  -e , --email          Email address for NCBI identification. Mandatory.
-  -gc , --genome-cache-folder 
-                        Path where all the genomes that are downloaded and/or
-                        used by rip are being stored. (default ~/rip_genomes/)
-  -b , --batchsize      Batchsize for fetching records from NCBI <int>
-                        (default: 5)
-  -mp , --mismatch-probability 
-                        Base mismatch probability <float> (default: 0.05)
-  -t , --bowtie2-threads 
-                        Threads for the bowtie2 alignments <int> (default: 1)
-  -s , --bowtie2-scaling 
-                        Factor to rescale/chunk the input file for the
-                        mutlifasta index for the filtering alignment (default:
-                        2.5)
+    -h, --help            show this help message and exit
+    -e , --email          Email address for NCBI identification. Mandatory.
+    -gc , --genome-cache-folder 
+                          Path where all the genomes that are downloaded and/or
+                          used by rip are being stored. (default ~/rip_genomes/)
+    -b , --batchsize      Batchsize for fetching records from NCBI <int>
+                          (default: 5)
+    -mp , --mismatch-probability 
+                          Base mismatch probability <float> (default: 0.05)
+    -t , --bowtie2-threads 
+                          Threads for the bowtie2 alignments <int> (default: 1)
+    -s , --bowtie2-scaling 
+                          Factor to rescale/chunk the input file for the
+                          mutlifasta index for the filtering alignment (default:
+                          2.5)
 
 rip database
 ------------
 
-  -h, --help            show this help message and exit
-  --dry-run
-  -m , --mode           Database creation mode for rip
-  -o , --db-output      /path/to/what/used/to/be/query_name
-  -R REFSEQ_REP, --refseq-rep REFSEQ_REP
-                        Use the prokaryotic representative species of the
-                        RefSeq DB for the species id pipeline. only species no
-                        strains. either or both of with_refseq_rep and
-                        with_entrez_query should be set (default: False)
-  -q , --query          Actual NCBI query in the NCBI query language
-  -Q , --query-file     Actual NCBI query in the NCBI query language
-  -r , --rank           Taxonomic rank to perform the identifications on
-                        (genus, species, subspecies, serotype) <str> (default:
-                        species)
-  -s , --sequences      TAB DELIMITED input file containing the the name of
-                        the taxon with no special characters, and an
-                        underscore '_' instead of spaces, a user defined
-                        accession code and the path of the fasta file. The
-                        fasta file that the path point to can be either
-                        uncompressed or compressed with gzip/bgzip
-  -a , --accessions     TAB DELIMITED input file containing the the name of
-                        the taxon with no special characters, and an
-                        underscore '_' instead of spaces, a user defined valid
-                        NCBI nucleotide, assembly or WGS accession code.
-  -g  [ ...], --genera  [ ...]
-                        List containing the names of specific genera the
-                        abundances should be calculated on, separated by a
-                        space character <genus1 genus2 genus3 ...>
-  -c , --cores          Number of cores for RIP to use
-  -M , --mem            Max memory resources allowed to be used ofr indexing
-                        the input for the filtering alignment (default: max
-                        available memory 8192.0)
-  -u, --unlock          Unlock the working directory after smk is abruptly
-                        killed <bool> (default: False)
-  -d, --debug           Debug the RIP workflow <bool> (default: False)
-  -smk , --snakemake    Snakemake flags (default: '')
+    -h, --help            show this help message and exit
+    --dry-run
+    -m , --mode           Database creation mode for rip
+    -o , --db-output      /path/to/what/used/to/be/query_name
+    -R REFSEQ_REP, --refseq-rep REFSEQ_REP
+                          Use the prokaryotic representative species of the
+                          RefSeq DB for the species id pipeline. only species no
+                          strains. either or both of with_refseq_rep and
+                          with_entrez_query should be set (default: False)
+    -q , --query          Actual NCBI query in the NCBI query language
+    -Q , --query-file     Actual NCBI query in the NCBI query language
+    -r , --rank           Taxonomic rank to perform the identifications on
+                          (genus, species, subspecies, serotype) <str> (default:
+                          species)
+    -s , --sequences      TAB DELIMITED input file containing the the name of
+                          the taxon with no special characters, and an
+                          underscore '_' instead of spaces, a user defined
+                          accession code and the path of the fasta file. The
+                          fasta file that the path point to can be either
+                          uncompressed or compressed with gzip/bgzip
+    -a , --accessions     TAB DELIMITED input file containing the the name of
+                          the taxon with no special characters, and an
+                          underscore '_' instead of spaces, a user defined valid
+                          NCBI nucleotide, assembly or WGS accession code.
+    -g  [ ...], --genera  [ ...]
+                          List containing the names of specific genera the
+                          abundances should be calculated on, separated by a
+                          space character <genus1 genus2 genus3 ...>
+    -c , --cores          Number of cores for RIP to use
+    -M , --mem            Max memory resources allowed to be used ofr indexing
+                          the input for the filtering alignment (default: max
+                          available memory 8192.0)
+    -u, --unlock          Unlock the working directory after smk is abruptly
+                          killed <bool> (default: False)
+    -d, --debug           Debug the RIP workflow <bool> (default: False)
+    -smk , --snakemake    Snakemake flags (default: '')
 
 rip sample
 ----------
 
-  -h, --help            show this help message and exit
-  -p , --sample-prefix 
-                        Sample prefix for all the future analysis. Optional if
-                        SRA accession is provided instead <str>
-  -o , --sample-output-dir 
-                        /path/to/sample <str>
-  -f , --fastq          Path to the fastq input file. Can be raw or with
-                        adapters removed
-  -f1 , --fastq-r1      Path to the mate 1 fastq input file, if reads are PE.
-                        Can be raw or with adapters removed
-  -f2 , --fastq-r2      Path to the mate 2 fastq input file, if reads are PE.
-                        Can be raw or with adapters removed
-  -SA , --sra           Fetch raw data files from the SRA using the provided
-                        accession code <str>
-  -C, --collapse        Collapse paired end reads <bool> (default: False)
-  -T , --trim_adapters 
-                        Remove adapters from raw fastq files <bool> (default:
-                        True)
-  -TF , --adaperremoval-flags 
-                        Additional flags to provide to Adapterremoval <str>
-  -c , --cores          Number of cores for RIP to use
-  -M , --mem            Max memory resources allowed to be used ofr indexing
-                        the input for the filtering alignment (default: max
-                        available memory 8192.0)
-  -u, --unlock          Unlock the working directory after smk is abruptly
-                        killed <bool> (default: False)
-  -d, --debug           Debug the RIP workflow <bool> (default: False)
-  -smk , --snakemake    Snakemake flags (default: '')
-  --dry-run
+    -h, --help            show this help message and exit
+    -p , --sample-prefix 
+                          Sample prefix for all the future analysis. Optional if
+                          SRA accession is provided instead <str>
+    -o , --sample-output-dir 
+                          /path/to/sample <str>
+    -f , --fastq          Path to the fastq input file. Can be raw or with
+                          adapters removed
+    -f1 , --fastq-r1      Path to the mate 1 fastq input file, if reads are PE.
+                          Can be raw or with adapters removed
+    -f2 , --fastq-r2      Path to the mate 2 fastq input file, if reads are PE.
+                          Can be raw or with adapters removed
+    -SA , --sra           Fetch raw data files from the SRA using the provided
+                          accession code <str>
+    -C, --collapse        Collapse paired end reads <bool> (default: False)
+    -T , --trim_adapters 
+                          Remove adapters from raw fastq files <bool> (default:
+                          True)
+    -TF , --adaperremoval-flags 
+                          Additional flags to provide to Adapterremoval <str>
+    -c , --cores          Number of cores for RIP to use
+    -M , --mem            Max memory resources allowed to be used ofr indexing
+                          the input for the filtering alignment (default: max
+                          available memory 8192.0)
+    -u, --unlock          Unlock the working directory after smk is abruptly
+                          killed <bool> (default: False)
+    -d, --debug           Debug the RIP workflow <bool> (default: False)
+    -smk , --snakemake    Snakemake flags (default: '')
+    --dry-run
 
 rip analyse
 -----------
 
-  -h, --help            show this help message and exit
-  -m , --mode           Analysis mode for the selected sample
-  -D , --database       Path to the database used for the sample analysis.
-                        MANDATORY
-  -S , --sample         Path to the sample parameter file. Optional
-  -g  [ ...], --genera  [ ...]
-                        List containing the names of specific genera the
-                        abundances should be calculated on, separated by a
-                        space character <genus1 genus2 genus3 ...>
-  -o , --analysis-output-dir 
-                        Path to results directory.
-  -c , --cores          Number of cores for RIP to use
-  -M , --mem            Max memory resources allowed to be used ofr indexing
-                        the input for the filtering alignment (default: max
-                        available memory 8192.0)
-  -u, --unlock          Unlock the working directory after smk is abruptly
-                        killed <bool> (default: False)
-  -d, --debug           Debug the RIP workflow <bool> (default: False)
-  -smk , --snakemake    Snakemake flags (default: '')
-  --dry-run
+    -h, --help            show this help message and exit
+    -m , --mode           Analysis mode for the selected sample
+    -D , --database       Path to the database used for the sample analysis.
+                          MANDATORY
+    -S , --sample         Path to the sample parameter file. Optional
+    -g  [ ...], --genera  [ ...]
+                          List containing the names of specific genera the
+                          abundances should be calculated on, separated by a
+                          space character <genus1 genus2 genus3 ...>
+    -o , --analysis-output-dir 
+                          Path to results directory.
+    -c , --cores          Number of cores for RIP to use
+    -M , --mem            Max memory resources allowed to be used ofr indexing
+                          the input for the filtering alignment (default: max
+                          available memory 8192.0)
+    -u, --unlock          Unlock the working directory after smk is abruptly
+                          killed <bool> (default: False)
+    -d, --debug           Debug the RIP workflow <bool> (default: False)
+    -smk , --snakemake    Snakemake flags (default: '')
+    --dry-run
 
 
 Citations

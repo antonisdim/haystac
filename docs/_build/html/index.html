@@ -84,18 +84,20 @@ First we need to know what what organisms we would like to include in our databa
 <p>It is also possible to provide your own accessions for a selected species/taxon. For that you will need to prepare a tab delimited file with two columns. The first column is the name of the taxon, that cannot contain any special characters, other than an underscore (‘_’), and the second column is a valid NCBI accession code.</p>
 <p>Here is an example of such a file:</p>
 <blockquote>
-<div><p>Felis_silvestris_silvestris     NC_028310.1
-Felis_silvestris_lybica KP202275.1</p>
+<div><p>Felis_silvestris_silvestris NC_028310.1
+Felis_silvestris_lybica     KP202275.1</p>
 </div></blockquote>
 <p>The we can simply run the following command</p>
-<p>rip_multilevel database –query ‘(“Yersinia”[Organism] OR “Yersinia”[Organism]) AND “complete genome”[All Fields]’ –db-output ./yersinia_example –accessions acc_example.txt</p>
+<blockquote>
+<div><p>rip_multilevel database –query ‘(“Yersinia”[Organism] OR “Yersinia”[Organism]) AND “complete genome”[All Fields]’ –db-output ./yersinia_example –accessions acc_example.txt</p>
+</div></blockquote>
 </div>
 <div class="section" id="providing-custom-sequences">
 <h2>Providing custom sequences<a class="headerlink" href="#providing-custom-sequences" title="Permalink to this headline">¶</a></h2>
 <p>It is also possible to provide your own sequences for a taxon. To do that you will need a a tab delimited file containing the the name of the taxon with no special characters, and an underscore (‘_’) instead of spaces, a user defined accession code and the path of the fasta file. The fasta file that the path point to can be either uncompressed or compressed with gzip/bgzip.</p>
 <p>Here is an example of such a file:</p>
 <blockquote>
-<div><p>Felis_silvestris_silvestris     user_seq_1      /path/to/fasta/file</p>
+<div><p>Felis_silvestris_silvestris user_seq_1      /path/to/fasta/file</p>
 </div></blockquote>
 <p>The we can simply run the following command</p>
 <blockquote>
