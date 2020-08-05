@@ -38,10 +38,11 @@ rule index_database_entrez:
         repeat("benchmarks/index_database_{orgname}_{accession}.benchmark.txt", 1)
     message:
         "Preparing the bowtie2 index for genome {wildcards.accession} of taxon {wildcards.orgname}."
+    threads: config["bowtie2_threads"]
     conda:
         "../envs/bowtie2.yaml"
     shell:
-        "bowtie2-build --large-index {input} {config[genome_cache_folder]}/{wildcards.orgname}/{wildcards.accession} &> {log}"
+        "bowtie2-build --large-index --threads {threads} {input} {config[genome_cache_folder]}/{wildcards.orgname}/{wildcards.accession} &> {log}"
 
 
 def get_idx_entrez(wildcards):

@@ -81,16 +81,65 @@ def interactive_config_input():
 
     genome_cache = genome_cache.rstrip("/")
 
+    if not os.access(os.path.dirname(genome_cache), os.W_OK):
+        raise RuntimeError("This directory path you have provided is not writable. "
+                           "Please chose another path for your genomes directory.")
+
     user_data = {
         "genome_cache_folder": genome_cache,
         "email": entrez_email,
-        "batchsize": batchsize,
-        "mismatch_probability": mismatch_probability,
-        "bowtie2_threads": bowtie2_threads,
-        "bowtie2_scaling": bowtie2_scaling,
+        "batchsize": int(batchsize),
+        "mismatch_probability": float(mismatch_probability),
+        "bowtie2_threads": int(bowtie2_threads),
+        "bowtie2_scaling": float(bowtie2_scaling),
     }
 
+    check_config_arguments(user_data)
+
     return user_data
+
+
+def check_config_arguments(args):
+
+    """Function to check config arguments and raise errors if they are not suitable"""
+
+    if args['entrez_email']:
+        if not re.match(r"[^@]+@[^@]+\.[^@]+", args.entrez_email):
+            print("The email address you provided is not valid. Please try again")
+            entrez_email = input(
+                "Please enter a valid email address. "
+                "It is required, in order to access NCBI's Entrez API. "
+                "The address is stored locally on your computer only: "
+            )
+
+    if args['genome_cache_folder']:
+        if not os.access(os.path.dirname(args.genome_cache_folder), os.W_OK):
+            raise RuntimeError("This directory path you have provided is not writable. "
+                               "Please chose another path for your genomes directory.")
+
+    if args['batchsize']:
+        if not isinstance(args['batchsize'], int):
+            raise RuntimeError("Please provide a positive integer for batchsize.")
+        if not args['batchsize'] > 0:
+            raise RuntimeError("Please provide a positive integer for batchsize.")
+
+    if args['mismatch_probability']:
+        if not (args['mismatch_probability'], float):
+            raise RuntimeError("Please provide a positive float for mismatch probability.")
+        if not args['mismatch_probability'] > 0:
+            raise RuntimeError("Please provide a positive float for mismatch probability.")
+
+    if args['bowtie2_threads']:
+        if not isinstance(args['bowtie2_threads'], int):
+            raise RuntimeError("Please provide a positive integer for the bowtie2 threads.")
+        if not args['bowtie2_threads'] > 0:
+            raise RuntimeError("Please provide a positive integer for the bowtie2 threads.")
+
+    if args['bowtie2_scaling']:
+        if not (args['bowtie2_scaling'], float):
+            raise RuntimeError("Please provide a positive float for the bowtie2 scaling factor.")
+        if not args['bowtie2_scaling'] > 0:
+            raise RuntimeError("Please provide a positive float for the bowtie2 scaling factor.")
 
 
 class Rip(object):
@@ -182,6 +231,8 @@ The most commonly used git commands are:
         if os.path.exists(repo_config_file):
             with open(repo_config_file) as fin:
                 repo_rip_config = yaml.safe_load(fin)
+        else:
+            raise RuntimeError("The config file in the code file directory is missing. Please reinstall the package.")
 
         user_rip_config = os.path.join(str(Path.home()), ".rip", "config.yaml")
 
@@ -189,6 +240,11 @@ The most commonly used git commands are:
             os.makedirs(os.path.join(str(Path.home()), ".rip"), exist_ok=True)
 
         if not os.path.exists(user_rip_config):
+            if len(sys.argv) > 2:
+                raise RuntimeError("You haven not configured rip yet. "
+                                   "You need to do this for all options at least once."
+                                   "Please first run the command `rip config` and follow the instructions, "
+                                   "before configuring any individual options.")
             user_config = interactive_config_input()
             user_non_default_config = {
                 k: v
@@ -218,6 +274,7 @@ The most commonly used git commands are:
                 with open(user_rip_config, "w") as outfile:
                     yaml.safe_dump(user_options, outfile, default_flow_style=False)
             else:
+                check_config_arguments(config_args)
                 with open(user_rip_config) as fin:
                     user_options = yaml.safe_load(fin)
                     user_options.update(
@@ -465,6 +522,9 @@ The most commonly used git commands are:
                     "Please run rip database --mode fetch first, "
                     "and then proceed indexing the database."
                 )
+
+            with open(database_fetch_yaml, 'r') as fin:
+                database_config = yaml.safe_load(fin)
 
         if args.mode == "build":
             target_list.append(database_config["db_output"] + "/idx_database.done")

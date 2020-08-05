@@ -149,10 +149,11 @@ rule bowtie_index:
         repeat("benchmarks/bowtie_index_chunk{chunk_num}.benchmark.txt", 1)
     message:
         "Bowtie2 index for chunk {input.fasta_chunk} is being built {MESSAGE_SUFFIX}"
+    threads: config["bowtie2_threads"]
     conda:
         "../envs/bowtie2.yaml"
     shell:
-        "bowtie2-build --large-index {input.fasta_chunk} {config[db_output]}/bowtie/chunk{wildcards.chunk_num} &> {log}"
+        "bowtie2-build --large-index --threads {threads} {input.fasta_chunk} {config[db_output]}/bowtie/chunk{wildcards.chunk_num} &> {log}"
 
 
 def get__bt2_idx_chunk_paths(wildcards):
