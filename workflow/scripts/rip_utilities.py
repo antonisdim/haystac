@@ -186,5 +186,3 @@ def get_accession_ftp_path(accession, config, attempt=1):
             raise RuntimeError(
                 "There was a urllib.error.HTTPError with code {}".format(e)
             )
-
-

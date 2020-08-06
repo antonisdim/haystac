@@ -24,7 +24,7 @@ rule get_sra_fastq_se:
     conda:
         "../envs/sra_tools.yaml"
     shell:
-        "fasterq-dump --split-files {wildcards.accession} --outdir {config[sample_output_dir]}/sra_data/SE/",
+        "fasterq-dump --split-files {wildcards.accession} --outdir {config[sample_output_dir]}/sra_data/SE/"
 
 
 rule get_sra_fastq_pe:

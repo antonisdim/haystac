@@ -41,7 +41,8 @@ def entrez_invalid_assemblies(config, assemblies, output, attempt=1):
             try:
                 handle = Entrez.esearch(
                     db=ENTREZ_DB_ASSEMBLY,
-                    term=acc["GBSeq_accession-version"] + ' AND "latest refseq"[filter]',
+                    term=acc["GBSeq_accession-version"]
+                    + ' AND "latest refseq"[filter]',
                 )
                 assembly_record = Entrez.read(handle)
 

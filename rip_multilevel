@@ -81,9 +81,18 @@ def interactive_config_input():
 
     genome_cache = genome_cache.rstrip("/")
 
-    if not os.access(os.path.dirname(genome_cache), os.W_OK):
-        raise RuntimeError("This directory path you have provided is not writable. "
-                           "Please chose another path for your genomes directory.")
+    if os.path.exists(genome_cache):
+        if not os.access(genome_cache, os.W_OK):
+            raise RuntimeError(
+                "This directory path you have provided is not writable. "
+                "Please chose another path for your genomes directory."
+            )
+    else:
+        if not os.access(os.path.dirname(genome_cache), os.W_OK):
+            raise RuntimeError(
+                "This directory path you have provided is not writable. "
+                "Please chose another path for your genomes directory."
+            )
 
     user_data = {
         "genome_cache_folder": genome_cache,
@@ -103,7 +112,7 @@ def check_config_arguments(args):
 
     """Function to check config arguments and raise errors if they are not suitable"""
 
-    if args['entrez_email']:
+    if args["entrez_email"]:
         if not re.match(r"[^@]+@[^@]+\.[^@]+", args.entrez_email):
             print("The email address you provided is not valid. Please try again")
             entrez_email = input(
@@ -112,34 +121,55 @@ def check_config_arguments(args):
                 "The address is stored locally on your computer only: "
             )
 
-    if args['genome_cache_folder']:
-        if not os.access(os.path.dirname(args.genome_cache_folder), os.W_OK):
-            raise RuntimeError("This directory path you have provided is not writable. "
-                               "Please chose another path for your genomes directory.")
+    if args["genome_cache_folder"]:
+        if os.path.exists(genome_cache):
+            if not os.access(genome_cache, os.W_OK):
+                raise RuntimeError(
+                    "This directory path you have provided is not writable. "
+                    "Please chose another path for your genomes directory."
+                )
+        else:
+            if not os.access(os.path.dirname(genome_cache), os.W_OK):
+                raise RuntimeError(
+                    "This directory path you have provided is not writable. "
+                    "Please chose another path for your genomes directory."
+                )
 
-    if args['batchsize']:
-        if not isinstance(args['batchsize'], int):
+    if args["batchsize"]:
+        if not isinstance(args["batchsize"], int):
             raise RuntimeError("Please provide a positive integer for batchsize.")
-        if not args['batchsize'] > 0:
+        if not args["batchsize"] > 0:
             raise RuntimeError("Please provide a positive integer for batchsize.")
 
-    if args['mismatch_probability']:
-        if not (args['mismatch_probability'], float):
-            raise RuntimeError("Please provide a positive float for mismatch probability.")
-        if not args['mismatch_probability'] > 0:
-            raise RuntimeError("Please provide a positive float for mismatch probability.")
+    if args["mismatch_probability"]:
+        if not (args["mismatch_probability"], float):
+            raise RuntimeError(
+                "Please provide a positive float for mismatch probability."
+            )
+        if not args["mismatch_probability"] > 0:
+            raise RuntimeError(
+                "Please provide a positive float for mismatch probability."
+            )
 
-    if args['bowtie2_threads']:
-        if not isinstance(args['bowtie2_threads'], int):
-            raise RuntimeError("Please provide a positive integer for the bowtie2 threads.")
-        if not args['bowtie2_threads'] > 0:
-            raise RuntimeError("Please provide a positive integer for the bowtie2 threads.")
+    if args["bowtie2_threads"]:
+        if not isinstance(args["bowtie2_threads"], int):
+            raise RuntimeError(
+                "Please provide a positive integer for the bowtie2 threads."
+            )
+        if not args["bowtie2_threads"] > 0:
+            raise RuntimeError(
+                "Please provide a positive integer for the bowtie2 threads."
+            )
 
-    if args['bowtie2_scaling']:
-        if not (args['bowtie2_scaling'], float):
-            raise RuntimeError("Please provide a positive float for the bowtie2 scaling factor.")
-        if not args['bowtie2_scaling'] > 0:
-            raise RuntimeError("Please provide a positive float for the bowtie2 scaling factor.")
+    if args["bowtie2_scaling"]:
+        if not (args["bowtie2_scaling"], float):
+            raise RuntimeError(
+                "Please provide a positive float for the bowtie2 scaling factor."
+            )
+        if not args["bowtie2_scaling"] > 0:
+            raise RuntimeError(
+                "Please provide a positive float for the bowtie2 scaling factor."
+            )
 
 
 class Rip(object):
@@ -155,7 +185,11 @@ The most commonly used git commands are:
    analyse            Analyse a sample (species identification or metagenomic assignments)
 """,
         )
-        parser.add_argument("command", choices=['config', 'database', 'sample', 'analyse'], help="Subcommand to run")
+        parser.add_argument(
+            "command",
+            choices=["config", "database", "sample", "analyse"],
+            help="Subcommand to run",
+        )
 
         # parse_args defaults to [1:] for args, but you need to
         # exclude the rest of the args too, or validation will fail
@@ -176,39 +210,45 @@ The most commonly used git commands are:
         # prefixing the argument with -- means it's optional
 
         parser.add_argument(
-            '-e', "--email",
+            "-e",
+            "--email",
             help="Email address for NCBI identification. Mandatory.",
             metavar="",
         )
         parser.add_argument(
-            '-gc', "--genome-cache-folder",
+            "-gc",
+            "--genome-cache-folder",
             help="Path where all the genomes that are downloaded and/or used by rip are being stored. "
             "(default ~/rip_genomes/)",
             metavar="",
         )
 
         parser.add_argument(
-            '-b', "--batchsize",
+            "-b",
+            "--batchsize",
             help="Batchsize for fetching records from NCBI  <int> (default: 5)",
             type=int,
             metavar="",
         )
 
         parser.add_argument(
-            '-mp', "--mismatch-probability",
+            "-mp",
+            "--mismatch-probability",
             help="Base mismatch probability <float> (default: 0.05)",
             type=float,
             metavar="",
         )
         parser.add_argument(
-            '-t', "--bowtie2-threads",
+            "-t",
+            "--bowtie2-threads",
             help="Threads for the bowtie2 alignments <int> (default: 1)",
             type=int,
             metavar="",
         )
 
         parser.add_argument(
-            '-s', "--bowtie2-scaling",
+            "-s",
+            "--bowtie2-scaling",
             help="Factor to rescale/chunk the input file for the mutlifasta "
             "index for the filtering alignment (default: 2.5)",
             type=float,
@@ -226,13 +266,15 @@ The most commonly used git commands are:
 
         config_args = vars(args)
 
-        repo_config_file = os.path.join(thisdir, 'config', "config.yaml")
+        repo_config_file = os.path.join(thisdir, "config", "config.yaml")
 
         if os.path.exists(repo_config_file):
             with open(repo_config_file) as fin:
                 repo_rip_config = yaml.safe_load(fin)
         else:
-            raise RuntimeError("The config file in the code file directory is missing. Please reinstall the package.")
+            raise RuntimeError(
+                "The config file in the code file directory is missing. Please reinstall the package."
+            )
 
         user_rip_config = os.path.join(str(Path.home()), ".rip", "config.yaml")
 
@@ -241,10 +283,12 @@ The most commonly used git commands are:
 
         if not os.path.exists(user_rip_config):
             if len(sys.argv) > 2:
-                raise RuntimeError("You haven not configured rip yet. "
-                                   "You need to do this for all options at least once."
-                                   "Please first run the command `rip config` and follow the instructions, "
-                                   "before configuring any individual options.")
+                raise RuntimeError(
+                    "You haven not configured rip yet. "
+                    "You need to do this for all options at least once."
+                    "Please first run the command `rip config` and follow the instructions, "
+                    "before configuring any individual options."
+                )
             user_config = interactive_config_input()
             user_non_default_config = {
                 k: v
@@ -293,7 +337,8 @@ The most commonly used git commands are:
         parser.add_argument("--dry-run", action="store_true")
 
         parser.add_argument(
-            '-m', "--mode",
+            "-m",
+            "--mode",
             choices=["fetch", "index", "build"],
             help="Database creation mode for rip",
             metavar="",
@@ -301,33 +346,44 @@ The most commonly used git commands are:
         )
 
         parser.add_argument(
-            '-o', "--db-output", help="/path/to/what/used/to/be/query_name", metavar="",
+            "-o", "--db-output", help="/path/to/what/used/to/be/query_name", metavar="",
         )
         parser.add_argument(
-            '-R', "--refseq-rep",
+            "-R",
+            "--refseq-rep",
             help="Use the prokaryotic representative species of the RefSeq DB "
             "for the species id pipeline. only species no strains. "
             "either or both of with_refseq_rep and "
             "with_entrez_query should be set (default: False)",
+            type=bool,
             default=False,
-        )
-        parser.add_argument(
-            '-q', "--query", help="Actual NCBI query in the NCBI query language", metavar="",
-        )
-        parser.add_argument(
-            '-Q', "--query-file",  # todo check what Evan meant here
-            help="Actual NCBI query in the NCBI query language",
             metavar="",
         )
         parser.add_argument(
-            '-r', "--rank",
+            "-q",
+            "--query",
+            help="Actual NCBI query in the NCBI query language. "
+            "Please refer to the documentation on how to construct one correctly.",
+            metavar="",
+        )
+        parser.add_argument(
+            "-Q",
+            "--query-file",  # todo check what Evan meant here
+            help="Actual NCBI query in the NCBI query language, stored in a simple text file.",
+            metavar="",
+        )
+        parser.add_argument(
+            "-r",
+            "--rank",
             help="Taxonomic rank to perform the identifications on (genus, species, subspecies, serotype) "
             "<str> (default: species)",
+            choices=["genus", "species", "subspecies", "serotype"],
             default="species",
             metavar="",
         )
         parser.add_argument(
-            '-s', "--sequences",
+            "-s",
+            "--sequences",
             help="TAB DELIMITED input file containing the the name of the taxon with no special characters, "
             "and an underscore '_' instead of spaces, a user defined accession code and the path of the fasta file. "
             "The fasta file that the path point to can be either uncompressed or compressed with gzip/bgzip",
@@ -336,7 +392,8 @@ The most commonly used git commands are:
         )
 
         parser.add_argument(
-            '-a', "--accessions",
+            "-a",
+            "--accessions",
             help="TAB DELIMITED input file containing the the name of the taxon with no special characters, "
             "and an underscore '_' instead of spaces, a user defined valid NCBI nucleotide, assembly or WGS "
             "accession code. ",
@@ -345,7 +402,8 @@ The most commonly used git commands are:
         )
 
         parser.add_argument(
-            '-g', "--genera",
+            "-g",
+            "--genera",
             nargs="+",
             help="List containing the names of specific genera "
             "the abundances should be calculated "
@@ -355,32 +413,39 @@ The most commonly used git commands are:
         )
 
         parser.add_argument(
-            '-c', "--cores",
+            "-c",
+            "--cores",
             help="Number of cores for RIP to use",
+            type=int,
             metavar="",
             default=cpu_count(),
         )
         parser.add_argument(
-            '-M', "--mem",
+            "-M",
+            "--mem",
             help="Max memory resources allowed to be used ofr indexing the input for "
             "the filtering alignment "
             "(default: max available memory {})".format(MAX_MEM_MB),
+            type=float,
             default=MAX_MEM_MB,
             metavar="",
         )
         parser.add_argument(
-            '-u', "--unlock",
+            "-u",
+            "--unlock",
             action="store_true",
             help="Unlock the working directory after smk is "
             "abruptly killed  <bool> (default: False)",
         )
         parser.add_argument(
-            '-d', "--debug",
+            "-d",
+            "--debug",
             action="store_true",
             help="Debug the RIP workflow <bool> (default: False)",
         )
         parser.add_argument(
-            '-smk', "--snakemake",
+            "-smk",
+            "--snakemake",
             help="Snakemake flags (default: '')",
             metavar="",  # todo don't know how to do that
         )
@@ -394,7 +459,7 @@ The most commonly used git commands are:
             parser.print_help()
             parser.exit()
 
-        snakefile = os.path.join(thisdir, 'workflow', "Snakefile_db")
+        snakefile = os.path.join(thisdir, "workflow", "Snakefile_db")
         if not os.path.exists(snakefile):
             sys.stderr.write("Error: cannot find Snakefile at {}\n".format(snakefile))
             sys.exit(-1)
@@ -403,7 +468,7 @@ The most commonly used git commands are:
 
         # actual arg parsing
 
-        repo_config_file = os.path.join(thisdir, 'config', "config.yaml")
+        repo_config_file = os.path.join(thisdir, "config", "config.yaml")
         user_config_file = os.path.join(str(Path.home()), ".rip", "config.yaml")
 
         if not os.path.exists(user_config_file):
@@ -436,6 +501,7 @@ The most commonly used git commands are:
             "unlock": False,
             "debug": False,
             "snakemake": None,
+            "genera": [],
         }
 
         database_args = vars(args)
@@ -443,6 +509,38 @@ The most commonly used git commands are:
         database_config = {k: v for k, v in database_defaults.items()}
         database_config.update((k, v) for k, v in database_args.items())
         database_config.update((k, v) for k, v in repo_rip_config.items())
+
+        if database_config["query"] and database_config["query_file"]:
+            raise RuntimeError(
+                "You cannot provide both a query and a query file. "
+                "Please chose only one option, and provide the only its respective flag."
+            )
+
+        if database_config["query_file"]:
+            with open(database_config["query_file"], "r") as fin:
+                database_config["query"] = fin.read().rstrip()
+
+            if database_config["query"] == "" or database_config["query"] == " ":
+                raise RuntimeError(
+                    "The query file you provided was empty. "
+                    "Please provide a file with a valid query."
+                )
+
+        if database_config["db_output"]:
+            if os.path.exists(database_config["db_output"]):
+                if not os.access(database_config["db_output"], os.W_OK):
+                    raise RuntimeError(
+                        "This directory path you have provided is not writable. "
+                        "Please chose another path for your database output directory."
+                    )
+            else:
+                if not os.access(
+                    os.path.dirname(database_config["db_output"]), os.W_OK
+                ):
+                    raise RuntimeError(
+                        "This directory path you have provided is not writable. "
+                        "Please chose another path for your database output directory.."
+                    )
 
         if database_config["db_output"] is None:
             raise RuntimeError(
@@ -474,7 +572,7 @@ The most commonly used git commands are:
 
         target_list = []
 
-        if args.mode == "fetch":
+        if database_config["mode"] == "fetch":
             if database_config["with_entrez_query"]:
                 target_list.append(
                     database_config["db_output"] + "/bowtie/entrez_query.fasta.gz"
@@ -507,7 +605,7 @@ The most commonly used git commands are:
 
             print("Please run rip database --mode index after this step.")
 
-        if args.mode == "index":
+        if database_config["mode"] == "index":
             target_list.append(
                 database_config["db_output"] + "/bowtie/bowtie_index.done"
             )
@@ -523,10 +621,10 @@ The most commonly used git commands are:
                     "and then proceed indexing the database."
                 )
 
-            with open(database_fetch_yaml, 'r') as fin:
+            with open(database_fetch_yaml, "r") as fin:
                 database_config = yaml.safe_load(fin)
 
-        if args.mode == "build":
+        if database_config["mode"] == "build":
             target_list.append(database_config["db_output"] + "/idx_database.done")
             target_list.append(
                 database_config["db_output"] + "/bowtie/bowtie_index.done"
@@ -557,7 +655,7 @@ The most commonly used git commands are:
                 with open(database_build_yaml, "w") as outfile:
                     yaml.safe_dump(database_config, outfile, default_flow_style=False)
 
-        database_config['workflow_dir'] = os.path.join(thisdir, 'workflow')
+        database_config["workflow_dir"] = os.path.join(thisdir, "workflow")
 
         user_options = {
             k: v
@@ -570,7 +668,7 @@ The most commonly used git commands are:
         print("RUN DETAILS")
         print("\n\tSnakefile: {}".format(snakefile))
         print("\n\tConfig Parameters:\n")
-        if args.debug:
+        if database_config["debug"]:
             for (key, value,) in database_config.items():
                 print(f"{key:35}{value}")
         else:
@@ -582,7 +680,7 @@ The most commonly used git commands are:
             print(target)
         print("--------")
 
-        if args.debug:
+        if database_config["debug"]:
             printshellcmds = True
             keepgoing = False
             restart_times = 0
@@ -614,89 +712,105 @@ The most commonly used git commands are:
         parser = argparse.ArgumentParser(description="Prepare a sample for analysis")
 
         parser.add_argument(
-            '-p', "--sample-prefix",
+            "-p",
+            "--sample-prefix",
             help="Sample prefix for all the future analysis. Optional if SRA accession is provided instead"
             " <str>",
             metavar="",
             default="",
         )
         parser.add_argument(
-            '-o', "--sample-output-dir",
+            "-o",
+            "--sample-output-dir",
             help="/path/to/sample <str>",  # todo it's the path to fastq_inputs, check with Evan
             metavar="",
             default="",
         )
 
         parser.add_argument(
-            '-f', "--fastq",
+            "-f",
+            "--fastq",
             help="Path to the fastq input file. Can be raw or with adapters " "removed",
             metavar="",
         )
         parser.add_argument(
-            '-f1', "--fastq-r1",
+            "-f1",
+            "--fastq-r1",
             help="Path to the mate 1 fastq input file, if reads are PE. "
             "Can be raw or with adapters removed",
             metavar="",
         )
         parser.add_argument(
-            '-f2', "--fastq-r2",
+            "-f2",
+            "--fastq-r2",
             help="Path to the mate 2 fastq input file, if reads are PE. "
             "Can be raw or with adapters removed",
             metavar="",
         )
 
         parser.add_argument(
-            '-SA', "--sra",
+            "-SA",
+            "--sra",
             help="Fetch raw data files from the SRA using the provided accession code <str>",
             metavar="",
         )
 
         parser.add_argument(
-            '-C', "--collapse",
+            "-C",
+            "--collapse",
             help="Collapse paired end reads <bool> (default: False)",
             default=False,
             action="store_true",
         )
         parser.add_argument(
-            '-T', "--trim_adapters",
+            "-T",
+            "--trim_adapters",
             help="Remove adapters from raw fastq files <bool> (default: True)",
+            type=bool,
             default=True,
             metavar="",
         )
         parser.add_argument(
-            '-TF', "--adaperremoval-flags",
+            "-TF",
+            "--adaperremoval-flags",
             help="Additional flags to provide to Adapterremoval <str>",
             default="",
             metavar="",
         )
 
         parser.add_argument(
-            '-c', "--cores",
+            "-c",
+            "--cores",
             help="Number of cores for RIP to use",
             metavar="",
+            type=int,
             default=cpu_count(),
         )
         parser.add_argument(
-            '-M', "--mem",
+            "-M",
+            "--mem",
             help="Max memory resources allowed to be used ofr indexing the input for "
             "the filtering alignment "
             "(default: max available memory {})".format(MAX_MEM_MB),
+            type=float,
             default=MAX_MEM_MB,
             metavar="",
         )
         parser.add_argument(
-            '-u', "--unlock",
+            "-u",
+            "--unlock",
             action="store_true",
             help="Unlock the working directory after smk is "
             "abruptly killed  <bool> (default: False)",
         )
         parser.add_argument(
-            '-d', "--debug",
+            "-d",
+            "--debug",
             action="store_true",
             help="Debug the RIP workflow <bool> (default: False)",
         )
         parser.add_argument(
-            '-smk', "--snakemake", help="Snakemake flags (default: '')", metavar="",
+            "-smk", "--snakemake", help="Snakemake flags (default: '')", metavar="",
         )
         parser.add_argument("--dry-run", action="store_true")
 
@@ -707,12 +821,12 @@ The most commonly used git commands are:
             parser.print_help()
             parser.exit()
 
-        snakefile = os.path.join(thisdir, 'workflow', "Snakefile_sample")
+        snakefile = os.path.join(thisdir, "workflow", "Snakefile_sample")
         if not os.path.exists(snakefile):
             sys.stderr.write("Error: cannot find Snakefile at {}\n".format(snakefile))
             sys.exit(-1)
 
-        repo_config_file = os.path.join(thisdir, 'config', "config.yaml")
+        repo_config_file = os.path.join(thisdir, "config", "config.yaml")
         user_config_file = os.path.join(str(Path.home()), ".rip", "config.yaml")
 
         if not os.path.exists(user_config_file):
@@ -753,6 +867,22 @@ The most commonly used git commands are:
         sample_config.update((k, v) for k, v in sample_args.items())
         sample_config.update((k, v) for k, v in repo_rip_config.items())
 
+        if sample_config["sample_output_dir"]:
+            if os.path.exists(sample_config["sample_output_dir"]):
+                if not os.access(sample_config["sample_output_dir"], os.W_OK):
+                    raise RuntimeError(
+                        "This directory path you have provided is not writable. "
+                        "Please chose another path for your sample output directory."
+                    )
+            else:
+                if not os.access(
+                    os.path.dirname(sample_config["sample_output_dir"]), os.W_OK
+                ):
+                    raise RuntimeError(
+                        "This directory path you have provided is not writable. "
+                        "Please chose another path for your sample output directory.."
+                    )
+
         if sample_config["sample_output_dir"] is None:
             raise RuntimeError(
                 "Please provide a valid directory path for the sample related outputs. "
@@ -790,6 +920,27 @@ The most commonly used git commands are:
             sample_config["fastq"] is not None
         ):
             raise RuntimeError("Please use a correct combination of PE or SE reads.")
+
+        if sample_config["fastq"]:
+            if not os.path.exists(sample_config["fastq"]):
+                raise RuntimeError(
+                    "The file path you provided to --fastq does not exist. "
+                    "Please provide a valid path"
+                )
+
+        if sample_config["fastq_r1"]:
+            if not os.path.exists(sample_config["fastq_r1"]):
+                raise RuntimeError(
+                    "The file path you provided to --fastq-r1 does not exist. "
+                    "Please provide a valid path"
+                )
+
+        if sample_config["fastq_r2"]:
+            if not os.path.exists(sample_config["fastq_r2"]):
+                raise RuntimeError(
+                    "The file path you provided to --fastq-r2 does not exist. "
+                    "Please provide a valid path"
+                )
 
         if sample_config["sra"] is not None:
             sample_config["sample_prefix"] = sample_config["sra"]
@@ -858,7 +1009,7 @@ The most commonly used git commands are:
             with open(sample_yaml, "w") as outfile:
                 yaml.safe_dump(sample_options, outfile, default_flow_style=False)
 
-        sample_config['workflow_dir'] = os.path.join(thisdir, 'workflow')
+        sample_config["workflow_dir"] = os.path.join(thisdir, "workflow")
 
         user_options = {
             k: v
@@ -915,7 +1066,8 @@ The most commonly used git commands are:
         parser = argparse.ArgumentParser(description="Analyse a sample")
         # NOT prefixing the argument with -- means it's not optional
         parser.add_argument(
-            '-m', "--mode",
+            "-m",
+            "--mode",
             choices=[
                 "filter",
                 "align",
@@ -928,17 +1080,20 @@ The most commonly used git commands are:
             metavar="",
         )
         parser.add_argument(
-            '-D', "--database",
-            help="Path to the database used for the sample analysis. MANDATORY",
+            "-D",
+            "--database",
+            help="Path to the database yaml file used for the sample analysis. MANDATORY",
             metavar="",
         )
         parser.add_argument(
-            '-S', "--sample",
-            help="Path to the sample parameter file. Optional",  # todo check with Evan about it
+            "-S",
+            "--sample",
+            help="Path to the sample parameter yaml file. MANDATORY",  # todo check with Evan about it
             metavar="",
         )
         parser.add_argument(
-            '-g', "--genera",
+            "-g",
+            "--genera",
             nargs="+",
             help="List containing the names of specific genera "
             "the abundances should be calculated "
@@ -947,36 +1102,45 @@ The most commonly used git commands are:
             default=[],
         )
         parser.add_argument(
-            '-o', "--analysis-output-dir", help="Path to results directory.", metavar="",
+            "-o",
+            "--analysis-output-dir",
+            help="Path to results directory.",
+            metavar="",
         )
 
         parser.add_argument(
-            '-c', "--cores",
+            "-c",
+            "--cores",
             help="Number of cores for RIP to use",
             metavar="",
+            type=int,
             default=cpu_count(),
         )
         parser.add_argument(
-            '-M', "--mem",
+            "-M",
+            "--mem",
             help="Max memory resources allowed to be used ofr indexing the input for "
             "the filtering alignment "
             "(default: max available memory {})".format(MAX_MEM_MB),
+            type=float,
             default=MAX_MEM_MB,
             metavar="",
         )
         parser.add_argument(
-            '-u', "--unlock",
+            "-u",
+            "--unlock",
             action="store_true",
             help="Unlock the working directory after smk is "
             "abruptly killed  <bool> (default: False)",
         )
         parser.add_argument(
-            '-d', "--debug",
+            "-d",
+            "--debug",
             action="store_true",
             help="Debug the RIP workflow <bool> (default: False)",
         )
         parser.add_argument(
-            '-smk', "--snakemake", help="Snakemake flags (default: '')", metavar="",
+            "-smk", "--snakemake", help="Snakemake flags (default: '')", metavar="",
         )
         parser.add_argument("--dry-run", action="store_true")
 
@@ -989,12 +1153,12 @@ The most commonly used git commands are:
 
         print("The selected mode for sample analysis is {}".format(args.mode))
 
-        snakefile = os.path.join(thisdir, 'workflow', "Snakefile")
+        snakefile = os.path.join(thisdir, "workflow", "Snakefile")
         if not os.path.exists(snakefile):
             sys.stderr.write("Error: cannot find Snakefile at {}\n".format(snakefile))
             sys.exit(-1)
 
-        repo_config_file = os.path.join(thisdir, 'config', "config.yaml")
+        repo_config_file = os.path.join(thisdir, "config", "config.yaml")
         user_config_file = os.path.join(str(Path.home()), ".rip", "config.yaml")
 
         if not os.path.exists(user_config_file):
@@ -1010,6 +1174,18 @@ The most commonly used git commands are:
             user_rip_config = yaml.safe_load(fin)
 
         repo_rip_config.update((k, v) for k, v in user_rip_config.items())
+
+        if not os.path.exists(args.database):
+            raise RuntimeError(
+                "The path you provided for the yaml file containing all the database related "
+                "information is not valid. Please provide a valid path."
+            )
+
+        if not os.path.exists(args.sample):
+            raise RuntimeError(
+                "The path you provided for the yaml file containing all the sample related "
+                "information is not valid. Please provide a valid path."
+            )
 
         with open(args.database) as fin:
             database_config = yaml.safe_load(fin)
@@ -1038,6 +1214,22 @@ The most commonly used git commands are:
         analysis_config.update((k, v) for k, v in sample_config.items())
         analysis_config.update((k, v) for k, v in repo_rip_config.items())
         analysis_config.update((k, v) for k, v in analysis_args.items())
+
+        if analysis_config["analysis_output_dir"]:
+            if os.path.exists(analysis_config["analysis_output_dir"]):
+                if not os.access(analysis_config["analysis_output_dir"], os.W_OK):
+                    raise RuntimeError(
+                        "This directory path you have provided is not writable. "
+                        "Please chose another path for your sample output directory."
+                    )
+            else:
+                if not os.access(
+                    os.path.dirname(analysis_config["analysis_output_dir"]), os.W_OK
+                ):
+                    raise RuntimeError(
+                        "This directory path you have provided is not writable. "
+                        "Please chose another path for your sample output directory.."
+                    )
 
         if analysis_config["analysis_output_dir"] is None:
             raise RuntimeError(
@@ -1142,7 +1334,7 @@ The most commonly used git commands are:
             with open(analysis_yaml, "w") as outfile:
                 yaml.safe_dump(analysis_options, outfile, default_flow_style=False)
 
-        analysis_config['workflow_dir'] = os.path.join(thisdir, 'workflow')
+        analysis_config["workflow_dir"] = os.path.join(thisdir, "workflow")
 
         user_options = {
             k: v

@@ -14,7 +14,7 @@ def random_db_paths(input_list, output):
 
     random.shuffle(input_list)
 
-    with open(output, 'w') as fout:
+    with open(output, "w") as fout:
         for path in input_list:
             fout.write("{}\n".format(path))
 
@@ -24,6 +24,5 @@ if __name__ == "__main__":
     sys.stderr = open(snakemake.log[0], "w")
 
     random_db_paths(
-        input_list=snakemake.input,
-        output=snakemake.output[0],
+        input_list=snakemake.input, output=snakemake.output[0],
     )

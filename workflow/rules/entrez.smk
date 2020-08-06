@@ -19,7 +19,6 @@ from scripts.entrez_nuccore_query import CHUNK_SIZE
 from scripts.rip_utilities import normalise_name, get_accession_ftp_path
 
 
-
 checkpoint entrez_find_accessions:
     output:
         temp(config["db_output"] + "/entrez/entrez-accessions.tsv"),
@@ -149,12 +148,14 @@ def get_rsync_url(wildcards):
 
     try:
         url = get_accession_ftp_path(wildcards.accession, config)
-        file_url = os.path.join(url, os.path.basename(url) + "_genomic.fna.gz") # .replace("ftp://", "rsync://")
+        file_url = os.path.join(
+            url, os.path.basename(url) + "_genomic.fna.gz"
+        )  # .replace("ftp://", "rsync://")
         print(url)
         print(file_url)
         return file_url
     except RuntimeError:
-        return ''
+        return ""
 
 
 rule entrez_download_sequence:
@@ -167,7 +168,7 @@ rule entrez_download_sequence:
     params:
         assembly=False,
         url=get_rsync_url,
-        temp_out=config["genome_cache_folder"] + "/temp_{accession}.fasta.gz"
+        temp_out=config["genome_cache_folder"] + "/temp_{accession}.fasta.gz",
     message:
         "Downloading accession {wildcards.accession} for taxon {wildcards.orgname} {MESSAGE_SUFFIX}"
     resources:
@@ -175,11 +176,10 @@ rule entrez_download_sequence:
     conda:
         "../envs/seq_download.yaml"
     shell:
-        "([ -n \"{params.url}\" ] && (wget -q -O {params.temp_out} {params.url} ; "
+        '([ -n "{params.url}" ] && (wget -q -O {params.temp_out} {params.url} ; '
         "gunzip -c {params.temp_out} | bgzip -f > {output}); unlink {params.temp_out} || "
         "python {config[workflow_dir]}/scripts/entrez_download_sequence.py "
         "--accession {wildcards.accession} --email {config[email]} --output_file {output}) > {log}"
-
 
 
 # noinspection PyUnresolvedReferences

@@ -72,8 +72,8 @@ def entrez_download_sequence(accession, email, output_file, attempt=1):
     #     )["IdList"]
     # else:
     nuccore_id = Entrez.read(Entrez.esearch(db=ENTREZ_DB_NUCCORE, term=accession))[
-            "IdList"
-        ]
+        "IdList"
+    ]
 
     try:
         records = guts_of_entrez(
@@ -152,31 +152,21 @@ def entrez_download_sequence(accession, email, output_file, attempt=1):
 if __name__ == "__main__":
     # redirect all output to the log
 
-    parser = argparse.ArgumentParser(
-        description="Download seq data from Entrez."
+    parser = argparse.ArgumentParser(description="Download seq data from Entrez.")
+
+    parser.add_argument(
+        "-a", "--accession", help="Accession to be downloaded.", metavar="",
+    )
+    parser.add_argument(
+        "-e", "--email", help="Config dictionary.", metavar="",
     )
 
     parser.add_argument(
-        '-a', "--accession",
-        help="Accession to be downloaded.",
-        metavar="",
-    )
-    parser.add_argument(
-        '-e', "--email",
-        help="Config dictionary.",
-        metavar="",
-    )
-
-    parser.add_argument(
-        '-o', "--output_file",
-        help="Output file path.",
-        metavar="",
+        "-o", "--output_file", help="Output file path.", metavar="",
     )
 
     args = parser.parse_args()
 
     entrez_download_sequence(
-        accession=args.accession,
-        email=args.email,
-        output_file=args.output_file,
+        accession=args.accession, email=args.email, output_file=args.output_file,
     )

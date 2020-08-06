@@ -8,7 +8,7 @@
 ##### Modules #####
 
 
-include: "rules/metagenomics.smk"
+include: "rules/sample.smk"
 
 
 include: "rules/adapterremoval.smk"

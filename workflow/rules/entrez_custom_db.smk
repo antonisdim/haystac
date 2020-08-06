@@ -13,6 +13,7 @@ MESSAGE_SUFFIX = "(output: {output} and log: {log})" if config["debug"] else ""
 
 ##### Target rules #####
 
+
 rule entrez_custom_sequences:
     input:
         config["sequences"],
@@ -40,6 +41,26 @@ def get_paths_for_custom_seqs():
 
     if len(custom_fasta_paths) == 0:
         raise RuntimeError("The custom sequences file is empty.")
+
+    if len(custom_fasta_paths.columns) == 1:
+        raise RuntimeError(
+            "The file you have provided is not TAB delimited. "
+            "Please provide a file with the correct delimiters."
+        )
+
+    if 1 < len(custom_fasta_paths.columns) < 3:
+        raise RuntimeError(
+            "The file you have provided might be missing one of the required fields. "
+            "Please provide a file with the correct delimiters, "
+            "and the correct number of required fields."
+        )
+
+    if len(custom_fasta_paths.columns) > 3:
+        raise RuntimeError(
+            "The file you have provided might be having more fields than the ones required. "
+            "Please provide a file with the correct delimiters, "
+            "and the correct number of required fields."
+        )
 
     if custom_fasta_paths["species"].duplicated().any():
         raise RuntimeError(
@@ -90,6 +111,21 @@ def get_paths_for_custom_acc():
 
     if len(custom_accessions) == 0:
         raise RuntimeError("The custom accessions file is empty.")
+
+    if len(custom_accessions.columns) == 1:
+        raise RuntimeError(
+            "The file you have provided is either not TAB delimited "
+            "or it is missing one of the required fields. "
+            "Please provide a file with the correct delimiters, "
+            "and the correct number of required fields."
+        )
+
+    if len(custom_accessions.columns) > 2:
+        raise RuntimeError(
+            "The file you have provided might be having more fields than the ones required. "
+            "Please provide a file with the correct delimiters, "
+            "and the correct number of required fields."
+        )
 
     if custom_accessions["species"].duplicated().any():
         raise RuntimeError(

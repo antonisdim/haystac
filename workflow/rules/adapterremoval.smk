@@ -11,6 +11,7 @@ MESSAGE_SUFFIX = "(output: {output} and log: {log})" if config["debug"] else ""
 
 ##### Target rules #####
 
+
 def get_inputs_for_adapterremoval_r1(wildcards):
 
     if config["sra"] is not None:

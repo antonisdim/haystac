@@ -141,7 +141,7 @@ rule merge_bams:
         "Merging the bam files produced by the filtering alignment stage for sample {wildcards.sample} "
         "{MESSAGE_SUFFIX}"
     conda:
-        "../envs/samtools.yaml.yaml"
+        "../envs/samtools.yaml"
     shell:
         "samtools merge -f {output} {input.aln_path} 2> {log}"
 
