@@ -35,6 +35,9 @@ include: "rules/mapdamage.smk"
 include: "rules/sra.smk"
 
 
+include: "rules/split_reads.smk"
+
+
 ##### Wildcards #####
 
 

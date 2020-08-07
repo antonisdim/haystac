@@ -153,7 +153,8 @@ rule bowtie_index:
     conda:
         "../envs/bowtie2.yaml"
     shell:
-        "bowtie2-build --large-index --threads {threads} {input.fasta_chunk} {config[db_output]}/bowtie/chunk{wildcards.chunk_num} &> {log}"
+        "bowtie2-build --large-index --threads {threads} {input.fasta_chunk} "
+        "{config[db_output]}/bowtie/chunk{wildcards.chunk_num} &> {log}"
 
 
 def get__bt2_idx_chunk_paths(wildcards):

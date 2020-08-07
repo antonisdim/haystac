@@ -954,12 +954,24 @@ The most commonly used git commands are:
                 in str(Entrez.read(Entrez.esummary(db="sra", id=sra_id))).lower()
             ):
                 if sample_config["collapse"]:
-                    print(sample_config["collapse"])
                     sample_config["PE_ANCIENT"] = True
                 else:
                     sample_config["PE_MODERN"] = True
             else:
                 sample_config["SE"] = True
+
+        if sample_config["sra"] is not None:
+            if sample_config["PE_MODERN"] or sample_config["PE_ANCIENT"]:
+                sample_config['fastq_r1'] = "{prefix}/sra_data/PE/{accession}_R1.fastq.gz".format(
+                    prefix= sample_config["sample_output_dir"], accession=sample_config["sra"]
+                )
+                sample_config['fastq_r2'] = "{prefix}/sra_data/PE/{accession}_R2.fastq.gz".format(
+                    prefix= sample_config["sample_output_dir"], accession=sample_config["sra"]
+                )
+            elif sample_config["SE"]:
+                sample_config['fastq'] = "{prefix}/sra_data/SE/{accession}.fastq.gz".format(
+                    prefix= sample_config["sample_output_dir"], accession=sample_config["sra"]
+                )
 
         target_list = [
             sample_config["sample_output_dir"]
@@ -1074,6 +1086,7 @@ The most commonly used git commands are:
                 "likelihoods",
                 "probabilities",
                 "abundances",
+                "reads",
                 "mapdamage",
             ],
             help="Analysis mode for the selected sample",
@@ -1303,6 +1316,15 @@ The most commonly used git commands are:
             target_list.append(
                 analysis_config["analysis_output_dir"]
                 + "/probabilities/{sample}/{sample}_posterior_abundance.tsv".format(
+                    sample=analysis_config["sample_prefix"]
+                )
+            )
+
+        if args.mode == "reads":
+
+            target_list.append(
+                analysis_config["analysis_output_dir"]
+                + "/dirichlet_reads/{sample}_dirichlet_reads.done".format(
                     sample=analysis_config["sample_prefix"]
                 )
             )

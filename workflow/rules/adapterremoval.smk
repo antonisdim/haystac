@@ -11,49 +11,20 @@ MESSAGE_SUFFIX = "(output: {output} and log: {log})" if config["debug"] else ""
 
 ##### Target rules #####
 
+def get_adapter_removal_r1():
+    if config["fastq"]:
+        return config["fastq"]
+    elif config["fastq_r1"]:
+        return config["fastq_r1"]
 
-def get_inputs_for_adapterremoval_r1(wildcards):
-
-    if config["sra"] is not None:
-        # if config["sra_lookup"]:
-        if config["PE_MODERN"] or config["PE_ANCIENT"]:
-            return config[
-                "sample_output_dir"
-            ] + "/sra_data/PE/{accession}_R1.fastq.gz".format(
-                accession=wildcards.accession
-            )
-        elif config["SE"]:
-            return config[
-                "sample_output_dir"
-            ] + "/sra_data/SE/{accession}.fastq.gz".format(
-                accession=wildcards.accession
-            )
-
-    else:
-        if config["PE_ANCIENT"] or config["PE_MODERN"]:
-            return config["fastq_R1"]
-        elif config["SE"]:
-            return config["fastq"]
-
-
-def get_inputs_for_adapterremoval_r2(wildcards):
-
-    if config["sra"] is not None:
-        # if config["sra_lookup"]:
-        if config["PE_MODERN"] or config["PE_ANCIENT"]:
-            return config[
-                "sample_output_dir"
-            ] + "/sra_data/PE/{accession}_R2.fastq.gz".format(
-                accession=wildcards.accession
-            )
-
-    else:
-        return config["fastq_R2"]
+def get_adapter_removal_r2():
+    if config["fastq_r2"]:
+        return config["fastq_r2"]
 
 
 rule adapterremoval_single_end:
     input:
-        fastq=get_inputs_for_adapterremoval_r1,
+        fastq=get_adapter_removal_r1(),
     log:
         config["sample_output_dir"] + "/fastq_inputs/SE/{accession}_adRm.log",
     output:
@@ -65,19 +36,15 @@ rule adapterremoval_single_end:
     conda:
         "../envs/adapterremoval.yaml"
     shell:
-        "(AdapterRemoval --file1 {input} --basename " + config[
-            "sample_output_dir"
-        ] + "/fastq_inputs/SE/{wildcards.accession} --gzip --minlength 15 "
-        "--trimns; cat " + config[
-            "sample_output_dir"
-        ] + "/fastq_inputs/SE/{wildcards.accession}.truncated.gz "
-        "1> {output}) 2> {log}"
+        "(AdapterRemoval --file1 {input} --basename {config[sample_output_dir]}/fastq_inputs/SE/{wildcards.accession} "
+        "--gzip --minlength 15 --trimns; "
+        "cat {config[sample_output_dir]}/fastq_inputs/SE/{wildcards.accession}.truncated.gz 1> {output}) 2> {log}"
 
 
 rule adapterremoval_paired_end_ancient:
     input:
-        fastq_r1=get_inputs_for_adapterremoval_r1,
-        fastq_r2=get_inputs_for_adapterremoval_r2,
+        fastq_r1=get_adapter_removal_r1(),
+        fastq_r2=get_adapter_removal_r2(),
     log:
         config["sample_output_dir"] + "/fastq_inputs/PE_anc/{accession}_adRm.log",
     output:
@@ -91,16 +58,17 @@ rule adapterremoval_paired_end_ancient:
         "../envs/adapterremoval.yaml"
     shell:
         "(AdapterRemoval --file1 {input.fastq_r1}  --file2 {input.fastq_r2} "
-        "--basename "+ config['sample_output_dir']+"/fastq_inputs/PE_anc/{wildcards.accession} --gzip --collapse-deterministic  --minlength 15 "
-        "--trimns; cat "+ config['sample_output_dir']+"/fastq_inputs/PE_anc/{wildcards.accession}.collapsed.gz "+
-         config['sample_output_dir']+"/fastq_inputs/PE_anc/{wildcards.accession}.collapsed.truncated.gz 1> {output}) "
+        "--basename {config[sample_output_dir]}/fastq_inputs/PE_anc/{wildcards.accession} --gzip "
+        "--collapse-deterministic  --minlength 15 "
+        "--trimns; cat {config[sample_output_dir]}/fastq_inputs/PE_anc/{wildcards.accession}.collapsed.gz "+
+        "{config[sample_output_dir]}/fastq_inputs/PE_anc/{wildcards.accession}.collapsed.truncated.gz 1> {output}) "
         "2> {log}"
 
 
 rule adapterremoval_paired_end_modern:
     input:
-        fastq_r1=get_inputs_for_adapterremoval_r1,
-        fastq_r2=get_inputs_for_adapterremoval_r2,
+        fastq_r1=get_adapter_removal_r1(),
+        fastq_r2=get_adapter_removal_r2(),
     log:
         config["sample_output_dir"] + "/fastq_inputs/PE_mod/{accession}_adRm.log",
     output:
@@ -119,14 +87,8 @@ rule adapterremoval_paired_end_modern:
         "../envs/adapterremoval.yaml"
     shell:
         "(AdapterRemoval --file1 {input.fastq_r1}  --file2 {input.fastq_r2} "
-        "--basename " + config[
-            "sample_output_dir"
-        ] + "/fastq_inputs/PE_mod/{wildcards.accession} --gzip --minlength 15 --trimns; "
-        "cat " + config[
-            "sample_output_dir"
-        ] + "/fastq_inputs/PE_mod/{wildcards.accession}.pair1.truncated.gz "
+        "--basename {config[sample_output_dir]}/fastq_inputs/PE_mod/{wildcards.accession} --gzip --minlength 15 --trimns; "
+        "cat {config[sample_output_dir]}/fastq_inputs/PE_mod/{wildcards.accession}.pair1.truncated.gz "
         "1> {output.fastq_r1}; "
-        "cat " + config[
-            "sample_output_dir"
-        ] + "/fastq_inputs/PE_mod/{wildcards.accession}.pair2.truncated.gz "
+        "cat {config[sample_output_dir]}/fastq_inputs/PE_mod/{wildcards.accession}.pair2.truncated.gz "
         "1> {output.fastq_r2}) 2> {log}"

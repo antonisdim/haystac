@@ -12,8 +12,8 @@ MESSAGE_SUFFIX = "(output: {output} and log: {log})" if config["debug"] else ""
 
 
 def get_inputs_for_count_fastq_len(wildcards):
-    if config["sra"] is not None:
-        # if config["sra_lookup"]:
+
+    if config["trim_adapters"]:
         if config["PE_MODERN"]:
             return config[
                 "sample_output_dir"
