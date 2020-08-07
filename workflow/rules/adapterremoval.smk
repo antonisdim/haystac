@@ -11,11 +11,13 @@ MESSAGE_SUFFIX = "(output: {output} and log: {log})" if config["debug"] else ""
 
 ##### Target rules #####
 
+
 def get_adapter_removal_r1():
     if config["fastq"]:
         return config["fastq"]
     elif config["fastq_r1"]:
         return config["fastq_r1"]
+
 
 def get_adapter_removal_r2():
     if config["fastq_r2"]:

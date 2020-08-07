@@ -12,10 +12,12 @@ import pandas as pd
 import gzip
 
 
-def get_grey_matter_reads(input_fastq_r1, input_fastq_r2, matrix_file, output_fastq_r1, output_fastq_r2):
+def get_grey_matter_reads(
+    input_fastq_r1, input_fastq_r2, matrix_file, output_fastq_r1, output_fastq_r2
+):
     """get_dark_matter_reads_pe to extract all the grey matter reads into 2 fastq files."""
 
-    dirichlet_matrix = pd.read_csv(matrix_file, sep=',')
+    dirichlet_matrix = pd.read_csv(matrix_file, sep=",")
 
     ts_tv_group = dirichlet_matrix.groupby("Read_ID").sum().squeeze()
     aligned_read_names = ts_tv_group.index.tolist()
@@ -23,7 +25,7 @@ def get_grey_matter_reads(input_fastq_r1, input_fastq_r2, matrix_file, output_fa
     with gzip.open(input_fastq_r1, "rt") as input_handle_r1:
         with gzip.open(output_fastq_r1, "wt") as output_handle_r1:
 
-            for record in SeqIO.parse(input_handle_r1, 'fastq'):
+            for record in SeqIO.parse(input_handle_r1, "fastq"):
 
                 if record.id not in aligned_read_names:
                     SeqIO.write(record, output_handle_r1, "fastq")
@@ -31,11 +33,10 @@ def get_grey_matter_reads(input_fastq_r1, input_fastq_r2, matrix_file, output_fa
     with gzip.open(input_fastq_r2, "rt") as input_handle_r2:
         with gzip.open(output_fastq_r2, "wt") as output_handle_r2:
 
-            for record in SeqIO.parse(input_handle_r2, 'fastq'):
+            for record in SeqIO.parse(input_handle_r2, "fastq"):
 
                 if record.id not in aligned_read_names:
                     SeqIO.write(record, output_handle_r2, "fastq")
-
 
 
 if __name__ == "__main__":

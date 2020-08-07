@@ -962,15 +962,24 @@ The most commonly used git commands are:
 
         if sample_config["sra"] is not None:
             if sample_config["PE_MODERN"] or sample_config["PE_ANCIENT"]:
-                sample_config['fastq_r1'] = "{prefix}/sra_data/PE/{accession}_R1.fastq.gz".format(
-                    prefix= sample_config["sample_output_dir"], accession=sample_config["sra"]
+                sample_config[
+                    "fastq_r1"
+                ] = "{prefix}/sra_data/PE/{accession}_R1.fastq.gz".format(
+                    prefix=sample_config["sample_output_dir"],
+                    accession=sample_config["sra"],
                 )
-                sample_config['fastq_r2'] = "{prefix}/sra_data/PE/{accession}_R2.fastq.gz".format(
-                    prefix= sample_config["sample_output_dir"], accession=sample_config["sra"]
+                sample_config[
+                    "fastq_r2"
+                ] = "{prefix}/sra_data/PE/{accession}_R2.fastq.gz".format(
+                    prefix=sample_config["sample_output_dir"],
+                    accession=sample_config["sra"],
                 )
             elif sample_config["SE"]:
-                sample_config['fastq'] = "{prefix}/sra_data/SE/{accession}.fastq.gz".format(
-                    prefix= sample_config["sample_output_dir"], accession=sample_config["sra"]
+                sample_config[
+                    "fastq"
+                ] = "{prefix}/sra_data/SE/{accession}.fastq.gz".format(
+                    prefix=sample_config["sample_output_dir"],
+                    accession=sample_config["sra"],
                 )
 
         target_list = [
@@ -1120,7 +1129,17 @@ The most commonly used git commands are:
             help="Path to results directory.",
             metavar="",
         )
-
+        parser.add_argument(
+            "-T",
+            "--read-probability-threshold",
+            help="Posterior probability threshold for a read to belong to a certain species. "
+            "Chose from 0.5 for 50%, 0.75 for 75% and 0.95 for 95%"
+            "(default:0.95).",
+            choices=[0.5, 0.75, 0.95],
+            default=float(0.95),
+            type=float,
+            metavar="",
+        )
         parser.add_argument(
             "-c",
             "--cores",
@@ -1220,6 +1239,7 @@ The most commonly used git commands are:
             "debug": False,
             "snakemake": None,
             "dry_run": False,
+            "read_probability_threshold": float(0.95),
         }
 
         analysis_config = {k: v for k, v in analysis_defaults.items()}
@@ -1267,7 +1287,7 @@ The most commonly used git commands are:
                 .lstrip("/")
             )
 
-        print(analysis_config)
+        # print(analysis_config)
 
         target_list = []
 

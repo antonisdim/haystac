@@ -16,22 +16,27 @@ MESSAGE_SUFFIX = "(output: {output} and log: {log})" if config["debug"] else ""
 
 rule get_dirichlet_reads:
     input:
-        bam_file=config[
-                     "analysis_output_dir"
-                 ] + "/alignments/{sample}/{reads}/{orgname}/{orgname}_{accession}.bam",
-        dirichlet_matrix=config[
-            "analysis_output_dir"
-        ] + "/probabilities/{sample}/{sample}_likelihood_ts_tv_matrix.csv"
+        bam_file=(
+            config["analysis_output_dir"]
+            + "/alignments/{sample}/{reads}/{orgname}/{orgname}_{accession}.bam"
+        ),
+        dirichlet_matrix=(
+            config["analysis_output_dir"]
+            + "/probabilities/{sample}/{sample}_likelihood_ts_tv_matrix.csv"
+        ),
     output:
         config[
             "analysis_output_dir"
-        ] + "/dirichlet_reads/{sample}/{orgname}/{orgname}_{accession}_dirichlet_{reads}.bam"
+        ] + "/dirichlet_reads/{sample}/{orgname}/{orgname}_{accession}_dirichlet_{reads}.bam",
     log:
         config[
             "analysis_output_dir"
-        ] + "/dirichlet_reads/{sample}/{orgname}/{orgname}_{accession}_dirichlet_{reads}.log"
+        ] + "/dirichlet_reads/{sample}/{orgname}/{orgname}_{accession}_dirichlet_{reads}.log",
     benchmark:
-        repeat("benchmarks/get_dirichlet_reads_{sample}_{reads}_{orgname}_{accession}.benchmark.txt", 1)
+        repeat(
+            "benchmarks/get_dirichlet_reads_{sample}_{reads}_{orgname}_{accession}.benchmark.txt",
+            1,
+        )
     message:
         "Preparing bam files with the Dirichlet assigned reads for taxon {wildcards.orgname} "
         "for sample {wildcards.sample} {MESSAGE_SUFFIX}"
@@ -44,19 +49,23 @@ rule get_dirichlet_reads:
 rule get_grey_matter_reads_se:
     input:
         fastq=config["analysis_output_dir"] + "/fastq/SE/{sample}_mapq.fastq.gz",
-        dirichlet_matrix=config[
-            "analysis_output_dir"
-        ] + "/probabilities/{sample}/{sample}_likelihood_ts_tv_matrix.csv"
+        dirichlet_matrix=(
+            config["analysis_output_dir"]
+            + "/probabilities/{sample}/{sample}_likelihood_ts_tv_matrix.csv"
+        ),
     output:
-         config[
-        "analysis_output_dir"
-    ] + "/dirichlet_reads/{sample}/Grey_Matter/Grey_Matter_dirichlet.fastq.gz"
+        config[
+            "analysis_output_dir"
+        ] + "/dirichlet_reads/{sample}/Grey_Matter/Grey_Matter_dirichlet.fastq.gz",
     log:
         config[
             "analysis_output_dir"
-        ] + "/dirichlet_reads/{sample}/Grey_Matter/Grey_Matter_dirichlet_SE.log"
+        ] + "/dirichlet_reads/{sample}/Grey_Matter/Grey_Matter_dirichlet_SE.log",
     benchmark:
         repeat("benchmarks/get_{sample}_Grey_Matter.benchmark.txt", 1)
+    message:
+        "Preparing fastq files with all the reads that got assigned to the Grey Matter "
+        "for sample {wildcards.sample} {MESSAGE_SUFFIX}"
     conda:
         "../envs/grey_matter_reads.yaml"
     script:
@@ -67,18 +76,26 @@ rule get_grey_matter_reads_pe:
     input:
         fastq_r1=config["analysis_output_dir"] + "/fastq/PE/{sample}_R1_mapq.fastq.gz",
         fastq_r2=config["analysis_output_dir"] + "/fastq/PE/{sample}_R2_mapq.fastq.gz",
-        dirichlet_matrix=config[
-            "analysis_output_dir"
-        ] + "/probabilities/{sample}/{sample}_likelihood_ts_tv_matrix.csv"
+        dirichlet_matrix=(
+            config["analysis_output_dir"]
+            + "/probabilities/{sample}/{sample}_likelihood_ts_tv_matrix.csv"
+        ),
     output:
-        config["analysis_output_dir"] + "/dirichlet_reads/{sample}/Grey_Matter/Grey_Matter_dirichlet_R1.fastq.gz",
-        config["analysis_output_dir"] + "/dirichlet_reads/{sample}/Grey_Matter/Grey_Matter_dirichlet_R2.fastq.gz"
+        config[
+            "analysis_output_dir"
+        ] + "/dirichlet_reads/{sample}/Grey_Matter/Grey_Matter_dirichlet_R1.fastq.gz",
+        config[
+            "analysis_output_dir"
+        ] + "/dirichlet_reads/{sample}/Grey_Matter/Grey_Matter_dirichlet_R2.fastq.gz",
     log:
         config[
             "analysis_output_dir"
-        ] + "/dirichlet_reads/{sample}/Grey_Matter/Grey_Matter_dirichlet_SE.log"
+        ] + "/dirichlet_reads/{sample}/Grey_Matter/Grey_Matter_dirichlet_SE.log",
     benchmark:
         repeat("benchmarks/get_{sample}_Grey_Matter.benchmark.txt", 1)
+    message:
+        "Preparing fastq files with all the reads that got assigned to the Grey Matter "
+        "for sample {wildcards.sample} {MESSAGE_SUFFIX}"
     conda:
         "../envs/grey_matter_reads.yaml"
     script:
@@ -88,19 +105,23 @@ rule get_grey_matter_reads_pe:
 rule get_dark_matter_reads_se:
     input:
         fastq=get_inputs_for_bowtie_r1,
-        dirichlet_matrix=config[
-            "analysis_output_dir"
-        ] + "/probabilities/{sample}/{sample}_likelihood_ts_tv_matrix.csv"
+        dirichlet_matrix=(
+            config["analysis_output_dir"]
+            + "/probabilities/{sample}/{sample}_likelihood_ts_tv_matrix.csv"
+        ),
     output:
-         config[
-        "analysis_output_dir"
-    ] + "/dirichlet_reads/{sample}/Dark_Matter/Dark_Matter_dirichlet.fastq.gz"
+        config[
+            "analysis_output_dir"
+        ] + "/dirichlet_reads/{sample}/Dark_Matter/Dark_Matter_dirichlet.fastq.gz",
     log:
         config[
             "analysis_output_dir"
-        ] + "/dirichlet_reads/{sample}/Dark_Matter/Dark_Matter_dirichlet_SE.log"
+        ] + "/dirichlet_reads/{sample}/Dark_Matter/Dark_Matter_dirichlet_SE.log",
     benchmark:
         repeat("benchmarks/get_{sample}_Dark_Matter.benchmark.txt", 1)
+    message:
+        "Preparing fastq files with all the reads that got assigned to the Dark Matter "
+        "for sample {wildcards.sample} {MESSAGE_SUFFIX}"
     conda:
         "../envs/grey_matter_reads.yaml"
     script:
@@ -111,18 +132,26 @@ rule get_dark_matter_reads_pe:
     input:
         fastq_r1=get_inputs_for_bowtie_r1,
         fastq_r2=get_inputs_for_bowtie_r2,
-        dirichlet_matrix=config[
-            "analysis_output_dir"
-        ] + "/probabilities/{sample}/{sample}_likelihood_ts_tv_matrix.csv"
+        dirichlet_matrix=(
+            config["analysis_output_dir"]
+            + "/probabilities/{sample}/{sample}_likelihood_ts_tv_matrix.csv"
+        ),
     output:
-        config["analysis_output_dir"] + "/dirichlet_reads/{sample}/Dark_Matter/Dark_Matter_dirichlet_R1.fastq.gz",
-        config["analysis_output_dir"] + "/dirichlet_reads/{sample}/Dark_Matter/Dark_Matter_dirichlet_R2.fastq.gz"
+        config[
+            "analysis_output_dir"
+        ] + "/dirichlet_reads/{sample}/Dark_Matter/Dark_Matter_dirichlet_R1.fastq.gz",
+        config[
+            "analysis_output_dir"
+        ] + "/dirichlet_reads/{sample}/Dark_Matter/Dark_Matter_dirichlet_R2.fastq.gz",
     log:
         config[
             "analysis_output_dir"
-        ] + "/dirichlet_reads/{sample}/Dark_Matter/Dark_Matter_dirichlet_SE.log"
+        ] + "/dirichlet_reads/{sample}/Dark_Matter/Dark_Matter_dirichlet_SE.log",
     benchmark:
         repeat("benchmarks/get_{sample}_Dark_Matter.benchmark.txt", 1)
+    message:
+        "Preparing fastq files with all the reads that got assigned to the Dark Matter "
+        "for sample {wildcards.sample} {MESSAGE_SUFFIX}"
     conda:
         "../envs/grey_matter_reads.yaml"
     script:
@@ -171,35 +200,51 @@ def get_dirichlet_bams(wildcards):
 
     return inputs
 
+
 def get_grey_matter_reads():
 
     if config["PE_MODERN"]:
-        return [config["analysis_output_dir"] + "/dirichlet_reads/{sample}/Grey_Matter/Grey_Matter_dirichlet_R1.fastq.gz",
-        config["analysis_output_dir"] + "/dirichlet_reads/{sample}/Grey_Matter/Grey_Matter_dirichlet_R2.fastq.gz"]
+        return [
+            config["analysis_output_dir"]
+            + "/dirichlet_reads/{sample}/Grey_Matter/Grey_Matter_dirichlet_R1.fastq.gz",
+            config["analysis_output_dir"]
+            + "/dirichlet_reads/{sample}/Grey_Matter/Grey_Matter_dirichlet_R2.fastq.gz",
+        ]
 
     elif config["PE_ANCIENT"] or config["SE"]:
-        return config["analysis_output_dir"] + "/dirichlet_reads/{sample}/Grey_Matter/Grey_Matter_dirichlet.fastq.gz"
+        return (
+            config["analysis_output_dir"]
+            + "/dirichlet_reads/{sample}/Grey_Matter/Grey_Matter_dirichlet.fastq.gz"
+        )
 
 
 def get_dark_matter_reads():
 
     if config["PE_MODERN"]:
-        return [config["analysis_output_dir"] + "/dirichlet_reads/{sample}/Dark_Matter/Dark_Matter_dirichlet_R1.fastq.gz",
-        config["analysis_output_dir"] + "/dirichlet_reads/{sample}/Dark_Matter/Dark_Matter_dirichlet_R2.fastq.gz"]
+        return [
+            config["analysis_output_dir"]
+            + "/dirichlet_reads/{sample}/Dark_Matter/Dark_Matter_dirichlet_R1.fastq.gz",
+            config["analysis_output_dir"]
+            + "/dirichlet_reads/{sample}/Dark_Matter/Dark_Matter_dirichlet_R2.fastq.gz",
+        ]
 
     elif config["PE_ANCIENT"] or config["SE"]:
-        return config["analysis_output_dir"] + "/dirichlet_reads/{sample}/Dark_Matter/Dark_Matter_dirichlet.fastq.gz"
+        return (
+            config["analysis_output_dir"]
+            + "/dirichlet_reads/{sample}/Dark_Matter/Dark_Matter_dirichlet.fastq.gz"
+        )
 
 
 # get dark matter, get grey matter
 
 # input all
 
+
 rule all_dirichlet:
     input:
         get_dirichlet_bams,
         get_grey_matter_reads(),
-        get_dark_matter_reads()
+        get_dark_matter_reads(),
     output:
         config["analysis_output_dir"] + "/dirichlet_reads/{sample}_dirichlet_reads.done",
     benchmark:
