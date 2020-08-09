@@ -83,6 +83,8 @@ def get_mapdamage_out_dir_paths(wildcards):
         config["with_custom_sequences"],
         config["with_custom_accessions"],
         config["genera"],
+        config["accessions"],
+        config["sequences"],
     )
 
     inputs = []

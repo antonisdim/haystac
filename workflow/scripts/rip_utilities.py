@@ -30,6 +30,8 @@ def get_total_paths(
     with_custom_sequences,
     with_custom_accessions,
     specific_genera,
+    accession_file,
+    sequence_file,
 ):
     """
     Get all the individual fasta file paths for the taxa in our database.
@@ -79,7 +81,7 @@ def get_total_paths(
 
     if with_custom_sequences:
         custom_fasta_paths = pd.read_csv(
-            config["custom_seq_file"],
+            sequence_file,
             sep="\t",
             header=None,
             names=["species", "GBSeq_accession-version", "path"],
@@ -91,7 +93,7 @@ def get_total_paths(
 
     if with_custom_accessions:
         custom_accessions = pd.read_csv(
-            config["custom_acc_file"],
+            accession_file,
             sep="\t",
             header=None,
             names=["species", "GBSeq_accession-version"],

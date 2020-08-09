@@ -151,8 +151,8 @@ def get_rsync_url(wildcards):
         file_url = os.path.join(
             url, os.path.basename(url) + "_genomic.fna.gz"
         )  # .replace("ftp://", "rsync://")
-        print(url)
-        print(file_url)
+        # print(url)
+        # print(file_url)
         return file_url
     except RuntimeError:
         return ""
@@ -176,10 +176,10 @@ rule entrez_download_sequence:
     conda:
         "../envs/seq_download.yaml"
     shell:
-        '([ -n "{params.url}" ] && (wget -q -O {params.temp_out} {params.url} ; '
+        '([ -n "{params.url}" ] && ! "{config[mtDNA]}" && (wget -q -O {params.temp_out} {params.url} ; '
         "gunzip -c {params.temp_out} | bgzip -f > {output}); unlink {params.temp_out} || "
         "python {config[workflow_dir]}/scripts/entrez_download_sequence.py "
-        "--accession {wildcards.accession} --email {config[email]} --output_file {output}) > {log}"
+        "--accession {wildcards.accession} --email {config[email]} --output_file {output}) 2> {log}"
 
 
 # noinspection PyUnresolvedReferences

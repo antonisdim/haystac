@@ -158,7 +158,7 @@ if __name__ == "__main__":
         "-a", "--accession", help="Accession to be downloaded.", metavar="",
     )
     parser.add_argument(
-        "-e", "--email", help="Config dictionary.", metavar="",
+        "-e", "--email", help="email from config dictionary.", metavar="",
     )
 
     parser.add_argument(

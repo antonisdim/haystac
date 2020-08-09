@@ -112,24 +112,24 @@ def check_config_arguments(args):
 
     """Function to check config arguments and raise errors if they are not suitable"""
 
-    if args["entrez_email"]:
-        if not re.match(r"[^@]+@[^@]+\.[^@]+", args.entrez_email):
+    if args["email"]:
+        if not re.match(r"[^@]+@[^@]+\.[^@]+", args["email"]):
             print("The email address you provided is not valid. Please try again")
-            entrez_email = input(
+            args["email"] = input(
                 "Please enter a valid email address. "
                 "It is required, in order to access NCBI's Entrez API. "
                 "The address is stored locally on your computer only: "
             )
 
     if args["genome_cache_folder"]:
-        if os.path.exists(genome_cache):
-            if not os.access(genome_cache, os.W_OK):
+        if os.path.exists(args["genome_cache_folder"]):
+            if not os.access(args["genome_cache_folder"], os.W_OK):
                 raise RuntimeError(
                     "This directory path you have provided is not writable. "
                     "Please chose another path for your genomes directory."
                 )
         else:
-            if not os.access(os.path.dirname(genome_cache), os.W_OK):
+            if not os.access(os.path.dirname(args["genome_cache_folder"]), os.W_OK):
                 raise RuntimeError(
                     "This directory path you have provided is not writable. "
                     "Please chose another path for your genomes directory."
@@ -309,8 +309,10 @@ The most commonly used git commands are:
                 user_non_default_config = {
                     k: v
                     for k, v in user_config.items()
-                    if (k, v) not in repo_rip_config.items()
+                    # if (k, v) not in repo_rip_config.items()
                 }
+                print(user_config)
+                print(user_non_default_config)
                 with open(user_rip_config) as fin:
                     user_options = yaml.safe_load(fin)
                     user_options.update(user_non_default_config)
@@ -355,6 +357,15 @@ The most commonly used git commands are:
             "for the species id pipeline. only species no strains. "
             "either or both of with_refseq_rep and "
             "with_entrez_query should be set (default: False)",
+            type=bool,
+            default=False,
+            metavar="",
+        )
+        parser.add_argument(
+            "-MT",
+            "--mtDNA",
+            help="Download mitochondrial genomes for eukaryotes only. "
+                 "Do not use with --refseq-rep or any queries for prokaryotes (default: False)",
             type=bool,
             default=False,
             metavar="",
@@ -561,6 +572,8 @@ The most commonly used git commands are:
 
         if database_config["query"] is not None:
             database_config["with_entrez_query"] = True
+        else:
+            database_config["with_entrez_query"] = False
         if database_config["sequences"] is not "":
             database_config["with_custom_sequences"] = True
         else:
@@ -764,7 +777,7 @@ The most commonly used git commands are:
         )
         parser.add_argument(
             "-T",
-            "--trim_adapters",
+            "--trim-adapters",
             help="Remove adapters from raw fastq files <bool> (default: True)",
             type=bool,
             default=True,

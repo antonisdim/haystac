@@ -172,6 +172,8 @@ def get_dirichlet_bams(wildcards):
         config["with_custom_sequences"],
         config["with_custom_accessions"],
         config["genera"],
+        config["accessions"],
+        config["sequences"],
     )
 
     inputs = []
