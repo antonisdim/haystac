@@ -8,6 +8,11 @@ __license__ = "MIT"
 
 import pandas as pd
 
+sys.path.append(os.getcwd())
+sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+
+from scripts.rip_utilities import get_accession_ftp_path
+
 
 def entrez_refseq_create_files(
     config,
@@ -193,6 +198,18 @@ def entrez_refseq_create_files(
         nuccore_plasmids_exploded = nuccore_plasmids_exploded[
             (~nuccore_plasmids_exploded["species"].isin(custom_accessions["species"]))
         ]
+
+    for key, seq in genbank_plasmids_filtered_exploded.iterrows():
+        accession = seq["GBSeq_accession-version"]
+        url = get_accession_ftp_path(accession, config)
+        if url != "":
+            genbank_plasmids_filtered_exploded.drop(key, inplace=True)
+
+    for key, seq in nuccore_plasmids_exploded.iterrows():
+        accession = seq["GBSeq_accession-version"]
+        url = get_accession_ftp_path(accession, config)
+        if url != "":
+            nuccore_plasmids_exploded.drop(key, inplace=True)
 
     # todo working example the head() needs to leave for a proper run
     genbank_exploded.head(5).to_csv(

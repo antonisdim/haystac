@@ -348,7 +348,10 @@ The most commonly used git commands are:
         )
 
         parser.add_argument(
-            "-o", "--db-output", help="/path/to/what/used/to/be/query_name", metavar="",
+            "-o",
+            "--db-output",
+            help="Path to the database output directory.",
+            metavar="",
         )
         parser.add_argument(
             "-R",
@@ -365,7 +368,7 @@ The most commonly used git commands are:
             "-MT",
             "--mtDNA",
             help="Download mitochondrial genomes for eukaryotes only. "
-                 "Do not use with --refseq-rep or any queries for prokaryotes (default: False)",
+            "Do not use with --refseq-rep or any queries for prokaryotes (default: False)",
             type=bool,
             default=False,
             metavar="",
@@ -1123,7 +1126,7 @@ The most commonly used git commands are:
         parser.add_argument(
             "-S",
             "--sample",
-            help="Path to the sample parameter yaml file. MANDATORY",  # todo check with Evan about it
+            help="Path to the sample parameter yaml file. MANDATORY",
             metavar="",
         )
         parser.add_argument(
@@ -1146,10 +1149,9 @@ The most commonly used git commands are:
             "-T",
             "--read-probability-threshold",
             help="Posterior probability threshold for a read to belong to a certain species. "
-            "Chose from 0.5 for 50%, 0.75 for 75% and 0.95 for 95%"
-            "(default:0.95).",
+            "Chose from 0.5, 0.75 and 0.95 (default:0.75).",
             choices=[0.5, 0.75, 0.95],
-            default=float(0.95),
+            default=float(0.75),
             type=float,
             metavar="",
         )
