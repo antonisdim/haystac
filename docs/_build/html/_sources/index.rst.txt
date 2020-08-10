@@ -31,6 +31,21 @@ Git
 Tutorial
 ========
 
+Configuring RIP
+---------------
+
+If a user is running rip for the first time on a machine, they should run the `rip config` module first. There an interactive dialogue session will start so that a few important options about the pipeline can be configured. The user will be asked to provide their email address so that sequences can be fetched from the NCBI and their preferred path for the shared genomes folder, among other things. Other than the email address the rest of the options have default values that can be used. If a user later on wishes to change any of these parameters specifically they can either rerun `rip config` or run rip config by passing a specific argument. 
+
+Here is an example command that allows the configuration of all the parameters interactively 
+
+    rip config 
+    
+Here is an example command that configures the number of threads that bowtie2 is allowed to use for mapping and index building
+
+    rip config --bowtie2-threads 10 
+
+Unless the user has a deep understanding of its dataset we advise to be cautious when changing the base mismatch probability that is used later on in the method's probabilistic model. We also advise caution when changing the bowtie2 file size scaling factor.
+
 Building the database
 ---------------------
 
@@ -87,10 +102,15 @@ Combinations
 
 All of the previous options can be combined into one command. It is important to note that only one sequence per taxon is allowed in our database, and the priority goes user defined accessions or sequences, representative RefSeq and then user specified query. 
 
+Database configuration yaml file
+--------------------------------
+
+After the database has been created a yaml file with all the configured and default options will be outputted in the ` --db-output` path that the user has provided. This file will be needed as an input for the sample analysis.
+
 Index building 
 --------------
 
-For the first part of the analysis an index out of all the genomes that are included in our database needs to be build. This is a process that can take big amounts of memory based on the number and the complexity of the sequences that exist in our database. For that reason the user can specify the desired amount of memory resources available to rip and the program will try to build the required index. This can be specified through the `--mem` flag, that can be appended to the any of the commands shown above. It is important to note that the memory specified needs to be in MB. 
+For the first part of the analysis an index out of all the genomes that are included in our database needs to be build. This is a process that can take big amounts of memory based on the number and the complexity of the sequences that exist in our database. For that reason the user can specify the desired amount of memory resources available to rip and the program will try to build the required index. This can be specified through the `--mem` flag, that can be appended to the any of the commands shown above. It is important to note that the memory specified needs to be in MB. It is also useful to mention that memory usage is less when more threads are provided to bowtie2 for index building, therefore when a user has enough resources they can think about allocating more threads to bowtie2 though the `rip config` module.
 
 Database building modes
 -----------------------
@@ -105,6 +125,11 @@ Here is an example of building a database in two steps instead of one
     rip_multilevel database --mode fetch --query '("Yersinia"[Organism] OR "Yersinia"[Organism]) AND "complete genome"[All Fields]' --db-output ./yersinia_example
     rip_multilevel database --mode build --db-output ./yersinia_example
 
+Building a mitochondrial DNA database
+-------------------------------------
+
+When a user is providing a query about eukaryotes it is also possible to build a database with only mitochondrial genomes (by default whole genome assemblies will be fetched). In order to do that a user can specify the `--mtDNA` flag when running `rip database`. 
+
 Preparing a sample for analysis
 -------------------------------
 
@@ -118,10 +143,15 @@ Here is an example of downloading reads from the SRA, trimming sequencing adapte
 
     rip_multilevel sample --sra SRR12157896 --collapse --sample-output-dir samples
 
+Sample configuration yaml file
+--------------------------------
+
+After the sample preparation has finished a yaml file with all the configured and default options will be outputted in the ` --sample-output-dir` path that the user has provided. This file will be needed as an input for the sample analysis.
+
 Sample analysis
 ---------------
 
-In order to analyse any sample we will need to use the `analyse` module of rip.
+In order to analyse any sample we will need to use the `analyse` module of rip. The yaml files that specify the database and sample related options will also be needed for the `--database` and`--sample` flags.
 
 Filtering Alignment
 -------------------
@@ -135,7 +165,6 @@ Here is an example command
 Database Alignments
 -------------------
 
-
 After we have filtered our libraries we can align the filtered reads against all the genomes that are included in our database. This can be done by using mode `align` of `rip analyse`. 
 
 For example
@@ -148,6 +177,11 @@ Likelihood calculation
 After all the metagenomic individual alignments have been competed, the number of transitions and transversions will be calculated for every read that has aligned against any of the reference genomes in our database. Then the likelihoods and posterior probabilities for each read being sampled for a given reference genome will be calculated. For this step we can use the `likelihoods` mode of `rip analyse`.
 
     rip_multilevel analyse --mode likelihoods --database yersinia_example/database_build_config.yaml --sample ./samples/SRR12157896_config.yaml --analysis-output-dir ./analysis_output
+
+Important Note on the Dirichlet Assignment provess during Likelihood calculation
+--------------------------------------------------------------------------------
+
+It is important to be aware of the individual read posterior probability threshold, for a read to be assigned to a taxon. The three allowed options are 0.5 for 50% (least conservative option), 0.75 for 75% (conservative option) and 0.95 for 95% probability (most conservative option). As a default RIP uses the conservative 0.75 probability threshold for the Dirichlet assignment. The higher value you pick the more conservative the assignments become. It is useful to sometimes pick a value depending on what taxa are being identified. If there is a need to distinguish between closely related taxa then a more conservative threshold would increase the specificity of the analysis therefore being more appropriate, whereas when you're trying to generally characterise a metagenome a less conservative value could increase the sensitivity of the analysis be more helpful. 
 
 Single organism sample or metagenome ? 
 --------------------------------------
@@ -168,19 +202,33 @@ In order to calculate mean posterior abundances we can run the following command
 
     rip_multilevel analyse --mode abundances --database yersinia_example/database_build_config.yaml --sample ./samples/SRR12157896_config.yaml --analysis-output-dir ./analysis_output
 
+Reads
+-----
+
+After the mean posterior abundances have been calculated for a sample all the reads that have been assigned to a taxon through the Dirichlet process can be outputted in separate bam files ready for further analyses (like assemblying or variant calling for instance) via the `rip reads` module. Reads that have been assigned to the Grey and Dark Matter are outputted in fastq files as they have not been uniquely assigned to a taxon.
+
+Here is an example command
+
+    rip_multilevel analyse --mode reads --database yersinia_example/database_build_config.yaml --sample ./samples/SRR12157896_config.yaml --analysis-output-dir ./analysis_output
+
 Mapdamage analysis
 ------------------
 
-If our samples are ancient we can use mapDamage to estimate the level of deamination in all the reads that have aligned to any taxon in our database. For that we can use the `mapdamage` module of rip. 
+If our samples are ancient we can use mapDamage to estimate the level of deamination in the reads that have aligned to any taxon in our database. For that we can use the `mapdamage` module of rip. The mapDamage analysis will be performed on the subset of reads that have been uniquely assigned to a taxon through the dirichlet process. This module can be either run independently or after the `rip reads` module.
 
 Here is an example command 
 
     rip_multilevel analyse --mode mapdamage --database yersinia_example/database_build_config.yaml --sample ./samples/SRR12157896_config.yaml --analysis-output-dir ./analysis_output
 
-Important note
---------------
+Important note on sample analysis
+---------------------------------
 
-the first 3 steps (filter, align, likelihoods) can be executed automatically when you call the probabilities or abundances mode of rip.
+The first 3 steps (filter, align, likelihoods) can be executed automatically when you call the probabilities or abundances mode of rip.
+
+Important note on path notation
+-------------------------------
+
+When providing paths for input or output files try and provide absolute paths. If a path is provided with the './' prefix then the program will assume that the input/output is placed under the current working directory. If a is provided without any prefix, for example 'outputs/', it will be assumed that this directory is under the user's home directory. 
 
 Command Line Interface
 ======================
@@ -210,14 +258,19 @@ rip database
     -h, --help            show this help message and exit
     --dry-run
     -m , --mode           Database creation mode for rip
-    -o , --db-output      /path/to/what/used/to/be/query_name
-    -R REFSEQ_REP, --refseq-rep REFSEQ_REP
-                          Use the prokaryotic representative species of the
+    -o , --db-output      Path to the database output directory.
+    -R , --refseq-rep     Use the prokaryotic representative species of the
                           RefSeq DB for the species id pipeline. only species no
                           strains. either or both of with_refseq_rep and
                           with_entrez_query should be set (default: False)
-    -q , --query          Actual NCBI query in the NCBI query language
-    -Q , --query-file     Actual NCBI query in the NCBI query language
+    -MT , --mtDNA         Download mitochondrial genomes for eukaryotes only. Do
+                          not use with --refseq-rep or any queries for
+                          prokaryotes (default: False)
+    -q , --query          Actual NCBI query in the NCBI query language. Please
+                          refer to the documentation on how to construct one
+                          correctly.
+    -Q , --query-file     Actual NCBI query in the NCBI query language, stored
+                          in a simple text file.
     -r , --rank           Taxonomic rank to perform the identifications on
                           (genus, species, subspecies, serotype) <str> (default:
                           species)
@@ -282,15 +335,19 @@ rip analyse
 
     -h, --help            show this help message and exit
     -m , --mode           Analysis mode for the selected sample
-    -D , --database       Path to the database used for the sample analysis.
-                          MANDATORY
-    -S , --sample         Path to the sample parameter file. Optional
+    -D , --database       Path to the database yaml file used for the sample
+                          analysis. MANDATORY
+    -S , --sample         Path to the sample parameter yaml file. MANDATORY
     -g  [ ...], --genera  [ ...]
                           List containing the names of specific genera the
                           abundances should be calculated on, separated by a
                           space character <genus1 genus2 genus3 ...>
     -o , --analysis-output-dir 
                           Path to results directory.
+    -T , --read-probability-threshold 
+                          Posterior probability threshold for a read to belong
+                          to a certain species. Chose from 0.5, 0.75 and 0.95
+                          (default:0.75).
     -c , --cores          Number of cores for RIP to use
     -M , --mem            Max memory resources allowed to be used ofr indexing
                           the input for the filtering alignment (default: max

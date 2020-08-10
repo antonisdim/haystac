@@ -58,6 +58,19 @@
 </div>
 <div class="section" id="tutorial">
 <h1>Tutorial<a class="headerlink" href="#tutorial" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="configuring-rip">
+<h2>Configuring RIP<a class="headerlink" href="#configuring-rip" title="Permalink to this headline">¶</a></h2>
+<p>If a user is running rip for the first time on a machine, they should run the <cite>rip config</cite> module first. There an interactive dialogue session will start so that a few important options about the pipeline can be configured. The user will be asked to provide their email address so that sequences can be fetched from the NCBI and their preferred path for the shared genomes folder, among other things. Other than the email address the rest of the options have default values that can be used. If a user later on wishes to change any of these parameters specifically they can either rerun <cite>rip config</cite> or run rip config by passing a specific argument.</p>
+<p>Here is an example command that allows the configuration of all the parameters interactively</p>
+<blockquote>
+<div><p>rip config</p>
+</div></blockquote>
+<p>Here is an example command that configures the number of threads that bowtie2 is allowed to use for mapping and index building</p>
+<blockquote>
+<div><p>rip config –bowtie2-threads 10</p>
+</div></blockquote>
+<p>Unless the user has a deep understanding of its dataset we advise to be cautious when changing the base mismatch probability that is used later on in the method’s probabilistic model. We also advise caution when changing the bowtie2 file size scaling factor.</p>
+</div>
 <div class="section" id="building-the-database">
 <h2>Building the database<a class="headerlink" href="#building-the-database" title="Permalink to this headline">¶</a></h2>
 <p>In order to build the database we will be using the <cite>database</cite> submodule of RIP.
@@ -108,9 +121,13 @@ Felis_silvestris_lybica     KP202275.1</p>
 <h2>Combinations<a class="headerlink" href="#combinations" title="Permalink to this headline">¶</a></h2>
 <p>All of the previous options can be combined into one command. It is important to note that only one sequence per taxon is allowed in our database, and the priority goes user defined accessions or sequences, representative RefSeq and then user specified query.</p>
 </div>
+<div class="section" id="database-configuration-yaml-file">
+<h2>Database configuration yaml file<a class="headerlink" href="#database-configuration-yaml-file" title="Permalink to this headline">¶</a></h2>
+<p>After the database has been created a yaml file with all the configured and default options will be outputted in the ` –db-output` path that the user has provided. This file will be needed as an input for the sample analysis.</p>
+</div>
 <div class="section" id="index-building">
 <h2>Index building<a class="headerlink" href="#index-building" title="Permalink to this headline">¶</a></h2>
-<p>For the first part of the analysis an index out of all the genomes that are included in our database needs to be build. This is a process that can take big amounts of memory based on the number and the complexity of the sequences that exist in our database. For that reason the user can specify the desired amount of memory resources available to rip and the program will try to build the required index. This can be specified through the <cite>–mem</cite> flag, that can be appended to the any of the commands shown above. It is important to note that the memory specified needs to be in MB.</p>
+<p>For the first part of the analysis an index out of all the genomes that are included in our database needs to be build. This is a process that can take big amounts of memory based on the number and the complexity of the sequences that exist in our database. For that reason the user can specify the desired amount of memory resources available to rip and the program will try to build the required index. This can be specified through the <cite>–mem</cite> flag, that can be appended to the any of the commands shown above. It is important to note that the memory specified needs to be in MB. It is also useful to mention that memory usage is less when more threads are provided to bowtie2 for index building, therefore when a user has enough resources they can think about allocating more threads to bowtie2 though the <cite>rip config</cite> module.</p>
 </div>
 <div class="section" id="database-building-modes">
 <h2>Database building modes<a class="headerlink" href="#database-building-modes" title="Permalink to this headline">¶</a></h2>
@@ -124,6 +141,10 @@ If mode <cite>fetch</cite> is run first the mode <cite>index</cite> should be ru
 rip_multilevel database –mode build –db-output ./yersinia_example</p>
 </div></blockquote>
 </div>
+<div class="section" id="building-a-mitochondrial-dna-database">
+<h2>Building a mitochondrial DNA database<a class="headerlink" href="#building-a-mitochondrial-dna-database" title="Permalink to this headline">¶</a></h2>
+<p>When a user is providing a query about eukaryotes it is also possible to build a database with only mitochondrial genomes (by default whole genome assemblies will be fetched). In order to do that a user can specify the <cite>–mtDNA</cite> flag when running <cite>rip database</cite>.</p>
+</div>
 <div class="section" id="preparing-a-sample-for-analysis">
 <h2>Preparing a sample for analysis<a class="headerlink" href="#preparing-a-sample-for-analysis" title="Permalink to this headline">¶</a></h2>
 <p>After our database is built we need to prepare our samples for analysis. In order to do that we are going to use the <cite>sample</cite> module of rip. The input files can be SE, PE or collapsed reads. If the reads are collapsed they are going to be treated as SE reads.</p>
@@ -134,9 +155,13 @@ rip_multilevel database –mode build –db-output ./yersinia_example</p>
 <div><p>rip_multilevel sample –sra SRR12157896 –collapse –sample-output-dir samples</p>
 </div></blockquote>
 </div>
+<div class="section" id="sample-configuration-yaml-file">
+<h2>Sample configuration yaml file<a class="headerlink" href="#sample-configuration-yaml-file" title="Permalink to this headline">¶</a></h2>
+<p>After the sample preparation has finished a yaml file with all the configured and default options will be outputted in the ` –sample-output-dir` path that the user has provided. This file will be needed as an input for the sample analysis.</p>
+</div>
 <div class="section" id="sample-analysis">
 <h2>Sample analysis<a class="headerlink" href="#sample-analysis" title="Permalink to this headline">¶</a></h2>
-<p>In order to analyse any sample we will need to use the <cite>analyse</cite> module of rip.</p>
+<p>In order to analyse any sample we will need to use the <cite>analyse</cite> module of rip. The yaml files that specify the database and sample related options will also be needed for the <cite>–database</cite> and`–sample` flags.</p>
 </div>
 <div class="section" id="filtering-alignment">
 <h2>Filtering Alignment<a class="headerlink" href="#filtering-alignment" title="Permalink to this headline">¶</a></h2>
@@ -161,6 +186,10 @@ rip_multilevel database –mode build –db-output ./yersinia_example</p>
 <div><p>rip_multilevel analyse –mode likelihoods –database yersinia_example/database_build_config.yaml –sample ./samples/SRR12157896_config.yaml –analysis-output-dir ./analysis_output</p>
 </div></blockquote>
 </div>
+<div class="section" id="important-note-on-the-dirichlet-assignment-provess-during-likelihood-calculation">
+<h2>Important Note on the Dirichlet Assignment provess during Likelihood calculation<a class="headerlink" href="#important-note-on-the-dirichlet-assignment-provess-during-likelihood-calculation" title="Permalink to this headline">¶</a></h2>
+<p>It is important to be aware of the individual read posterior probability threshold, for a read to be assigned to a taxon. The three allowed options are 0.5 for 50% (least conservative option), 0.75 for 75% (conservative option) and 0.95 for 95% probability (most conservative option). As a default RIP uses the conservative 0.75 probability threshold for the Dirichlet assignment. The higher value you pick the more conservative the assignments become. It is useful to sometimes pick a value depending on what taxa are being identified. If there is a need to distinguish between closely related taxa then a more conservative threshold would increase the specificity of the analysis therefore being more appropriate, whereas when you’re trying to generally characterise a metagenome a less conservative value could increase the sensitivity of the analysis be more helpful.</p>
+</div>
 <div class="section" id="single-organism-sample-or-metagenome">
 <h2>Single organism sample or metagenome ?<a class="headerlink" href="#single-organism-sample-or-metagenome" title="Permalink to this headline">¶</a></h2>
 <p>Depending on whether we would like to identify the species a sample is belongs to, or perform a metagenomic analysis, we can use the <cite>probabilities</cite> or <cite>abundances</cite> mode of <cite>rip analyse</cite> respectively.</p>
@@ -179,17 +208,29 @@ rip_multilevel database –mode build –db-output ./yersinia_example</p>
 <div><p>rip_multilevel analyse –mode abundances –database yersinia_example/database_build_config.yaml –sample ./samples/SRR12157896_config.yaml –analysis-output-dir ./analysis_output</p>
 </div></blockquote>
 </div>
+<div class="section" id="reads">
+<h2>Reads<a class="headerlink" href="#reads" title="Permalink to this headline">¶</a></h2>
+<p>After the mean posterior abundances have been calculated for a sample all the reads that have been assigned to a taxon through the Dirichlet process can be outputted in separate bam files ready for further analyses (like assemblying or variant calling for instance) via the <cite>rip reads</cite> module. Reads that have been assigned to the Grey and Dark Matter are outputted in fastq files as they have not been uniquely assigned to a taxon.</p>
+<p>Here is an example command</p>
+<blockquote>
+<div><p>rip_multilevel analyse –mode reads –database yersinia_example/database_build_config.yaml –sample ./samples/SRR12157896_config.yaml –analysis-output-dir ./analysis_output</p>
+</div></blockquote>
+</div>
 <div class="section" id="mapdamage-analysis">
 <h2>Mapdamage analysis<a class="headerlink" href="#mapdamage-analysis" title="Permalink to this headline">¶</a></h2>
-<p>If our samples are ancient we can use mapDamage to estimate the level of deamination in all the reads that have aligned to any taxon in our database. For that we can use the <cite>mapdamage</cite> module of rip.</p>
+<p>If our samples are ancient we can use mapDamage to estimate the level of deamination in the reads that have aligned to any taxon in our database. For that we can use the <cite>mapdamage</cite> module of rip. The mapDamage analysis will be performed on the subset of reads that have been uniquely assigned to a taxon through the dirichlet process. This module can be either run independently or after the <cite>rip reads</cite> module.</p>
 <p>Here is an example command</p>
 <blockquote>
 <div><p>rip_multilevel analyse –mode mapdamage –database yersinia_example/database_build_config.yaml –sample ./samples/SRR12157896_config.yaml –analysis-output-dir ./analysis_output</p>
 </div></blockquote>
 </div>
-<div class="section" id="important-note">
-<h2>Important note<a class="headerlink" href="#important-note" title="Permalink to this headline">¶</a></h2>
-<p>the first 3 steps (filter, align, likelihoods) can be executed automatically when you call the probabilities or abundances mode of rip.</p>
+<div class="section" id="important-note-on-sample-analysis">
+<h2>Important note on sample analysis<a class="headerlink" href="#important-note-on-sample-analysis" title="Permalink to this headline">¶</a></h2>
+<p>The first 3 steps (filter, align, likelihoods) can be executed automatically when you call the probabilities or abundances mode of rip.</p>
+</div>
+<div class="section" id="important-note-on-path-notation">
+<h2>Important note on path notation<a class="headerlink" href="#important-note-on-path-notation" title="Permalink to this headline">¶</a></h2>
+<p>When providing paths for input or output files try and provide absolute paths. If a path is provided with the ‘./’ prefix then the program will assume that the input/output is placed under the current working directory. If a is provided without any prefix, for example ‘outputs/’, it will be assumed that this directory is under the user’s home directory.</p>
 </div>
 </div>
 <div class="section" id="command-line-interface">
@@ -232,22 +273,25 @@ mutlifasta index for the filtering alignment (default:
 </dl>
 <p>–dry-run
 -m , –mode           Database creation mode for rip
--o , –db-output      /path/to/what/used/to/be/query_name
--R REFSEQ_REP, –refseq-rep REFSEQ_REP</p>
+-o , –db-output      Path to the database output directory.
+-R , –refseq-rep     Use the prokaryotic representative species of the</p>
 <blockquote>
-<div><p>Use the prokaryotic representative species of the
-RefSeq DB for the species id pipeline. only species no
+<div><p>RefSeq DB for the species id pipeline. only species no
 strains. either or both of with_refseq_rep and
 with_entrez_query should be set (default: False)</p>
 </div></blockquote>
-<p>-q , –query          Actual NCBI query in the NCBI query language
--Q , –query-file     Actual NCBI query in the NCBI query language
--r , –rank           Taxonomic rank to perform the identifications on</p>
-<blockquote>
-<div><p>(genus, species, subspecies, serotype) &lt;str&gt; (default:
-species)</p>
-</div></blockquote>
 <dl class="simple">
+<dt>-MT , –mtDNA         Download mitochondrial genomes for eukaryotes only. Do</dt><dd><p>not use with –refseq-rep or any queries for
+prokaryotes (default: False)</p>
+</dd>
+<dt>-q , –query          Actual NCBI query in the NCBI query language. Please</dt><dd><p>refer to the documentation on how to construct one
+correctly.</p>
+</dd>
+<dt>-Q , –query-file     Actual NCBI query in the NCBI query language, stored</dt><dd><p>in a simple text file.</p>
+</dd>
+<dt>-r , –rank           Taxonomic rank to perform the identifications on</dt><dd><p>(genus, species, subspecies, serotype) &lt;str&gt; (default:
+species)</p>
+</dd>
 <dt>-s , –sequences      TAB DELIMITED input file containing the the name of</dt><dd><p>the taxon with no special characters, and an
 underscore ‘_’ instead of spaces, a user defined
 accession code and the path of the fasta file. The
@@ -348,11 +392,11 @@ killed &lt;bool&gt; (default: False)</p>
 </dd>
 </dl>
 <p>-m , –mode           Analysis mode for the selected sample
--D , –database       Path to the database used for the sample analysis.</p>
+-D , –database       Path to the database yaml file used for the sample</p>
 <blockquote>
-<div><p>MANDATORY</p>
+<div><p>analysis. MANDATORY</p>
 </div></blockquote>
-<p>-S , –sample         Path to the sample parameter file. Optional
+<p>-S , –sample         Path to the sample parameter yaml file. MANDATORY
 -g  [ …], –genera  [ …]</p>
 <blockquote>
 <div><p>List containing the names of specific genera the
@@ -361,6 +405,10 @@ space character &lt;genus1 genus2 genus3 …&gt;</p>
 </div></blockquote>
 <dl class="simple">
 <dt>-o , –analysis-output-dir</dt><dd><p>Path to results directory.</p>
+</dd>
+<dt>-T , –read-probability-threshold</dt><dd><p>Posterior probability threshold for a read to belong
+to a certain species. Chose from 0.5, 0.75 and 0.95
+(default:0.75).</p>
 </dd>
 </dl>
 <p>-c , –cores          Number of cores for RIP to use
