@@ -69,7 +69,7 @@ def get_paths_for_custom_seqs():
             "Please only provide your favourite sequence for each taxon."
         )
 
-    check_unique_taxa_in_custom_input(config["accessions"], config["sequences"])
+    check_unique_taxa_in_custom_input(config["with_custom_accessions"], config["with_custom_sequences"])
 
     inputs = []
 
@@ -90,11 +90,11 @@ def get_paths_for_custom_seqs():
 
 rule entrez_aggregate_custom_seqs:
     input:
-        get_paths_for_custom_seqs,
+        get_paths_for_custom_seqs(),
     log:
-        config["db_output"] + "/bowtie/{query}_custom_seqs.log",
+        config["db_output"] + "/bowtie/custom_seqs.log",
     output:
-        config["db_output"] + "/bowtie/{query}_custom_seqs.fasta.gz",
+        config["db_output"] + "/bowtie/custom_seqs.fasta.gz",
     message:
         "Concatenating all the user provided sequences {MESSAGE_SUFFIX}"
     conda:
@@ -106,7 +106,7 @@ rule entrez_aggregate_custom_seqs:
 def get_paths_for_custom_acc():
 
     custom_accessions = pd.read_csv(
-        config["custom_acc_file"], sep="\t", header=None, names=["species", "accession"]
+        config["accessions"], sep="\t", header=None, names=["species", "accession"]
     )
 
     if len(custom_accessions) == 0:
@@ -134,7 +134,7 @@ def get_paths_for_custom_acc():
             "Please only provide your favourite sequence for each taxon."
         )
 
-    check_unique_taxa_in_custom_input(config["accessions"], config["sequences"])
+    check_unique_taxa_in_custom_input(config["with_custom_accessions"], config["with_custom_sequences"])
 
     inputs = []
 
@@ -155,11 +155,11 @@ def get_paths_for_custom_acc():
 
 rule entrez_aggregate_custom_acc:
     input:
-        get_paths_for_custom_acc,
+        get_paths_for_custom_acc(),
     log:
-        config["db_output"] + "/bowtie/{query}_custom_acc.log",
+        config["db_output"] + "/bowtie/custom_acc.log",
     output:
-        config["db_output"] + "/bowtie/{query}_custom_acc.fasta.gz",
+        config["db_output"] + "/bowtie/custom_acc.fasta.gz",
     message:
         "Concatenating all the sequences from user provided accessions {MESSAGE_SUFFIX}"
     conda:

@@ -88,6 +88,7 @@ def get_total_paths(
         )
 
         custom_seqs = custom_fasta_paths[["species", "GBSeq_accession-version"]]
+        custom_seqs["GBSeq_accession-version"] = 'custom_seq-' + custom_seqs["GBSeq_accession-version"].astype(str)
 
         sequences = sequences.append(custom_seqs)
 
@@ -118,15 +119,15 @@ def check_unique_taxa_in_custom_input(with_custom_accessions, with_custom_sequen
 
     """Checks that custom input files have only one entry per taxon"""
 
-    if with_custom_accessions and with_custom_sequences:
+    if with_custom_accessions is True and with_custom_sequences is True:
         custom_fasta_paths = pd.read_csv(
-            config["custom_seq_file"],
+            config["sequences"],
             sep="\t",
             header=None,
             names=["species", "accession", "path"],
         )
         custom_accessions = pd.read_csv(
-            config["custom_acc_file"],
+            config["accessions"],
             sep="\t",
             header=None,
             names=["species", "accession"],
@@ -157,7 +158,10 @@ def get_accession_ftp_path(accession, config, attempt=1):
         esummary_handle = Entrez.esummary(
             db=ENTREZ_DB_ASSEMBLY, id=assembly_record["IdList"], report="full"
         )
-        esummary_record = Entrez.read(esummary_handle, validate=False)
+        try:
+            esummary_record = Entrez.read(esummary_handle, validate=False)
+        except RuntimeError:
+            return ""
         refseq_ftp = esummary_record["DocumentSummarySet"]["DocumentSummary"][0][
             "FtpPath_RefSeq"
         ]

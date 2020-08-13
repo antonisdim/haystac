@@ -22,8 +22,8 @@ from scripts.rip_utilities import normalise_name, get_accession_ftp_path
 checkpoint entrez_find_accessions:
     output:
         temp(config["db_output"] + "/entrez/entrez-accessions.tsv"),
-    log:
-        temp(config["db_output"] + "/entrez/entrez-accessions.log"),
+    # log:
+    #     temp(config["db_output"] + "/entrez/entrez-accessions.log"),
     benchmark:
         repeat("benchmarks/entrez_find_accessions.benchmark.txt", 1)
     message:
@@ -121,7 +121,7 @@ def pick_after_refseq_prok(wildcards):
     if config["refseq_rep"]:
         return config["db_output"] + "/entrez/genbank-genomes.tsv"
     else:
-        return config["db_output"] + "/entrez/entrez_1-nuccore.tsv"
+        return config["db_output"] + "/entrez/entrez_0-nuccore.tsv"
 
 
 checkpoint entrez_pick_sequences:
@@ -153,7 +153,10 @@ def get_rsync_url(wildcards):
         )  # .replace("ftp://", "rsync://")
         # print(url)
         # print(file_url)
-        return file_url
+        if file_url != "_genomic.fna.gz":
+            return file_url
+        else:
+            return ""
     except RuntimeError:
         return ""
 
@@ -173,6 +176,8 @@ rule entrez_download_sequence:
         "Downloading accession {wildcards.accession} for taxon {wildcards.orgname} {MESSAGE_SUFFIX}"
     resources:
         entrez_api=1,
+    wildcard_constraints:
+        accession="^((?!custom).)*$"
     conda:
         "../envs/seq_download.yaml"
     shell:

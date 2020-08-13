@@ -437,7 +437,7 @@ The most commonly used git commands are:
         parser.add_argument(
             "-M",
             "--mem",
-            help="Max memory resources allowed to be used ofr indexing the input for "
+            help="Max memory resources allowed to be used for indexing the input for "
             "the filtering alignment "
             "(default: max available memory {})".format(MAX_MEM_MB),
             type=float,
@@ -505,6 +505,7 @@ The most commonly used git commands are:
             "mode": "build",
             "db_output": None,
             "refseq_rep": False,
+            "mtDNA": False,
             "query": None,
             "query_file": None,
             "rank": "species",
@@ -523,6 +524,12 @@ The most commonly used git commands are:
         database_config = {k: v for k, v in database_defaults.items()}
         database_config.update((k, v) for k, v in database_args.items())
         database_config.update((k, v) for k, v in repo_rip_config.items())
+
+        if database_config["mtDNA"] and database_config["refseq_rep"]:
+            raise RuntimeError(
+                "These flags are mutually exclusive. Either pick refseq-rep for prokaryotic "
+                "related queries or pick mtDNA for eukaryotic related queries."
+            )
 
         if database_config["query"] and database_config["query_file"]:
             raise RuntimeError(
@@ -1248,13 +1255,13 @@ The most commonly used git commands are:
             "sample": None,
             "genera": [],
             "analysis_output_dir": None,
+            "read_probability_threshold": float(0.75),
             "cores": cpu_count(),
             "mem": MAX_MEM_MB,
             "unlock": False,
             "debug": False,
             "snakemake": None,
             "dry_run": False,
-            "read_probability_threshold": float(0.95),
         }
 
         analysis_config = {k: v for k, v in analysis_defaults.items()}

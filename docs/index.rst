@@ -128,7 +128,7 @@ Here is an example of building a database in two steps instead of one
 Building a mitochondrial DNA database
 -------------------------------------
 
-When a user is providing a query about eukaryotes it is also possible to build a database with only mitochondrial genomes (by default whole genome assemblies will be fetched). In order to do that a user can specify the `--mtDNA` flag when running `rip database`. 
+When a user is providing a query about eukaryotes it is also possible to build a database with only mitochondrial genomes (by default whole genome assemblies will be fetched). In order to do that a user can specify the `--mtDNA` flag when running `rip database`. We strongly advise against having a mixed database of full eukaryotic genome assemblies for certain taxa and only mtDNA sequences for other taxa, as this will bias the identifications towards the taxa with full genome assemblies.
 
 Preparing a sample for analysis
 -------------------------------

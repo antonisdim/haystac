@@ -62,7 +62,12 @@ def entrez_nuccore_query(input_file, config, query_chunk_num, output_file, attem
     time.sleep(int(query_chunk_num) // 3)
     Entrez.email = config["email"]
 
-    accessions = pd.read_csv(input_file, sep="\t").squeeze().to_list()
+    accessions_df = pd.read_csv(input_file, sep="\t")
+    if len(accessions_df) > 1:
+        accessions = accessions_df.squeeze().to_list()
+    else:
+        accessions = [accessions_df.squeeze()]
+
     entrez_query_list = next(
         itertools.islice(chunker(accessions, CHUNK_SIZE), int(query_chunk_num), None)
     )

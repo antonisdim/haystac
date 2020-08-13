@@ -21,7 +21,7 @@ from Bio import bgzf
 
 
 def entrez_custom_sequences(config, taxon, output_file):
-    if os.path.exists(config["custom_seq_file"]):
+    if os.path.exists(config["sequences"]):
 
         custom_fasta_paths = pd.read_csv(
             config["sequences"],

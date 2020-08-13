@@ -44,6 +44,8 @@ checkpoint entrez_refseq_accessions:
         genbank_plasmids=config["db_output"] + "/entrez/genbank-plasmids.tsv",
     benchmark:
         repeat("benchmarks/entrez_refseq_rep_accessions.benchmark.txt", 1)
+    resources:
+        entrez_api=1,
     message:
         "Splitting the representative RefSeq table in smaller tables {MESSAGE_SUFFIX}"
     script:
