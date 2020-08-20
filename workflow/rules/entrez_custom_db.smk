@@ -32,6 +32,9 @@ rule entrez_custom_sequences:
 
 def get_paths_for_custom_seqs():
 
+    if config['with_custom_sequences'] is False:
+        return ''
+
     custom_fasta_paths = pd.read_csv(
         config["sequences"],
         sep="\t",
@@ -103,7 +106,10 @@ rule entrez_aggregate_custom_seqs:
         "../scripts/bowtie2_multifasta.py"
 
 
-def get_paths_for_custom_acc():
+def get_paths_for_custom_acc(wildcards):
+
+    if config['with_custom_accessions'] is False:
+        return ''
 
     custom_accessions = pd.read_csv(
         config["accessions"], sep="\t", header=None, names=["species", "accession"]
@@ -155,7 +161,7 @@ def get_paths_for_custom_acc():
 
 rule entrez_aggregate_custom_acc:
     input:
-        get_paths_for_custom_acc(),
+        get_paths_for_custom_acc,
     log:
         config["db_output"] + "/bowtie/custom_acc.log",
     output:

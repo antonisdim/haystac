@@ -174,7 +174,7 @@ def get_idx_custom_seqs():
         )
         inputs.append(
             config["genome_cache_folder"]
-            + "/{orgname}/{accession}.1.bt2l".format(
+            + "/{orgname}/custom_seq-{accession}.1.bt2l".format(
                 orgname=orgname, accession=accession
             )
         )

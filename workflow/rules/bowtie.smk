@@ -49,7 +49,9 @@ def get_inputs_for_bowtie_r2(wildcards):
 
     if config["trim_adapters"]:
         if config["PE_MODERN"]:
-            return "fastq_inputs/PE_mod/{sample}_R2_adRm.fastq.gz".format(
+            return config[
+                "sample_output_dir"
+            ] + "/fastq_inputs/PE_mod/{sample}_R2_adRm.fastq.gz".format(
                 sample=wildcards.sample
             )
 

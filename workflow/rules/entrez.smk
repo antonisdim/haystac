@@ -177,7 +177,7 @@ rule entrez_download_sequence:
     resources:
         entrez_api=1,
     wildcard_constraints:
-        accession="^((?!custom).)*$"
+        accession="[^-]+"
     conda:
         "../envs/seq_download.yaml"
     shell:
