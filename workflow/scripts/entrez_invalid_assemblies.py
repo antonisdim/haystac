@@ -40,17 +40,13 @@ def entrez_invalid_assemblies(config, assemblies, output, attempt=1):
 
             try:
                 handle = Entrez.esearch(
-                    db=ENTREZ_DB_ASSEMBLY,
-                    term=acc["GBSeq_accession-version"]
-                    + ' AND "latest refseq"[filter]',
+                    db=ENTREZ_DB_ASSEMBLY, term=acc["GBSeq_accession-version"] + ' AND "latest refseq"[filter]',
                 )
                 assembly_record = Entrez.read(handle)
 
                 if not len(assembly_record["IdList"]) > 0:
                     invalid_assemblies["species"] = acc["species"]
-                    invalid_assemblies["GBSeq_accession-version"] = acc[
-                        "GBSeq_accession-version"
-                    ]
+                    invalid_assemblies["GBSeq_accession-version"] = acc["GBSeq_accession-version"]
 
                     print(invalid_assemblies, file=sys.stderr)
                     w.writerow(invalid_assemblies)
@@ -62,8 +58,7 @@ def entrez_invalid_assemblies(config, assemblies, output, attempt=1):
 
                     if attempt > MAX_RETRY_ATTEMPTS:
                         print(
-                            "Exceeded maximum attempts {}...".format(attempt),
-                            file=sys.stderr,
+                            "Exceeded maximum attempts {}...".format(attempt), file=sys.stderr,
                         )
                         return None
                     else:
@@ -71,9 +66,7 @@ def entrez_invalid_assemblies(config, assemblies, output, attempt=1):
                         entrez_invalid_assemblies(config, assemblies, output, attempt)
 
                 else:
-                    raise RuntimeError(
-                        "There was a urllib.error.HTTPError with code {}".format(e)
-                    )
+                    raise RuntimeError("There was a urllib.error.HTTPError with code {}".format(e))
 
 
 if __name__ == "__main__":
@@ -81,7 +74,5 @@ if __name__ == "__main__":
     sys.stderr = open(snakemake.log[0], "w")
 
     entrez_invalid_assemblies(
-        config=snakemake.config,
-        assemblies=snakemake.input[0],
-        output=snakemake.output[0],
+        config=snakemake.config, assemblies=snakemake.input[0], output=snakemake.output[0],
     )

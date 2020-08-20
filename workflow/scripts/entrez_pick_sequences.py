@@ -25,50 +25,28 @@ def entrez_pick_sequences(config, nuccore_file, taxa_file, output_file):
     sequences = sequences[~sequences[rank].isnull()]
 
     selected_sequences = sequences.loc[
-        sequences.groupby(rank)["GBSeq_length"].idxmax(),
-        ["species", "GBSeq_accession-version"],
+        sequences.groupby(rank)["GBSeq_length"].idxmax(), ["species", "GBSeq_accession-version"],
     ]
 
     print(selected_sequences, file=sys.stderr)
 
     if config["refseq_rep"]:
-        refseq_genomes = pd.read_csv(
-            config["db_output"] + "/entrez/refseq-genomes.tsv", sep="\t"
-        )
-        genbank_genomes = pd.read_csv(
-            config["db_output"] + "/entrez/genbank-genomes.tsv", sep="\t"
-        )
-        assemblies = pd.read_csv(
-            config["db_output"] + "/entrez/assemblies.tsv", sep="\t"
-        )
-        refseq_plasmids = pd.read_csv(
-            config["db_output"] + "/entrez/refseq-plasmids.tsv", sep="\t"
-        )
-        genbank_plasmids = pd.read_csv(
-            config["db_output"] + "/entrez/genbank-plasmids.tsv", sep="\t"
-        )
+        refseq_genomes = pd.read_csv(config["db_output"] + "/entrez/refseq-genomes.tsv", sep="\t")
+        genbank_genomes = pd.read_csv(config["db_output"] + "/entrez/genbank-genomes.tsv", sep="\t")
+        assemblies = pd.read_csv(config["db_output"] + "/entrez/assemblies.tsv", sep="\t")
+        refseq_plasmids = pd.read_csv(config["db_output"] + "/entrez/refseq-plasmids.tsv", sep="\t")
+        genbank_plasmids = pd.read_csv(config["db_output"] + "/entrez/genbank-plasmids.tsv", sep="\t")
 
         # the entrez query might give a different accession for a certain species than the refseq rep one and
         # I don't want that. If the species exists in the refseq I want to keep the refseq records
-        selected_sequences = selected_sequences[
-            ~selected_sequences.species.isin(refseq_genomes.species)
-        ]
-        selected_sequences = selected_sequences[
-            ~selected_sequences.species.isin(genbank_genomes.species)
-        ]
-        selected_sequences = selected_sequences[
-            ~selected_sequences.species.isin(assemblies.species)
-        ]
-        selected_sequences = selected_sequences[
-            ~selected_sequences.species.isin(refseq_plasmids.species)
-        ]
-        selected_sequences = selected_sequences[
-            ~selected_sequences.species.isin(genbank_plasmids.species)
-        ]
+        selected_sequences = selected_sequences[~selected_sequences.species.isin(refseq_genomes.species)]
+        selected_sequences = selected_sequences[~selected_sequences.species.isin(genbank_genomes.species)]
+        selected_sequences = selected_sequences[~selected_sequences.species.isin(assemblies.species)]
+        selected_sequences = selected_sequences[~selected_sequences.species.isin(refseq_plasmids.species)]
+        selected_sequences = selected_sequences[~selected_sequences.species.isin(genbank_plasmids.species)]
 
     print(
-        "selected the longest sequence per species, writing it to a file",
-        file=sys.stderr,
+        "selected the longest sequence per species, writing it to a file", file=sys.stderr,
     )
 
     selected_sequences["species"] = selected_sequences["species"].str.replace("'", "")
@@ -77,24 +55,15 @@ def entrez_pick_sequences(config, nuccore_file, taxa_file, output_file):
 
     if config["with_custom_sequences"]:
         custom_fasta_paths = pd.read_csv(
-            config["sequences"],
-            sep="\t",
-            header=None,
-            names=["species", "accession", "path"],
+            config["sequences"], sep="\t", header=None, names=["species", "accession", "path"],
         )
 
-        selected_sequences = selected_sequences[
-            (~selected_sequences["species"].isin(custom_fasta_paths["species"]))
-        ]
+        selected_sequences = selected_sequences[(~selected_sequences["species"].isin(custom_fasta_paths["species"]))]
 
     if config["with_custom_accessions"]:
-        custom_accessions = pd.read_csv(
-            config["accessions"], sep="\t", header=None, names=["species", "accession"],
-        )
+        custom_accessions = pd.read_csv(config["accessions"], sep="\t", header=None, names=["species", "accession"],)
 
-        selected_sequences = selected_sequences[
-            (~selected_sequences["species"].isin(custom_accessions["species"]))
-        ]
+        selected_sequences = selected_sequences[(~selected_sequences["species"].isin(custom_accessions["species"]))]
 
     selected_sequences.to_csv(output_file, sep="\t", header=True, index=False)
 

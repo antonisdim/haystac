@@ -48,9 +48,7 @@ def get_total_fasta_paths(wildcards):
 
         inputs.append(
             config["genome_cache_folder"]
-            + "/{orgname}/{accession}.fasta.gz".format(
-                orgname=orgname, accession=accession,
-            )
+            + "/{orgname}/{accession}.fasta.gz".format(orgname=orgname, accession=accession,)
         )
 
     return inputs
@@ -138,14 +136,10 @@ rule bowtie_index:
         config["db_output"] + "/bowtie/chunk{chunk_num}_index.log",
     output:
         expand(
-            config["db_output"] + "/bowtie/chunk{chunk_num}.{n}.bt2l",
-            n=[1, 2, 3, 4],
-            allow_missing=True,
+            config["db_output"] + "/bowtie/chunk{chunk_num}.{n}.bt2l", n=[1, 2, 3, 4], allow_missing=True,
         ),
         expand(
-            config["db_output"] + "/bowtie/chunk{chunk_num}.rev.{n}.bt2l",
-            n=[1, 2],
-            allow_missing=True,
+            config["db_output"] + "/bowtie/chunk{chunk_num}.rev.{n}.bt2l", n=[1, 2], allow_missing=True,
         ),
     benchmark:
         repeat("benchmarks/bowtie_index_chunk{chunk_num}.benchmark.txt", 1)

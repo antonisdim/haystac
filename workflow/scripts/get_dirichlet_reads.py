@@ -17,10 +17,7 @@ def get_dirichlet_reads(input_bam, output_bam, matrix_file, taxon):
     dirichlet_matrix = pd.read_csv(matrix_file, sep=",")
 
     taxon_dirichlet_df = dirichlet_matrix[
-        (
-            (dirichlet_matrix["Taxon"] == taxon)
-            & (dirichlet_matrix["Dirichlet_Assignment"] == 1)
-        )
+        ((dirichlet_matrix["Taxon"] == taxon) & (dirichlet_matrix["Dirichlet_Assignment"] == 1))
     ]
 
     dirichlet_reads = taxon_dirichlet_df["Read_ID"].tolist()

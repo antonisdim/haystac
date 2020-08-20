@@ -53,17 +53,13 @@ def get_total_paths(
         genbank_genomes = pd.read_csv(refseq_rep_prok.output.genbank_genomes, sep="\t")
         assemblies = pd.read_csv(refseq_rep_prok.output.assemblies, sep="\t")
         refseq_plasmids = pd.read_csv(refseq_rep_prok.output.refseq_plasmids, sep="\t")
-        genbank_plasmids = pd.read_csv(
-            refseq_rep_prok.output.genbank_plasmids, sep="\t"
-        )
+        genbank_plasmids = pd.read_csv(refseq_rep_prok.output.genbank_plasmids, sep="\t")
 
         invalid_assemblies = checkpoints.entrez_invalid_assemblies.get()
         invalid_assembly_sequences = pd.read_csv(invalid_assemblies.output[0], sep="\t")
 
         assemblies = assemblies[
-            ~assemblies["GBSeq_accession-version"].isin(
-                invalid_assembly_sequences["GBSeq_accession-version"]
-            )
+            ~assemblies["GBSeq_accession-version"].isin(invalid_assembly_sequences["GBSeq_accession-version"])
         ]
 
         sources = [
@@ -81,31 +77,23 @@ def get_total_paths(
 
     if with_custom_sequences:
         custom_fasta_paths = pd.read_csv(
-            sequence_file,
-            sep="\t",
-            header=None,
-            names=["species", "GBSeq_accession-version", "path"],
+            sequence_file, sep="\t", header=None, names=["species", "GBSeq_accession-version", "path"],
         )
 
         custom_seqs = custom_fasta_paths[["species", "GBSeq_accession-version"]]
-        custom_seqs["GBSeq_accession-version"] = 'custom_seq-' + custom_seqs["GBSeq_accession-version"].astype(str)
+        custom_seqs["GBSeq_accession-version"] = "custom_seq-" + custom_seqs["GBSeq_accession-version"].astype(str)
 
         sequences = sequences.append(custom_seqs)
 
     if with_custom_accessions:
         custom_accessions = pd.read_csv(
-            accession_file,
-            sep="\t",
-            header=None,
-            names=["species", "GBSeq_accession-version"],
+            accession_file, sep="\t", header=None, names=["species", "GBSeq_accession-version"],
         )
 
         sequences = sequences.append(custom_accessions)
 
     if specific_genera:
-        sequences = sequences[
-            sequences["species"].str.contains("|".join(specific_genera))
-        ]
+        sequences = sequences[sequences["species"].str.contains("|".join(specific_genera))]
 
     return sequences
 
@@ -121,17 +109,9 @@ def check_unique_taxa_in_custom_input(with_custom_accessions, with_custom_sequen
 
     if with_custom_accessions is True and with_custom_sequences is True:
         custom_fasta_paths = pd.read_csv(
-            config["sequences"],
-            sep="\t",
-            header=None,
-            names=["species", "accession", "path"],
+            config["sequences"], sep="\t", header=None, names=["species", "accession", "path"],
         )
-        custom_accessions = pd.read_csv(
-            config["accessions"],
-            sep="\t",
-            header=None,
-            names=["species", "accession"],
-        )
+        custom_accessions = pd.read_csv(config["accessions"], sep="\t", header=None, names=["species", "accession"],)
 
         taxon_acc = custom_accessions["species"].tolist()
         taxon_seq = custom_fasta_paths["species"].tolist()
@@ -149,25 +129,17 @@ def get_accession_ftp_path(accession, config, attempt=1):
 
     Entrez.email = config["email"]
     try:
-        handle = Entrez.esearch(
-            db=ENTREZ_DB_ASSEMBLY, term=accession + ' AND "latest refseq"[filter]'
-        )
+        handle = Entrez.esearch(db=ENTREZ_DB_ASSEMBLY, term=accession + ' AND "latest refseq"[filter]')
         # or handle = Entrez.esearch(db=ENTREZ_DB_ASSEMBLY,
         # term=accession + ' AND ((latest[filter] OR "latest refseq"[filter])')
         assembly_record = Entrez.read(handle)
-        esummary_handle = Entrez.esummary(
-            db=ENTREZ_DB_ASSEMBLY, id=assembly_record["IdList"], report="full"
-        )
+        esummary_handle = Entrez.esummary(db=ENTREZ_DB_ASSEMBLY, id=assembly_record["IdList"], report="full")
         try:
             esummary_record = Entrez.read(esummary_handle, validate=False)
         except RuntimeError:
             return ""
-        refseq_ftp = esummary_record["DocumentSummarySet"]["DocumentSummary"][0][
-            "FtpPath_RefSeq"
-        ]
-        genbank_ftp = esummary_record["DocumentSummarySet"]["DocumentSummary"][0][
-            "FtpPath_GenBank"
-        ]
+        refseq_ftp = esummary_record["DocumentSummarySet"]["DocumentSummary"][0]["FtpPath_RefSeq"]
+        genbank_ftp = esummary_record["DocumentSummarySet"]["DocumentSummary"][0]["FtpPath_GenBank"]
 
         if refseq_ftp != "":
             return refseq_ftp
@@ -180,15 +152,11 @@ def get_accession_ftp_path(accession, config, attempt=1):
             attempt += 1
 
             if attempt > MAX_RETRY_ATTEMPTS:
-                print(
-                    "Exceeded maximum attempts {}...".format(attempt), file=sys.stderr
-                )
+                print("Exceeded maximum attempts {}...".format(attempt), file=sys.stderr)
                 return None
             else:
                 time.sleep(TOO_MANY_REQUESTS_WAIT)
                 entrez_download_sequence(accession, email, output_file, attempt)
 
         else:
-            raise RuntimeError(
-                "There was a urllib.error.HTTPError with code {}".format(e)
-            )
+            raise RuntimeError("There was a urllib.error.HTTPError with code {}".format(e))

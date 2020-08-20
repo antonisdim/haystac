@@ -15,21 +15,15 @@ def get_inputs_for_count_fastq_len(wildcards):
 
     if config["trim_adapters"]:
         if config["PE_MODERN"]:
-            return config[
-                "sample_output_dir"
-            ] + "/fastq_inputs/PE_mod/{sample}_R1_adRm.fastq.gz".format(
+            return config["sample_output_dir"] + "/fastq_inputs/PE_mod/{sample}_R1_adRm.fastq.gz".format(
                 sample=wildcards.sample
             )
         elif config["PE_ANCIENT"]:
-            return config[
-                "sample_output_dir"
-            ] + "/fastq_inputs/PE_anc/{sample}_adRm.fastq.gz".format(
+            return config["sample_output_dir"] + "/fastq_inputs/PE_anc/{sample}_adRm.fastq.gz".format(
                 sample=wildcards.sample
             )
         elif config["SE"]:
-            return config[
-                "sample_output_dir"
-            ] + "/fastq_inputs/SE/{sample}_adRm.fastq.gz".format(
+            return config["sample_output_dir"] + "/fastq_inputs/SE/{sample}_adRm.fastq.gz".format(
                 sample=wildcards.sample
             )
 

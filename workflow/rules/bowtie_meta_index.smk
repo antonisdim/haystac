@@ -25,14 +25,10 @@ rule index_database_entrez:
         config["genome_cache_folder"] + "/{orgname}/{accession}_index.log",
     output:
         expand(
-            config["genome_cache_folder"] + "/{orgname}/{accession}.{n}.bt2l",
-            n=[1, 2, 3, 4],
-            allow_missing=True,
+            config["genome_cache_folder"] + "/{orgname}/{accession}.{n}.bt2l", n=[1, 2, 3, 4], allow_missing=True,
         ),
         expand(
-            config["genome_cache_folder"] + "/{orgname}/{accession}.rev.{n}.bt2l",
-            n=[1, 2],
-            allow_missing=True,
+            config["genome_cache_folder"] + "/{orgname}/{accession}.rev.{n}.bt2l", n=[1, 2], allow_missing=True,
         ),
     benchmark:
         repeat("benchmarks/index_database_{orgname}_{accession}.benchmark.txt", 1)
@@ -66,10 +62,7 @@ def get_idx_entrez(wildcards):
             seq["GBSeq_accession-version"],
         )
         inputs.append(
-            config["genome_cache_folder"]
-            + "/{orgname}/{accession}.1.bt2l".format(
-                orgname=orgname, accession=accession
-            )
+            config["genome_cache_folder"] + "/{orgname}/{accession}.1.bt2l".format(orgname=orgname, accession=accession)
         )
 
     return inputs
@@ -89,9 +82,7 @@ def get_idx_ref_gen(wildcards):
     refseq_plasmids = pd.read_csv(refseq_rep_prok.output[3], sep="\t")
     genbank_plasmids = pd.read_csv(refseq_rep_prok.output[4], sep="\t")
 
-    sequences = pd.concat(
-        [refseq_genomes, genbank_genomes, refseq_plasmids, genbank_plasmids]
-    )
+    sequences = pd.concat([refseq_genomes, genbank_genomes, refseq_plasmids, genbank_plasmids])
 
     inputs = []
 
@@ -101,10 +92,7 @@ def get_idx_ref_gen(wildcards):
             seq["GBSeq_accession-version"],
         )
         inputs.append(
-            config["genome_cache_folder"]
-            + "/{orgname}/{accession}.1.bt2l".format(
-                orgname=orgname, accession=accession
-            )
+            config["genome_cache_folder"] + "/{orgname}/{accession}.1.bt2l".format(orgname=orgname, accession=accession)
         )
 
     return inputs
@@ -125,9 +113,7 @@ def get_idx_assembly(wildcards):
     invalid_assembly_sequences = pd.read_csv(invalid_assemblies.output[0], sep="\t")
 
     assemblies = assemblies[
-        ~assemblies["GBSeq_accession-version"].isin(
-            invalid_assembly_sequences["GBSeq_accession-version"]
-        )
+        ~assemblies["GBSeq_accession-version"].isin(invalid_assembly_sequences["GBSeq_accession-version"])
     ]
 
     sequences = assemblies
@@ -140,10 +126,7 @@ def get_idx_assembly(wildcards):
             seq["GBSeq_accession-version"],
         )
         inputs.append(
-            config["genome_cache_folder"]
-            + "/{orgname}/{accession}.1.bt2l".format(
-                orgname=orgname, accession=accession
-            )
+            config["genome_cache_folder"] + "/{orgname}/{accession}.1.bt2l".format(orgname=orgname, accession=accession)
         )
 
     return inputs
@@ -157,10 +140,7 @@ def get_idx_custom_seqs():
         return []
 
     custom_fasta_paths = pd.read_csv(
-        config["sequences"],
-        sep="\t",
-        header=None,
-        names=["species", "accession", "path"],
+        config["sequences"], sep="\t", header=None, names=["species", "accession", "path"],
     )
 
     sequences = custom_fasta_paths
@@ -174,9 +154,7 @@ def get_idx_custom_seqs():
         )
         inputs.append(
             config["genome_cache_folder"]
-            + "/{orgname}/custom_seq-{accession}.1.bt2l".format(
-                orgname=orgname, accession=accession
-            )
+            + "/{orgname}/custom_seq-{accession}.1.bt2l".format(orgname=orgname, accession=accession)
         )
 
     return inputs
@@ -189,9 +167,7 @@ def get_idx_custom_acc():
     if not config["with_custom_accessions"]:
         return []
 
-    custom_accessions = pd.read_csv(
-        config["accessions"], sep="\t", header=None, names=["species", "accession"]
-    )
+    custom_accessions = pd.read_csv(config["accessions"], sep="\t", header=None, names=["species", "accession"])
 
     sequences = custom_accessions
 
@@ -203,10 +179,7 @@ def get_idx_custom_acc():
             seq["accession"],
         )
         inputs.append(
-            config["genome_cache_folder"]
-            + "/{orgname}/{accession}.1.bt2l".format(
-                orgname=orgname, accession=accession
-            )
+            config["genome_cache_folder"] + "/{orgname}/{accession}.1.bt2l".format(orgname=orgname, accession=accession)
         )
 
     return inputs

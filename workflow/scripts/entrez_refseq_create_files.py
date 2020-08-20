@@ -26,13 +26,9 @@ def entrez_refseq_create_files(
 ):
     prok_refseq_rep = pd.read_csv(input_file, sep="\t")
 
-    prok_refseq_rep_rmdup = prok_refseq_rep[
-        ~prok_refseq_rep["#Species/genus"].duplicated()
-    ]
+    prok_refseq_rep_rmdup = prok_refseq_rep[~prok_refseq_rep["#Species/genus"].duplicated()]
 
-    assemblies = prok_refseq_rep_rmdup.loc[
-        prok_refseq_rep_rmdup["WGS"].notna(), ["#Species/genus", "WGS"]
-    ]
+    assemblies = prok_refseq_rep_rmdup.loc[prok_refseq_rep_rmdup["WGS"].notna(), ["#Species/genus", "WGS"]]
 
     assemblies["#Species/genus"] = assemblies["#Species/genus"].str.replace(" ", "_")
     assemblies["#Species/genus"] = assemblies["#Species/genus"].str.replace("/", "_")
@@ -41,8 +37,7 @@ def entrez_refseq_create_files(
     assemblies["#Species/genus"] = assemblies["#Species/genus"].str.replace(")", "")
 
     nuccore = prok_refseq_rep_rmdup.loc[
-        prok_refseq_rep_rmdup["Chromosome RefSeq"].notna(),
-        ["#Species/genus", "Chromosome RefSeq"],
+        prok_refseq_rep_rmdup["Chromosome RefSeq"].notna(), ["#Species/genus", "Chromosome RefSeq"],
     ]
 
     nuccore["#Species/genus"] = nuccore["#Species/genus"].str.replace(" ", "_")
@@ -51,8 +46,7 @@ def entrez_refseq_create_files(
     nuccore["#Species/genus"] = nuccore["#Species/genus"].str.replace(")", "")
 
     genbank = prok_refseq_rep_rmdup.loc[
-        prok_refseq_rep_rmdup["Chromosome GenBank"].notna(),
-        ["#Species/genus", "Chromosome GenBank"],
+        prok_refseq_rep_rmdup["Chromosome GenBank"].notna(), ["#Species/genus", "Chromosome GenBank"],
     ]
 
     genbank["#Species/genus"] = genbank["#Species/genus"].str.replace(" ", "_")
@@ -64,18 +58,14 @@ def entrez_refseq_create_files(
         (~genbank["#Species/genus"].isin(assemblies["#Species/genus"]))
         & (~genbank["#Species/genus"].isin(nuccore["#Species/genus"]))
     ]
-    genbank_filtered.loc[:, "Chromosome GenBank"] = genbank_filtered[
-        "Chromosome GenBank"
-    ].str.split(",")
+    genbank_filtered.loc[:, "Chromosome GenBank"] = genbank_filtered["Chromosome GenBank"].str.split(",")
     genbank_exploded = genbank_filtered.explode("Chromosome GenBank")
 
     nuccore_filtered = nuccore[
         (~nuccore["#Species/genus"].isin(assemblies["#Species/genus"]))
         & (~nuccore["#Species/genus"].isin(genbank_filtered["#Species/genus"]))
     ]
-    nuccore_filtered.loc[:, "Chromosome RefSeq"] = nuccore_filtered[
-        "Chromosome RefSeq"
-    ].str.split(",")
+    nuccore_filtered.loc[:, "Chromosome RefSeq"] = nuccore_filtered["Chromosome RefSeq"].str.split(",")
     nuccore_exploded = nuccore_filtered.explode("Chromosome RefSeq")
 
     assemblies_filtered = assemblies[
@@ -86,115 +76,72 @@ def entrez_refseq_create_files(
     assemblies_exploded = assemblies_filtered.explode("WGS")
 
     nuccore_plasmids = prok_refseq_rep_rmdup[
-        prok_refseq_rep_rmdup["Plasmid RefSeq"].notna()
-        & prok_refseq_rep_rmdup["WGS"].isna()
+        prok_refseq_rep_rmdup["Plasmid RefSeq"].notna() & prok_refseq_rep_rmdup["WGS"].isna()
     ].loc[:, ["#Species/genus", "Plasmid RefSeq"]]
 
     genbank_plasmids = prok_refseq_rep_rmdup[
-        prok_refseq_rep_rmdup["Plasmid GenBank"].notna()
-        & prok_refseq_rep_rmdup["WGS"].isna()
+        prok_refseq_rep_rmdup["Plasmid GenBank"].notna() & prok_refseq_rep_rmdup["WGS"].isna()
     ].loc[:, ["#Species/genus", "Plasmid GenBank"]]
     genbank_plasmids_filtered = genbank_plasmids[
         ~genbank_plasmids["#Species/genus"].isin(nuccore_plasmids["#Species/genus"])
     ]
 
-    nuccore_plasmids.loc[:, "Plasmid RefSeq"] = nuccore_plasmids[
-        "Plasmid RefSeq"
-    ].str.split(",")
+    nuccore_plasmids.loc[:, "Plasmid RefSeq"] = nuccore_plasmids["Plasmid RefSeq"].str.split(",")
     nuccore_plasmids_exploded = nuccore_plasmids.explode("Plasmid RefSeq")
 
-    nuccore_plasmids_exploded["#Species/genus"] = nuccore_plasmids_exploded[
-        "#Species/genus"
-    ].str.replace(" ", "_")
-    nuccore_plasmids_exploded["#Species/genus"] = nuccore_plasmids_exploded[
-        "#Species/genus"
-    ].str.replace("/", "_")
-    nuccore_plasmids_exploded["#Species/genus"] = nuccore_plasmids_exploded[
-        "#Species/genus"
-    ].str.replace("'", "")
-    nuccore_plasmids_exploded["#Species/genus"] = nuccore_plasmids_exploded[
-        "#Species/genus"
-    ].str.replace("(", "")
-    nuccore_plasmids_exploded["#Species/genus"] = nuccore_plasmids_exploded[
-        "#Species/genus"
-    ].str.replace(")", "")
+    nuccore_plasmids_exploded["#Species/genus"] = nuccore_plasmids_exploded["#Species/genus"].str.replace(" ", "_")
+    nuccore_plasmids_exploded["#Species/genus"] = nuccore_plasmids_exploded["#Species/genus"].str.replace("/", "_")
+    nuccore_plasmids_exploded["#Species/genus"] = nuccore_plasmids_exploded["#Species/genus"].str.replace("'", "")
+    nuccore_plasmids_exploded["#Species/genus"] = nuccore_plasmids_exploded["#Species/genus"].str.replace("(", "")
+    nuccore_plasmids_exploded["#Species/genus"] = nuccore_plasmids_exploded["#Species/genus"].str.replace(")", "")
 
     # todo these lines give me this warning: SettingWithCopyWarning:
     #  A value is trying to be set on a copy of a slice from a DataFrame.
     #  Read about it, but can't figure out why it's happening
-    genbank_plasmids_filtered.loc[:, "Plasmid GenBank"] = genbank_plasmids_filtered[
-        "Plasmid GenBank"
-    ].str.split(",")
-    genbank_plasmids_filtered_exploded = genbank_plasmids_filtered.explode(
-        "Plasmid GenBank"
-    )
+    genbank_plasmids_filtered.loc[:, "Plasmid GenBank"] = genbank_plasmids_filtered["Plasmid GenBank"].str.split(",")
+    genbank_plasmids_filtered_exploded = genbank_plasmids_filtered.explode("Plasmid GenBank")
 
-    genbank_plasmids_filtered_exploded[
+    genbank_plasmids_filtered_exploded["#Species/genus"] = genbank_plasmids_filtered_exploded[
         "#Species/genus"
-    ] = genbank_plasmids_filtered_exploded["#Species/genus"].str.replace(" ", "_")
-    genbank_plasmids_filtered_exploded[
+    ].str.replace(" ", "_")
+    genbank_plasmids_filtered_exploded["#Species/genus"] = genbank_plasmids_filtered_exploded[
         "#Species/genus"
-    ] = genbank_plasmids_filtered_exploded["#Species/genus"].str.replace("/", "_")
-    genbank_plasmids_filtered_exploded[
+    ].str.replace("/", "_")
+    genbank_plasmids_filtered_exploded["#Species/genus"] = genbank_plasmids_filtered_exploded[
         "#Species/genus"
-    ] = genbank_plasmids_filtered_exploded["#Species/genus"].str.replace("'", "")
-    genbank_plasmids_filtered_exploded[
+    ].str.replace("'", "")
+    genbank_plasmids_filtered_exploded["#Species/genus"] = genbank_plasmids_filtered_exploded[
         "#Species/genus"
-    ] = genbank_plasmids_filtered_exploded["#Species/genus"].str.replace("(", "")
-    genbank_plasmids_filtered_exploded[
+    ].str.replace("(", "")
+    genbank_plasmids_filtered_exploded["#Species/genus"] = genbank_plasmids_filtered_exploded[
         "#Species/genus"
-    ] = genbank_plasmids_filtered_exploded["#Species/genus"].str.replace(")", "")
+    ].str.replace(")", "")
 
     header = ["species", "GBSeq_accession-version"]
 
     if config["with_custom_sequences"]:
         custom_fasta_paths = pd.read_csv(
-            config["sequences"],
-            sep="\t",
-            header=None,
-            names=["species", "accession", "path"],
+            config["sequences"], sep="\t", header=None, names=["species", "accession", "path"],
         )
 
-        genbank_exploded = genbank_exploded[
-            (~genbank_exploded["species"].isin(custom_fasta_paths["species"]))
-        ]
-        nuccore_exploded = nuccore_exploded[
-            (~nuccore_exploded["species"].isin(custom_fasta_paths["species"]))
-        ]
-        assemblies_exploded = assemblies_exploded[
-            (~assemblies_exploded["species"].isin(custom_fasta_paths["species"]))
-        ]
+        genbank_exploded = genbank_exploded[(~genbank_exploded["species"].isin(custom_fasta_paths["species"]))]
+        nuccore_exploded = nuccore_exploded[(~nuccore_exploded["species"].isin(custom_fasta_paths["species"]))]
+        assemblies_exploded = assemblies_exploded[(~assemblies_exploded["species"].isin(custom_fasta_paths["species"]))]
         genbank_plasmids_filtered_exploded = genbank_plasmids_filtered_exploded[
-            (
-                ~genbank_plasmids_filtered_exploded["species"].isin(
-                    custom_fasta_paths["species"]
-                )
-            )
+            (~genbank_plasmids_filtered_exploded["species"].isin(custom_fasta_paths["species"]))
         ]
         nuccore_plasmids_exploded = nuccore_plasmids_exploded[
             (~nuccore_plasmids_exploded["species"].isin(custom_fasta_paths["species"]))
         ]
 
     if config["with_custom_accessions"]:
-        custom_accessions = pd.read_csv(
-            config["accessions"], sep="\t", header=None, names=["species", "accession"],
-        )
+        custom_accessions = pd.read_csv(config["accessions"], sep="\t", header=None, names=["species", "accession"],)
 
-        genbank_exploded = genbank_exploded[
-            (~genbank_exploded["species"].isin(custom_accessions["species"]))
-        ]
-        nuccore_exploded = nuccore_exploded[
-            (~nuccore_exploded["species"].isin(custom_accessions["species"]))
-        ]
-        assemblies_exploded = assemblies_exploded[
-            (~assemblies_exploded["species"].isin(custom_accessions["species"]))
-        ]
+        genbank_exploded = genbank_exploded[(~genbank_exploded["species"].isin(custom_accessions["species"]))]
+        nuccore_exploded = nuccore_exploded[(~nuccore_exploded["species"].isin(custom_accessions["species"]))]
+        assemblies_exploded = assemblies_exploded[(~assemblies_exploded["species"].isin(custom_accessions["species"]))]
         genbank_plasmids_filtered_exploded = genbank_plasmids_filtered_exploded[
-            (
-                ~genbank_plasmids_filtered_exploded["species"].isin(
-                    custom_accessions["species"]
-                )
-            )
+            (~genbank_plasmids_filtered_exploded["species"].isin(custom_accessions["species"]))
         ]
         nuccore_plasmids_exploded = nuccore_plasmids_exploded[
             (~nuccore_plasmids_exploded["species"].isin(custom_accessions["species"]))
@@ -221,21 +168,11 @@ def entrez_refseq_create_files(
     nuccore_plasmids_exploded.drop(nuccore_plasmids_to_drop, inplace=True)
 
     # todo working example the head() needs to leave for a proper run
-    genbank_exploded.head(5).to_csv(
-        genbank_genomes_out, sep="\t", header=header, index=False
-    )
-    nuccore_exploded.head(5).to_csv(
-        nuccore_genomes_out, sep="\t", header=header, index=False
-    )
-    assemblies_exploded.head(5).to_csv(
-        assemblies_out, sep="\t", header=header, index=False
-    )
-    genbank_plasmids_filtered_exploded.head(5).to_csv(
-        genbank_plasmids_out, sep="\t", header=header, index=False
-    )
-    nuccore_plasmids_exploded.head(5).to_csv(
-        nuccore_plasmids_out, sep="\t", header=header, index=False
-    )
+    genbank_exploded.head(5).to_csv(genbank_genomes_out, sep="\t", header=header, index=False)
+    nuccore_exploded.head(5).to_csv(nuccore_genomes_out, sep="\t", header=header, index=False)
+    assemblies_exploded.head(5).to_csv(assemblies_out, sep="\t", header=header, index=False)
+    genbank_plasmids_filtered_exploded.head(5).to_csv(genbank_plasmids_out, sep="\t", header=header, index=False)
+    nuccore_plasmids_exploded.head(5).to_csv(nuccore_plasmids_out, sep="\t", header=header, index=False)
 
 
 if __name__ == "__main__":

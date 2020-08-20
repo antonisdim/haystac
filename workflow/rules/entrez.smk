@@ -21,9 +21,8 @@ from scripts.rip_utilities import normalise_name, get_accession_ftp_path
 
 checkpoint entrez_find_accessions:
     output:
-        temp(config["db_output"] + "/entrez/entrez-accessions.tsv"),
-    # log:
-    #     temp(config["db_output"] + "/entrez/entrez-accessions.log"),
+        temp(config["db_output"] + "/entrez/entrez-accessions.tsv"), # log:
+         #     temp(config["db_output"] + "/entrez/entrez-accessions.log"),
     benchmark:
         repeat("benchmarks/entrez_find_accessions.benchmark.txt", 1)
     message:
@@ -75,10 +74,7 @@ def get_nuccore_chunks(wildcards):
 
     inputs = []
     for chunk_num in range(int(tot_chunks)):
-        inputs.append(
-            config["db_output"]
-            + "/entrez/entrez_{chunk}-nuccore.tsv".format(chunk=chunk_num)
-        )
+        inputs.append(config["db_output"] + "/entrez/entrez_{chunk}-nuccore.tsv".format(chunk=chunk_num))
 
     return inputs
 
@@ -148,9 +144,7 @@ def get_rsync_url(wildcards):
 
     try:
         url = get_accession_ftp_path(wildcards.accession, config)
-        file_url = os.path.join(
-            url, os.path.basename(url) + "_genomic.fna.gz"
-        )  # .replace("ftp://", "rsync://")
+        file_url = os.path.join(url, os.path.basename(url) + "_genomic.fna.gz")  # .replace("ftp://", "rsync://")
         # print(url)
         # print(file_url)
         if file_url != "_genomic.fna.gz":
@@ -177,7 +171,7 @@ rule entrez_download_sequence:
     resources:
         entrez_api=1,
     wildcard_constraints:
-        accession="[^-]+"
+        accession="[^-]+",
     conda:
         "../envs/seq_download.yaml"
     shell:
@@ -206,9 +200,7 @@ def get_fasta_sequences(wildcards):
 
         inputs.append(
             config["genome_cache_folder"]
-            + "/{orgname}/{accession}.fasta.gz".format(
-                orgname=orgname, accession=accession
-            )
+            + "/{orgname}/{accession}.fasta.gz".format(orgname=orgname, accession=accession)
         )
 
     return inputs
