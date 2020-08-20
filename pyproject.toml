@@ -1,0 +1,7 @@
+[tool.snakefmt]
+line-length = 120
+include = '\.smk$|^Snakefile|\.py$'
+exclude = ''
+
+# snakefmt passes these options on to black
+[tool.black]
