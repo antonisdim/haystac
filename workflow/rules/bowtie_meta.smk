@@ -98,10 +98,10 @@ def get_bamfile_paths(wildcards):
     sequences = get_total_paths(
         wildcards,
         checkpoints,
-        config["with_entrez_query"],
+        config["query"],
         config["refseq_rep"],
-        config["with_custom_sequences"],
-        config["with_custom_accessions"],
+        config["sequences"],
+        config["accessions"],
         config["genera"],
     )
 

@@ -32,7 +32,7 @@ rule entrez_custom_sequences:
 
 def get_paths_for_custom_seqs():
 
-    if config["with_custom_sequences"] is False:
+    if config["sequences"] == "":
         return ""
 
     custom_fasta_paths = pd.read_csv(
@@ -68,7 +68,7 @@ def get_paths_for_custom_seqs():
             "Please only provide your favourite sequence for each taxon."
         )
 
-    check_unique_taxa_in_custom_input(config["with_custom_accessions"], config["with_custom_sequences"])
+    check_unique_taxa_in_custom_input(config["accessions"], config["sequences"])
 
     inputs = []
 
@@ -102,7 +102,7 @@ rule entrez_aggregate_custom_seqs:
 
 def get_paths_for_custom_acc(wildcards):
 
-    if config["with_custom_accessions"] is False:
+    if config["accessions"] == "":
         return ""
 
     custom_accessions = pd.read_csv(config["accessions"], sep="\t", header=None, names=["species", "accession"])
@@ -132,7 +132,7 @@ def get_paths_for_custom_acc(wildcards):
             "Please only provide your favourite sequence for each taxon."
         )
 
-    check_unique_taxa_in_custom_input(config["with_custom_accessions"], config["with_custom_sequences"])
+    check_unique_taxa_in_custom_input(config["accessions"], config["sequences"])
 
     inputs = []
 

@@ -314,15 +314,15 @@ The most commonly used git commands are:
         )
 
         parser.add_argument(
-            "-o", "--db-output", help="Path to the database output directory.", metavar="",
+            "-o", "--output", help="Path to the database output directory.", metavar="", dest="db_output"
         )
         parser.add_argument(
             "-R",
             "--refseq-rep",
             help="Use the prokaryotic representative species of the RefSeq DB "
             "for the species id pipeline. only species no strains. "
-            "either or both of with_refseq_rep and "
-            "with_entrez_query should be set (default: False)",
+            "either or both of --refseq-rep and "
+            "--query should be set (default: False)",
             type=bool,
             default=False,
             metavar="",
@@ -525,29 +525,16 @@ The most commonly used git commands are:
         else:
             database_config["db_output"] = database_config["db_output"].rstrip("/").lstrip(".").lstrip("/")
 
-        if database_config["query"] is not None:
-            database_config["with_entrez_query"] = True
-        else:
-            database_config["with_entrez_query"] = False
-        if database_config["sequences"] is not "":
-            database_config["with_custom_sequences"] = True
-        else:
-            database_config["with_custom_sequences"] = False
-        if database_config["accessions"] is not "":
-            database_config["with_custom_accessions"] = True
-        else:
-            database_config["with_custom_accessions"] = False
-
         target_list = []
 
         if database_config["mode"] == "fetch":
-            if database_config["with_entrez_query"]:
+            if database_config["query"] != "":
                 target_list.append(database_config["db_output"] + "/bowtie/entrez_query.fasta.gz")
             if database_config["refseq_rep"]:
                 target_list.append(database_config["db_output"] + "/bowtie/refseq_prok.fasta.gz")
-            if database_config["with_custom_sequences"]:
+            if database_config["sequences"] != "":
                 target_list.append(database_config["db_output"] + "/bowtie/custom_seqs.fasta.gz")
-            if database_config["with_custom_accessions"]:
+            if database_config["accessions"] != "":
                 target_list.append(database_config["db_output"] + "/bowtie/custom_acc.fasta.gz")
 
             database_fetch_yaml = os.path.join(
@@ -661,10 +648,11 @@ The most commonly used git commands are:
         )
         parser.add_argument(
             "-o",
-            "--sample-output-dir",
-            help="/path/to/sample <str>",  # todo it's the path to fastq_inputs, check with Evan
+            "--output",
+            help="Path to the directory where all the sample related outputs are going to be stored <str>",
             metavar="",
             default="",
+            dest="sample_output_dir"
         )
 
         parser.add_argument(
@@ -978,11 +966,11 @@ The most commonly used git commands are:
         parser.add_argument(
             "-D",
             "--database",
-            help="Path to the database yaml file used for the sample analysis. MANDATORY",
+            help="Path to the database output directory. MANDATORY",
             metavar="",
         )
         parser.add_argument(
-            "-S", "--sample", help="Path to the sample parameter yaml file. MANDATORY", metavar="",
+            "-S", "--sample", help="Path to the sample output directory. MANDATORY", metavar="",
         )
         parser.add_argument(
             "-g",
@@ -995,7 +983,7 @@ The most commonly used git commands are:
             default=[],
         )
         parser.add_argument(
-            "-o", "--analysis-output-dir", help="Path to results directory.", metavar="",
+            "-o", "--output", help="Path to results directory.", metavar="", dest="analysis_output_dir",
         )
         parser.add_argument(
             "-T",

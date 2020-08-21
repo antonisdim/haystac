@@ -25,10 +25,10 @@ MAX_RETRY_ATTEMPTS = 5
 def get_total_paths(
     wildcards,
     checkpoints,
-    with_entrez_query,
+    entrez_query,
     with_refseq_rep,
-    with_custom_sequences,
-    with_custom_accessions,
+    sequences,
+    accessions,
     specific_genera,
     accession_file,
     sequence_file,
@@ -39,7 +39,7 @@ def get_total_paths(
 
     sequences = pd.DataFrame()
 
-    if with_entrez_query:
+    if entrez_query:
         pick_sequences = checkpoints.entrez_pick_sequences.get()
         sequences = pd.read_csv(pick_sequences.output[0], sep="\t")
 
@@ -70,12 +70,12 @@ def get_total_paths(
             genbank_plasmids,
         ]
 
-        if with_entrez_query:
+        if entrez_query:
             sources.append(sequences)
 
         sequences = pd.concat(sources)
 
-    if with_custom_sequences:
+    if sequences:
         custom_fasta_paths = pd.read_csv(
             sequence_file, sep="\t", header=None, names=["species", "GBSeq_accession-version", "path"],
         )
@@ -85,7 +85,7 @@ def get_total_paths(
 
         sequences = sequences.append(custom_seqs)
 
-    if with_custom_accessions:
+    if accessions:
         custom_accessions = pd.read_csv(
             accession_file, sep="\t", header=None, names=["species", "GBSeq_accession-version"],
         )
@@ -103,11 +103,11 @@ def normalise_name(taxon):
     return taxon.replace(" ", "_").replace("[", "").replace("]", "")
 
 
-def check_unique_taxa_in_custom_input(with_custom_accessions, with_custom_sequences):
+def check_unique_taxa_in_custom_input(accessions, sequences):
 
     """Checks that custom input files have only one entry per taxon"""
 
-    if with_custom_accessions is True and with_custom_sequences is True:
+    if accessions == "" and sequences == "":
         custom_fasta_paths = pd.read_csv(
             config["sequences"], sep="\t", header=None, names=["species", "accession", "path"],
         )

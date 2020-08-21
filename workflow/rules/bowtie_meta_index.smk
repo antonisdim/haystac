@@ -45,7 +45,7 @@ def get_idx_entrez(wildcards):
     """
     Get all the index paths for the taxa in our database from the entrez query.
     """
-    if not config["with_entrez_query"]:
+    if not config["query"]:
         return []
 
     pick_sequences = checkpoints.entrez_pick_sequences.get()
@@ -136,7 +136,7 @@ def get_idx_custom_seqs():
     """
     Get all the individual bam file paths for the taxa in our database.
     """
-    if not config["with_custom_sequences"]:
+    if not config["sequences"]:
         return []
 
     custom_fasta_paths = pd.read_csv(
@@ -164,7 +164,7 @@ def get_idx_custom_acc():
     """
     Get all the individual bam file paths for the taxa in our database.
     """
-    if not config["with_custom_accessions"]:
+    if not config["accessions"]:
         return []
 
     custom_accessions = pd.read_csv(config["accessions"], sep="\t", header=None, names=["species", "accession"])
