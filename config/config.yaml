@@ -8,3 +8,56 @@ bowtie2_threads:
   1
 bowtie2_scaling:
   2.5
+
+dry_run:
+  False
+db_output:
+  None
+refseq_rep:
+  False
+mtDNA:
+  False
+query:
+  None
+query_file:
+  None
+sequences:
+  ""
+accessions:
+  ""
+genera: []
+sample_prefix:
+  ""
+sample_output_dir:
+  ""
+fastq:
+  None
+fastq_r1:
+  None
+fastq_r2:
+  None
+sra:
+  None
+collapse:
+  False
+trim_adapters:
+  True
+adaperremoval_flags:
+  ""
+database:
+  None
+sample:
+  None
+analysis_output_dir:
+  None
+read_probability_threshold:
+  0.75
+seed:
+  1
+
+unlock:
+  False
+debug":
+  False
+snakemake:
+  None

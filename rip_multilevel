@@ -379,6 +379,15 @@ The most commonly used git commands are:
         )
 
         parser.add_argument(
+            "-S",
+            "--seed",
+            help="Seed for the randomization of the genomes that each index chunk will include <int> (default 1)",
+            metavar="",
+            type=int,
+            default=int(1),
+        )
+
+        parser.add_argument(
             "-g",
             "--genera",
             nargs="+",
@@ -451,30 +460,10 @@ The most commonly used git commands are:
 
         repo_rip_config.update((k, v) for k, v in user_rip_config.items())
 
-        database_defaults = {
-            "dry_run": False,
-            "mode": "build",
-            "db_output": None,
-            "refseq_rep": False,
-            "mtDNA": False,
-            "query": None,
-            "query_file": None,
-            "rank": "species",
-            "sequences": "",
-            "accessions": "",
-            "cores": cpu_count(),
-            "mem": MAX_MEM_MB,
-            "unlock": False,
-            "debug": False,
-            "snakemake": None,
-            "genera": [],
-        }
-
         database_args = vars(args)
 
-        database_config = {k: v for k, v in database_defaults.items()}
+        database_config = {k: v for k, v in repo_rip_config.items()}
         database_config.update((k, v) for k, v in database_args.items())
-        database_config.update((k, v) for k, v in repo_rip_config.items())
 
         if database_config["mtDNA"] and database_config["refseq_rep"]:
             raise RuntimeError(
@@ -589,7 +578,7 @@ The most commonly used git commands are:
 
         database_config["workflow_dir"] = os.path.join(thisdir, "workflow")
 
-        user_options = {k: v for k, v in database_args.items() if (k, v) not in database_defaults.items()}
+        user_options = {k: v for k, v in database_args.items() if (k, v) not in repo_rip_config.items()}
         # print(database_config)
 
         print("--------")
@@ -759,27 +748,8 @@ The most commonly used git commands are:
 
         sample_args = vars(args)
 
-        sample_defaults = {
-            "sample_prefix": "",
-            "sample_output_dir": "",
-            "fastq": None,
-            "fastq_r1": None,
-            "fastq_r2": None,
-            "sra": None,
-            "collapse": False,
-            "trim_adapters": True,
-            "adaperremoval_flags": "",
-            "cores": cpu_count(),
-            "mem": MAX_MEM_MB,
-            "unlock": False,
-            "debug": False,
-            "snakemake": None,
-            "dry_run": False,
-        }
-
-        sample_config = {k: v for k, v in sample_defaults.items()}
+        sample_config = {k: v for k, v in repo_rip_config.items()}
         sample_config.update((k, v) for k, v in sample_args.items())
-        sample_config.update((k, v) for k, v in repo_rip_config.items())
 
         if sample_config["sample_output_dir"]:
             if os.path.exists(sample_config["sample_output_dir"]):
@@ -893,7 +863,7 @@ The most commonly used git commands are:
             target_list.append(data_preprocessing)
 
         sample_yaml = os.path.join(
-            str(Path.home()), sample_config["sample_output_dir"], sample_config["sample_prefix"] + "_config.yaml",
+            str(Path.home()), sample_config["sample_output_dir"], "sample_config.yaml",
         )
 
         if not os.path.exists(sample_yaml):
@@ -906,7 +876,7 @@ The most commonly used git commands are:
 
         sample_config["workflow_dir"] = os.path.join(thisdir, "workflow")
 
-        user_options = {k: v for k, v in sample_args.items() if (k, v) not in sample_defaults.items()}
+        user_options = {k: v for k, v in sample_args.items() if (k, v) not in repo_rip_config.items()}
         # print(database_config)
         # print(sample_config)
 
@@ -1055,43 +1025,46 @@ The most commonly used git commands are:
 
         if not os.path.exists(args.database):
             raise RuntimeError(
-                "The path you provided for the yaml file containing all the database related "
-                "information is not valid. Please provide a valid path."
+                "The path you provided for the database output directory is not valid. "
+                "Please provide a valid path."
             )
 
         if not os.path.exists(args.sample):
             raise RuntimeError(
-                "The path you provided for the yaml file containing all the sample related "
-                "information is not valid. Please provide a valid path."
+                "The path you provided for the sample related output is not valid. "
+                "Please provide a valid path."
             )
 
-        with open(args.database) as fin:
-            database_config = yaml.safe_load(fin)
+        db_fetch_yaml = os.path.join(args.database, 'database_fetch_config.yaml')
+        if os.path.exists(db_fetch_yaml):
+            with open(db_fetch_yaml) as fin:
+                database_config = yaml.safe_load(fin)
 
-        with open(args.sample) as fin:
-            sample_config = yaml.safe_load(fin)
+        db_build_yaml = os.path.join(args.database, 'database_build_config.yaml')
+        if os.path.exists(db_build_yaml):
+            with open(db_build_yaml) as fin:
+                database_config = yaml.safe_load(fin)
+
+        if os.path.exists(db_build_yaml) and os.path.exists(db_build_yaml):
+            raise RuntimeError("The database has not been build correctly. Please re build the database.")
+
+        if os.path.exists(db_build_yaml) is False and os.path.exists(db_build_yaml) is False:
+            raise RuntimeError("The database has not been build correctly or at all. Please re build the database.")
+
+        sample_yaml = os.path.join(args.database, 'sample_config.yaml')
+        if os.path.exists(sample_yaml):
+            with open(sample_yaml) as fin:
+                sample_config = yaml.safe_load(fin)
+        else:
+            raise RuntimeError("The sample yaml file does not exist in the path you provided. "
+                               "Please make sure you have provided the right sample output path, or "
+                               "make sure that you have run rip sample first. ")
 
         analysis_args = vars(args)
 
-        analysis_defaults = {
-            "mode": None,
-            "database": None,
-            "sample": None,
-            "genera": [],
-            "analysis_output_dir": None,
-            "read_probability_threshold": float(0.75),
-            "cores": cpu_count(),
-            "mem": MAX_MEM_MB,
-            "unlock": False,
-            "debug": False,
-            "snakemake": None,
-            "dry_run": False,
-        }
-
-        analysis_config = {k: v for k, v in analysis_defaults.items()}
+        analysis_config = {k: v for k, v in repo_rip_config.items()}
         analysis_config.update((k, v) for k, v in database_config.items())
         analysis_config.update((k, v) for k, v in sample_config.items())
-        analysis_config.update((k, v) for k, v in repo_rip_config.items())
         analysis_config.update((k, v) for k, v in analysis_args.items())
 
         if analysis_config["analysis_output_dir"]:
@@ -1198,7 +1171,7 @@ The most commonly used git commands are:
 
         analysis_config["workflow_dir"] = os.path.join(thisdir, "workflow")
 
-        user_options = {k: v for k, v in analysis_args.items() if (k, v) not in analysis_defaults.items()}
+        user_options = {k: v for k, v in analysis_args.items() if (k, v) not in repo_rip_config.items()}
         # print(database_config)
         # print(sample_config)
 
