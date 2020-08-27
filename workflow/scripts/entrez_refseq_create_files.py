@@ -57,14 +57,14 @@ def entrez_refseq_create_files(
     genbank_filtered = genbank[
         (~genbank["#Species/genus"].isin(assemblies["#Species/genus"]))
         & (~genbank["#Species/genus"].isin(nuccore["#Species/genus"]))
-    ]
+    ].copy()
     genbank_filtered.loc[:, "Chromosome GenBank"] = genbank_filtered["Chromosome GenBank"].str.split(",")
     genbank_exploded = genbank_filtered.explode("Chromosome GenBank")
 
     nuccore_filtered = nuccore[
         (~nuccore["#Species/genus"].isin(assemblies["#Species/genus"]))
         & (~nuccore["#Species/genus"].isin(genbank_filtered["#Species/genus"]))
-    ]
+    ].copy()
     nuccore_filtered.loc[:, "Chromosome RefSeq"] = nuccore_filtered["Chromosome RefSeq"].str.split(",")
     nuccore_exploded = nuccore_filtered.explode("Chromosome RefSeq")
 
@@ -84,7 +84,7 @@ def entrez_refseq_create_files(
     ].loc[:, ["#Species/genus", "Plasmid GenBank"]]
     genbank_plasmids_filtered = genbank_plasmids[
         ~genbank_plasmids["#Species/genus"].isin(nuccore_plasmids["#Species/genus"])
-    ]
+    ].copy()
 
     nuccore_plasmids.loc[:, "Plasmid RefSeq"] = nuccore_plasmids["Plasmid RefSeq"].str.split(",")
     nuccore_plasmids_exploded = nuccore_plasmids.explode("Plasmid RefSeq")
@@ -95,9 +95,6 @@ def entrez_refseq_create_files(
     nuccore_plasmids_exploded["#Species/genus"] = nuccore_plasmids_exploded["#Species/genus"].str.replace("(", "")
     nuccore_plasmids_exploded["#Species/genus"] = nuccore_plasmids_exploded["#Species/genus"].str.replace(")", "")
 
-    # todo these lines give me this warning: SettingWithCopyWarning:
-    #  A value is trying to be set on a copy of a slice from a DataFrame.
-    #  Read about it, but can't figure out why it's happening
     genbank_plasmids_filtered.loc[:, "Plasmid GenBank"] = genbank_plasmids_filtered["Plasmid GenBank"].str.split(",")
     genbank_plasmids_filtered_exploded = genbank_plasmids_filtered.explode("Plasmid GenBank")
 

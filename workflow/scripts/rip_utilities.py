@@ -37,13 +37,13 @@ def get_total_paths(
     Get all the individual fasta file paths for the taxa in our database.
     """
 
-    sequences = pd.DataFrame()
+    sequences_df = pd.DataFrame()
 
     if entrez_query:
         pick_sequences = checkpoints.entrez_pick_sequences.get()
-        sequences = pd.read_csv(pick_sequences.output[0], sep="\t")
+        sequences_df = pd.read_csv(pick_sequences.output[0], sep="\t")
 
-        if len(sequences) == 0:
+        if len(sequences_df) == 0:
             raise RuntimeError("The entrez pick sequences file is empty.")
 
     if with_refseq_rep:
@@ -71,9 +71,9 @@ def get_total_paths(
         ]
 
         if entrez_query:
-            sources.append(sequences)
+            sources.append(sequences_df)
 
-        sequences = pd.concat(sources)
+        sequences_df = pd.concat(sources)
 
     if sequences:
         custom_fasta_paths = pd.read_csv(
@@ -83,19 +83,19 @@ def get_total_paths(
         custom_seqs = custom_fasta_paths[["species", "GBSeq_accession-version"]]
         custom_seqs["GBSeq_accession-version"] = "custom_seq-" + custom_seqs["GBSeq_accession-version"].astype(str)
 
-        sequences = sequences.append(custom_seqs)
+        sequences_df = sequences_df.append(custom_seqs)
 
     if accessions:
         custom_accessions = pd.read_csv(
             accession_file, sep="\t", header=None, names=["species", "GBSeq_accession-version"],
         )
 
-        sequences = sequences.append(custom_accessions)
+        sequences_df = sequences_df.append(custom_accessions)
 
     if specific_genera:
-        sequences = sequences[sequences["species"].str.contains("|".join(specific_genera))]
+        sequences_df = sequences_df[sequences_df["species"].str.contains("|".join(specific_genera))]
 
-    return sequences
+    return sequences_df
 
 
 def normalise_name(taxon):

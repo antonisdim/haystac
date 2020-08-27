@@ -6,7 +6,7 @@ __copyright__ = "Copyright 2020, University of Oxford"
 __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
-MESSAGE_SUFFIX = "(output: {output} and log: {log})" if config["debug"] else ""
+MESSAGE_SUFFIX = "(output: {{output}} and log: {{log}})" if config["debug"] else ""
 
 ##### Target rules #####
 
@@ -24,7 +24,7 @@ rule get_sra_fastq_se:
     conda:
         "../envs/sra_tools.yaml"
     shell:
-        "fasterq-dump --split-files {wildcards.accession} --outdir {config[sample_output_dir]}/sra_data/SE/"
+        "(fasterq-dump --split-files {wildcards.accession} --outdir {config[sample_output_dir]}/sra_data/SE/) &> {log}"
 
 
 rule get_sra_fastq_pe:
@@ -41,7 +41,7 @@ rule get_sra_fastq_pe:
     conda:
         "../envs/sra_tools.yaml"
     shell:
-        "fasterq-dump --split-files {wildcards.accession} --outdir {config[sample_output_dir]}/sra_data/PE/"
+        "(fasterq-dump --split-files {wildcards.accession} --outdir {config[sample_output_dir]}/sra_data/PE/) &> {log}"
 
 
 rule compress_sra_fastq_se:

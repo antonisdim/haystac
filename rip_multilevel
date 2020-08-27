@@ -483,7 +483,7 @@ The most commonly used git commands are:
 
             if database_config["query"] == "" or database_config["query"] == " ":
                 raise RuntimeError(
-                    "The query file you provided was empty. " "Please provide a file with a valid query."
+                    "The query file you provided was empty. Please provide a file with a valid query."
                 )
 
         if database_config["db_output"]:
@@ -512,8 +512,9 @@ The most commonly used git commands are:
                 os.getcwd(), database_config["db_output"].rstrip("/").lstrip(".").lstrip("/"),
             )
         else:
-            database_config["db_output"] = database_config["db_output"].rstrip("/").lstrip(".").lstrip("/")
-
+            database_config["db_output"] = os.path.join(
+                str(Path.home()), database_config["db_output"].rstrip("/").lstrip(".").lstrip("/")
+            )
         target_list = []
 
         if database_config["mode"] == "fetch":
@@ -546,7 +547,7 @@ The most commonly used git commands are:
             )
             if not os.path.exists(database_fetch_yaml):
                 raise RuntimeError(
-                    "Please run rip database --mode fetch first, " "and then proceed indexing the database."
+                    "Please run rip database --mode fetch first, and then proceed indexing the database."
                 )
 
             with open(database_fetch_yaml, "r") as fin:
@@ -777,7 +778,9 @@ The most commonly used git commands are:
                 os.getcwd(), sample_config["sample_output_dir"].rstrip("/").lstrip(".").lstrip("/"),
             )
         else:
-            sample_config["sample_output_dir"] = sample_config["sample_output_dir"].rstrip("/").lstrip(".").lstrip("/")
+            sample_config["sample_output_dir"] = os.path.join(
+                str(Path.home()), sample_config["sample_output_dir"].rstrip("/").lstrip(".").lstrip("/")
+            )
 
         sample_config["PE_ANCIENT"] = False
         sample_config["PE_MODERN"] = False
@@ -1045,13 +1048,13 @@ The most commonly used git commands are:
             with open(db_build_yaml) as fin:
                 database_config = yaml.safe_load(fin)
 
-        if os.path.exists(db_build_yaml) and os.path.exists(db_build_yaml):
+        if os.path.exists(db_build_yaml) and os.path.exists(db_fetch_yaml):
             raise RuntimeError("The database has not been build correctly. Please re build the database.")
 
-        if os.path.exists(db_build_yaml) is False and os.path.exists(db_build_yaml) is False:
+        if os.path.exists(db_build_yaml) is False and os.path.exists(db_fetch_yaml) is False:
             raise RuntimeError("The database has not been build correctly or at all. Please re build the database.")
 
-        sample_yaml = os.path.join(args.database, 'sample_config.yaml')
+        sample_yaml = os.path.join(args.sample, 'sample_config.yaml')
         if os.path.exists(sample_yaml):
             with open(sample_yaml) as fin:
                 sample_config = yaml.safe_load(fin)
@@ -1078,7 +1081,7 @@ The most commonly used git commands are:
                 if not os.access(os.path.dirname(analysis_config["analysis_output_dir"]), os.W_OK):
                     raise RuntimeError(
                         "This directory path you have provided is not writable. "
-                        "Please chose another path for your sample output directory.."
+                        "Please chose another path for your sample output directory."
                     )
 
         if analysis_config["analysis_output_dir"] is None:
@@ -1093,8 +1096,8 @@ The most commonly used git commands are:
                 os.getcwd(), analysis_config["analysis_output_dir"].rstrip("/").lstrip(".").lstrip("/"),
             )
         else:
-            analysis_config["analysis_output_dir"] = (
-                analysis_config["analysis_output_dir"].rstrip("/").lstrip(".").lstrip("/")
+            analysis_config["analysis_output_dir"] = os.path.join(
+                str(Path.home()), analysis_config["analysis_output_dir"].rstrip("/").lstrip(".").lstrip("/")
             )
 
         # print(analysis_config)

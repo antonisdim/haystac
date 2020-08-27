@@ -25,6 +25,8 @@ from scripts.entrez_utils import (
 
 
 def entrez_find_accessions(config, output_file):
+    """Function to find all the accessions related to our NCBI query"""
+
     Entrez.email = config["email"]
 
     entrez_query = config["query"]
@@ -50,7 +52,5 @@ def entrez_find_accessions(config, output_file):
 
 
 if __name__ == "__main__":
-    # redirect all output to the log
-    sys.stderr = open(snakemake.log[0], "w")
 
     entrez_find_accessions(config=snakemake.config, output_file=snakemake.output[0])
