@@ -147,21 +147,6 @@ rule calculate_taxa_probabilities:
         "../scripts/calculate_taxa_probabilities.py"
 
 
-rule fasta_idx:
-    input:
-        config["genome_cache_folder"] + "/{orgname}/{accession}.fasta.gz",
-    output:
-        config["genome_cache_folder"] + "/{orgname}/{accession}.fasta.gz.fai",
-    benchmark:
-        repeat("benchmarks/fasta_idx_{orgname}_{accession}.benchmark.txt", 1)
-    message:
-        "Indexing fasta file with accession {wildcards.accession} for taxon {wildcards.orgname} {MESSAGE_SUFFIX}"
-    conda:
-        "../envs/samtools.yaml"
-    shell:
-        "samtools faidx {input}"
-
-
 rule coverage_t_test:
     input:
         config["analysis_output_dir"] + "/alignments/{sample}/{reads}/{orgname}/{orgname}_{accession}.bam",

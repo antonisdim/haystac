@@ -125,6 +125,8 @@ rule merge_bams:
     message:
         "Merging the bam files produced by the filtering alignment stage for sample {wildcards.sample} "
         "{MESSAGE_SUFFIX}"
+    wildcard_constraints:
+        read_mode="[^-_]+",
     conda:
         "../envs/samtools.yaml"
     shell:
