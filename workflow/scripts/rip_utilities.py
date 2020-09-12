@@ -30,8 +30,6 @@ def get_total_paths(
     sequences,
     accessions,
     specific_genera,
-    accession_file,
-    sequence_file,
 ):
     """
     Get all the individual fasta file paths for the taxa in our database.
@@ -77,7 +75,7 @@ def get_total_paths(
 
     if sequences:
         custom_fasta_paths = pd.read_csv(
-            sequence_file, sep="\t", header=None, names=["species", "GBSeq_accession-version", "path"],
+            sequences, sep="\t", header=None, names=["species", "GBSeq_accession-version", "path"],
         )
 
         custom_seqs = custom_fasta_paths[["species", "GBSeq_accession-version"]]
@@ -87,7 +85,7 @@ def get_total_paths(
 
     if accessions:
         custom_accessions = pd.read_csv(
-            accession_file, sep="\t", header=None, names=["species", "GBSeq_accession-version"],
+            accessions, sep="\t", header=None, names=["species", "GBSeq_accession-version"],
         )
 
         sequences_df = sequences_df.append(custom_accessions)
@@ -107,7 +105,7 @@ def check_unique_taxa_in_custom_input(accessions, sequences):
 
     """Checks that custom input files have only one entry per taxon"""
 
-    if accessions == "" and sequences == "":
+    if accessions != "" and sequences != "":
         custom_fasta_paths = pd.read_csv(
             config["sequences"], sep="\t", header=None, names=["species", "accession", "path"],
         )
@@ -156,7 +154,11 @@ def get_accession_ftp_path(accession, config, attempt=1):
                 return None
             else:
                 time.sleep(TOO_MANY_REQUESTS_WAIT)
-                entrez_download_sequence(accession, email, output_file, attempt)
+                get_accession_ftp_path(accession, config, attempt)
 
         else:
             raise RuntimeError("There was a urllib.error.HTTPError with code {}".format(e))
+
+    except IndexError:
+        time.sleep(TOO_MANY_REQUESTS_WAIT)
+        get_accession_ftp_path(accession, config, attempt)

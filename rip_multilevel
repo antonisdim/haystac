@@ -629,6 +629,7 @@ The most commonly used git commands are:
         # translate "success" into shell exit code of 0
         return 0 if status else 1
 
+    @property
     def sample(self):
         # NOT prefixing the argument with -- means it's not optional
         parser = argparse.ArgumentParser(description="Prepare a sample for analysis")
@@ -681,11 +682,9 @@ The most commonly used git commands are:
         )
         parser.add_argument(
             "-T",
-            "--trim-adapters",
-            help="Remove adapters from raw fastq files <bool> (default: True)",
-            type=bool,
-            default=True,
-            metavar="",
+            "--not-trim-adapters",
+            help="Do not remove adapters from raw fastq files <bool> (default: False)",
+            action="store_true",
         )
         parser.add_argument(
             "-TF",
@@ -752,7 +751,7 @@ The most commonly used git commands are:
         repo_rip_config.update((k, v) for k, v in user_rip_config.items())
 
         sample_args = vars(args)
-
+        print(sample_args)
         sample_config = {k: v for k, v in repo_rip_config.items()}
         sample_config.update((k, v) for k, v in sample_args.items())
 
@@ -856,6 +855,11 @@ The most commonly used git commands are:
             sample_config["sample_output_dir"]
             + "/fastq_inputs/meta/{sample}.size".format(sample=sample_config["sample_prefix"])
         ]
+
+        if sample_config["not_trim_adapters"]:
+            sample_config["trim_adapters"] = False
+        else:
+            sample_config["trim_adapters"] = True
 
         data_preprocessing = ""
         if sample_config["trim_adapters"]:

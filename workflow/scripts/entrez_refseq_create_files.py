@@ -60,13 +60,15 @@ def entrez_refseq_create_files(
     ].copy()
     genbank_filtered.loc[:, "Chromosome GenBank"] = genbank_filtered["Chromosome GenBank"].str.split(",")
     genbank_exploded = genbank_filtered.explode("Chromosome GenBank")
-
+    genbank_exploded = genbank_exploded[~genbank_exploded["#Species/genus"].duplicated()]
+    
     nuccore_filtered = nuccore[
         (~nuccore["#Species/genus"].isin(assemblies["#Species/genus"]))
         & (~nuccore["#Species/genus"].isin(genbank_filtered["#Species/genus"]))
     ].copy()
     nuccore_filtered.loc[:, "Chromosome RefSeq"] = nuccore_filtered["Chromosome RefSeq"].str.split(",")
     nuccore_exploded = nuccore_filtered.explode("Chromosome RefSeq")
+    nuccore_exploded = nuccore_exploded[~nuccore_exploded["#Species/genus"].duplicated()]
 
     assemblies_filtered = assemblies[
         (~assemblies["#Species/genus"].isin(nuccore_filtered["#Species/genus"]))
@@ -74,6 +76,7 @@ def entrez_refseq_create_files(
     ]
     assemblies_filtered.loc[:, "WGS"] = assemblies_filtered["WGS"].str.split(",")
     assemblies_exploded = assemblies_filtered.explode("WGS")
+    assemblies_exploded = assemblies_exploded[~assemblies_exploded["#Species/genus"].duplicated()]
 
     nuccore_plasmids = prok_refseq_rep_rmdup[
         prok_refseq_rep_rmdup["Plasmid RefSeq"].notna() & prok_refseq_rep_rmdup["WGS"].isna()

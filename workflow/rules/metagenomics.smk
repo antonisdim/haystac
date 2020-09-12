@@ -59,8 +59,6 @@ def get_ts_tv_count_paths(wildcards):
         config["sequences"],
         config["accessions"],
         config["genera"],
-        config["accessions"],
-        config["sequences"],
     )
 
     inputs = []
@@ -160,7 +158,7 @@ rule coverage_t_test:
             "benchmarks/coverage_t_test_{sample}_{orgname}_{accession}_{reads}.benchmark.txt", 1,
         )
     message:
-        "Performing a T-Test to assess whether if reads from sample {wildcards.sample} represent "
+        "Performing a T-Test to assess if reads from sample {wildcards.sample} represent "
         "a random genome sample of taxon {wildcards.orgname} {MESSAGE_SUFFIX}"
     conda:
         "../envs/maths.yaml"
@@ -182,8 +180,6 @@ def get_t_test_values_paths(wildcards):
         config["sequences"],
         config["accessions"],
         config["genera"],
-        config["accessions"],
-        config["sequences"],
     )
 
     inputs = []
