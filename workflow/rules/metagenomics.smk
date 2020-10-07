@@ -130,7 +130,7 @@ rule calculate_taxa_probabilities:
         config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_probability_model_params.json",
         config["sample_output_dir"] + "/fastq_inputs/meta/{sample}.size",
     output:
-        config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_posterior_probabilities.csv",
+        config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_posterior_probabilities.tsv",
     log:
         config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_posterior_probabilities.log",
     benchmark:

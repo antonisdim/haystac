@@ -34,8 +34,6 @@ def get_total_fasta_paths(wildcards):
         config["sequences"],
         config["accessions"],
         config["genera"],
-        config["accessions"],
-        config["sequences"],
     )
 
     inputs = []

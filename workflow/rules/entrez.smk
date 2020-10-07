@@ -153,6 +153,8 @@ def get_rsync_url(wildcards):
             return ""
     except RuntimeError:
         return ""
+    except TypeError: #sometimes NCBI returns a None type url, but the URL does exist if I do it independently
+        get_rsync_url(wildcards)
 
 
 rule entrez_download_sequence:

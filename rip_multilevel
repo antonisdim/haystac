@@ -336,9 +336,7 @@ The most commonly used git commands are:
             "--mtDNA",
             help="Download mitochondrial genomes for eukaryotes only. "
             "Do not use with --refseq-rep or any queries for prokaryotes (default: False)",
-            type=bool,
-            default=False,
-            metavar="",
+            action="store_true",
         )
         parser.add_argument(
             "-q",
@@ -469,6 +467,10 @@ The most commonly used git commands are:
         database_config = {k: v for k, v in repo_rip_config.items()}
         database_config.update((k, v) for k, v in database_args.items())
 
+        if database_config["refseq_rep"] is False and database_config["query"] is None and database_config["query_file"] is None and database_config["accessions"] is None and database_config["sequences"] is None:
+            raise RuntimeError("Please specify where RIP should get the database sequences from "
+                               "(query, RefSeq Rep, custom accessions or custom seqeunces")
+
         if database_config["mtDNA"] and database_config["refseq_rep"]:
             raise RuntimeError(
                 "These flags are mutually exclusive. Either pick refseq-rep for prokaryotic "
@@ -582,7 +584,8 @@ The most commonly used git commands are:
                     yaml.safe_dump(database_config, outfile, default_flow_style=False)
 
         database_config["workflow_dir"] = os.path.join(thisdir, "workflow")
-
+        database_config["mtDNA"] = str(database_config["mtDNA"]).lower()
+        
         user_options = {k: v for k, v in database_args.items() if (k, v) not in repo_rip_config.items()}
         # print(database_config)
 
@@ -629,7 +632,7 @@ The most commonly used git commands are:
         # translate "success" into shell exit code of 0
         return 0 if status else 1
 
-    @property
+
     def sample(self):
         # NOT prefixing the argument with -- means it's not optional
         parser = argparse.ArgumentParser(description="Prepare a sample for analysis")

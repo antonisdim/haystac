@@ -88,9 +88,9 @@ def calculate_probabilities(
 
     mismatch_df["Posterior"] = np.nan
 
-    mismatch_df["Read.Count"] = read_count
+    mismatch_df["Read_Count"] = read_count
 
-    mismatch_df["Total.Reads"] = total_fastq_reads
+    mismatch_df["Total_Reads"] = total_fastq_reads
 
     mismatch_df["Submatrix"] = submatrix
 

@@ -75,12 +75,12 @@ def calculate_dirichlet_abundances(ts_tv_file, pvaluesfile, total_fastq_reads, s
 
     posterior_abundance.rename(columns={"Dirichlet_Assignment": "Mean_Posterior_Abundance"}, inplace=True)
 
-    posterior_abundance["95.CI.lower"] = np.nan
-    posterior_abundance["95.CI.upper"] = np.nan
-    posterior_abundance["Minimum.Read.Num"] = np.nan
-    posterior_abundance["Maximum.Read.Num"] = np.nan
-    posterior_abundance["Dirichlet.Read.Num"] = np.nan
-    posterior_abundance["Fisher.Exact.Pvalue"] = np.nan
+    posterior_abundance["95_CI_lower"] = np.nan
+    posterior_abundance["95_CI_upper"] = np.nan
+    posterior_abundance["Minimum_Read_Num"] = np.nan
+    posterior_abundance["Maximum_Read_Num"] = np.nan
+    posterior_abundance["Dirichlet_Read_Num"] = np.nan
+    posterior_abundance["Fisher_Exact_Pvalue"] = np.nan
 
     print(t_test_vector.index, file=sys.stderr)
 
