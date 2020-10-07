@@ -854,6 +854,10 @@ The most commonly used git commands are:
                     prefix=sample_config["sample_output_dir"], accession=sample_config["sra"],
                 )
 
+        if sample_config["fastq"] and sample_config["collapse"]:
+            raise(RuntimeError("You cannot collapse SE reads. Please delete the --collapse flag from your command, "
+                               "or provide a different set of input files."))
+        
         target_list = [
             sample_config["sample_output_dir"]
             + "/fastq_inputs/meta/{sample}.size".format(sample=sample_config["sample_prefix"])
