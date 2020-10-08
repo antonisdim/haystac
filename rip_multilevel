@@ -182,7 +182,7 @@ class Rip(object):
             description="RIP program for metagenomic profiling and species identification",
             usage="""rip <command> [<args>]
 
-The most commonly used git commands are:
+The rip modules are the following:
    config             Advanced configuration options for rip
    database           Build a database for rip
    sample             Prepare sample for analysis
