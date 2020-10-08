@@ -4,7 +4,7 @@ with open('README.md', 'r') as f:
     long_description = f.read()
 
 setuptools.setup(
-    name='haystack',
+    name='rip_multilevel',
     version='0.1',
     scripts=['rip_multilevel'],
     authos="Evangelos A. Dimopoulos, Evan K. Irving-Pease",
