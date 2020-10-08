@@ -83,6 +83,14 @@ def interactive_config_input():
         "Press enter if you'd like to use the default value: "
     ) or float(2.5)
 
+    use_conda = (
+        input(
+            "Enter your preference about using conda as a package manager. "
+            "Press enter if you'd like to use the default value: "
+        )
+        or True
+    )
+
     genome_cache = genome_cache.rstrip("/")
 
     if os.path.exists(genome_cache):
@@ -105,6 +113,7 @@ def interactive_config_input():
         "mismatch_probability": float(mismatch_probability),
         "bowtie2_threads": int(bowtie2_threads),
         "bowtie2_scaling": float(bowtie2_scaling),
+        "use_conda": use_conda,
     }
 
     check_config_arguments(user_data)
@@ -174,6 +183,21 @@ def check_config_arguments(args):
             raise RuntimeError(
                 "Please provide a positive float for the bowtie2 scaling factor."
             )
+
+    if args["use_conda"]:
+        if args["use_conda"] not in ["True", "False"]:
+            raise RuntimeError("Please either spcify True or False for using conda.")
+
+
+def str2bool(v):
+    if isinstance(v, bool):
+        return v
+    if v.lower() in ("True", "true"):
+        return True
+    elif v.lower() in ("False", "false"):
+        return False
+    else:
+        raise argparse.ArgumentTypeError("Boolean value expected.")
 
 
 class Rip(object):
@@ -256,6 +280,15 @@ The rip modules are the following:
             help="Factor to rescale/chunk the input file for the mutlifasta "
             "index for the filtering alignment (default: 2.5)",
             type=float,
+            metavar="",
+        )
+
+        parser.add_argument(
+            "-cn",
+            "--use-conda",
+            help="Use conda as a package manger for RIP (default: True)",
+            type=str2bool,
+            default=True,
             metavar="",
         )
 
@@ -714,7 +747,7 @@ The rip modules are the following:
             unlock=args.unlock,
             show_failed_logs=args.debug,
             resources={"entrez_api": MAX_ENTREZ_REQUESTS},
-            use_conda=False,
+            use_conda=database_config["use_conda"],
         )
 
         # translate "success" into shell exit code of 0
@@ -1092,7 +1125,7 @@ The rip modules are the following:
             unlock=args.unlock,
             show_failed_logs=args.debug,
             resources={"entrez_api": MAX_ENTREZ_REQUESTS},
-            use_conda=False,
+            use_conda=sample_config["use_conda"],
         )
 
         # translate "success" into shell exit code of 0
@@ -1451,7 +1484,7 @@ The rip modules are the following:
             unlock=args.unlock,
             show_failed_logs=args.debug,
             resources={"entrez_api": MAX_ENTREZ_REQUESTS},
-            use_conda=False,
+            use_conda=analysis_config["use_conda"],
         )
 
         # translate "success" into shell exit code of 0

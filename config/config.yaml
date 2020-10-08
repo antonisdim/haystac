@@ -60,3 +60,6 @@ unlock:
 debug:
   False
 snakemake:
+
+use_conda:
+  True
