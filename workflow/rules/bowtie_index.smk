@@ -60,7 +60,7 @@ rule random_db_paths:
     output:
         config["db_output"] + "/bowtie/bt2_random_fasta_paths.txt",
     params:
-        seed=config['seed']
+        seed=config["seed"],
     message:
         "The database genomes are being placed in a random order {MESSAGE_SUFFIX}"
     conda:

@@ -43,7 +43,11 @@ def coverage_t_test(bam, taxon_fasta_idx, taxon, outfile):
 
 
 def genome_sizes(taxon_fasta_idx):
-    faidx = pd.read_csv(taxon_fasta_idx, sep="\t", names=["Name", "Length", "Offset", "Linebases", "Linewidth"],)
+    faidx = pd.read_csv(
+        taxon_fasta_idx,
+        sep="\t",
+        names=["Name", "Length", "Offset", "Linebases", "Linewidth"],
+    )
 
     taxon_seq_len = faidx["Length"].sum()
 

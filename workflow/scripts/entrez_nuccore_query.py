@@ -68,7 +68,9 @@ def entrez_nuccore_query(input_file, config, query_chunk_num, output_file, attem
     else:
         accessions = [accessions_df.squeeze()]
 
-    entrez_query_list = next(itertools.islice(chunker(accessions, CHUNK_SIZE), int(query_chunk_num), None))
+    entrez_query_list = next(
+        itertools.islice(chunker(accessions, CHUNK_SIZE), int(query_chunk_num), None)
+    )
     entrez_query_list = [acc + "[Accession]" for acc in entrez_query_list]
 
     entrez_query = " OR ".join(entrez_query_list)
@@ -77,7 +79,8 @@ def entrez_nuccore_query(input_file, config, query_chunk_num, output_file, attem
 
     # get list of entries for given query
     print(
-        "Getting list of Accessions for term={} ...\n".format(entrez_query), file=sys.stderr,
+        "Getting list of Accessions for term={} ...\n".format(entrez_query),
+        file=sys.stderr,
     )
 
     retmax = config["batchsize"]
@@ -115,29 +118,43 @@ def entrez_nuccore_query(input_file, config, query_chunk_num, output_file, attem
             if counter == 0:
                 resultset = int(handle_reader["Count"])
                 total_records = resultset
-                print("Total number of sequences {}\n".format(resultset), file=sys.stderr)
+                print(
+                    "Total number of sequences {}\n".format(resultset), file=sys.stderr
+                )
             else:
                 print(
-                    "Remaining sequences to be downloaded {}\n".format(resultset), file=sys.stderr,
+                    "Remaining sequences to be downloaded {}\n".format(resultset),
+                    file=sys.stderr,
                 )
 
             if not accessions:
                 # stop iterating when we get an empty resultset
                 if dictwriter_counter == total_records:
                     print(
-                        "A total of {} records have been saved successfully.\n".format(total_records), file=sys.stderr,
+                        "A total of {} records have been saved successfully.\n".format(
+                            total_records
+                        ),
+                        file=sys.stderr,
                     )
                 else:
                     print("dictwriter_counter\t", dictwriter_counter, file=sys.stderr)
                     print("total_records\t", total_records, file=sys.stderr)
                     raise RuntimeError(
                         "A total of {} records have been saved successfully. Please check the relevant "
-                        "log file to see which ones failed.\n".format(dictwriter_counter)
+                        "log file to see which ones failed.\n".format(
+                            dictwriter_counter
+                        )
                     )
                 break
 
             try:
-                records = guts_of_entrez(ENTREZ_DB_NUCCORE, ENTREZ_RETMODE_XML, ENTREZ_RETTYPE_GB, accessions, retmax,)
+                records = guts_of_entrez(
+                    ENTREZ_DB_NUCCORE,
+                    ENTREZ_RETMODE_XML,
+                    ENTREZ_RETTYPE_GB,
+                    accessions,
+                    retmax,
+                )
                 for node in records:
                     # print(node)
 
@@ -164,13 +181,16 @@ def entrez_nuccore_query(input_file, config, query_chunk_num, output_file, attem
 
                 if attempt > MAX_RETRY_ATTEMPTS:
                     print(
-                        "Exceeded maximum attempts {}...".format(attempt), file=sys.stderr,
+                        "Exceeded maximum attempts {}...".format(attempt),
+                        file=sys.stderr,
                     )
                     return None
                 else:
                     time.sleep(TOO_MANY_REQUESTS_WAIT)
                     print("Starting attempt {}...".format(attempt), file=sys.stderr)
-                    entrez_nuccore_query(input_file, config, query_chunk_num, output_file, attempt=1)
+                    entrez_nuccore_query(
+                        input_file, config, query_chunk_num, output_file, attempt=1
+                    )
 
         print("COMPLETE", file=sys.stderr)
 

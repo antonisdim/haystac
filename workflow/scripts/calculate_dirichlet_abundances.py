@@ -16,14 +16,22 @@ from scipy.stats import hmean
 import os
 
 
-def calculate_dirichlet_abundances(ts_tv_file, pvaluesfile, total_fastq_reads, sample_abundance):
+def calculate_dirichlet_abundances(
+    ts_tv_file, pvaluesfile, total_fastq_reads, sample_abundance
+):
     """
     Function that calculates the mean posterior abundances of species in metagenomic samples/libraries.
     """
 
-    assert os.stat(ts_tv_file).st_size, "The ts_tv count file is empty {}".format(ts_tv_file)
-    assert os.stat(pvaluesfile).st_size, "The t-test p values file is empty {}".format(pvaluesfile)
-    assert os.stat(total_fastq_reads).st_size, "The total fastq reads file is empty {}".format(total_fastq_reads)
+    assert os.stat(ts_tv_file).st_size, "The ts_tv count file is empty {}".format(
+        ts_tv_file
+    )
+    assert os.stat(pvaluesfile).st_size, "The t-test p values file is empty {}".format(
+        pvaluesfile
+    )
+    assert os.stat(
+        total_fastq_reads
+    ).st_size, "The total fastq reads file is empty {}".format(total_fastq_reads)
 
     # I calculate the coverage of each taxon from reads in its bam/pileup file. Let's go there
 
@@ -38,7 +46,9 @@ def calculate_dirichlet_abundances(ts_tv_file, pvaluesfile, total_fastq_reads, s
     t_test_vector["Dark_Matter"] = np.nan
     t_test_vector["Grey_Matter"] = np.nan
 
-    ts_tv_matrix = pd.read_csv(ts_tv_file, sep=",", usecols=["Taxon", "Read_ID", "Dirichlet_Assignment"])
+    ts_tv_matrix = pd.read_csv(
+        ts_tv_file, sep=",", usecols=["Taxon", "Read_ID", "Dirichlet_Assignment"]
+    )
 
     # Sum the Dirichlet Assignments per taxon and calculate the Dark Matter reads
     #     from the Dirichlet Assignment column
@@ -49,7 +59,7 @@ def calculate_dirichlet_abundances(ts_tv_file, pvaluesfile, total_fastq_reads, s
     if len(ts_tv_matrix.Taxon.unique()) > 1:
         a = ts_tv_matrix.groupby("Taxon").sum().squeeze().astype(float)
     else:
-        a = ts_tv_matrix.groupby("Taxon").sum().iloc[:,0].astype(float)
+        a = ts_tv_matrix.groupby("Taxon").sum().iloc[:, 0].astype(float)
     a.loc["Grey_Matter"] = grey_matter.sum()
 
     # Add the non aligned filtered reads count in the Dark Matter category
@@ -73,7 +83,9 @@ def calculate_dirichlet_abundances(ts_tv_file, pvaluesfile, total_fastq_reads, s
 
     posterior_abundance = posterior_abundance_mean.to_frame().reset_index()
 
-    posterior_abundance.rename(columns={"Dirichlet_Assignment": "Mean_Posterior_Abundance"}, inplace=True)
+    posterior_abundance.rename(
+        columns={"Dirichlet_Assignment": "Mean_Posterior_Abundance"}, inplace=True
+    )
 
     posterior_abundance["95_CI_lower"] = np.nan
     posterior_abundance["95_CI_upper"] = np.nan
@@ -98,12 +110,16 @@ def calculate_dirichlet_abundances(ts_tv_file, pvaluesfile, total_fastq_reads, s
         posterior_abundance.iloc[idx, 4] = round(ci[0] * b)
         posterior_abundance.iloc[idx, 5] = round(ci[1] * b)
         posterior_abundance.iloc[idx, 6] = a.loc[posterior_abundance.iloc[idx, 0]]
-        posterior_abundance.iloc[idx, 7] = t_test_vector.loc[posterior_abundance.iloc[idx, 0]]
+        posterior_abundance.iloc[idx, 7] = t_test_vector.loc[
+            posterior_abundance.iloc[idx, 0]
+        ]
 
     # Write the file into a file. Don't need to return anything. Back to anns_pipeline
 
     with open(sample_abundance, "w") as output_handle:
-        posterior_abundance.to_csv(path_or_buf=output_handle, sep="\t", index=False, header=True)
+        posterior_abundance.to_csv(
+            path_or_buf=output_handle, sep="\t", index=False, header=True
+        )
 
 
 if __name__ == "__main__":

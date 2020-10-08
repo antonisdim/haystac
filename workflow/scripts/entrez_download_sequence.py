@@ -39,13 +39,19 @@ VERBOSE_OUTPUT = False
 def get_assembly_acc_from_wgs_acc(accession):
     """Get a valid NCBI (NOT GENBANK) assembly accession from its WGS project accession."""
 
-    handle = Entrez.esearch(db=ENTREZ_DB_ASSEMBLY, term=accession + ' AND "latest refseq"[filter]')
+    handle = Entrez.esearch(
+        db=ENTREZ_DB_ASSEMBLY, term=accession + ' AND "latest refseq"[filter]'
+    )
     # or handle = Entrez.esearch(db=ENTREZ_DB_ASSEMBLY,
     # term=accession + ' AND ((latest[filter] OR "latest refseq"[filter])')
     assembly_record = Entrez.read(handle)
-    esummary_handle = Entrez.esummary(db=ENTREZ_DB_ASSEMBLY, id=assembly_record["IdList"], report="full")
+    esummary_handle = Entrez.esummary(
+        db=ENTREZ_DB_ASSEMBLY, id=assembly_record["IdList"], report="full"
+    )
     esummary_record = Entrez.read(esummary_handle, validate=False)
-    accession_id = esummary_record["DocumentSummarySet"]["DocumentSummary"][0]["AssemblyAccession"]
+    accession_id = esummary_record["DocumentSummarySet"]["DocumentSummary"][0][
+        "AssemblyAccession"
+    ]
 
     return accession_id
 
@@ -65,11 +71,17 @@ def entrez_download_sequence(accession, email, output_file, attempt=1):
     #         Entrez.esearch(db=ENTREZ_DB_NUCCORE, term=assembly_acc)
     #     )["IdList"]
     # else:
-    nuccore_id = Entrez.read(Entrez.esearch(db=ENTREZ_DB_NUCCORE, term=accession))["IdList"]
+    nuccore_id = Entrez.read(Entrez.esearch(db=ENTREZ_DB_NUCCORE, term=accession))[
+        "IdList"
+    ]
 
     try:
         records = guts_of_entrez(
-            ENTREZ_DB_NUCCORE, ENTREZ_RETMODE_TEXT, ENTREZ_RETTYPE_FASTA, nuccore_id, batch_size=1,
+            ENTREZ_DB_NUCCORE,
+            ENTREZ_RETMODE_TEXT,
+            ENTREZ_RETTYPE_FASTA,
+            nuccore_id,
+            batch_size=1,
         )
 
         if all(
@@ -77,24 +89,40 @@ def entrez_download_sequence(accession, email, output_file, attempt=1):
             for elem in [
                 fa
                 for fa in guts_of_entrez(
-                    ENTREZ_DB_NUCCORE, ENTREZ_RETMODE_TEXT, ENTREZ_RETTYPE_FASTA, nuccore_id, batch_size=1,
+                    ENTREZ_DB_NUCCORE,
+                    ENTREZ_RETMODE_TEXT,
+                    ENTREZ_RETTYPE_FASTA,
+                    nuccore_id,
+                    batch_size=1,
                 )
             ]
         ):
             print(
                 "The accession {} is a master record for an WGS project. "
                 "That means that this record is empty in nuccore. "
-                "Going to the assembly database to fetch the assembly for this taxon.".format(accession),
+                "Going to the assembly database to fetch the assembly for this taxon.".format(
+                    accession
+                ),
                 file=sys.stderr,
             )
             xml_records = guts_of_entrez(
-                ENTREZ_DB_NUCCORE, ENTREZ_RETMODE_XML, ENTREZ_RETTYPE_GB, nuccore_id, batch_size=1,
+                ENTREZ_DB_NUCCORE,
+                ENTREZ_RETMODE_XML,
+                ENTREZ_RETTYPE_GB,
+                nuccore_id,
+                batch_size=1,
             )
             xml_list = [xml for xml in xml_records]
             assembly_id = xml_list[0]["GBSeq_xrefs"][2]["GBXref_id"]
-            new_nuccore_id = Entrez.read(Entrez.esearch(db=ENTREZ_DB_NUCCORE, term=assembly_id))["IdList"]
+            new_nuccore_id = Entrez.read(
+                Entrez.esearch(db=ENTREZ_DB_NUCCORE, term=assembly_id)
+            )["IdList"]
             records = guts_of_entrez(
-                ENTREZ_DB_NUCCORE, ENTREZ_RETMODE_TEXT, ENTREZ_RETTYPE_FASTA, new_nuccore_id, batch_size=1,
+                ENTREZ_DB_NUCCORE,
+                ENTREZ_RETMODE_TEXT,
+                ENTREZ_RETTYPE_FASTA,
+                new_nuccore_id,
+                batch_size=1,
             )
 
         with bgzf.open(output_file, "wt") as fout:
@@ -107,14 +135,18 @@ def entrez_download_sequence(accession, email, output_file, attempt=1):
             attempt += 1
 
             if attempt > MAX_RETRY_ATTEMPTS:
-                print("Exceeded maximum attempts {}...".format(attempt), file=sys.stderr)
+                print(
+                    "Exceeded maximum attempts {}...".format(attempt), file=sys.stderr
+                )
                 return None
             else:
                 time.sleep(TOO_MANY_REQUESTS_WAIT)
                 entrez_download_sequence(accession, email, output_file, attempt)
 
         else:
-            raise RuntimeError("There was a urllib.error.HTTPError with code {}".format(e))
+            raise RuntimeError(
+                "There was a urllib.error.HTTPError with code {}".format(e)
+            )
 
 
 if __name__ == "__main__":

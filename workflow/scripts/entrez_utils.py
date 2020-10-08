@@ -41,7 +41,12 @@ def chunker(seq, size):
 def entrez_efetch(db, retmode, rettype, webenv, query_key, attempt=1):
     try:
         return Entrez.efetch(
-            db=db, retmode=retmode, rettype=rettype, retmax=ENTREZ_RETMAX, webenv=webenv, query_key=query_key,
+            db=db,
+            retmode=retmode,
+            rettype=rettype,
+            retmax=ENTREZ_RETMAX,
+            webenv=webenv,
+            query_key=query_key,
         )
 
     except http.client.HTTPException as e:
@@ -88,11 +93,17 @@ def guts_of_entrez(db, retmode, rettype, chunk, batch_size):
     now = datetime.ctime(datetime.now())
     print("\t{} for a batch of {} records \n".format(now, len(chunk)), file=sys.stderr)
 
-    handle = entrez_efetch(db, retmode, rettype, search_results["WebEnv"], search_results["QueryKey"])
+    handle = entrez_efetch(
+        db, retmode, rettype, search_results["WebEnv"], search_results["QueryKey"]
+    )
 
     # print("got the handle", file=sys.stderr)
     if not handle:
-        raise RuntimeError("The records from the following accessions could not be fetched: {}".format(",".join(chunk)))
+        raise RuntimeError(
+            "The records from the following accessions could not be fetched: {}".format(
+                ",".join(chunk)
+            )
+        )
 
     try:
         if retmode == ENTREZ_RETMODE_TEXT:
@@ -125,5 +136,8 @@ def guts_of_entrez(db, retmode, rettype, chunk, batch_size):
                 socket.error,
             ):
                 print(
-                    "Discarding this accession as it is a bad record {}.".format(accession), file=sys.stderr,
+                    "Discarding this accession as it is a bad record {}.".format(
+                        accession
+                    ),
+                    file=sys.stderr,
                 )

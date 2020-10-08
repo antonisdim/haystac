@@ -80,7 +80,8 @@ def get_idx_entrez(wildcards):
             config["genome_cache_folder"] + "/{orgname}/{accession}.1.bt2l".format(orgname=orgname, accession=accession)
         )
         inputs.append(
-            config["genome_cache_folder"] + "/{orgname}/{accession}.fasta.gz.fai".format(orgname=orgname, accession=accession)
+            config["genome_cache_folder"]
+            + "/{orgname}/{accession}.fasta.gz.fai".format(orgname=orgname, accession=accession)
         )
 
     return inputs
@@ -113,7 +114,8 @@ def get_idx_ref_gen(wildcards):
             config["genome_cache_folder"] + "/{orgname}/{accession}.1.bt2l".format(orgname=orgname, accession=accession)
         )
         inputs.append(
-            config["genome_cache_folder"] + "/{orgname}/{accession}.fasta.gz.fai".format(orgname=orgname, accession=accession)
+            config["genome_cache_folder"]
+            + "/{orgname}/{accession}.fasta.gz.fai".format(orgname=orgname, accession=accession)
         )
 
     return inputs
@@ -150,7 +152,8 @@ def get_idx_assembly(wildcards):
             config["genome_cache_folder"] + "/{orgname}/{accession}.1.bt2l".format(orgname=orgname, accession=accession)
         )
         inputs.append(
-            config["genome_cache_folder"] + "/{orgname}/{accession}.fasta.gz.fai".format(orgname=orgname, accession=accession)
+            config["genome_cache_folder"]
+            + "/{orgname}/{accession}.fasta.gz.fai".format(orgname=orgname, accession=accession)
         )
 
     return inputs
@@ -181,7 +184,8 @@ def get_idx_custom_seqs():
             + "/{orgname}/custom_seq-{accession}.1.bt2l".format(orgname=orgname, accession=accession)
         )
         inputs.append(
-            config["genome_cache_folder"] + "/{orgname}/custom_seq-{accession}.fasta.gz.fai".format(orgname=orgname, accession=accession)
+            config["genome_cache_folder"]
+            + "/{orgname}/custom_seq-{accession}.fasta.gz.fai".format(orgname=orgname, accession=accession)
         )
 
     return inputs
@@ -209,7 +213,8 @@ def get_idx_custom_acc():
             config["genome_cache_folder"] + "/{orgname}/{accession}.1.bt2l".format(orgname=orgname, accession=accession)
         )
         inputs.append(
-            config["genome_cache_folder"] + "/{orgname}/{accession}.fasta.gz.fai".format(orgname=orgname, accession=accession)
+            config["genome_cache_folder"]
+            + "/{orgname}/{accession}.fasta.gz.fai".format(orgname=orgname, accession=accession)
         )
 
     return inputs

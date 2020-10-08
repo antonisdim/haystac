@@ -21,9 +21,13 @@ rule dedup_merged_mapdamage:
     input:
         bam=config["analysis_output_dir"] + "/dirichlet_reads/{sample}/{orgname}/{orgname}_{accession}_dirichlet_{reads}.bam",
     log:
-        config["analysis_output_dir"] + "/rmdup_bam/{sample}/{reads}/{orgname}/{orgname}_{accession}_dirichlet_{reads}_rmdup.log",
+        config[
+            "analysis_output_dir"
+        ] + "/rmdup_bam/{sample}/{reads}/{orgname}/{orgname}_{accession}_dirichlet_{reads}_rmdup.log",
     output:
-        config["analysis_output_dir"] + "/rmdup_bam/{sample}/{reads}/{orgname}/{orgname}_{accession}_dirichlet_{reads}_rmdup.bam",
+        config[
+            "analysis_output_dir"
+        ] + "/rmdup_bam/{sample}/{reads}/{orgname}/{orgname}_{accession}_dirichlet_{reads}_rmdup.bam",
     benchmark:
         repeat(
             "benchmarks/dedup_merged_{sample}_{reads}_{orgname}_{accession}.benchmark.txt", 1,
@@ -41,7 +45,10 @@ rule dedup_merged_mapdamage:
 
 rule run_mapdamage:
     input:
-        bam=config["analysis_output_dir"] + "/rmdup_bam/{sample}/{reads}/{orgname}/{orgname}_{accession}_dirichlet_{reads}_rmdup.bam",
+        bam=(
+            config["analysis_output_dir"]
+            + "/rmdup_bam/{sample}/{reads}/{orgname}/{orgname}_{accession}_dirichlet_{reads}_rmdup.bam"
+        ),
         ref_genome=config["genome_cache_folder"] + "/{orgname}/{accession}.fasta.gz",
     log:
         config["analysis_output_dir"] + "/mapdamage/{sample}/{reads}/{orgname}_{accession}.log",
