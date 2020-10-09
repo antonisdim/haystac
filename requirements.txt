@@ -1,0 +1,4 @@
+snakemake
+argcomplete
+argparse
+biopython
