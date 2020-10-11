@@ -1,2 +1,2 @@
-recursive-include workflow *
-recursive-include config *
+recursive-include haystack/workflow *
+recursive-include haystack/config *
