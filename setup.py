@@ -1,7 +1,7 @@
 import setuptools
 from glob import glob
 
-from haystack import __version__, _program
+from haystack.workflow import __version__, _program
 
 with open('README.md', 'r') as f:
     long_description = f.read()
