@@ -1,0 +1,2 @@
+recursive-include workflow *
+recursive-include config *
