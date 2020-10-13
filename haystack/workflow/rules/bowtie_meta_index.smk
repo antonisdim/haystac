@@ -73,7 +73,7 @@ def get_idx_entrez(wildcards):
 
     for key, seq in sequences.iterrows():
         orgname, accession = (
-            seq["species"].replace(" ", "_").replace("[", "").replace("]", ""),
+            normalise_name(seq["species"]),
             seq["GBSeq_accession-version"],
         )
         inputs.append(
@@ -107,7 +107,7 @@ def get_idx_ref_gen(wildcards):
 
     for key, seq in sequences.iterrows():
         orgname, accession = (
-            seq["species"].replace(" ", "_").replace("[", "").replace("]", ""),
+            normalise_name(seq["species"]),
             seq["GBSeq_accession-version"],
         )
         inputs.append(
@@ -145,7 +145,7 @@ def get_idx_assembly(wildcards):
 
     for key, seq in sequences.iterrows():
         orgname, accession = (
-            seq["species"].replace(" ", "_").replace("[", "").replace("]", ""),
+            normalise_name(seq["species"]),
             seq["GBSeq_accession-version"],
         )
         inputs.append(
@@ -176,7 +176,7 @@ def get_idx_custom_seqs():
 
     for key, seq in sequences.iterrows():
         orgname, accession = (
-            seq["species"].replace(" ", "_").replace("[", "").replace("]", ""),
+            normalise_name(seq["species"]),
             seq["accession"],
         )
         inputs.append(
@@ -206,7 +206,7 @@ def get_idx_custom_acc():
 
     for key, seq in sequences.iterrows():
         orgname, accession = (
-            seq["species"].replace(" ", "_").replace("[", "").replace("]", ""),
+            normalise_name(seq["species"]),
             seq["accession"],
         )
         inputs.append(

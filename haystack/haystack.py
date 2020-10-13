@@ -76,12 +76,12 @@ def interactive_config_input():
     bowtie2_threads = input(
         "Enter your preferred number of threads that bowtie2 can use. "
         "Press enter if you'd like to use the default value: "
-    ) or int(1)
+    ) or int(5)
 
     bowtie2_scaling = input(
         "Enter your preferred scaling factor for the size of the bowtie2 index chunks. "
         "Press enter if you'd like to use the default value: "
-    ) or float(2.5)
+    ) or float(15)
 
     use_conda = (
         input(
@@ -107,7 +107,7 @@ def interactive_config_input():
             )
 
     user_data = {
-        "genome_cache_folder": genome_cache,
+        "genome_cache_folder": os.path.abspath(genome_cache),
         "email": entrez_email,
         "batchsize": int(batchsize),
         "mismatch_probability": float(mismatch_probability),
@@ -186,7 +186,7 @@ def check_config_arguments(args):
 
     if args["use_conda"]:
         if args["use_conda"] not in ["True", "False"]:
-            raise RuntimeError("Please either spcify True or False for using conda.")
+            raise RuntimeError("Please either specify True or False for using conda.")
 
 
 def str2bool(v):
@@ -206,7 +206,7 @@ class Rip(object):
             description="RIP program for metagenomic profiling and species identification",
             usage="""rip <command> [<args>]
 
-The rip modules are the following:
+The haystack modules are the following:
    config             Advanced configuration options for rip
    database           Build a database for rip
    sample             Prepare sample for analysis
@@ -313,17 +313,17 @@ The rip modules are the following:
                 "The config file in the code file directory is missing. Please reinstall the package."
             )
 
-        user_rip_config = os.path.join(str(Path.home()), ".rip", "config.yaml")
+        user_rip_config = os.path.join(str(Path.home()), ".haystack", "config.yaml")
 
-        if not os.path.exists(os.path.join(str(Path.home()), ".rip")):
-            os.makedirs(os.path.join(str(Path.home()), ".rip"), exist_ok=True)
+        if not os.path.exists(os.path.join(str(Path.home()), ".haystack")):
+            os.makedirs(os.path.join(str(Path.home()), ".haystack"), exist_ok=True)
 
         if not os.path.exists(user_rip_config):
             if len(sys.argv) > 2:
                 raise RuntimeError(
-                    "You haven not configured rip yet. "
+                    "You haven not configured haystack yet. "
                     "You need to do this for all options at least once."
-                    "Please first run the command `rip config` and follow the instructions, "
+                    "Please first run the command `haystack config` and follow the instructions, "
                     "before configuring any individual options."
                 )
             user_config = interactive_config_input()
@@ -583,6 +583,8 @@ The rip modules are the following:
                     "The query file you provided was empty. Please provide a file with a valid query."
                 )
 
+        database_config["db_output"] = os.path.abspath(database_config["db_output"])
+
         if database_config["db_output"]:
             if os.path.exists(database_config["db_output"]):
                 if not os.access(database_config["db_output"], os.W_OK):
@@ -604,18 +606,7 @@ The rip modules are the following:
                 "Please provide a valid directory path for the database outputs. "
                 "If the directory does not exist, do not worry the method will create it."
             )
-        elif database_config["db_output"] == "./":
-            database_config["db_output"] = os.getcwd()
-        elif "./" in database_config["db_output"]:
-            database_config["db_output"] = os.path.join(
-                os.getcwd(),
-                database_config["db_output"].rstrip("/").lstrip(".").lstrip("/"),
-            )
-        else:
-            database_config["db_output"] = os.path.join(
-                str(Path.home()),
-                database_config["db_output"].rstrip("/").lstrip(".").lstrip("/"),
-            )
+
         target_list = []
 
         if database_config["mode"] == "fetch":
@@ -893,6 +884,8 @@ The rip modules are the following:
         sample_config = {k: v for k, v in repo_rip_config.items()}
         sample_config.update((k, v) for k, v in sample_args.items())
 
+        sample_config["sample_output_dir"] = os.path.abspath(sample_config["sample_output_dir"])
+
         if sample_config["sample_output_dir"]:
             if os.path.exists(sample_config["sample_output_dir"]):
                 if not os.access(sample_config["sample_output_dir"], os.W_OK):
@@ -918,18 +911,6 @@ The rip modules are the following:
             raise RuntimeError(
                 "Please provide a valid directory path for the sample related outputs. "
                 "If the directory does not exist, do not worry the method will create it."
-            )
-        elif sample_config["sample_output_dir"] == "./":
-            sample_config["sample_output_dir"] = os.getcwd()
-        elif "./" in sample_config["sample_output_dir"]:
-            sample_config["sample_output_dir"] = os.path.join(
-                os.getcwd(),
-                sample_config["sample_output_dir"].rstrip("/").lstrip(".").lstrip("/"),
-            )
-        else:
-            sample_config["sample_output_dir"] = os.path.join(
-                str(Path.home()),
-                sample_config["sample_output_dir"].rstrip("/").lstrip(".").lstrip("/"),
             )
 
         sample_config["PE_ANCIENT"] = False
@@ -1308,6 +1289,8 @@ The rip modules are the following:
         analysis_config.update((k, v) for k, v in sample_config.items())
         analysis_config.update((k, v) for k, v in analysis_args.items())
 
+        analysis_config["analysis_output_dir"] = os.path.abspath(analysis_config["analysis_output_dir"])
+
         if analysis_config["analysis_output_dir"]:
             if os.path.exists(analysis_config["analysis_output_dir"]):
                 if not os.access(analysis_config["analysis_output_dir"], os.W_OK):
@@ -1329,25 +1312,6 @@ The rip modules are the following:
                 "Please provide a valid directory path for the species identification related outputs. "
                 "If the directory does not exist, do not worry the method will create it."
             )
-        elif analysis_config["analysis_output_dir"] == "./":
-            analysis_config["analysis_output_dir"] = os.getcwd()
-        elif "./" in analysis_config["analysis_output_dir"]:
-            analysis_config["analysis_output_dir"] = os.path.join(
-                os.getcwd(),
-                analysis_config["analysis_output_dir"]
-                .rstrip("/")
-                .lstrip(".")
-                .lstrip("/"),
-            )
-        else:
-            analysis_config["analysis_output_dir"] = os.path.join(
-                str(Path.home()),
-                analysis_config["analysis_output_dir"]
-                .rstrip("/")
-                .lstrip(".")
-                .lstrip("/"),
-            )
-
         # print(analysis_config)
 
         target_list = []

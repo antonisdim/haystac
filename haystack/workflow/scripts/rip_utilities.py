@@ -112,7 +112,7 @@ def get_total_paths(
 
 def normalise_name(taxon):
     """remove unnecessary characters from a taxon name string."""
-    return taxon.replace(" ", "_").replace("[", "").replace("]", "")
+    return taxon.replace(" ", "_").replace("[", "").replace("]", "").replace("/", "_")
 
 
 def check_unique_taxa_in_custom_input(accessions, sequences):

@@ -50,38 +50,6 @@ def calculate_taxa_probabilities(
     )
 
 
-# 83) todo fix that - with Alberto , can I parallelise this step ? I'm possibly deleting it
-
-# if submatrices:
-#     print("---------\n")
-#     print("now the submatrices")
-#     print("---------\n")
-#
-#     ts_matrix = ts_matrix.compute()
-#     tv_matrix = tv_matrix.compute()
-#
-#     max_hits = likelihood_matrix.idxmax(axis=1)
-#
-#     best_matches = defaultdict(list)
-#
-#     for row, taxon in max_hits.iteritems():
-#         best_matches[taxon].append(row)
-#
-#
-#     for taxon, rows in best_matches.iteritems():
-#         # subset the main matrix with the list of rows for this taxon
-#
-#         print '\n', taxon
-#         ts_submatrix = ts_matrix.loc[rows]
-#         tv_submatrix = tv_matrix.loc[rows]
-#
-#         calculate_probabilities(ts_submatrix, tv_submatrix, sample, delta_v, delta_t, total_fastq_reads,
-#         submatrix= taxon)
-#     print "---------\n"
-#
-# print "Done with sample %s" % sample
-
-
 def calculate_probabilities(
     ts_tv_matrix_file,
     params_file,
