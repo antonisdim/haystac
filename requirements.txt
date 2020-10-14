@@ -1,4 +1,4 @@
-snakemake==5.20.1
-argcomplete
-argparse
-biopython
+snakemake>=5.20.1
+argcomplete>=1.12.1
+argparse>=1.4.0
+biopython>=1.77
