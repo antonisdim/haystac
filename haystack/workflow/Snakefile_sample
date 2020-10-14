@@ -9,11 +9,7 @@
 
 
 include: "rules/sample.smk"
-
-
 include: "rules/adapterremoval.smk"
-
-
 include: "rules/sra.smk"
 
 

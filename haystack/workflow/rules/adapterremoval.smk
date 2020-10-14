@@ -52,7 +52,9 @@ rule adapterremoval_paired_end_ancient:
     output:
         config["sample_output_dir"] + "/fastq_inputs/PE_anc/{accession}_adRm.fastq.gz",
     benchmark:
-        repeat("benchmarks/adapterremoval_paired_end_ancient_{accession}.benchmark.txt", 1)
+        repeat(
+            "benchmarks/adapterremoval_paired_end_ancient_{accession}.benchmark.txt", 1
+        )
     message:
         "Trimming sequencing adapters and collapsing reads from files {input.fastq_r1} and {input.fastq_r2} "
         "{MESSAGE_SUFFIX}"
@@ -74,10 +76,18 @@ rule adapterremoval_paired_end_modern:
     log:
         config["sample_output_dir"] + "/fastq_inputs/PE_mod/{accession}_adRm.log",
     output:
-        fastq_r1=config["sample_output_dir"] + "/fastq_inputs/PE_mod/{accession}_R1_adRm.fastq.gz",
-        fastq_r2=config["sample_output_dir"] + "/fastq_inputs/PE_mod/{accession}_R2_adRm.fastq.gz",
+        fastq_r1=(
+            config["sample_output_dir"]
+            + "/fastq_inputs/PE_mod/{accession}_R1_adRm.fastq.gz"
+        ),
+        fastq_r2=(
+            config["sample_output_dir"]
+            + "/fastq_inputs/PE_mod/{accession}_R2_adRm.fastq.gz"
+        ),
     benchmark:
-        repeat("benchmarks/adapterremoval_paired_end_modern_{accession}.benchmark.txt", 1)
+        repeat(
+            "benchmarks/adapterremoval_paired_end_modern_{accession}.benchmark.txt", 1
+        )
     message:
         "Trimming sequencing adapters from files {input.fastq_r1} and {input.fastq_r2} "
         "{MESSAGE_SUFFIX}"

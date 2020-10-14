@@ -21,15 +21,21 @@ def get_inputs_for_bowtie_r1(wildcards):
 
     if config["trim_adapters"]:
         if config["PE_MODERN"]:
-            return config["sample_output_dir"] + "/fastq_inputs/PE_mod/{sample}_R1_adRm.fastq.gz".format(
+            return config[
+                "sample_output_dir"
+            ] + "/fastq_inputs/PE_mod/{sample}_R1_adRm.fastq.gz".format(
                 sample=wildcards.sample
             )
         elif config["PE_ANCIENT"]:
-            return config["sample_output_dir"] + "/fastq_inputs/PE_anc/{sample}_adRm.fastq.gz".format(
+            return config[
+                "sample_output_dir"
+            ] + "/fastq_inputs/PE_anc/{sample}_adRm.fastq.gz".format(
                 sample=wildcards.sample
             )
         elif config["SE"]:
-            return config["sample_output_dir"] + "/fastq_inputs/SE/{sample}_adRm.fastq.gz".format(
+            return config[
+                "sample_output_dir"
+            ] + "/fastq_inputs/SE/{sample}_adRm.fastq.gz".format(
                 sample=wildcards.sample
             )
 
@@ -43,7 +49,9 @@ def get_inputs_for_bowtie_r2(wildcards):
 
     if config["trim_adapters"]:
         if config["PE_MODERN"]:
-            return config["sample_output_dir"] + "/fastq_inputs/PE_mod/{sample}_R2_adRm.fastq.gz".format(
+            return config[
+                "sample_output_dir"
+            ] + "/fastq_inputs/PE_mod/{sample}_R2_adRm.fastq.gz".format(
                 sample=wildcards.sample
             )
 
@@ -58,7 +66,10 @@ rule bowtie_alignment_single_end:
     log:
         config["analysis_output_dir"] + "/bam/{sample}_chunk{chunk_num}.log",
     output:
-        bam_file=temp(config["analysis_output_dir"] + "/bam/SE_{sample}_sorted_chunk{chunk_num}.bam"),
+        bam_file=temp(
+            config["analysis_output_dir"]
+            + "/bam/SE_{sample}_sorted_chunk{chunk_num}.bam"
+        ),
     benchmark:
         repeat("benchmarks/bowtie_alignment_{sample}_chunk{chunk_num}.benchmark.txt", 1)
     params:
@@ -82,7 +93,10 @@ rule bowtie_alignment_paired_end:
     log:
         config["analysis_output_dir"] + "/bam/{sample}_chunk{chunk_num}.log",
     output:
-        bam_file=temp(config["analysis_output_dir"] + "/bam/PE_{sample}_sorted_chunk{chunk_num}.bam"),
+        bam_file=temp(
+            config["analysis_output_dir"]
+            + "/bam/PE_{sample}_sorted_chunk{chunk_num}.bam"
+        ),
     benchmark:
         repeat("benchmarks/bowtie_alignment_{sample}_chunk{chunk_num}.benchmark.txt", 1)
     params:
@@ -103,12 +117,17 @@ def get_sorted_bam_paths(wildcards):
 
     # get_chunk_num = checkpoints.calculate_bt2_idx_chunks.get(query=wildcards.query)
     # idx_chunk_total = ceil(float(open(get_chunk_num.output[0]).read().strip()))
-    idx_chunk_total = ceil(float(open(config["db_output"] + "/bowtie/bt2_idx_chunk_num.txt").read().strip()))
+    idx_chunk_total = ceil(
+        float(
+            open(config["db_output"] + "/bowtie/bt2_idx_chunk_num.txt").read().strip()
+        )
+    )
 
     reads = ["PE"] if config["PE_MODERN"] else ["SE"]
 
     return expand(
-        config["analysis_output_dir"] + "/bam/{reads}_{sample}_sorted_chunk{chunk_num}.bam",
+        config["analysis_output_dir"]
+        + "/bam/{reads}_{sample}_sorted_chunk{chunk_num}.bam",
         reads=reads,
         sample=wildcards.sample,
         chunk_num=range(1, idx_chunk_total + 1),

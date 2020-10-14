@@ -22,7 +22,8 @@ from scripts.rip_utilities import get_total_paths, normalise_name
 def get_min_score(wildcards, input):
     """Get the min score dor the edit distance of the alignment."""
     return (
-        round(float(open(input.readlen).read()) * float(config["mismatch_probability"])) * META_ALN_MIN_SCORE_CONSTANT
+        round(float(open(input.readlen).read()) * float(config["mismatch_probability"]))
+        * META_ALN_MIN_SCORE_CONSTANT
     )
 
 
@@ -32,13 +33,22 @@ rule align_taxon_single_end:
         db_idx=config["genome_cache_folder"] + "/{orgname}/{accession}.1.bt2l",
         readlen=config["analysis_output_dir"] + "/fastq/SE/{sample}_mapq.readlen",
     log:
-        config["analysis_output_dir"] + "/alignments/{sample}/SE/{orgname}/{accession}.log",
+        config[
+            "analysis_output_dir"
+        ] + "/alignments/{sample}/SE/{orgname}/{accession}.log",
     output:
-        bam_file=config["analysis_output_dir"] + "/alignments/{sample}/SE/{orgname}/{orgname}_{accession}.bam",
-        bai_file=config["analysis_output_dir"] + "/alignments/{sample}/SE/{orgname}/{orgname}_{accession}.bam.bai",
+        bam_file=(
+            config["analysis_output_dir"]
+            + "/alignments/{sample}/SE/{orgname}/{orgname}_{accession}.bam"
+        ),
+        bai_file=(
+            config["analysis_output_dir"]
+            + "/alignments/{sample}/SE/{orgname}/{orgname}_{accession}.bam.bai"
+        ),
     benchmark:
         repeat(
-            "benchmarks/align_taxon_single_end_{sample}_{orgname}_{accession}.benchmark.txt", 1,
+            "benchmarks/align_taxon_single_end_{sample}_{orgname}_{accession}.benchmark.txt",
+            1,
         )
     params:
         min_score=get_min_score,
@@ -66,10 +76,18 @@ rule align_taxon_paired_end:
         db_idx=config["genome_cache_folder"] + "/{orgname}/{accession}.1.bt2l",
         readlen=config["analysis_output_dir"] + "/fastq/PE/{sample}_mapq_pair.readlen",
     log:
-        config["analysis_output_dir"] + "/alignments/{sample}/PE/{orgname}/{accession}.log",
+        config[
+            "analysis_output_dir"
+        ] + "/alignments/{sample}/PE/{orgname}/{accession}.log",
     output:
-        bam_file=config["analysis_output_dir"] + "/alignments/{sample}/PE/{orgname}/{orgname}_{accession}.bam",
-        bai_file=config["analysis_output_dir"] + "/alignments/{sample}/PE/{orgname}/{orgname}_{accession}.bam.bai",
+        bam_file=(
+            config["analysis_output_dir"]
+            + "/alignments/{sample}/PE/{orgname}/{orgname}_{accession}.bam"
+        ),
+        bai_file=(
+            config["analysis_output_dir"]
+            + "/alignments/{sample}/PE/{orgname}/{orgname}_{accession}.bam.bai"
+        ),
     params:
         min_score=get_min_score,
         min_frag_length=MIN_FRAG_LEN,

@@ -884,7 +884,9 @@ The haystack modules are the following:
         sample_config = {k: v for k, v in repo_rip_config.items()}
         sample_config.update((k, v) for k, v in sample_args.items())
 
-        sample_config["sample_output_dir"] = os.path.abspath(sample_config["sample_output_dir"])
+        sample_config["sample_output_dir"] = os.path.abspath(
+            sample_config["sample_output_dir"]
+        )
 
         if sample_config["sample_output_dir"]:
             if os.path.exists(sample_config["sample_output_dir"]):
@@ -1289,7 +1291,9 @@ The haystack modules are the following:
         analysis_config.update((k, v) for k, v in sample_config.items())
         analysis_config.update((k, v) for k, v in analysis_args.items())
 
-        analysis_config["analysis_output_dir"] = os.path.abspath(analysis_config["analysis_output_dir"])
+        analysis_config["analysis_output_dir"] = os.path.abspath(
+            analysis_config["analysis_output_dir"]
+        )
 
         if analysis_config["analysis_output_dir"]:
             if os.path.exists(analysis_config["analysis_output_dir"]):

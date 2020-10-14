@@ -74,7 +74,10 @@ def get_nuccore_chunks(wildcards):
 
     inputs = []
     for chunk_num in range(int(tot_chunks)):
-        inputs.append(config["db_output"] + "/entrez/entrez_{chunk}-nuccore.tsv".format(chunk=chunk_num))
+        inputs.append(
+            config["db_output"]
+            + "/entrez/entrez_{chunk}-nuccore.tsv".format(chunk=chunk_num)
+        )
 
     return inputs
 
@@ -144,7 +147,9 @@ def get_rsync_url(wildcards):
 
     try:
         url = get_accession_ftp_path(wildcards.accession, config)
-        file_url = os.path.join(url, os.path.basename(url) + "_genomic.fna.gz")  # .replace("ftp://", "rsync://")
+        file_url = os.path.join(
+            url, os.path.basename(url) + "_genomic.fna.gz"
+        )  # .replace("ftp://", "rsync://")
         # print(url)
         # print(file_url)
         if file_url != "_genomic.fna.gz":
@@ -163,7 +168,9 @@ rule entrez_download_sequence:
     log:
         config["genome_cache_folder"] + "/{orgname}/{accession}.log",
     benchmark:
-        repeat("benchmarks/entrez_download_sequence_{orgname}_{accession}.benchmark.txt", 1)
+        repeat(
+            "benchmarks/entrez_download_sequence_{orgname}_{accession}.benchmark.txt", 1
+        )
     params:
         assembly=False,
         url=get_rsync_url,
@@ -202,7 +209,9 @@ def get_fasta_sequences(wildcards):
 
         inputs.append(
             config["genome_cache_folder"]
-            + "/{orgname}/{accession}.fasta.gz".format(orgname=orgname, accession=accession)
+            + "/{orgname}/{accession}.fasta.gz".format(
+                orgname=orgname, accession=accession
+            )
         )
 
     return inputs

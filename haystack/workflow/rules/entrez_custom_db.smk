@@ -36,7 +36,10 @@ def get_paths_for_custom_seqs():
         return ""
 
     custom_fasta_paths = pd.read_csv(
-        config["sequences"], sep="\t", header=None, names=["species", "accession", "path"],
+        config["sequences"],
+        sep="\t",
+        header=None,
+        names=["species", "accession", "path"],
     )
 
     if len(custom_fasta_paths) == 0:
@@ -44,7 +47,8 @@ def get_paths_for_custom_seqs():
 
     if len(custom_fasta_paths.columns) == 1:
         raise RuntimeError(
-            "The file you have provided is not TAB delimited. " "Please provide a file with the correct delimiters."
+            "The file you have provided is not TAB delimited. "
+            "Please provide a file with the correct delimiters."
         )
 
     if 1 < len(custom_fasta_paths.columns) < 3:
@@ -79,7 +83,9 @@ def get_paths_for_custom_seqs():
         )
         inputs.append(
             config["genome_cache_folder"]
-            + "/{orgname}/custom_seq-{accession}.fasta.gz".format(orgname=orgname, accession=accession)
+            + "/{orgname}/custom_seq-{accession}.fasta.gz".format(
+                orgname=orgname, accession=accession
+            )
         )
 
     return inputs
@@ -105,7 +111,9 @@ def get_paths_for_custom_acc(wildcards):
     if config["accessions"] == "":
         return ""
 
-    custom_accessions = pd.read_csv(config["accessions"], sep="\t", header=None, names=["species", "accession"])
+    custom_accessions = pd.read_csv(
+        config["accessions"], sep="\t", header=None, names=["species", "accession"]
+    )
 
     if len(custom_accessions) == 0:
         raise RuntimeError("The custom accessions file is empty.")
@@ -143,7 +151,9 @@ def get_paths_for_custom_acc(wildcards):
         )
         inputs.append(
             config["genome_cache_folder"]
-            + "/{orgname}/{accession}.fasta.gz".format(orgname=orgname, accession=accession)
+            + "/{orgname}/{accession}.fasta.gz".format(
+                orgname=orgname, accession=accession
+            )
         )
 
     return inputs
