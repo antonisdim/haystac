@@ -4,24 +4,24 @@ channels:
   - defaults
   - r
 dependencies:
-  - python=3.6.7
-  - pip=19.3.1
-  - snakemake=5.20.1
-  - pysam=0.15.3
+  - adapterremoval=2.3.1
   - biopython=1.77
   - bowtie2=2.3.5.1
-  - samtools=1.9
   - dedup=0.12.5
-  - scipy=1.4.1
-  - seqtk=1.3
-  - wget=1.20.1
-  - adapterremoval=2.3.1
-  - sra-tools=2.9.1
-  - r-inline=0.3.15
-  - r-gam=1.16.1
-  - r-RcppGSL=0.3.8
-  - r-ggplot2=2_3.3.0
+  - pip=19.3.1
+  - pysam=0.15.3
+  - python=3.6.7
   - r-Rcpp=1.0.4.6
+  - r-RcppGSL=0.3.8
+  - r-gam=1.16.1
+  - r-ggplot2=2_3.3.0
+  - r-inline=0.3.15
+  - samtools=1.9
+  - scipy=1.4.1
   - seqkit=0.13.2
+  - seqtk=1.3
+  - snakemake=5.20.1
+  - sra-tools=2.9.1
+  - wget=1.20.1
   - pip:
       - git+git://github.com/ginolhac/mapDamage.git@31f8dd1800b61a3e29375531e01a3e3fb115dc79
