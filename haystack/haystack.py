@@ -54,9 +54,7 @@ def interactive_config_input():
         else:
             break
     if count == 3:
-        raise RuntimeError(
-            "Please try rip config again to input a valid email address."
-        )
+        raise RuntimeError("Please try rip config again to input a valid email address.")
 
     genome_cache = input(
         "Enter your preferred path for the genome cache folder. "
@@ -69,8 +67,7 @@ def interactive_config_input():
     ) or int(5)
 
     mismatch_probability = input(
-        "Enter your preferred mismatch probability. "
-        "Press enter if you'd like to use the default value: "
+        "Enter your preferred mismatch probability. " "Press enter if you'd like to use the default value: "
     ) or float(0.05)
 
     bowtie2_threads = input(
@@ -156,33 +153,21 @@ def check_config_arguments(args):
 
     if args["mismatch_probability"]:
         if not (args["mismatch_probability"], float):
-            raise RuntimeError(
-                "Please provide a positive float for mismatch probability."
-            )
+            raise RuntimeError("Please provide a positive float for mismatch probability.")
         if not args["mismatch_probability"] > 0:
-            raise RuntimeError(
-                "Please provide a positive float for mismatch probability."
-            )
+            raise RuntimeError("Please provide a positive float for mismatch probability.")
 
     if args["bowtie2_threads"]:
         if not isinstance(args["bowtie2_threads"], int):
-            raise RuntimeError(
-                "Please provide a positive integer for the bowtie2 threads."
-            )
+            raise RuntimeError("Please provide a positive integer for the bowtie2 threads.")
         if not args["bowtie2_threads"] > 0:
-            raise RuntimeError(
-                "Please provide a positive integer for the bowtie2 threads."
-            )
+            raise RuntimeError("Please provide a positive integer for the bowtie2 threads.")
 
     if args["bowtie2_scaling"]:
         if not (args["bowtie2_scaling"], float):
-            raise RuntimeError(
-                "Please provide a positive float for the bowtie2 scaling factor."
-            )
+            raise RuntimeError("Please provide a positive float for the bowtie2 scaling factor.")
         if not args["bowtie2_scaling"] > 0:
-            raise RuntimeError(
-                "Please provide a positive float for the bowtie2 scaling factor."
-            )
+            raise RuntimeError("Please provide a positive float for the bowtie2 scaling factor.")
 
     if args["use_conda"]:
         if args["use_conda"] not in ["True", "False"]:
@@ -214,9 +199,7 @@ The haystack modules are the following:
 """,
         )
         parser.add_argument(
-            "command",
-            choices=["config", "database", "sample", "analyse"],
-            help="Subcommand to run",
+            "command", choices=["config", "database", "sample", "analyse"], help="Subcommand to run",
         )
 
         # parse_args defaults to [1:] for args, but you need to
@@ -232,16 +215,11 @@ The haystack modules are the following:
         getattr(self, args.command)()
 
     def config(self):
-        parser = argparse.ArgumentParser(
-            description="Advanced options for rip configuration"
-        )
+        parser = argparse.ArgumentParser(description="Advanced options for rip configuration")
         # prefixing the argument with -- means it's optional
 
         parser.add_argument(
-            "-e",
-            "--email",
-            help="Email address for NCBI identification. Mandatory.",
-            metavar="",
+            "-e", "--email", help="Email address for NCBI identification. Mandatory.", metavar="",
         )
         parser.add_argument(
             "-gc",
@@ -309,9 +287,7 @@ The haystack modules are the following:
             with open(repo_config_file) as fin:
                 repo_rip_config = yaml.safe_load(fin)
         else:
-            raise RuntimeError(
-                "The config file in the code file directory is missing. Please reinstall the package."
-            )
+            raise RuntimeError("The config file in the code file directory is missing. Please reinstall the package.")
 
         user_rip_config = os.path.join(str(Path.home()), ".haystack", "config.yaml")
 
@@ -327,16 +303,10 @@ The haystack modules are the following:
                     "before configuring any individual options."
                 )
             user_config = interactive_config_input()
-            user_non_default_config = {
-                k: v
-                for k, v in user_config.items()
-                if (k, v) not in repo_rip_config.items()
-            }
+            user_non_default_config = {k: v for k, v in user_config.items() if (k, v) not in repo_rip_config.items()}
 
             with open(user_rip_config, "w") as outfile:
-                yaml.safe_dump(
-                    user_non_default_config, outfile, default_flow_style=False
-                )
+                yaml.safe_dump(user_non_default_config, outfile, default_flow_style=False)
 
             exit()
 
@@ -360,17 +330,13 @@ The haystack modules are the following:
                 check_config_arguments(config_args)
                 with open(user_rip_config) as fin:
                     user_options = yaml.safe_load(fin)
-                    user_options.update(
-                        (k, v) for k, v in config_args.items() if v is not None
-                    )
+                    user_options.update((k, v) for k, v in config_args.items() if v is not None)
 
                 with open(user_rip_config, "w") as outfile:
                     yaml.safe_dump(user_options, outfile, default_flow_style=False)
 
     def database(self):
-        parser = argparse.ArgumentParser(
-            description="Build the database for rip to use"
-        )
+        parser = argparse.ArgumentParser(description="Build the database for rip to use")
         # prefixing the argument with -- means it's optional
 
         parser.add_argument("--dry-run", action="store_true")
@@ -385,11 +351,7 @@ The haystack modules are the following:
         )
 
         parser.add_argument(
-            "-o",
-            "--output",
-            help="Path to the database output directory.",
-            metavar="",
-            dest="db_output",
+            "-o", "--output", help="Path to the database output directory.", metavar="", dest="db_output",
         )
         parser.add_argument(
             "-R",
@@ -472,12 +434,7 @@ The haystack modules are the following:
         )
 
         parser.add_argument(
-            "-c",
-            "--cores",
-            help="Number of cores for RIP to use",
-            type=int,
-            metavar="",
-            default=cpu_count(),
+            "-c", "--cores", help="Number of cores for RIP to use", type=int, metavar="", default=cpu_count(),
         )
         parser.add_argument(
             "-M",
@@ -493,20 +450,13 @@ The haystack modules are the following:
             "-u",
             "--unlock",
             action="store_true",
-            help="Unlock the working directory after smk is "
-            "abruptly killed  <bool> (default: False)",
+            help="Unlock the working directory after smk is " "abruptly killed  <bool> (default: False)",
         )
         parser.add_argument(
-            "-d",
-            "--debug",
-            action="store_true",
-            help="Debug the RIP workflow <bool> (default: False)",
+            "-d", "--debug", action="store_true", help="Debug the RIP workflow <bool> (default: False)",
         )
         parser.add_argument(
-            "-smk",
-            "--snakemake",
-            help="Snakemake flags (default: '')",
-            metavar="",  # todo don't know how to do that
+            "-smk", "--snakemake", help="Snakemake flags (default: '')", metavar="",  # todo don't know how to do that
         )
 
         # now that we're inside a subcommand, ignore the first
@@ -579,9 +529,7 @@ The haystack modules are the following:
                 database_config["query"] = fin.read().rstrip()
 
             if database_config["query"] == "" or database_config["query"] == " ":
-                raise RuntimeError(
-                    "The query file you provided was empty. Please provide a file with a valid query."
-                )
+                raise RuntimeError("The query file you provided was empty. Please provide a file with a valid query.")
 
         database_config["db_output"] = os.path.abspath(database_config["db_output"])
 
@@ -593,9 +541,7 @@ The haystack modules are the following:
                         "Please chose another path for your database output directory."
                     )
             else:
-                if not os.access(
-                    os.path.dirname(database_config["db_output"]), os.W_OK
-                ):
+                if not os.access(os.path.dirname(database_config["db_output"]), os.W_OK):
                     raise RuntimeError(
                         "This directory path you have provided is not writable. "
                         "Please chose another path for your database output directory.."
@@ -611,31 +557,20 @@ The haystack modules are the following:
 
         if database_config["mode"] == "fetch":
             if database_config["query"] != "":
-                target_list.append(
-                    database_config["db_output"] + "/bowtie/entrez_query.fasta.gz"
-                )
+                target_list.append(database_config["db_output"] + "/bowtie/entrez_query.fasta.gz")
             if database_config["refseq_rep"]:
-                target_list.append(
-                    database_config["db_output"] + "/bowtie/refseq_prok.fasta.gz"
-                )
+                target_list.append(database_config["db_output"] + "/bowtie/refseq_prok.fasta.gz")
             if database_config["sequences"] != "":
-                target_list.append(
-                    database_config["db_output"] + "/bowtie/custom_seqs.fasta.gz"
-                )
+                target_list.append(database_config["db_output"] + "/bowtie/custom_seqs.fasta.gz")
             if database_config["accessions"] != "":
-                target_list.append(
-                    database_config["db_output"] + "/bowtie/custom_acc.fasta.gz"
-                )
+                target_list.append(database_config["db_output"] + "/bowtie/custom_acc.fasta.gz")
 
             database_fetch_yaml = os.path.join(
-                str(Path.home()),
-                database_config["db_output"],
-                "database_fetch_config.yaml",
+                str(Path.home()), database_config["db_output"], "database_fetch_config.yaml",
             )
             if not os.path.exists(database_fetch_yaml):
                 os.makedirs(
-                    os.path.join(str(Path.home()), database_config["db_output"]),
-                    exist_ok=True,
+                    os.path.join(str(Path.home()), database_config["db_output"]), exist_ok=True,
                 )
                 with open(database_fetch_yaml, "w") as outfile:
                     yaml.safe_dump(database_config, outfile, default_flow_style=False)
@@ -643,14 +578,10 @@ The haystack modules are the following:
             print("Please run rip database --mode index after this step.")
 
         if database_config["mode"] == "index":
-            target_list.append(
-                database_config["db_output"] + "/bowtie/bowtie_index.done"
-            )
+            target_list.append(database_config["db_output"] + "/bowtie/bowtie_index.done")
 
             database_fetch_yaml = os.path.join(
-                str(Path.home()),
-                database_config["db_output"],
-                "database_fetch_config.yaml",
+                str(Path.home()), database_config["db_output"], "database_fetch_config.yaml",
             )
             if not os.path.exists(database_fetch_yaml):
                 raise RuntimeError(
@@ -662,14 +593,10 @@ The haystack modules are the following:
 
         if database_config["mode"] == "build":
             target_list.append(database_config["db_output"] + "/idx_database.done")
-            target_list.append(
-                database_config["db_output"] + "/bowtie/bowtie_index.done"
-            )
+            target_list.append(database_config["db_output"] + "/bowtie/bowtie_index.done")
 
             database_fetch_yaml = os.path.join(
-                str(Path.home()),
-                database_config["db_output"],
-                "database_fetch_config.yaml",
+                str(Path.home()), database_config["db_output"], "database_fetch_config.yaml",
             )
             if os.path.exists(database_fetch_yaml):
                 raise RuntimeError(
@@ -678,15 +605,12 @@ The haystack modules are the following:
                 )
 
             database_build_yaml = os.path.join(
-                str(Path.home()),
-                database_config["db_output"],
-                "database_build_config.yaml",
+                str(Path.home()), database_config["db_output"], "database_build_config.yaml",
             )
 
             if not os.path.exists(database_build_yaml):
                 os.makedirs(
-                    os.path.join(str(Path.home()), database_config["db_output"]),
-                    exist_ok=True,
+                    os.path.join(str(Path.home()), database_config["db_output"]), exist_ok=True,
                 )
                 with open(database_build_yaml, "w") as outfile:
                     yaml.safe_dump(database_config, outfile, default_flow_style=False)
@@ -694,11 +618,7 @@ The haystack modules are the following:
         database_config["workflow_dir"] = os.path.join(thisdir, "workflow")
         database_config["mtDNA"] = str(database_config["mtDNA"]).lower()
 
-        user_options = {
-            k: v
-            for k, v in database_args.items()
-            if (k, v) not in repo_rip_config.items()
-        }
+        user_options = {k: v for k, v in database_args.items() if (k, v) not in repo_rip_config.items()}
         # print(database_config)
 
         print("--------")
@@ -751,8 +671,7 @@ The haystack modules are the following:
         parser.add_argument(
             "-p",
             "--sample-prefix",
-            help="Sample prefix for all the future analysis. Optional if SRA accession is provided instead"
-            " <str>",
+            help="Sample prefix for all the future analysis. Optional if SRA accession is provided instead" " <str>",
             metavar="",
             default="",
         )
@@ -766,23 +685,18 @@ The haystack modules are the following:
         )
 
         parser.add_argument(
-            "-f",
-            "--fastq",
-            help="Path to the fastq input file. Can be raw or with adapters " "removed",
-            metavar="",
+            "-f", "--fastq", help="Path to the fastq input file. Can be raw or with adapters " "removed", metavar="",
         )
         parser.add_argument(
             "-f1",
             "--fastq-r1",
-            help="Path to the mate 1 fastq input file, if reads are PE. "
-            "Can be raw or with adapters removed",
+            help="Path to the mate 1 fastq input file, if reads are PE. " "Can be raw or with adapters removed",
             metavar="",
         )
         parser.add_argument(
             "-f2",
             "--fastq-r2",
-            help="Path to the mate 2 fastq input file, if reads are PE. "
-            "Can be raw or with adapters removed",
+            help="Path to the mate 2 fastq input file, if reads are PE. " "Can be raw or with adapters removed",
             metavar="",
         )
 
@@ -815,12 +729,7 @@ The haystack modules are the following:
         )
 
         parser.add_argument(
-            "-c",
-            "--cores",
-            help="Number of cores for RIP to use",
-            metavar="",
-            type=int,
-            default=cpu_count(),
+            "-c", "--cores", help="Number of cores for RIP to use", metavar="", type=int, default=cpu_count(),
         )
         parser.add_argument(
             "-M",
@@ -836,14 +745,10 @@ The haystack modules are the following:
             "-u",
             "--unlock",
             action="store_true",
-            help="Unlock the working directory after smk is "
-            "abruptly killed  <bool> (default: False)",
+            help="Unlock the working directory after smk is " "abruptly killed  <bool> (default: False)",
         )
         parser.add_argument(
-            "-d",
-            "--debug",
-            action="store_true",
-            help="Debug the RIP workflow <bool> (default: False)",
+            "-d", "--debug", action="store_true", help="Debug the RIP workflow <bool> (default: False)",
         )
         parser.add_argument(
             "-smk", "--snakemake", help="Snakemake flags (default: '')", metavar="",
@@ -884,9 +789,7 @@ The haystack modules are the following:
         sample_config = {k: v for k, v in repo_rip_config.items()}
         sample_config.update((k, v) for k, v in sample_args.items())
 
-        sample_config["sample_output_dir"] = os.path.abspath(
-            sample_config["sample_output_dir"]
-        )
+        sample_config["sample_output_dir"] = os.path.abspath(sample_config["sample_output_dir"])
 
         if sample_config["sample_output_dir"]:
             if os.path.exists(sample_config["sample_output_dir"]):
@@ -896,13 +799,8 @@ The haystack modules are the following:
                         "Please chose another path for your sample output directory."
                     )
             else:
-                if not os.access(
-                    os.path.dirname(sample_config["sample_output_dir"]), os.W_OK
-                ) and not os.access(
-                    os.path.dirname(
-                        os.path.dirname(sample_config["sample_output_dir"])
-                    ),
-                    os.W_OK,
+                if not os.access(os.path.dirname(sample_config["sample_output_dir"]), os.W_OK) and not os.access(
+                    os.path.dirname(os.path.dirname(sample_config["sample_output_dir"])), os.W_OK,
                 ):
                     raise RuntimeError(
                         "This directory path you have provided is not writable. "
@@ -919,10 +817,7 @@ The haystack modules are the following:
         sample_config["PE_MODERN"] = False
         sample_config["SE"] = False
 
-        if (
-            sample_config["fastq_r1"] is not None
-            and sample_config["fastq_r2"] is not None
-        ):
+        if sample_config["fastq_r1"] is not None and sample_config["fastq_r2"] is not None:
             if sample_config["collapse"]:
                 sample_config["PE_ANCIENT"] = True
             else:
@@ -939,40 +834,30 @@ The haystack modules are the following:
         if sample_config["fastq"]:
             if not os.path.exists(sample_config["fastq"]):
                 raise RuntimeError(
-                    "The file path you provided to --fastq does not exist. "
-                    "Please provide a valid path"
+                    "The file path you provided to --fastq does not exist. " "Please provide a valid path"
                 )
 
         if sample_config["fastq_r1"]:
             if not os.path.exists(sample_config["fastq_r1"]):
                 raise RuntimeError(
-                    "The file path you provided to --fastq-r1 does not exist. "
-                    "Please provide a valid path"
+                    "The file path you provided to --fastq-r1 does not exist. " "Please provide a valid path"
                 )
 
         if sample_config["fastq_r2"]:
             if not os.path.exists(sample_config["fastq_r2"]):
                 raise RuntimeError(
-                    "The file path you provided to --fastq-r2 does not exist. "
-                    "Please provide a valid path"
+                    "The file path you provided to --fastq-r2 does not exist. " "Please provide a valid path"
                 )
 
         if sample_config["sra"] is None and sample_config["sample_prefix"] is None:
-            raise RuntimeError(
-                "Please provide a prefix name for the sample you want to analyse."
-            )
+            raise RuntimeError("Please provide a prefix name for the sample you want to analyse.")
 
         if sample_config["sra"] is not None:
             sample_config["sample_prefix"] = sample_config["sra"]
 
             Entrez.email = sample_config["email"]
-            sra_id = Entrez.read(Entrez.esearch(db="sra", term=sample_config["sra"]))[
-                "IdList"
-            ]
-            if (
-                "paired"
-                in str(Entrez.read(Entrez.esummary(db="sra", id=sra_id))).lower()
-            ):
+            sra_id = Entrez.read(Entrez.esearch(db="sra", term=sample_config["sra"]))["IdList"]
+            if "paired" in str(Entrez.read(Entrez.esummary(db="sra", id=sra_id))).lower():
                 if sample_config["collapse"]:
                     sample_config["PE_ANCIENT"] = True
                 else:
@@ -982,24 +867,15 @@ The haystack modules are the following:
 
         if sample_config["sra"] is not None:
             if sample_config["PE_MODERN"] or sample_config["PE_ANCIENT"]:
-                sample_config[
-                    "fastq_r1"
-                ] = "{prefix}/sra_data/PE/{accession}_R1.fastq.gz".format(
-                    prefix=sample_config["sample_output_dir"],
-                    accession=sample_config["sra"],
+                sample_config["fastq_r1"] = "{prefix}/sra_data/PE/{accession}_R1.fastq.gz".format(
+                    prefix=sample_config["sample_output_dir"], accession=sample_config["sra"],
                 )
-                sample_config[
-                    "fastq_r2"
-                ] = "{prefix}/sra_data/PE/{accession}_R2.fastq.gz".format(
-                    prefix=sample_config["sample_output_dir"],
-                    accession=sample_config["sra"],
+                sample_config["fastq_r2"] = "{prefix}/sra_data/PE/{accession}_R2.fastq.gz".format(
+                    prefix=sample_config["sample_output_dir"], accession=sample_config["sra"],
                 )
             elif sample_config["SE"]:
-                sample_config[
-                    "fastq"
-                ] = "{prefix}/sra_data/SE/{accession}.fastq.gz".format(
-                    prefix=sample_config["sample_output_dir"],
-                    accession=sample_config["sra"],
+                sample_config["fastq"] = "{prefix}/sra_data/SE/{accession}.fastq.gz".format(
+                    prefix=sample_config["sample_output_dir"], accession=sample_config["sra"],
                 )
 
         if sample_config["fastq"] and sample_config["collapse"]:
@@ -1012,9 +888,7 @@ The haystack modules are the following:
 
         target_list = [
             sample_config["sample_output_dir"]
-            + "/fastq_inputs/meta/{sample}.size".format(
-                sample=sample_config["sample_prefix"]
-            )
+            + "/fastq_inputs/meta/{sample}.size".format(sample=sample_config["sample_prefix"])
         ]
 
         if sample_config["not_trim_adapters"]:
@@ -1027,47 +901,30 @@ The haystack modules are the following:
             if sample_config["PE_MODERN"]:
                 data_preprocessing = sample_config[
                     "sample_output_dir"
-                ] + "/fastq_inputs/PE_mod/{sample}_R1_adRm.fastq.gz".format(
-                    sample=sample_config["sample_prefix"]
-                )
+                ] + "/fastq_inputs/PE_mod/{sample}_R1_adRm.fastq.gz".format(sample=sample_config["sample_prefix"])
             elif sample_config["PE_ANCIENT"]:
                 data_preprocessing = sample_config[
                     "sample_output_dir"
-                ] + "/fastq_inputs/PE_anc/{sample}_adRm.fastq.gz".format(
-                    sample=sample_config["sample_prefix"]
-                )
+                ] + "/fastq_inputs/PE_anc/{sample}_adRm.fastq.gz".format(sample=sample_config["sample_prefix"])
             elif sample_config["SE"]:
                 data_preprocessing = sample_config[
                     "sample_output_dir"
-                ] + "/fastq_inputs/SE/{sample}_adRm.fastq.gz".format(
-                    sample=sample_config["sample_prefix"]
-                )
+                ] + "/fastq_inputs/SE/{sample}_adRm.fastq.gz".format(sample=sample_config["sample_prefix"])
             target_list.append(data_preprocessing)
 
-        sample_yaml = os.path.join(
-            str(Path.home()), sample_config["sample_output_dir"], "sample_config.yaml",
-        )
+        sample_yaml = os.path.join(str(Path.home()), sample_config["sample_output_dir"], "sample_config.yaml",)
 
         if not os.path.exists(sample_yaml):
             os.makedirs(
-                os.path.join(str(Path.home()), sample_config["sample_output_dir"]),
-                exist_ok=True,
+                os.path.join(str(Path.home()), sample_config["sample_output_dir"]), exist_ok=True,
             )
-            sample_options = {
-                k: v
-                for k, v in sample_config.items()
-                if (k, v) not in repo_rip_config.items()
-            }
+            sample_options = {k: v for k, v in sample_config.items() if (k, v) not in repo_rip_config.items()}
             with open(sample_yaml, "w") as outfile:
                 yaml.safe_dump(sample_options, outfile, default_flow_style=False)
 
         sample_config["workflow_dir"] = os.path.join(thisdir, "workflow")
 
-        user_options = {
-            k: v
-            for k, v in sample_args.items()
-            if (k, v) not in repo_rip_config.items()
-        }
+        user_options = {k: v for k, v in sample_args.items() if (k, v) not in repo_rip_config.items()}
         # print(database_config)
         # print(sample_config)
 
@@ -1120,29 +977,15 @@ The haystack modules are the following:
         parser.add_argument(
             "-m",
             "--mode",
-            choices=[
-                "filter",
-                "align",
-                "likelihoods",
-                "probabilities",
-                "abundances",
-                "reads",
-                "mapdamage",
-            ],
+            choices=["filter", "align", "likelihoods", "probabilities", "abundances", "reads", "mapdamage",],
             help="Analysis mode for the selected sample",
             metavar="",
         )
         parser.add_argument(
-            "-D",
-            "--database",
-            help="Path to the database output directory. MANDATORY",
-            metavar="",
+            "-D", "--database", help="Path to the database output directory. MANDATORY", metavar="",
         )
         parser.add_argument(
-            "-S",
-            "--sample",
-            help="Path to the sample output directory. MANDATORY",
-            metavar="",
+            "-S", "--sample", help="Path to the sample output directory. MANDATORY", metavar="",
         )
         parser.add_argument(
             "-g",
@@ -1155,11 +998,7 @@ The haystack modules are the following:
             default=[],
         )
         parser.add_argument(
-            "-o",
-            "--output",
-            help="Path to results directory.",
-            metavar="",
-            dest="analysis_output_dir",
+            "-o", "--output", help="Path to results directory.", metavar="", dest="analysis_output_dir",
         )
         parser.add_argument(
             "-T",
@@ -1172,12 +1011,7 @@ The haystack modules are the following:
             metavar="",
         )
         parser.add_argument(
-            "-c",
-            "--cores",
-            help="Number of cores for RIP to use",
-            metavar="",
-            type=int,
-            default=cpu_count(),
+            "-c", "--cores", help="Number of cores for RIP to use", metavar="", type=int, default=cpu_count(),
         )
         parser.add_argument(
             "-M",
@@ -1193,14 +1027,10 @@ The haystack modules are the following:
             "-u",
             "--unlock",
             action="store_true",
-            help="Unlock the working directory after smk is "
-            "abruptly killed  <bool> (default: False)",
+            help="Unlock the working directory after smk is " "abruptly killed  <bool> (default: False)",
         )
         parser.add_argument(
-            "-d",
-            "--debug",
-            action="store_true",
-            help="Debug the RIP workflow <bool> (default: False)",
+            "-d", "--debug", action="store_true", help="Debug the RIP workflow <bool> (default: False)",
         )
         parser.add_argument(
             "-smk", "--snakemake", help="Snakemake flags (default: '')", metavar="",
@@ -1240,14 +1070,12 @@ The haystack modules are the following:
 
         if not os.path.exists(args.database):
             raise RuntimeError(
-                "The path you provided for the database output directory is not valid. "
-                "Please provide a valid path."
+                "The path you provided for the database output directory is not valid. " "Please provide a valid path."
             )
 
         if not os.path.exists(args.sample):
             raise RuntimeError(
-                "The path you provided for the sample related output is not valid. "
-                "Please provide a valid path."
+                "The path you provided for the sample related output is not valid. " "Please provide a valid path."
             )
 
         db_fetch_yaml = os.path.join(args.database, "database_fetch_config.yaml")
@@ -1261,17 +1089,10 @@ The haystack modules are the following:
                 database_config = yaml.safe_load(fin)
 
         if os.path.exists(db_build_yaml) and os.path.exists(db_fetch_yaml):
-            raise RuntimeError(
-                "The database has not been build correctly. Please re build the database."
-            )
+            raise RuntimeError("The database has not been build correctly. Please re build the database.")
 
-        if (
-            os.path.exists(db_build_yaml) is False
-            and os.path.exists(db_fetch_yaml) is False
-        ):
-            raise RuntimeError(
-                "The database has not been build correctly or at all. Please re build the database."
-            )
+        if os.path.exists(db_build_yaml) is False and os.path.exists(db_fetch_yaml) is False:
+            raise RuntimeError("The database has not been build correctly or at all. Please re build the database.")
 
         sample_yaml = os.path.join(args.sample, "sample_config.yaml")
         if os.path.exists(sample_yaml):
@@ -1291,9 +1112,7 @@ The haystack modules are the following:
         analysis_config.update((k, v) for k, v in sample_config.items())
         analysis_config.update((k, v) for k, v in analysis_args.items())
 
-        analysis_config["analysis_output_dir"] = os.path.abspath(
-            analysis_config["analysis_output_dir"]
-        )
+        analysis_config["analysis_output_dir"] = os.path.abspath(analysis_config["analysis_output_dir"])
 
         if analysis_config["analysis_output_dir"]:
             if os.path.exists(analysis_config["analysis_output_dir"]):
@@ -1303,9 +1122,7 @@ The haystack modules are the following:
                         "Please chose another path for your sample output directory."
                     )
             else:
-                if not os.access(
-                    os.path.dirname(analysis_config["analysis_output_dir"]), os.W_OK
-                ):
+                if not os.access(os.path.dirname(analysis_config["analysis_output_dir"]), os.W_OK):
                     raise RuntimeError(
                         "This directory path you have provided is not writable. "
                         "Please chose another path for your sample output directory."
@@ -1323,15 +1140,11 @@ The haystack modules are the following:
         if args.mode == "filter":
             bowtie = ""
             if analysis_config["PE_MODERN"]:
-                bowtie = analysis_config[
-                    "analysis_output_dir"
-                ] + "/fastq/PE/{sample}_mapq_pair.readlen".format(
+                bowtie = analysis_config["analysis_output_dir"] + "/fastq/PE/{sample}_mapq_pair.readlen".format(
                     sample=analysis_config["sample_prefix"]
                 )
             elif analysis_config["PE_ANCIENT"] or analysis_config["SE"]:
-                bowtie = analysis_config[
-                    "analysis_output_dir"
-                ] + "/fastq/SE/{sample}_mapq.readlen".format(
+                bowtie = analysis_config["analysis_output_dir"] + "/fastq/SE/{sample}_mapq.readlen".format(
                     sample=analysis_config["sample_prefix"]
                 )
             target_list.append(bowtie)
@@ -1339,9 +1152,7 @@ The haystack modules are the following:
         if args.mode == "align":
             target_list.append(
                 analysis_config["analysis_output_dir"]
-                + "/sigma/{sample}_alignments.done".format(
-                    sample=analysis_config["sample_prefix"]
-                )
+                + "/sigma/{sample}_alignments.done".format(sample=analysis_config["sample_prefix"])
             )
 
         if args.mode == "likelihoods":
@@ -1373,45 +1184,30 @@ The haystack modules are the following:
 
             target_list.append(
                 analysis_config["analysis_output_dir"]
-                + "/dirichlet_reads/{sample}_dirichlet_reads.done".format(
-                    sample=analysis_config["sample_prefix"]
-                )
+                + "/dirichlet_reads/{sample}_dirichlet_reads.done".format(sample=analysis_config["sample_prefix"])
             )
 
         if args.mode == "mapdamage":
             target_list.append(
                 analysis_config["analysis_output_dir"]
-                + "/mapdamage/{sample}_mapdamage.done".format(
-                    sample=analysis_config["sample_prefix"]
-                )
+                + "/mapdamage/{sample}_mapdamage.done".format(sample=analysis_config["sample_prefix"])
             )
 
         analysis_yaml = os.path.join(
-            str(Path.home()),
-            analysis_config["analysis_output_dir"],
-            analysis_config["sample_prefix"] + "_config.yaml",
+            str(Path.home()), analysis_config["analysis_output_dir"], analysis_config["sample_prefix"] + "_config.yaml",
         )
 
         if not os.path.exists(analysis_yaml):
             os.makedirs(
-                os.path.join(str(Path.home()), analysis_config["analysis_output_dir"]),
-                exist_ok=True,
+                os.path.join(str(Path.home()), analysis_config["analysis_output_dir"]), exist_ok=True,
             )
-            analysis_options = {
-                k: v
-                for k, v in analysis_config.items()
-                if (k, v) not in repo_rip_config.items()
-            }
+            analysis_options = {k: v for k, v in analysis_config.items() if (k, v) not in repo_rip_config.items()}
             with open(analysis_yaml, "w") as outfile:
                 yaml.safe_dump(analysis_options, outfile, default_flow_style=False)
 
         analysis_config["workflow_dir"] = os.path.join(thisdir, "workflow")
 
-        user_options = {
-            k: v
-            for k, v in analysis_args.items()
-            if (k, v) not in repo_rip_config.items()
-        }
+        user_options = {k: v for k, v in analysis_args.items() if (k, v) not in repo_rip_config.items()}
         # print(database_config)
         # print(sample_config)
 

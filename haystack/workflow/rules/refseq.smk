@@ -78,9 +78,7 @@ def get_refseq_genome_sequences(wildcards):
     genbank_sequences = pd.read_csv(pick_sequences.output.genbank_genomes, sep="\t")
     refseq_plasmids = pd.read_csv(pick_sequences.output.refseq_plasmids, sep="\t")
     genbank_plasmids = pd.read_csv(pick_sequences.output.genbank_plasmids, sep="\t")
-    sequences = pd.concat(
-        [refseq_sequences, genbank_sequences, refseq_plasmids, genbank_plasmids], axis=0
-    )
+    sequences = pd.concat([refseq_sequences, genbank_sequences, refseq_plasmids, genbank_plasmids], axis=0)
 
     if len(sequences) == 0:
         raise RuntimeError("The entrez pick sequences file is empty.")
@@ -94,9 +92,7 @@ def get_refseq_genome_sequences(wildcards):
         )
         inputs.append(
             config["genome_cache_folder"]
-            + "/{orgname}/{accession}.fasta.gz".format(
-                orgname=orgname, accession=accession
-            )
+            + "/{orgname}/{accession}.fasta.gz".format(orgname=orgname, accession=accession)
         )
 
     return inputs
@@ -135,9 +131,7 @@ def get_assembly_genome_sequences(wildcards):
     invalid_assembly_sequences = pd.read_csv(invalid_assemblies.output[0], sep="\t")
 
     assembly_sequences = assembly_sequences[
-        ~assembly_sequences["GBSeq_accession-version"].isin(
-            invalid_assembly_sequences["GBSeq_accession-version"]
-        )
+        ~assembly_sequences["GBSeq_accession-version"].isin(invalid_assembly_sequences["GBSeq_accession-version"])
     ]
 
     inputs = []
@@ -149,9 +143,7 @@ def get_assembly_genome_sequences(wildcards):
         )
         inputs.append(
             config["genome_cache_folder"]
-            + "/{orgname}/{accession}.fasta.gz".format(
-                orgname=orgname, accession=accession
-            )
+            + "/{orgname}/{accession}.fasta.gz".format(orgname=orgname, accession=accession)
         )
 
     return inputs

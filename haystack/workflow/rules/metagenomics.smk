@@ -11,23 +11,14 @@ from scripts.rip_utilities import get_total_paths, normalise_name
 MESSAGE_SUFFIX = "(output: {output} and log: {log})" if config["debug"] else ""
 
 
-
 def get_bams_for_ts_tv_count(wildcards):
     if config["PE_MODERN"]:
-        return config[
-            "analysis_output_dir"
-        ] + "/alignments/{sample}/PE/{orgname}/{orgname}_{accession}.bam".format(
-            sample=wildcards.sample,
-            orgname=wildcards.orgname,
-            accession=wildcards.accession,
+        return config["analysis_output_dir"] + "/alignments/{sample}/PE/{orgname}/{orgname}_{accession}.bam".format(
+            sample=wildcards.sample, orgname=wildcards.orgname, accession=wildcards.accession,
         )
     elif config["PE_ANCIENT"] or config["SE"]:
-        return config[
-            "analysis_output_dir"
-        ] + "/alignments/{sample}/SE/{orgname}/{orgname}_{accession}.bam".format(
-            sample=wildcards.sample,
-            orgname=wildcards.orgname,
-            accession=wildcards.accession,
+        return config["analysis_output_dir"] + "/alignments/{sample}/SE/{orgname}/{orgname}_{accession}.bam".format(
+            sample=wildcards.sample, orgname=wildcards.orgname, accession=wildcards.accession,
         )
 
 
@@ -35,17 +26,12 @@ rule count_accession_ts_tv:
     input:
         get_bams_for_ts_tv_count,
     output:
-        config[
-            "analysis_output_dir"
-        ] + "/ts_tv_counts/{sample}/{orgname}_count_{accession}.csv",
+        config["analysis_output_dir"] + "/ts_tv_counts/{sample}/{orgname}_count_{accession}.csv",
     log:
-        config[
-            "analysis_output_dir"
-        ] + "/ts_tv_counts/{sample}/{orgname}_count_{accession}.log",
+        config["analysis_output_dir"] + "/ts_tv_counts/{sample}/{orgname}_count_{accession}.log",
     benchmark:
         repeat(
-            "benchmarks/count_accession_ts_tv_{sample}_{orgname}_{accession}.benchmark.txt",
-            1,
+            "benchmarks/count_accession_ts_tv_{sample}_{orgname}_{accession}.benchmark.txt", 1,
         )
     params:
         pairs=config["PE_MODERN"],
@@ -106,13 +92,9 @@ rule initial_ts_tv:
 
 def get_right_readlen(wildcards):
     if config["PE_MODERN"]:
-        return config[
-            "analysis_output_dir"
-        ] + "/fastq/PE/{sample}_mapq_pair.readlen".format(sample=wildcards.sample)
+        return config["analysis_output_dir"] + "/fastq/PE/{sample}_mapq_pair.readlen".format(sample=wildcards.sample)
     else:
-        return config["analysis_output_dir"] + "/fastq/SE/{sample}_mapq.readlen".format(
-            sample=wildcards.sample
-        )
+        return config["analysis_output_dir"] + "/fastq/SE/{sample}_mapq.readlen".format(sample=wildcards.sample)
 
 
 rule calculate_likelihoods:
@@ -121,16 +103,10 @@ rule calculate_likelihoods:
         get_right_readlen,
         get_ts_tv_count_paths,
     output:
-        config[
-            "analysis_output_dir"
-        ] + "/probabilities/{sample}/{sample}_likelihood_ts_tv_matrix.csv",
-        config[
-            "analysis_output_dir"
-        ] + "/probabilities/{sample}/{sample}_probability_model_params.json",
+        config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_likelihood_ts_tv_matrix.csv",
+        config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_probability_model_params.json",
     log:
-        config[
-            "analysis_output_dir"
-        ] + "/probabilities/{sample}/{sample}_likelihood_ts_tv_matrix.log",
+        config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_likelihood_ts_tv_matrix.log",
     benchmark:
         repeat("benchmarks/calculate_likelihoods_{sample}.benchmark.txt", 1)
     message:
@@ -144,21 +120,13 @@ rule calculate_likelihoods:
 
 rule calculate_taxa_probabilities:
     input:
-        config[
-            "analysis_output_dir"
-        ] + "/probabilities/{sample}/{sample}_likelihood_ts_tv_matrix.csv",
-        config[
-            "analysis_output_dir"
-        ] + "/probabilities/{sample}/{sample}_probability_model_params.json",
+        config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_likelihood_ts_tv_matrix.csv",
+        config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_probability_model_params.json",
         config["sample_output_dir"] + "/fastq_inputs/meta/{sample}.size",
     output:
-        config[
-            "analysis_output_dir"
-        ] + "/probabilities/{sample}/{sample}_posterior_probabilities.tsv",
+        config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_posterior_probabilities.tsv",
     log:
-        config[
-            "analysis_output_dir"
-        ] + "/probabilities/{sample}/{sample}_posterior_probabilities.log",
+        config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_posterior_probabilities.log",
     benchmark:
         repeat("benchmarks/calculate_taxa_probabilities_{sample}.benchmark.txt", 1)
     params:
@@ -173,22 +141,15 @@ rule calculate_taxa_probabilities:
 
 rule coverage_t_test:
     input:
-        config[
-            "analysis_output_dir"
-        ] + "/alignments/{sample}/{reads}/{orgname}/{orgname}_{accession}.bam",
+        config["analysis_output_dir"] + "/alignments/{sample}/{reads}/{orgname}/{orgname}_{accession}.bam",
         config["genome_cache_folder"] + "/{orgname}/{accession}.fasta.gz.fai",
     output:
-        config[
-            "analysis_output_dir"
-        ] + "/probabilities/{sample}/{orgname}_t_test_pvalue_{accession}_{reads}.txt",
+        config["analysis_output_dir"] + "/probabilities/{sample}/{orgname}_t_test_pvalue_{accession}_{reads}.txt",
     log:
-        config[
-            "analysis_output_dir"
-        ] + "/probabilities/{sample}/{orgname}_t_test_pvalue_{accession}_{reads}.log",
+        config["analysis_output_dir"] + "/probabilities/{sample}/{orgname}_t_test_pvalue_{accession}_{reads}.log",
     benchmark:
         repeat(
-            "benchmarks/coverage_t_test_{sample}_{orgname}_{accession}_{reads}.benchmark.txt",
-            1,
+            "benchmarks/coverage_t_test_{sample}_{orgname}_{accession}_{reads}.benchmark.txt", 1,
         )
     message:
         "Performing a T-Test to assess if reads from sample {wildcards.sample} represent "
@@ -231,10 +192,7 @@ def get_t_test_values_paths(wildcards):
         inputs.append(
             config["analysis_output_dir"]
             + "/probabilities/{sample}/{orgname}_t_test_pvalue_{accession}_{reads}.txt".format(
-                sample=wildcards.sample,
-                orgname=orgname,
-                accession=accession,
-                reads=reads,
+                sample=wildcards.sample, orgname=orgname, accession=accession, reads=reads,
             )
         )
 
@@ -245,13 +203,9 @@ rule cat_pvalues:
     input:
         get_t_test_values_paths,
     output:
-        config[
-            "analysis_output_dir"
-        ] + "/probabilities/{sample}/{sample}_t_test_pvalues.txt",
+        config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_t_test_pvalues.txt",
     log:
-        config[
-            "analysis_output_dir"
-        ] + "/probabilities/{sample}/{sample}_t_test_pvalues.log",
+        config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_t_test_pvalues.log",
     benchmark:
         repeat("benchmarks/cat_pvalues_{sample}.benchmark.txt", 1)
     message:
@@ -262,21 +216,13 @@ rule cat_pvalues:
 
 rule calculate_dirichlet_abundances:
     input:
-        config[
-            "analysis_output_dir"
-        ] + "/probabilities/{sample}/{sample}_likelihood_ts_tv_matrix.csv",
-        config[
-            "analysis_output_dir"
-        ] + "/probabilities/{sample}/{sample}_t_test_pvalues.txt",
+        config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_likelihood_ts_tv_matrix.csv",
+        config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_t_test_pvalues.txt",
         config["sample_output_dir"] + "/fastq_inputs/meta/{sample}.size",
     output:
-        config[
-            "analysis_output_dir"
-        ] + "/probabilities/{sample}/{sample}_posterior_abundance.tsv",
+        config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_posterior_abundance.tsv",
     log:
-        config[
-            "analysis_output_dir"
-        ] + "/probabilities/{sample}/{sample}_posterior_abundance.log",
+        config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_posterior_abundance.log",
     benchmark:
         repeat("benchmarks/calculate_dirichlet_abundances_{sample}.benchmark.txt", 1)
     message:

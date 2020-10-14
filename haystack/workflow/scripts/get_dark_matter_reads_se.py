@@ -34,7 +34,5 @@ if __name__ == "__main__":
     sys.stderr = open(snakemake.log[0], "w")
 
     get_dark_matter_reads_se(
-        input_fastq=snakemake.input[0],
-        matrix_file=snakemake.input[1],
-        output_fastq=snakemake.output[0],
+        input_fastq=snakemake.input[0], matrix_file=snakemake.input[1], output_fastq=snakemake.output[0],
     )

@@ -29,13 +29,10 @@ rule dedup_merged_mapdamage:
         ] + "/rmdup_bam/{sample}/{reads}/{orgname}/{orgname}_{accession}_dirichlet_{reads}_rmdup.bam",
     benchmark:
         repeat(
-            "benchmarks/dedup_merged_{sample}_{reads}_{orgname}_{accession}.benchmark.txt",
-            1,
+            "benchmarks/dedup_merged_{sample}_{reads}_{orgname}_{accession}.benchmark.txt", 1,
         )
     params:
-        output=(
-            config["analysis_output_dir"] + "/rmdup_bam/{sample}/{reads}/{orgname}/"
-        ),
+        output=config["analysis_output_dir"] + "/rmdup_bam/{sample}/{reads}/{orgname}/",
     message:
         "Removing duplicate reads that were aligned to taxon {wildcards.orgname}, for sample {wildcards.sample} "
         "{MESSAGE_SUFFIX}"
@@ -53,14 +50,9 @@ rule run_mapdamage:
         ),
         ref_genome=config["genome_cache_folder"] + "/{orgname}/{accession}.fasta.gz",
     log:
-        config[
-            "analysis_output_dir"
-        ] + "/mapdamage/{sample}/{reads}/{orgname}_{accession}.log",
+        config["analysis_output_dir"] + "/mapdamage/{sample}/{reads}/{orgname}_{accession}.log",
     output:
-        directory(
-            config["analysis_output_dir"]
-            + "/mapdamage/{sample}/{reads}/{orgname}-{accession}"
-        ),
+        directory(config["analysis_output_dir"] + "/mapdamage/{sample}/{reads}/{orgname}-{accession}"),
     message:
         "Performing a mapDamage analysis for taxon {wildcards.orgname}, for sample {wildcards.sample} {MESSAGE_SUFFIX}"
     conda:
@@ -104,10 +96,7 @@ def get_mapdamage_out_dir_paths(wildcards):
         inputs.append(
             config["analysis_output_dir"]
             + "/mapdamage/{sample}/{reads}/{orgname}-{accession}".format(
-                sample=wildcards.sample,
-                orgname=orgname,
-                accession=accession,
-                reads=reads,
+                sample=wildcards.sample, orgname=orgname, accession=accession, reads=reads,
             )
         )
 
@@ -118,9 +107,7 @@ def get_mapdamage_out_dir_paths(wildcards):
             "WARNING: dedup is treating PE uncollapsed reads as SE reads. "
             "Removing PCR duplicates might not have been done correctly."
         )
-        print(
-            "WARNING: mapDamage has not been optimised to analyse paired end alignment data."
-        )
+        print("WARNING: mapDamage has not been optimised to analyse paired end alignment data.")
         return inputs
 
 

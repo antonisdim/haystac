@@ -19,9 +19,7 @@ def get_grey_matter_reads(input_fastq, matrix_file, output_fastq):
 
     ts_tv_group = dirichlet_matrix.groupby("Read_ID").sum().squeeze()
     grey_matter_df = ts_tv_group.where(ts_tv_group == 0)
-    grey_matter_reads = grey_matter_df[
-        grey_matter_df["Dirichlet_Assignment"].notna()
-    ].index.tolist()
+    grey_matter_reads = grey_matter_df[grey_matter_df["Dirichlet_Assignment"].notna()].index.tolist()
 
     with gzip.open(input_fastq, "rt") as input_handle:
         with gzip.open(output_fastq, "wt") as output_handle:
@@ -37,7 +35,5 @@ if __name__ == "__main__":
     sys.stderr = open(snakemake.log[0], "w")
 
     get_grey_matter_reads(
-        input_fastq=snakemake.input[0],
-        matrix_file=snakemake.input[1],
-        output_fastq=snakemake.output[0],
+        input_fastq=snakemake.input[0], matrix_file=snakemake.input[1], output_fastq=snakemake.output[0],
     )

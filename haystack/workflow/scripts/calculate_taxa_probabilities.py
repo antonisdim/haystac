@@ -15,12 +15,7 @@ import os
 
 
 def calculate_taxa_probabilities(
-    ts_tv_matrix_file,
-    params_file,
-    sample_name,
-    total_fastq_reads,
-    outputfile,
-    submatrices,
+    ts_tv_matrix_file, params_file, sample_name, total_fastq_reads, outputfile, submatrices,
 ):
     """
     Function that calculates the species identification posterior probabilities.
@@ -30,46 +25,28 @@ def calculate_taxa_probabilities(
     "If submatrices" subsample the ts_tv_matrix_file in a for loop way. Could we parallelise this step ?
     """
 
-    assert os.stat(
-        ts_tv_matrix_file
-    ).st_size, "The ts_tv count file is empty {}".format(ts_tv_file)
+    assert os.stat(ts_tv_matrix_file).st_size, "The ts_tv count file is empty {}".format(ts_tv_file)
 
-    assert os.stat(
-        params_file
-    ).st_size, "The probability model parameters file is empty {}".format(params_file)
+    assert os.stat(params_file).st_size, "The probability model parameters file is empty {}".format(params_file)
 
     print("all taxa", "\t", sample_name, file=sys.stderr)
 
     calculate_probabilities(
-        ts_tv_matrix_file,
-        params_file,
-        sample_name,
-        total_fastq_reads,
-        outputfile,
-        submatrix="all taxa",
+        ts_tv_matrix_file, params_file, sample_name, total_fastq_reads, outputfile, submatrix="all taxa",
     )
 
 
 def calculate_probabilities(
-    ts_tv_matrix_file,
-    params_file,
-    sample_name,
-    total_fastq_reads,
-    outputfile,
-    submatrix,
+    ts_tv_matrix_file, params_file, sample_name, total_fastq_reads, outputfile, submatrix,
 ):
     total_fastq_reads = float(open(total_fastq_reads, "r").read())
 
-    read_count = len(
-        pd.read_csv(ts_tv_matrix_file, sep=",", usecols=["Read_ID"])["Read_ID"].unique()
-    )
+    read_count = len(pd.read_csv(ts_tv_matrix_file, sep=",", usecols=["Read_ID"])["Read_ID"].unique())
 
     if not read_count:
         print("File is empty, moving on.")
 
-    ts_tv_matrix = pd.read_csv(
-        ts_tv_matrix_file, sep=",", usecols=["Taxon", "Ts", "Tv"]
-    )
+    ts_tv_matrix = pd.read_csv(ts_tv_matrix_file, sep=",", usecols=["Taxon", "Ts", "Tv"])
 
     model_params = pd.read_json(params_file, orient="index").squeeze()
 
@@ -90,15 +67,11 @@ def calculate_probabilities(
     for index, row in mismatch_df.iterrows():
         # print row['Taxon'], row['Ts'], row['Vs'], '\n'
 
-        mismatch_t_vec = (
-            mismatch_df["Ts"].subtract(row["Ts"]).rpow(model_params["delta_t"])
-        )
+        mismatch_t_vec = mismatch_df["Ts"].subtract(row["Ts"]).rpow(model_params["delta_t"])
 
         # print  Mismatch_df['Ts'].subtract(row['Ts'])
 
-        mismatch_v_vec = (
-            mismatch_df["Tv"].subtract(row["Tv"]).rpow(model_params["delta_v"])
-        )
+        mismatch_v_vec = mismatch_df["Tv"].subtract(row["Tv"]).rpow(model_params["delta_v"])
 
         # print Mismatch_df['Vs'].subtract(row['Vs'])
 

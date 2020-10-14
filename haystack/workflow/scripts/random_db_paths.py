@@ -24,7 +24,5 @@ if __name__ == "__main__":
     sys.stderr = open(snakemake.log[0], "w")
 
     random_db_paths(
-        input_list=snakemake.input,
-        output=snakemake.output[0],
-        seed=snakemake.params[0],
+        input_list=snakemake.input, output=snakemake.output[0], seed=snakemake.params[0],
     )
