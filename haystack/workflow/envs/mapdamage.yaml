@@ -5,7 +5,7 @@ dependencies:
   - r-inline=0.3.15
   - r-gam=1.16.1
   - r-RcppGSL=0.3.8
-  - r-ggplot2=2_3.3.0
+  - r-ggplot2=3.3.0
   - r-Rcpp=1.0.4.6
   - pip=19.3.1
   - pip:
