@@ -5,9 +5,9 @@ rank:
 mismatch_probability:
   0.05
 bowtie2_threads:
-  1
+  15
 bowtie2_scaling:
-  2.5
+  5
 
 dry_run:
   False
