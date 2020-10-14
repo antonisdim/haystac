@@ -8,7 +8,7 @@ nohup*
 .idea
 __pycache__
 
-
+docs/_build/
 */bam/*
 */bowtie/*
 */entrez/*

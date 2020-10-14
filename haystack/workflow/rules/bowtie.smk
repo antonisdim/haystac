@@ -12,11 +12,6 @@ from math import ceil
 SUBSAMPLE_FIXED_READS = 200000
 MESSAGE_SUFFIX = "(output: {output} and log: {log})" if config["debug"] else ""
 
-##### Target rules #####
-
-from scripts.rip_utilities import get_total_paths, normalise_name
-
-
 def get_inputs_for_bowtie_r1(wildcards):
 
     if config["trim_adapters"]:

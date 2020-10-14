@@ -8,8 +8,6 @@ __license__ = "MIT"
 
 MESSAGE_SUFFIX = "(output: {{output}} and log: {{log}})" if config["debug"] else ""
 
-##### Target rules #####
-
 
 rule get_sra_fastq_se:
     output:

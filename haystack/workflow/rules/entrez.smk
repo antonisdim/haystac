@@ -7,12 +7,9 @@ __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
 import os
-import sys
 import pandas as pd
 
 MESSAGE_SUFFIX = "(output: {output} and log: {log})" if config["debug"] else ""
-
-##### Target rules #####
 
 
 from scripts.entrez_nuccore_query import CHUNK_SIZE
@@ -21,8 +18,7 @@ from scripts.rip_utilities import normalise_name, get_accession_ftp_path
 
 checkpoint entrez_find_accessions:
     output:
-        temp(config["db_output"] + "/entrez/entrez-accessions.tsv"), # log:
-         #     temp(config["db_output"] + "/entrez/entrez-accessions.log"),
+        temp(config["db_output"] + "/entrez/entrez-accessions.tsv"),
     benchmark:
         repeat("benchmarks/entrez_find_accessions.benchmark.txt", 1)
     message:
@@ -55,12 +51,11 @@ rule entrez_nuccore_query:
         "../scripts/entrez_nuccore_query.py"
 
 
-# noinspection PyUnresolvedReferences
-def get_nuccore_chunks(wildcards):
+def get_nuccore_chunks(_):
     """
     Get all the accession chunks for the {query}-nuccore.tsv file.
     """
-
+    # noinspection PyUnresolvedReferences
     pick_accessions = checkpoints.entrez_find_accessions.get()
     sequences = pd.read_csv(pick_accessions.output[0], sep="\t")
 
@@ -147,18 +142,15 @@ def get_rsync_url(wildcards):
 
     try:
         url = get_accession_ftp_path(wildcards.accession, config)
-        file_url = os.path.join(
-            url, os.path.basename(url) + "_genomic.fna.gz"
-        )  # .replace("ftp://", "rsync://")
-        # print(url)
-        # print(file_url)
+        file_url = os.path.join(url, os.path.basename(url) + "_genomic.fna.gz")
         if file_url != "_genomic.fna.gz":
             return file_url
         else:
             return ""
     except RuntimeError:
         return ""
-    except TypeError:  # sometimes NCBI returns a None type url, but the URL does exist if I do it independently
+    except TypeError:
+        # sometimes NCBI returns a None type url, but the URL does exist if I do it independently
         get_rsync_url(wildcards)
 
 
@@ -190,11 +182,11 @@ rule entrez_download_sequence:
         "--accession {wildcards.accession} --email {config[email]} --output_file {output}) 2> {log}"
 
 
-# noinspection PyUnresolvedReferences
 def get_fasta_sequences(wildcards):
     """
     Get all the FASTA sequences for the multi-FASTA file.
     """
+    # noinspection PyUnresolvedReferences
     pick_sequences = checkpoints.entrez_pick_sequences.get()
     sequences = pd.read_csv(pick_sequences.output[0], sep="\t")
 

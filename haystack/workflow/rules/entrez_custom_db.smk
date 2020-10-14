@@ -7,11 +7,10 @@ __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
 import pandas as pd
+
 from scripts.rip_utilities import normalise_name, check_unique_taxa_in_custom_input
 
 MESSAGE_SUFFIX = "(output: {output} and log: {log})" if config["debug"] else ""
-
-##### Target rules #####
 
 
 rule entrez_custom_sequences:

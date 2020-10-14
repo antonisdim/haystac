@@ -8,8 +8,6 @@ __license__ = "MIT"
 
 MESSAGE_SUFFIX = "(output: {output} and log: {log})" if config["debug"] else ""
 
-##### Target rules #####
-
 
 def get_inputs_for_count_fastq_len(wildcards):
 

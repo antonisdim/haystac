@@ -9,13 +9,9 @@ __license__ = "MIT"
 import pandas as pd
 
 
-##### Target rules #####
-
 from scripts.rip_utilities import get_total_paths, normalise_name
 
 MESSAGE_SUFFIX = "(output: {output} and log: {log})" if config["debug"] else ""
-
-##### Target rules #####
 
 
 rule fasta_idx:
@@ -67,6 +63,7 @@ def get_idx_entrez(wildcards):
     if not config["query"]:
         return []
 
+    # noinspection PyUnresolvedReferences
     pick_sequences = checkpoints.entrez_pick_sequences.get()
     sequences = pd.read_csv(pick_sequences.output[0], sep="\t")
 
@@ -103,6 +100,7 @@ def get_idx_ref_gen(wildcards):
     if not config["refseq_rep"]:
         return []
 
+    # noinspection PyUnresolvedReferences
     refseq_rep_prok = checkpoints.entrez_refseq_accessions.get()
 
     refseq_genomes = pd.read_csv(refseq_rep_prok.output[0], sep="\t")
@@ -144,10 +142,12 @@ def get_idx_assembly(wildcards):
     if not config["refseq_rep"]:
         return []
 
+    # noinspection PyUnresolvedReferences
     refseq_rep_prok = checkpoints.entrez_refseq_accessions.get()
 
     assemblies = pd.read_csv(refseq_rep_prok.output[2], sep="\t")
 
+    # noinspection PyUnresolvedReferences
     invalid_assemblies = checkpoints.entrez_invalid_assemblies.get()
     invalid_assembly_sequences = pd.read_csv(invalid_assemblies.output[0], sep="\t")
 

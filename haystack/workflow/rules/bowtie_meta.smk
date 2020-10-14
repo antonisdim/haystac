@@ -6,15 +6,10 @@ __copyright__ = "Copyright 2020, University of Oxford"
 __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
-import os
-import pandas as pd
-
 MIN_FRAG_LEN = 0
 MAX_FRAG_LEN = 1000
 META_ALN_MIN_SCORE_CONSTANT = -6
 MESSAGE_SUFFIX = "(output: {output} and log: {log})" if config["debug"] else ""
-
-##### Target rules #####
 
 from scripts.rip_utilities import get_total_paths, normalise_name
 
@@ -29,7 +24,7 @@ def get_min_score(wildcards, input):
 
 rule align_taxon_single_end:
     input:
-        fastq=config["analysis_output_dir"] + "/fastq/SE/{sample}_mapq.fastq.gz", # bt2idx="database/{orgname}/{accession}.1.bt2l",
+        fastq=config["analysis_output_dir"] + "/fastq/SE/{sample}_mapq.fastq.gz",
         db_idx=config["genome_cache_folder"] + "/{orgname}/{accession}.1.bt2l",
         readlen=config["analysis_output_dir"] + "/fastq/SE/{sample}_mapq.readlen",
     log:
@@ -54,7 +49,7 @@ rule align_taxon_single_end:
         min_score=get_min_score,
         min_frag_length=MIN_FRAG_LEN,
         max_frag_length=MAX_FRAG_LEN,
-    threads: config["bowtie2_threads"] # usually single threaded - the user can change it
+    threads: config["bowtie2_threads"]
     message:
         "Aligning the filtered reads from sample {wildcards.sample} against taxon {wildcards.orgname} {MESSAGE_SUFFIX}"
     conda:
@@ -72,7 +67,7 @@ rule align_taxon_single_end:
 rule align_taxon_paired_end:
     input:
         fastq_r1=config["analysis_output_dir"] + "/fastq/PE/{sample}_R1_mapq.fastq.gz",
-        fastq_r2=config["analysis_output_dir"] + "/fastq/PE/{sample}_R2_mapq.fastq.gz", # bt2idx="database/{orgname}/{accession}.1.bt2l",
+        fastq_r2=config["analysis_output_dir"] + "/fastq/PE/{sample}_R2_mapq.fastq.gz",
         db_idx=config["genome_cache_folder"] + "/{orgname}/{accession}.1.bt2l",
         readlen=config["analysis_output_dir"] + "/fastq/PE/{sample}_mapq_pair.readlen",
     log:
@@ -112,7 +107,6 @@ def get_bamfile_paths(wildcards):
     """
     Get all the individual bam file paths for the taxa in our database.
     """
-
     sequences = get_total_paths(
         wildcards,
         checkpoints,

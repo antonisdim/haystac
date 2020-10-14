@@ -11,8 +11,6 @@ from scripts.rip_utilities import get_total_paths, normalise_name
 MESSAGE_SUFFIX = "(output: {output} and log: {log})" if config["debug"] else ""
 
 
-##### Target rules #####
-
 
 rule get_dirichlet_reads:
     input:
@@ -104,11 +102,8 @@ rule get_grey_matter_reads_pe:
 
 rule get_dark_matter_reads_se:
     input:
-        fastq=get_inputs_for_bowtie_r1,
-        dirichlet_matrix=(
-            config["analysis_output_dir"]
-            + "/probabilities/{sample}/{sample}_likelihood_ts_tv_matrix.csv"
-        ),
+        fastq=config["fastq"] if config["fastq"] else config["fastq_r1"],
+        dirichlet_matrix=config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_likelihood_ts_tv_matrix.csv",
     output:
         config[
             "analysis_output_dir"
@@ -130,12 +125,9 @@ rule get_dark_matter_reads_se:
 
 rule get_dark_matter_reads_pe:
     input:
-        fastq_r1=get_inputs_for_bowtie_r1,
-        fastq_r2=get_inputs_for_bowtie_r2,
-        dirichlet_matrix=(
-            config["analysis_output_dir"]
-            + "/probabilities/{sample}/{sample}_likelihood_ts_tv_matrix.csv"
-        ),
+        fastq_r1=config["fastq_r1"] if config["fastq_r1"] else config["fastq"],
+        fastq_r2=config["fastq_r2"],
+        dirichlet_matrix=config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_likelihood_ts_tv_matrix.csv",
     output:
         config[
             "analysis_output_dir"
@@ -163,7 +155,6 @@ def get_dirichlet_bams(wildcards):
     """
     Get all the individual cav file paths for the taxa in our database.
     """
-
     sequences = get_total_paths(
         wildcards,
         checkpoints,
@@ -235,12 +226,6 @@ def get_dark_matter_reads():
             config["analysis_output_dir"]
             + "/dirichlet_reads/{sample}/Dark_Matter/Dark_Matter_dirichlet.fastq.gz"
         )
-
-
-# get dark matter, get grey matter
-
-# input all
-
 
 rule all_dirichlet:
     input:

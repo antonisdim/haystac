@@ -9,24 +9,10 @@ __license__ = "MIT"
 
 MESSAGE_SUFFIX = "(output: {output} and log: {log})" if config["debug"] else ""
 
-##### Target rules #####
-
-
-def get_adapter_removal_r1(wildcards):
-    if config["fastq"]:
-        return config["fastq"]
-    elif config["fastq_r1"]:
-        return config["fastq_r1"]
-
-
-def get_adapter_removal_r2(wildcards):
-    if config["fastq_r2"]:
-        return config["fastq_r2"]
-
 
 rule adapterremoval_single_end:
     input:
-        fastq=get_adapter_removal_r1,
+        fastq=config["fastq"] if config["fastq"] else config["fastq_r1"],
     log:
         config["sample_output_dir"] + "/fastq_inputs/SE/{accession}_adRm.log",
     output:
@@ -45,8 +31,8 @@ rule adapterremoval_single_end:
 
 rule adapterremoval_paired_end_ancient:
     input:
-        fastq_r1=get_adapter_removal_r1,
-        fastq_r2=get_adapter_removal_r2,
+        fastq_r1=config["fastq_r1"] if config["fastq_r1"] else config["fastq"],
+        fastq_r2=config["fastq_r2"],
     log:
         config["sample_output_dir"] + "/fastq_inputs/PE_anc/{accession}_adRm.log",
     output:
@@ -71,8 +57,8 @@ rule adapterremoval_paired_end_ancient:
 
 rule adapterremoval_paired_end_modern:
     input:
-        fastq_r1=get_adapter_removal_r1,
-        fastq_r2=get_adapter_removal_r2,
+        fastq_r1=config["fastq_r1"] if config["fastq_r1"] else config["fastq"],
+        fastq_r2=config["fastq_r2"],
     log:
         config["sample_output_dir"] + "/fastq_inputs/PE_mod/{accession}_adRm.log",
     output:

@@ -8,7 +8,6 @@ bowtie2_threads:
   15
 bowtie2_scaling:
   5
-
 dry_run:
   False
 db_output:
@@ -54,12 +53,10 @@ read_probability_threshold:
   0.75
 seed:
   1
-
 unlock:
   False
 debug:
   False
-snakemake:
-
 use_conda:
   True
+snakemake:

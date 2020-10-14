@@ -11,8 +11,6 @@ from scripts.rip_utilities import get_total_paths, normalise_name
 MESSAGE_SUFFIX = "(output: {output} and log: {log})" if config["debug"] else ""
 
 
-##### Target rules #####
-
 
 def get_bams_for_ts_tv_count(wildcards):
     if config["PE_MODERN"]:
@@ -63,7 +61,6 @@ def get_ts_tv_count_paths(wildcards):
     """
     Get all the individual cav file paths for the taxa in our database.
     """
-
     sequences = get_total_paths(
         wildcards,
         checkpoints,
@@ -103,8 +100,6 @@ rule initial_ts_tv:
         repeat("benchmarks/initial_ts_tv_{sample}.benchmark.txt", 1)
     message:
         "Concatenating all the Ts and Tv count files for sample {wildcards.sample} {MESSAGE_SUFFIX}"
-    conda:
-        "../envs/python.yaml"
     script:
         "../scripts/concat_files.py"
 
@@ -144,7 +139,7 @@ rule calculate_likelihoods:
     conda:
         "../envs/maths.yaml"
     script:
-        "../scripts/calculate_likelihoods.py" #todo ask Evan to check if they are the same with the SQL commands
+        "../scripts/calculate_likelihoods.py"
 
 
 rule calculate_taxa_probabilities:
@@ -204,7 +199,6 @@ rule coverage_t_test:
         "../scripts/coverage_t_test.py"
 
 
-# noinspection PyUnresolvedReferences
 def get_t_test_values_paths(wildcards):
     """
     Get all the individual cav file paths for the taxa in our database.
@@ -262,8 +256,6 @@ rule cat_pvalues:
         repeat("benchmarks/cat_pvalues_{sample}.benchmark.txt", 1)
     message:
         "Concatenating all the T-Test p-value outputs for sample {wildcards.sample} {MESSAGE_SUFFIX}"
-    conda:
-        "../envs/python.yaml"
     script:
         "../scripts/concat_files.py"
 

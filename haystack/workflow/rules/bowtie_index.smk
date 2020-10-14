@@ -16,8 +16,6 @@ MEGABYTE = float(1024 ** 2)
 MAX_MEM_MB = virtual_memory().total / MEGABYTE
 MESSAGE_SUFFIX = "(output: {output} and log: {log})" if config["debug"] else ""
 
-##### Target rules #####
-
 from scripts.rip_utilities import get_total_paths, normalise_name
 
 
@@ -65,8 +63,6 @@ rule random_db_paths:
         seed=config["seed"],
     message:
         "The database genomes are being placed in a random order {MESSAGE_SUFFIX}"
-    conda:
-        "../envs/python.yaml"
     script:
         "../scripts/random_db_paths.py"
 

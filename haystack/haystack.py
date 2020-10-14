@@ -518,7 +518,7 @@ The haystack modules are the following:
             parser.print_help()
             parser.exit()
 
-        snakefile = os.path.join(thisdir, "workflow", "Snakefile_db")
+        snakefile = os.path.join(thisdir, "workflow", "database.smk")
         if not os.path.exists(snakefile):
             sys.stderr.write("Error: cannot find Snakefile at {}\n".format(snakefile))
             sys.exit(-1)
@@ -857,7 +857,7 @@ The haystack modules are the following:
             parser.print_help()
             parser.exit()
 
-        snakefile = os.path.join(thisdir, "workflow", "Snakefile_sample")
+        snakefile = os.path.join(thisdir, "workflow", "sample.smk")
         if not os.path.exists(snakefile):
             sys.stderr.write("Error: cannot find Snakefile at {}\n".format(snakefile))
             sys.exit(-1)
@@ -1216,7 +1216,7 @@ The haystack modules are the following:
 
         print("The selected mode for sample analysis is {}".format(args.mode))
 
-        snakefile = os.path.join(thisdir, "workflow", "Snakefile")
+        snakefile = os.path.join(thisdir, "workflow", "analyse.smk")
         if not os.path.exists(snakefile):
             sys.stderr.write("Error: cannot find Snakefile at {}\n".format(snakefile))
             sys.exit(-1)
@@ -1417,7 +1417,7 @@ The haystack modules are the following:
 
         print("--------")
         print("RUN DETAILS")
-        print("\n\tSnakefile: {}".format(snakefile))
+        print("\n\tanalyse.smk: {}".format(snakefile))
         print("\n\tConfig Parameters:\n")
         if args.debug:
             for (key, value,) in analysis_config.items():
