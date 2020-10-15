@@ -50,15 +50,19 @@ def calculate_probabilities(
 
     model_params = pd.read_json(params_file, orient="index").squeeze()
 
-    mismatch_df_ts = ts_tv_matrix[['Taxon', 'Ts']].groupby("Taxon").transform(
-        lambda num: (sum(num) + ((read_count - num.count()) * model_params["ts_missing_val"]))
+    mismatch_df_ts = (
+        ts_tv_matrix[["Taxon", "Ts"]]
+        .groupby("Taxon")
+        .transform(lambda num: (sum(num) + ((read_count - num.count()) * model_params["ts_missing_val"])))
     )
 
-    mismatch_df_tv = ts_tv_matrix[['Taxon', 'Tv']].groupby("Taxon").transform(
-        lambda num: (sum(num) + ((read_count - num.count()) * model_params["tv_missing_val"]))
+    mismatch_df_tv = (
+        ts_tv_matrix[["Taxon", "Tv"]]
+        .groupby("Taxon")
+        .transform(lambda num: (sum(num) + ((read_count - num.count()) * model_params["tv_missing_val"])))
     )
 
-    mismatch_df = merge(mismatch_df_ts, mismatch_df_tv, how='outer', on=['Taxon'])
+    mismatch_df = merge(mismatch_df_ts, mismatch_df_tv, how="outer", on=["Taxon"])
     mismatch_df = mismatch_df.astype({"Ts": float, "Tv": float})
 
     # mismatch_df = ts_tv_matrix.groupby("Taxon").sum().astype({"Ts": float, "Tv": float})
