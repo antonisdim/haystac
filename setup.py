@@ -1,7 +1,4 @@
 import setuptools
-from glob import glob
-
-from haystack import __version__, _program
 
 with open("README.md", "r") as f:
     long_description = f.read()
@@ -27,10 +24,8 @@ setuptools.setup(
     include_package_data=True,
     entry_points="""
       [console_scripts]
-      {program} = haystack.haystack:Rip
-      """.format(
-        program=_program
-    ),
+      haystack = haystack.haystack:Rip
+      """,
     classifiers=["Programming Language :: Python :: 3", "License :: MIT License"],
     license="MIT",
     install_requires=required,

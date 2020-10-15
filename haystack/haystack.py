@@ -685,7 +685,7 @@ The haystack modules are the following:
         )
 
         parser.add_argument(
-            "-f", "--fastq", help="Path to the fastq input file. Can be raw or with adapters " "removed", metavar="",
+            "-f", "--fastq", help="Path to the fastq input file. Can be raw or with adapters removed", metavar="",
         )
         parser.add_argument(
             "-f1",
