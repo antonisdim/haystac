@@ -34,7 +34,7 @@ from workflow.scripts.utilities import (
     FloatRangeType,
     IntRangeType,
     BoolType,
-    JsonType
+    JsonType,
 )
 
 os.environ["OPENBLAS_NUM_THREADS"] = "1"
@@ -55,161 +55,6 @@ BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
 # maximum concurrent Entrez requests
 MAX_ENTREZ_REQUESTS = 3
-
-
-def interactive_config_input():
-    entrez_email = ""
-    count = 0
-    while count < 3:
-        entrez_email = input(
-            "Please enter a valid email address. "
-            "It is required, in order to access NCBI's Entrez API."
-            "The address is stored locally on your computer only: "
-        )
-        if not re.match(r"[^@]+@[^@]+\.[^@]+", entrez_email):
-            print("The email address you provided is not valid. Please try again")
-            entrez_email = input(
-                "Please enter a valid email address. "
-                "It is required, in order to access NCBI's Entrez API. "
-                "The address is stored locally on your computer only: "
-            )
-            count += 1
-        else:
-            break
-    if count == 3:
-        raise ValidationError("Please try haystack config again to input a valid email address.")
-
-    cache = input(
-        "Enter your preferred path for the genome cache. " "Press enter if you'd like to use the default location: "
-    ) or os.path.join(
-        str(Path.home()), "haystack/cache/"
-    )  # TOOD use the fucking default!!
-
-    batchsize = input(
-        "Enter your preferred batchsize for fetching accession data from the NCBI. "
-        "Press enter if you'd like to use the default value: "
-    ) or int(5)
-
-    mismatch_probability = input(
-        "Enter your preferred mismatch probability. " "Press enter if you'd like to use the default value: "
-    ) or float(0.05)
-
-    bowtie2_threads = input(
-        "Enter your preferred number of threads that bowtie2 can use. "
-        "Press enter if you'd like to use the default value: "
-    ) or int(5)
-
-    bowtie2_scaling = input(
-        "Enter your preferred scaling factor for the size of the bowtie2 index chunks. "
-        "Press enter if you'd like to use the default value: "
-    ) or float(15)
-
-    use_conda = (
-        input(
-            "Enter your preference about using conda as a package manager. "
-            "Press enter if you'd like to use the default value: "
-        )
-        or True
-    )
-
-    cache = cache.rstrip("/")
-
-    if os.path.exists(cache):
-        if not os.access(cache, os.W_OK):
-            raise ValidationError(
-                "This directory path you have provided is not writable. "
-                "Please chose another path for your genomes directory."
-            )
-    else:
-        if not os.access(os.path.dirname(cache), os.W_OK):
-            raise ValidationError(
-                "This directory path you have provided is not writable. "
-                "Please chose another path for your genomes directory."
-            )
-
-    user_data = {
-        "cache": os.path.abspath(cache),
-        "email": entrez_email,
-        "batchsize": int(batchsize),
-        "mismatch_probability": float(mismatch_probability),
-        "bowtie2_threads": int(bowtie2_threads),
-        "bowtie2_scaling": float(bowtie2_scaling),
-        "use_conda": use_conda,
-    }
-
-    check_config_arguments(user_data)
-
-    return user_data
-
-
-def check_config_arguments(args):
-    """Function to check config arguments and raise errors if they are not suitable"""
-
-    if args["email"]:
-        if not re.match(r"[^@]+@[^@]+\.[^@]+", args["email"]):
-            print("The email address you provided is not valid. Please try again")
-            args["email"] = input(
-                "Please enter a valid email address. "
-                "It is required, in order to access NCBI's Entrez API. "
-                "The address is stored locally on your computer only: "
-            )
-
-    if args["cache"]:
-        if os.path.exists(args["cache"]):
-            if not os.access(args["cache"], os.W_OK):
-                raise ValidationError(
-                    "This directory path you have provided is not writable. "
-                    "Please chose another path for your genomes directory."
-                )
-        else:
-            if not os.access(os.path.dirname(args["cache"]), os.W_OK):
-                raise ValidationError(
-                    "This directory path you have provided is not writable. "
-                    "Please chose another path for your genomes directory."
-                )
-
-    if args["batchsize"]:
-        if not isinstance(args["batchsize"], int):
-            raise ValidationError("Please provide a positive integer for batchsize.")
-        if not args["batchsize"] > 0:
-            raise ValidationError("Please provide a positive integer for batchsize.")
-
-    if args["mismatch_probability"]:
-        if not (args["mismatch_probability"], float):
-            raise ValidationError("Please provide a positive float for mismatch probability.")
-        if not args["mismatch_probability"] > 0:
-            raise ValidationError("Please provide a positive float for mismatch probability.")
-
-    if args["bowtie2_threads"]:
-        if not isinstance(args["bowtie2_threads"], int):
-            raise ValidationError("Please provide a positive integer for the bowtie2 threads.")
-        if not args["bowtie2_threads"] > 0:
-            raise ValidationError("Please provide a positive integer for the bowtie2 threads.")
-
-    if args["bowtie2_scaling"]:
-        if not (args["bowtie2_scaling"], float):
-            raise ValidationError("Please provide a positive float for the bowtie2 scaling factor.")
-        if not args["bowtie2_scaling"] > 0:
-            raise ValidationError("Please provide a positive float for the bowtie2 scaling factor.")
-
-    if args["use_conda"]:
-        if args["use_conda"] not in ["True", "False"]:
-            raise ValidationError("Please either specify True or False for using conda.")
-
-
-def str2bool(v):
-    if isinstance(v, bool):
-        return v
-    if v.lower() in ("True", "true"):
-        return True
-    elif v.lower() in ("False", "false"):
-        return False
-    else:
-        raise argparse.ArgumentTypeError("Boolean value expected.")
-
-
-# ----------------------------------------------------------------------------------------------------------------------
-# ----------------------------------------------------------------------------------------------------------------------
 
 
 class Haystack(object):
@@ -377,7 +222,7 @@ The haystack commands are:
             "--snakemake",
             help="Pass additional flags to the `snakemake` scheduler.",
             metavar="'<json>'",
-            type=JsonType()
+            type=JsonType(),
         )
 
     def database(self):
@@ -500,14 +345,10 @@ The haystack commands are:
             )
 
         if args.mtDNA and args.refseq_rep:
-            raise ValidationError(
-                "Please specify either `--mtDNA` or `--refseq-rep` but not both."
-            )
+            raise ValidationError("Please specify either `--mtDNA` or `--refseq-rep` but not both.")
 
         if args.query and args.query_file:
-            raise ValidationError(
-                "Please specify either `--query <query>` or `--query-file <path>` but not both."
-            )
+            raise ValidationError("Please specify either `--query <query>` or `--query-file <path>` but not both.")
 
         if args.query_file:
             # load the query file
@@ -565,8 +406,8 @@ The haystack commands are:
             with open(config_build, "w") as fout:
                 yaml.safe_dump(config, fout, default_flow_style=False)
 
-        config['workflow_dir'] = os.path.join(BASE_DIR, "workflow")  # TODO tidy up
-        config['mtDNA'] = str(args.mtDNA).lower()
+        config["workflow_dir"] = os.path.join(BASE_DIR, "workflow")  # TODO tidy up
+        config["mtDNA"] = str(args.mtDNA).lower()
         config["sequences"] = config["sequences"] or ""
 
         target_list = [os.path.join(args.db_output, target) for target in target_list]
@@ -574,145 +415,66 @@ The haystack commands are:
 
         return self._run_snakemake(snakefile, args, config, target_list)
 
-    @staticmethod
-    def _run_snakemake(snakefile, args, config, target_list):
-        """
-        Helper function for running the snakemake workflow
-        """
-        print("HAYSTACK\n")
-        print(f"Date: {datetime.datetime.now()}\n")
-
-        print("Config parameters:\n")
-        params = config if args.debug else vars(args)
-
-        for key, value in params.items():
-            if value or args.debug:
-                print(f" {key}: {value}")
-        print("\n")
-
-        if args.debug:
-            print("Target files:\n")
-            for target in target_list:
-                print(" " + target)
-            print("\n")
-
-        # get any extra snakemake params
-        smk_params = config.pop('snakemake', {})
-
-        status = snakemake.snakemake(
-            snakefile,
-            config=config,
-            targets=target_list,
-            printshellcmds=args.debug,
-            cores=int(args.cores),
-            keepgoing=(not args.debug),
-            restart_times=0 if args.debug else RESTART_TIMES,
-            unlock=args.unlock,
-            show_failed_logs=args.debug,
-            resources={"entrez_api": MAX_ENTREZ_REQUESTS},
-            use_conda=config['use_conda'],
-            **smk_params
-        )
-
-        # translate "success" into shell exit code of 0
-        return 0 if status else 1
-
     def sample(self):
+        """
+        Prepare a sample for analysis
+        """
         parser = argparse.ArgumentParser(description="Prepare a sample for analysis")
 
         parser.add_argument(
-            "-p",
             "--sample-prefix",
-            help="Sample prefix for all the future analysis. Optional if SRA accession is provided instead" " <str>",
+            help="Sample prefix for all the future analysis. Optional if SRA accession is provided instead",
             metavar="",
             default="",
-        )
-        parser.add_argument(
-            "-o",
-            "--output",
-            help="Path to the directory where all the sample related outputs are going to be stored <str>",
-            metavar="",
-            default="",
-            dest="sample_output_dir",
         )
 
         parser.add_argument(
-            "-f", "--fastq", help="Path to the fastq input file. Can be raw or with adapters removed", metavar="",
+            "--fastq", help="Path to the fastq input file. Can be raw or with adapters removed", metavar="",
         )
         parser.add_argument(
-            "-f1",
             "--fastq-r1",
             help="Path to the mate 1 fastq input file, if reads are PE. " "Can be raw or with adapters removed",
             metavar="",
         )
         parser.add_argument(
-            "-f2",
             "--fastq-r2",
             help="Path to the mate 2 fastq input file, if reads are PE. " "Can be raw or with adapters removed",
             metavar="",
         )
 
         parser.add_argument(
-            "-SA",
-            "--sra",
-            help="Fetch raw data files from the SRA using the provided accession code <str>",
-            metavar="",
+            "--sra", help="Fetch raw data files from the SRA using the provided accession code <str>", metavar="",
         )
 
         parser.add_argument(
-            "-C",
-            "--collapse",
-            help="Collapse paired end reads <bool> (default: False)",
-            default=False,
-            action="store_true",
+            "--collapse", help="Collapse paired end reads <bool> (default: False)", default=False, action="store_true",
         )
         parser.add_argument(
-            "-T",
             "--not-trim-adapters",
             help="Do not remove adapters from raw fastq files <bool> (default: False)",
             action="store_true",
         )
         parser.add_argument(
-            "-TF",
-            "--adaperremoval-flags",
-            help="Additional flags to provide to Adapterremoval <str>",
+            "--adaperremoval-flags", help="Additional flags to provide to Adapterremoval <str>", default="", metavar="",
+        )
+
+        self._common_arguments(parser)
+
+        parser.add_argument(
+            "--output",
+            help="Path to the directory where all the sample related outputs are going to be stored <str>",
+            metavar="",
             default="",
-            metavar="",
+            dest="sample_output_dir",
+            required=True,
         )
-
-        parser.add_argument(
-            "-c", "--cores", help="Number of cores for HAYSTACK to use", metavar="", type=int, default=MAX_CPU,
-        )
-        parser.add_argument(
-            "-M",
-            "--mem",
-            help="Max memory resources allowed to be used ofr indexing the input for "
-            "the filtering alignment "
-            "(default: max available memory {})".format(MAX_MEM_MB),
-            type=float,
-            default=MAX_MEM_MB,
-            metavar="",
-        )
-        parser.add_argument(
-            "-u",
-            "--unlock",
-            action="store_true",
-            help="Unlock the working directory after smk is " "abruptly killed  <bool> (default: False)",
-        )
-        parser.add_argument(
-            "-d", "--debug", action="store_true", help="Debug the HAYSTACK workflow <bool> (default: False)",
-        )
-        parser.add_argument(
-            "-smk", "--snakemake", help="Snakemake flags (default: '')", metavar="",
-        )
-        parser.add_argument("--dry-run", action="store_true")
-
-        argcomplete.autocomplete(parser)
-        args = parser.parse_args(sys.argv[2:])
 
         if len(sys.argv) == 2:
             parser.print_help()
             parser.exit()
+
+        argcomplete.autocomplete(parser)
+        args = parser.parse_args(sys.argv[2:])
 
         snakefile = os.path.join(BASE_DIR, "workflow", "sample.smk")
         if not os.path.exists(snakefile):
@@ -1197,6 +959,49 @@ The haystack commands are:
             show_failed_logs=args.debug,
             resources={"entrez_api": MAX_ENTREZ_REQUESTS},
             use_conda=analysis_config["use_conda"],
+        )
+
+        # translate "success" into shell exit code of 0
+        return 0 if status else 1
+
+    @staticmethod
+    def _run_snakemake(snakefile, args, config, target_list):
+        """
+        Helper function for running the snakemake workflow
+        """
+        print("HAYSTACK\n")
+        print(f"Date: {datetime.datetime.now()}\n")
+
+        print("Config parameters:\n")
+        params = config if args.debug else vars(args)
+
+        for key, value in params.items():
+            if value or args.debug:
+                print(f" {key}: {value}")
+        print("\n")
+
+        if args.debug:
+            print("Target files:\n")
+            for target in target_list:
+                print(" " + target)
+            print("\n")
+
+        # get any extra snakemake params
+        smk_params = config.pop("snakemake", {})
+
+        status = snakemake.snakemake(
+            snakefile,
+            config=config,
+            targets=target_list,
+            printshellcmds=args.debug,
+            cores=int(args.cores),
+            keepgoing=(not args.debug),
+            restart_times=0 if args.debug else RESTART_TIMES,
+            unlock=args.unlock,
+            show_failed_logs=args.debug,
+            resources={"entrez_api": MAX_ENTREZ_REQUESTS},
+            use_conda=config["use_conda"],
+            **smk_params,
         )
 
         # translate "success" into shell exit code of 0

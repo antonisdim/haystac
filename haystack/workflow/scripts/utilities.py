@@ -150,6 +150,7 @@ class JsonType(object):
 
     def __call__(self, value):
         import json
+
         try:
             return json.loads(value)
         except json.decoder.JSONDecodeError as error:
