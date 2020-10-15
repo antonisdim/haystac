@@ -7,6 +7,8 @@ __copyright__ = "Copyright 2020, University of Oxford"
 __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
+import pathlib
+
 import argcomplete
 import argparse
 import os.path
@@ -22,7 +24,14 @@ from Bio import Entrez
 from psutil import virtual_memory
 from pathlib import Path
 
-from workflow.scripts.utilities import EmailType, WritablePathType, PositiveIntType, FloatRangeType, IntRangeType, BoolType
+from workflow.scripts.utilities import (
+    EmailType,
+    WritablePathType,
+    PositiveIntType,
+    FloatRangeType,
+    IntRangeType,
+    BoolType,
+)
 
 os.environ["OPENBLAS_NUM_THREADS"] = "1"
 os.environ["OMP_NUM_THREADS"] = "1"
@@ -32,7 +41,7 @@ MAX_MEM_MB = virtual_memory().total / MEGABYTE
 MAX_CPU = cpu_count()
 
 CONFIG_DEFAULT = "./config/config.yaml"
-CONFIG_USER = "~/.haystack/config.yaml"
+CONFIG_USER = pathlib.Path("~/.haystack/config.yaml").expanduser()
 
 thisdir = os.path.abspath(os.path.dirname(__file__))
 
@@ -63,9 +72,10 @@ def interactive_config_input():
         raise RuntimeError("Please try haystack config again to input a valid email address.")
 
     cache = input(
-        "Enter your preferred path for the genome cache. "
-        "Press enter if you'd like to use the default location: "
-    ) or os.path.join(str(Path.home()), "haystack/cache/")  # TOOD use the fucking default!!
+        "Enter your preferred path for the genome cache. " "Press enter if you'd like to use the default location: "
+    ) or os.path.join(
+        str(Path.home()), "haystack/cache/"
+    )  # TOOD use the fucking default!!
 
     batchsize = input(
         "Enter your preferred batchsize for fetching accession data from the NCBI. "
@@ -87,11 +97,11 @@ def interactive_config_input():
     ) or float(15)
 
     use_conda = (
-            input(
-                "Enter your preference about using conda as a package manager. "
-                "Press enter if you'd like to use the default value: "
-            )
-            or True
+        input(
+            "Enter your preference about using conda as a package manager. "
+            "Press enter if you'd like to use the default value: "
+        )
+        or True
     )
 
     cache = cache.rstrip("/")
@@ -110,13 +120,13 @@ def interactive_config_input():
             )
 
     user_data = {
-        "cache":                os.path.abspath(cache),
-        "email":                entrez_email,
-        "batchsize":            int(batchsize),
+        "cache": os.path.abspath(cache),
+        "email": entrez_email,
+        "batchsize": int(batchsize),
         "mismatch_probability": float(mismatch_probability),
-        "bowtie2_threads":      int(bowtie2_threads),
-        "bowtie2_scaling":      float(bowtie2_scaling),
-        "use_conda":            use_conda,
+        "bowtie2_threads": int(bowtie2_threads),
+        "bowtie2_scaling": float(bowtie2_scaling),
+        "use_conda": use_conda,
     }
 
     check_config_arguments(user_data)
@@ -193,8 +203,8 @@ def str2bool(v):
 # ----------------------------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------------------------
 
-class Haystack(object):
 
+class Haystack(object):
     def __init__(self):
         parser = argparse.ArgumentParser(
             description="HAYSTACK: A Bayesian framework for robust and rapid species identification",
@@ -206,7 +216,8 @@ The haystack commands are:
    sample         Prepare a sample for analysis
    analyse        Analyse a sample against a database
    
-""", )
+""",
+        )
         parser.add_argument(
             "command", choices=["config", "database", "sample", "analyse"], help="Command to run",
         )
@@ -215,14 +226,31 @@ The haystack commands are:
         argcomplete.autocomplete(parser)  # TODO autocomplete does not work
         args = parser.parse_args(sys.argv[1:2])
 
-        # load the config defaults
+        # load the default config
         with open(CONFIG_DEFAULT) as fin:
             self.config_default = yaml.safe_load(fin)
+
+            # resolve the home directory of the user (i.e. ~/)
+            self.config_default["cache"] = pathlib.Path(self.config_default["cache"]).expanduser()
+
+        try:
+            # load the user config
+            with open(CONFIG_USER) as fin:
+                self.config_user = yaml.safe_load(fin)
+
+        except FileNotFoundError:
+            # make the config folder (if necessary)
+            os.makedirs(os.path.dirname(CONFIG_USER), exist_ok=True)
+
+            self.config_user = dict()
 
         # use dispatch pattern to invoke method with same name
         getattr(self, args.command)()
 
     def config(self):
+        """
+        Advanced configuration options for haystack
+        """
         parser = argparse.ArgumentParser(description="Advanced configuration options for haystack")
 
         parser.add_argument(
@@ -230,7 +258,7 @@ The haystack commands are:
             "--email",
             help="Email address for NCBI identification (mandatory).",
             metavar="<address>",
-            type=EmailType('RFC5322'),
+            type=EmailType("RFC5322"),
         )
 
         parser.add_argument(
@@ -238,7 +266,7 @@ The haystack commands are:
             "--cache",
             help=f"Cache folder for all the genomes downloaded from NCBI (default: {self.config_default['cache']}).",
             metavar="<path>",
-            type=WritablePathType()
+            type=WritablePathType(),
         )
 
         parser.add_argument(
@@ -261,7 +289,7 @@ The haystack commands are:
             # "-t",
             "--bowtie2-threads",
             help=f"Number of threads to use for each bowtie2 alignment "
-                 f"(default: {self.config_default['bowtie2_threads']})",
+            f"(default: {self.config_default['bowtie2_threads']})",
             type=IntRangeType(1, MAX_CPU),
             metavar="<int>",
         )
@@ -270,7 +298,7 @@ The haystack commands are:
             # "-s",
             "--bowtie2-scaling",
             help=f"Rescaling factor to keep the bowtie2 mutlifasta index below the maximum memory limit "
-                 f"(default: {self.config_default['bowtie2_scaling']})",
+            f"(default: {self.config_default['bowtie2_scaling']})",
             type=FloatRangeType(0, 100),
             metavar="<float>",
         )
@@ -283,68 +311,20 @@ The haystack commands are:
             metavar="<bool>",
         )
 
-        # now that we're inside a subcommand, ignore the first
-        # TWO argvs, ie the command (git) and the subcommand (commit)
+        # now that we're inside a subcommand, ignore the first two argvs
         argcomplete.autocomplete(parser)
         args = parser.parse_args(sys.argv[2:])
 
-        print("Checking haystack configuration options.")
+        config_user = dict()
 
-        # actual arg parsing
+        # get the user choices that differ from the defaults
+        for key, value in vars(args).items():
+            if value != self.config_default.get(key) and value is not None:
+                config_user[key] = value
 
-        config_args = vars(args)
-
-        repo_config_file = os.path.join(thisdir, "config", "config.yaml")
-
-        if os.path.exists(repo_config_file):
-            with open(repo_config_file) as fin:
-                repo_config = yaml.safe_load(fin)
-        else:
-            raise RuntimeError("The config file in the code file directory is missing. Please reinstall the package.")
-
-        if not os.path.exists(os.path.join(str(Path.home()), ".haystack")):
-            os.makedirs(os.path.join(str(Path.home()), ".haystack"), exist_ok=True)
-
-        if not os.path.exists(CONFIG_USER):
-            if len(sys.argv) > 2:
-                raise RuntimeError(
-                    "You haven not configured haystack yet. "
-                    "You need to do this for all options at least once."
-                    "Please first run the command `haystack config` and follow the instructions, "
-                    "before configuring any individual options."
-                )
-            user_config = interactive_config_input()
-            user_non_default_config = {k: v for k, v in user_config.items() if (k, v) not in repo_config.items()}
-
-            with open(CONFIG_USER, "w") as outfile:
-                yaml.safe_dump(user_non_default_config, outfile, default_flow_style=False)
-
-            exit()
-
-        if os.path.exists(CONFIG_USER):
-            if len(sys.argv) == 2:
-                user_config = interactive_config_input()
-                user_non_default_config = {
-                    k: v
-                    for k, v in user_config.items()
-                    # if (k, v) not in repo_rip_config.items()
-                }
-                # print(user_config)
-                # print(user_non_default_config)
-                with open(CONFIG_USER) as fin:
-                    user_options = yaml.safe_load(fin)
-                    user_options.update(user_non_default_config)
-
-                with open(CONFIG_USER, "w") as outfile:
-                    yaml.safe_dump(user_options, outfile, default_flow_style=False)
-            else:
-                check_config_arguments(config_args)
-                with open(CONFIG_USER) as fin:
-                    user_options = yaml.safe_load(fin)
-                    user_options.update((k, v) for k, v in config_args.items() if v is not None)
-
-                with open(CONFIG_USER, "w") as outfile:
-                    yaml.safe_dump(user_options, outfile, default_flow_style=False)
+        # save the user config
+        with open(CONFIG_USER, "w") as fout:
+            yaml.safe_dump(config_user, fout)
 
     def database(self):
         parser = argparse.ArgumentParser(description="Build the database for haystack to use")
@@ -367,9 +347,9 @@ The haystack commands are:
             "-R",
             "--refseq-rep",
             help="Use the prokaryotic representative species of the RefSeq DB "
-                 "for the species id pipeline. only species no strains. "
-                 "either or both of --refseq-rep and "
-                 "--query should be set (default: False)",
+            "for the species id pipeline. only species no strains. "
+            "either or both of --refseq-rep and "
+            "--query should be set (default: False)",
             type=bool,
             default=False,
             metavar="",
@@ -378,14 +358,14 @@ The haystack commands are:
             "-MT",
             "--mtDNA",
             help="Download mitochondrial genomes for eukaryotes only. "
-                 "Do not use with --refseq-rep or any queries for prokaryotes (default: False)",
+            "Do not use with --refseq-rep or any queries for prokaryotes (default: False)",
             action="store_true",
         )
         parser.add_argument(
             "-q",
             "--query",
             help="Actual NCBI query in the NCBI query language. "
-                 "Please refer to the documentation on how to construct one correctly.",
+            "Please refer to the documentation on how to construct one correctly.",
             metavar="",
         )
         parser.add_argument(
@@ -398,7 +378,7 @@ The haystack commands are:
             "-r",
             "--rank",
             help="Taxonomic rank to perform the identifications on (genus, species, subspecies, serotype) "
-                 "<str> (default: species)",
+            "<str> (default: species)",
             choices=["genus", "species", "subspecies", "serotype"],
             default="species",
             metavar="",
@@ -407,8 +387,8 @@ The haystack commands are:
             "-s",
             "--sequences",
             help="TAB DELIMITED input file containing the the name of the taxon with no special characters, "
-                 "and an underscore '_' instead of spaces, a user defined accession code and the path of the fasta file. "
-                 "The fasta file that the path point to can be either uncompressed or compressed with gzip/bgzip",
+            "and an underscore '_' instead of spaces, a user defined accession code and the path of the fasta file. "
+            "The fasta file that the path point to can be either uncompressed or compressed with gzip/bgzip",
             metavar="",
             default="",
         )
@@ -417,8 +397,8 @@ The haystack commands are:
             "-a",
             "--accessions",
             help="TAB DELIMITED input file containing the the name of the taxon with no special characters, "
-                 "and an underscore '_' instead of spaces, a user defined valid NCBI nucleotide, assembly or WGS "
-                 "accession code. ",
+            "and an underscore '_' instead of spaces, a user defined valid NCBI nucleotide, assembly or WGS "
+            "accession code. ",
             metavar="",
             default="",
         )
@@ -437,8 +417,8 @@ The haystack commands are:
             "--genera",
             nargs="+",
             help="List containing the names of specific genera "
-                 "the abundances should be calculated "
-                 "on, separated by a space character <genus1 genus2 genus3 ...>",
+            "the abundances should be calculated "
+            "on, separated by a space character <genus1 genus2 genus3 ...>",
             metavar="",
             default=[],
         )
@@ -450,8 +430,8 @@ The haystack commands are:
             "-M",
             "--mem",
             help="Max memory resources allowed to be used for indexing the input for "
-                 "the filtering alignment "
-                 "(default: max available memory {})".format(MAX_MEM_MB),
+            "the filtering alignment "
+            "(default: max available memory {})".format(MAX_MEM_MB),
             type=float,
             default=MAX_MEM_MB,
             metavar="",
@@ -511,11 +491,11 @@ The haystack commands are:
         database_config.update((k, v) for k, v in database_args.items())
 
         if (
-                database_config["refseq_rep"] is False
-                and database_config["query"] is None
-                and database_config["query_file"] is None
-                and database_config["accessions"] is None
-                and database_config["sequences"] is None
+            database_config["refseq_rep"] is False
+            and database_config["query"] is None
+            and database_config["query_file"] is None
+            and database_config["accessions"] is None
+            and database_config["sequences"] is None
         ):
             raise RuntimeError(
                 "Please specify where HAYSTACK should get the database sequences from "
@@ -744,8 +724,8 @@ The haystack commands are:
             "-M",
             "--mem",
             help="Max memory resources allowed to be used ofr indexing the input for "
-                 "the filtering alignment "
-                 "(default: max available memory {})".format(MAX_MEM_MB),
+            "the filtering alignment "
+            "(default: max available memory {})".format(MAX_MEM_MB),
             type=float,
             default=MAX_MEM_MB,
             metavar="",
@@ -809,7 +789,7 @@ The haystack commands are:
                     )
             else:
                 if not os.access(os.path.dirname(sample_config["sample_output_dir"]), os.W_OK) and not os.access(
-                        os.path.dirname(os.path.dirname(sample_config["sample_output_dir"])), os.W_OK,
+                    os.path.dirname(os.path.dirname(sample_config["sample_output_dir"])), os.W_OK,
                 ):
                     raise RuntimeError(
                         "This directory path you have provided is not writable. "
@@ -836,7 +816,7 @@ The haystack commands are:
             sample_config["SE"] = True
 
         if (sample_config["fastq_r1"] or sample_config["fastq_r2"] is not None) and (
-                sample_config["fastq"] is not None
+            sample_config["fastq"] is not None
         ):
             raise RuntimeError("Please use a correct combination of PE or SE reads.")
 
@@ -909,22 +889,19 @@ The haystack commands are:
         if sample_config["trim_adapters"]:
             if sample_config["PE_MODERN"]:
                 data_preprocessing = sample_config[
-                                         "sample_output_dir"
-                                     ] + "/fastq_inputs/PE_mod/{sample}_R1_adRm.fastq.gz".format(
-                    sample=sample_config["sample_prefix"])
+                    "sample_output_dir"
+                ] + "/fastq_inputs/PE_mod/{sample}_R1_adRm.fastq.gz".format(sample=sample_config["sample_prefix"])
             elif sample_config["PE_ANCIENT"]:
                 data_preprocessing = sample_config[
-                                         "sample_output_dir"
-                                     ] + "/fastq_inputs/PE_anc/{sample}_adRm.fastq.gz".format(
-                    sample=sample_config["sample_prefix"])
+                    "sample_output_dir"
+                ] + "/fastq_inputs/PE_anc/{sample}_adRm.fastq.gz".format(sample=sample_config["sample_prefix"])
             elif sample_config["SE"]:
                 data_preprocessing = sample_config[
-                                         "sample_output_dir"
-                                     ] + "/fastq_inputs/SE/{sample}_adRm.fastq.gz".format(
-                    sample=sample_config["sample_prefix"])
+                    "sample_output_dir"
+                ] + "/fastq_inputs/SE/{sample}_adRm.fastq.gz".format(sample=sample_config["sample_prefix"])
             target_list.append(data_preprocessing)
 
-        sample_yaml = os.path.join(str(Path.home()), sample_config["sample_output_dir"], "sample_config.yaml", )
+        sample_yaml = os.path.join(str(Path.home()), sample_config["sample_output_dir"], "sample_config.yaml",)
 
         if not os.path.exists(sample_yaml):
             os.makedirs(
@@ -989,7 +966,7 @@ The haystack commands are:
         parser.add_argument(
             "-m",
             "--mode",
-            choices=["filter", "align", "likelihoods", "probabilities", "abundances", "reads", "mapdamage", ],
+            choices=["filter", "align", "likelihoods", "probabilities", "abundances", "reads", "mapdamage",],
             help="Analysis mode for the selected sample",
             metavar="",
         )
@@ -1004,8 +981,8 @@ The haystack commands are:
             "--genera",
             nargs="+",
             help="List containing the names of specific genera "
-                 "the abundances should be calculated "
-                 "on, separated by a space character <genus1 genus2 genus3 ...>",
+            "the abundances should be calculated "
+            "on, separated by a space character <genus1 genus2 genus3 ...>",
             metavar="",
             default=[],
         )
@@ -1016,7 +993,7 @@ The haystack commands are:
             "-T",
             "--read-probability-threshold",
             help="Posterior probability threshold for a read to belong to a certain species. "
-                 "Chose from 0.5, 0.75 and 0.95 (default:0.75).",
+            "Chose from 0.5, 0.75 and 0.95 (default:0.75).",
             choices=[0.5, 0.75, 0.95],
             default=float(0.75),
             type=float,
@@ -1029,8 +1006,8 @@ The haystack commands are:
             "-M",
             "--mem",
             help="Max memory resources allowed to be used ofr indexing the input for "
-                 "the filtering alignment "
-                 "(default: max available memory {})".format(MAX_MEM_MB),
+            "the filtering alignment "
+            "(default: max available memory {})".format(MAX_MEM_MB),
             type=float,
             default=MAX_MEM_MB,
             metavar="",
