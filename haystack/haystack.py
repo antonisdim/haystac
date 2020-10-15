@@ -244,6 +244,14 @@ The haystack commands are:
 
             self.config_user = dict()
 
+        if args.command != "config" and not self.config_user.get("email"):
+            # email address is mandatory
+            print(
+                "Before using haystack, please set your email address. This is a required step for running NCBI "
+                "queries\n\n`haystack config --email <address>`"
+            )
+            exit(1)
+
         # use dispatch pattern to invoke method with same name
         getattr(self, args.command)()
 
