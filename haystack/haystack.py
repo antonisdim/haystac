@@ -54,7 +54,7 @@ def interactive_config_input():
         else:
             break
     if count == 3:
-        raise RuntimeError("Please try rip config again to input a valid email address.")
+        raise RuntimeError("Please try haystack config again to input a valid email address.")
 
     genome_cache = input(
         "Enter your preferred path for the genome cache folder. "
@@ -185,37 +185,38 @@ def str2bool(v):
         raise argparse.ArgumentTypeError("Boolean value expected.")
 
 
-class Rip(object):
+class Haystack(object):
+
     def __init__(self):
         parser = argparse.ArgumentParser(
-            description="RIP program for metagenomic profiling and species identification",
-            usage="""rip <command> [<args>]
+            description="HAYSTACK: A Bayesian framework for robust and rapid species identification",
+            usage="""haystack <module> [<args>]
 
-The haystack modules are the following:
-   config             Advanced configuration options for rip
-   database           Build a database for rip
-   sample             Prepare sample for analysis
-   analyse            Analyse a sample (species identification or metagenomic assignments)
+The haystack modules are:
+   config             Advanced configuration options for haystack
+   database           Build a database of target species
+   sample             Prepare a sample for analysis
+   analyse            Analyse a sample against a database
 """,
         )
         parser.add_argument(
-            "command", choices=["config", "database", "sample", "analyse"], help="Subcommand to run",
+            "command", choices=["config", "database", "sample", "analyse"], help="Command to run"  # , required=True
         )
 
-        # parse_args defaults to [1:] for args, but you need to
-        # exclude the rest of the args too, or validation will fail
-
+        # get the command
         argcomplete.autocomplete(parser)
         args = parser.parse_args(sys.argv[1:2])
         if not hasattr(self, args.command):
             print("Unrecognized command")
             parser.print_help()
             exit(1)
+
         # use dispatch pattern to invoke method with same name
         getattr(self, args.command)()
 
-    def config(self):
-        parser = argparse.ArgumentParser(description="Advanced options for rip configuration")
+    @staticmethod
+    def config():
+        parser = argparse.ArgumentParser(description="Advanced options for haystack configuration")
         # prefixing the argument with -- means it's optional
 
         parser.add_argument(
@@ -224,7 +225,7 @@ The haystack modules are the following:
         parser.add_argument(
             "-gc",
             "--genome-cache-folder",
-            help="Path where all the genomes that are downloaded and/or used by rip are being stored. "
+            help="Path where all the genomes that are downloaded and/or used by haystack are being stored. "
             "(default ~/rip_genomes/)",
             metavar="",
         )
@@ -264,7 +265,7 @@ The haystack modules are the following:
         parser.add_argument(
             "-cn",
             "--use-conda",
-            help="Use conda as a package manger for RIP (default: True)",
+            help="Use conda as a package manger for HAYSTACK (default: True)",
             type=str2bool,
             default=True,
             metavar="",
@@ -275,7 +276,7 @@ The haystack modules are the following:
         argcomplete.autocomplete(parser)
         args = parser.parse_args(sys.argv[2:])
 
-        print("Checking rip configuration options.")
+        print("Checking haystack configuration options.")
 
         # actual arg parsing
 
@@ -336,7 +337,7 @@ The haystack modules are the following:
                     yaml.safe_dump(user_options, outfile, default_flow_style=False)
 
     def database(self):
-        parser = argparse.ArgumentParser(description="Build the database for rip to use")
+        parser = argparse.ArgumentParser(description="Build the database for haystack to use")
         # prefixing the argument with -- means it's optional
 
         parser.add_argument("--dry-run", action="store_true")
@@ -345,7 +346,7 @@ The haystack modules are the following:
             "-m",
             "--mode",
             choices=["fetch", "index", "build"],
-            help="Database creation mode for rip",
+            help="Database creation mode for haystack",
             metavar="",
             default="build",
         )
@@ -434,7 +435,7 @@ The haystack modules are the following:
         )
 
         parser.add_argument(
-            "-c", "--cores", help="Number of cores for RIP to use", type=int, metavar="", default=cpu_count(),
+            "-c", "--cores", help="Number of cores for HAYSTACK to use", type=int, metavar="", default=cpu_count(),
         )
         parser.add_argument(
             "-M",
@@ -453,7 +454,7 @@ The haystack modules are the following:
             help="Unlock the working directory after smk is " "abruptly killed  <bool> (default: False)",
         )
         parser.add_argument(
-            "-d", "--debug", action="store_true", help="Debug the RIP workflow <bool> (default: False)",
+            "-d", "--debug", action="store_true", help="Debug the HAYSTACK workflow <bool> (default: False)",
         )
         parser.add_argument(
             "-smk", "--snakemake", help="Snakemake flags (default: '')", metavar="",  # todo don't know how to do that
@@ -478,11 +479,11 @@ The haystack modules are the following:
         # actual arg parsing
 
         repo_config_file = os.path.join(thisdir, "config", "config.yaml")
-        user_config_file = os.path.join(str(Path.home()), ".rip", "config.yaml")
+        user_config_file = os.path.join(str(Path.home()), ".haystack", "config.yaml")
 
         if not os.path.exists(user_config_file):
             raise RuntimeError(
-                "Please run rip config first in order to set up your "
+                "Please run haystack config first in order to set up your "
                 "email address and desired path for storing the downloaded genomes."
             )
 
@@ -508,7 +509,7 @@ The haystack modules are the following:
             and database_config["sequences"] is None
         ):
             raise RuntimeError(
-                "Please specify where RIP should get the database sequences from "
+                "Please specify where HAYSTACK should get the database sequences from "
                 "(query, RefSeq Rep, custom accessions or custom seqeunces"
             )
 
@@ -575,7 +576,7 @@ The haystack modules are the following:
                 with open(database_fetch_yaml, "w") as outfile:
                     yaml.safe_dump(database_config, outfile, default_flow_style=False)
 
-            print("Please run rip database --mode index after this step.")
+            print("Please run haystack database --mode index after this step.")
 
         if database_config["mode"] == "index":
             target_list.append(database_config["db_output"] + "/bowtie/bowtie_index.done")
@@ -585,7 +586,7 @@ The haystack modules are the following:
             )
             if not os.path.exists(database_fetch_yaml):
                 raise RuntimeError(
-                    "Please run rip database --mode fetch first, and then proceed indexing the database."
+                    "Please run haystack database --mode fetch first, and then proceed indexing the database."
                 )
 
             with open(database_fetch_yaml, "r") as fin:
@@ -600,8 +601,8 @@ The haystack modules are the following:
             )
             if os.path.exists(database_fetch_yaml):
                 raise RuntimeError(
-                    "You can not run rip database --mode build after running --mode fetch. "
-                    "You need to run rip database --mode index instead."
+                    "You can not run haystack database --mode build after running --mode fetch. "
+                    "You need to run haystack database --mode index instead."
                 )
 
             database_build_yaml = os.path.join(
@@ -729,7 +730,7 @@ The haystack modules are the following:
         )
 
         parser.add_argument(
-            "-c", "--cores", help="Number of cores for RIP to use", metavar="", type=int, default=cpu_count(),
+            "-c", "--cores", help="Number of cores for HAYSTACK to use", metavar="", type=int, default=cpu_count(),
         )
         parser.add_argument(
             "-M",
@@ -748,7 +749,7 @@ The haystack modules are the following:
             help="Unlock the working directory after smk is " "abruptly killed  <bool> (default: False)",
         )
         parser.add_argument(
-            "-d", "--debug", action="store_true", help="Debug the RIP workflow <bool> (default: False)",
+            "-d", "--debug", action="store_true", help="Debug the HAYSTACK workflow <bool> (default: False)",
         )
         parser.add_argument(
             "-smk", "--snakemake", help="Snakemake flags (default: '')", metavar="",
@@ -768,11 +769,11 @@ The haystack modules are the following:
             sys.exit(-1)
 
         repo_config_file = os.path.join(thisdir, "config", "config.yaml")
-        user_config_file = os.path.join(str(Path.home()), ".rip", "config.yaml")
+        user_config_file = os.path.join(str(Path.home()), ".haystack", "config.yaml")
 
         if not os.path.exists(user_config_file):
             raise RuntimeError(
-                "Please run rip config first in order to set up your "
+                "Please run haystack config first in order to set up your "
                 "email address and desired path for storing the downloaded genomes."
             )
 
@@ -1011,7 +1012,7 @@ The haystack modules are the following:
             metavar="",
         )
         parser.add_argument(
-            "-c", "--cores", help="Number of cores for RIP to use", metavar="", type=int, default=cpu_count(),
+            "-c", "--cores", help="Number of cores for HAYSTACK to use", metavar="", type=int, default=cpu_count(),
         )
         parser.add_argument(
             "-M",
@@ -1030,7 +1031,7 @@ The haystack modules are the following:
             help="Unlock the working directory after smk is " "abruptly killed  <bool> (default: False)",
         )
         parser.add_argument(
-            "-d", "--debug", action="store_true", help="Debug the RIP workflow <bool> (default: False)",
+            "-d", "--debug", action="store_true", help="Debug the HAYSTACK workflow <bool> (default: False)",
         )
         parser.add_argument(
             "-smk", "--snakemake", help="Snakemake flags (default: '')", metavar="",
@@ -1052,11 +1053,11 @@ The haystack modules are the following:
             sys.exit(-1)
 
         repo_config_file = os.path.join(thisdir, "config", "config.yaml")
-        user_config_file = os.path.join(str(Path.home()), ".rip", "config.yaml")
+        user_config_file = os.path.join(str(Path.home()), ".haystack", "config.yaml")
 
         if not os.path.exists(user_config_file):
             raise RuntimeError(
-                "Please run rip config first in order to set up your "
+                "Please run haystack config first in order to set up your "
                 "email address and desired path for storing the downloaded genomes."
             )
 
@@ -1102,7 +1103,7 @@ The haystack modules are the following:
             raise RuntimeError(
                 "The sample yaml file does not exist in the path you provided. "
                 "Please make sure you have provided the right sample output path, or "
-                "make sure that you have run rip sample first. "
+                "make sure that you have run haystack sample first. "
             )
 
         analysis_args = vars(args)
@@ -1208,8 +1209,6 @@ The haystack modules are the following:
         analysis_config["workflow_dir"] = os.path.join(thisdir, "workflow")
 
         user_options = {k: v for k, v in analysis_args.items() if (k, v) not in repo_rip_config.items()}
-        # print(database_config)
-        # print(sample_config)
 
         print("--------")
         print("RUN DETAILS")
@@ -1244,7 +1243,7 @@ The haystack modules are the following:
             dryrun=args.dry_run,
             cores=int(args.cores),
             keepgoing=keepgoing,
-            restart_times=restart_times,  # TODO find a better solution to this... 15 is way too many!
+            restart_times=restart_times,
             unlock=args.unlock,
             show_failed_logs=args.debug,
             resources={"entrez_api": MAX_ENTREZ_REQUESTS},
@@ -1256,4 +1255,4 @@ The haystack modules are the following:
 
 
 if __name__ == "__main__":
-    Rip()
+    Haystack()

@@ -1,4 +1,4 @@
-RIP documentation
+HAYSTACK documentation
 ===============================
 
 .. toctree::
@@ -9,47 +9,47 @@ RIP documentation
 Introduction
 ============
 
-RIP is a comprehensive computational tool for identifying species from DNA sequence data. It can pre-process sequencing data (adapter trimming), build a database, analyse sequencing data and perform a deamination profile analysis. It can work in two different modes. One mode performs metagenomic identifications from samples containing multiple organisms, and outputs mea posterior species abundances. The second mode can perform species identifications from single organism samples and it outputs species assignment posterior probabilities. 
+HAYSTACK is a comprehensive computational tool for identifying species from DNA sequence data. It can pre-process sequencing data (adapter trimming), build a database, analyse sequencing data and perform a deamination profile analysis. It can work in two different modes. One mode performs metagenomic identifications from samples containing multiple organisms, and outputs mea posterior species abundances. The second mode can perform species identifications from single organism samples and it outputs species assignment posterior probabilities.
 
 Installation
 ============
 
-RIP can be installed though pip, bioconda, and you can download the source from git as well. 
+HAYSTACK can be installed though pip, bioconda, and you can download the source from git as well.
 
 Pip
 
-    pip install rip
+    pip install haystack
 
 Conda
 
-    conda install -c bioconda rip
+    conda install -c bioconda haystack
 
 Git 
-    git clone rip 
+    git clone haystack
 
 
 Tutorial
 ========
 
-Configuring RIP
+Configuring HAYSTACK
 ---------------
 
-If a user is running rip for the first time on a machine, they should run the `rip config` module first. There an interactive dialogue session will start so that a few important options about the pipeline can be configured. The user will be asked to provide their email address so that sequences can be fetched from the NCBI and their preferred path for the shared genomes folder, among other things. Other than the email address the rest of the options have default values that can be used. If a user later on wishes to change any of these parameters specifically they can either rerun `rip config` or run rip config by passing a specific argument. 
+If a user is running haystack for the first time on a machine, they should run the `haystack config` module first. There an interactive dialogue session will start so that a few important options about the pipeline can be configured. The user will be asked to provide their email address so that sequences can be fetched from the NCBI and their preferred path for the shared genomes folder, among other things. Other than the email address the rest of the options have default values that can be used. If a user later on wishes to change any of these parameters specifically they can either rerun `haystack config` or run haystack config by passing a specific argument.
 
 Here is an example command that allows the configuration of all the parameters interactively 
 
-    rip config 
+    haystack config
     
 Here is an example command that configures the number of threads that bowtie2 is allowed to use for mapping and index building
 
-    rip config --bowtie2-threads 10 
+    haystack config --bowtie2-threads 10
 
 Unless the user has a deep understanding of its dataset we advise to be cautious when changing the base mismatch probability that is used later on in the method's probabilistic model. We also advise caution when changing the bowtie2 file size scaling factor.
 
 Building the database
 ---------------------
 
-In order to build the database we will be using the `database` submodule of RIP.
+In order to build the database we will be using the `database` submodule of HAYSTACK.
 First we need to know what what organisms we would like to include in our database. Do we only need the complete genomes of a specific genus or do we want more genera? 
 
 Constructing the Query
@@ -110,14 +110,14 @@ After the database has been created a yaml file with all the configured and defa
 Index building 
 --------------
 
-For the first part of the analysis an index out of all the genomes that are included in our database needs to be build. This is a process that can take big amounts of memory based on the number and the complexity of the sequences that exist in our database. For that reason the user can specify the desired amount of memory resources available to rip and the program will try to build the required index. This can be specified through the `--mem` flag, that can be appended to the any of the commands shown above. It is important to note that the memory specified needs to be in MB. It is also useful to mention that memory usage is less when more threads are provided to bowtie2 for index building, therefore when a user has enough resources they can think about allocating more threads to bowtie2 though the `rip config` module.
+For the first part of the analysis an index out of all the genomes that are included in our database needs to be build. This is a process that can take big amounts of memory based on the number and the complexity of the sequences that exist in our database. For that reason the user can specify the desired amount of memory resources available to haystack and the program will try to build the required index. This can be specified through the `--mem` flag, that can be appended to the any of the commands shown above. It is important to note that the memory specified needs to be in MB. It is also useful to mention that memory usage is less when more threads are provided to bowtie2 for index building, therefore when a user has enough resources they can think about allocating more threads to bowtie2 though the `haystack config` module.
 
 Database building modes
 -----------------------
 
 For the complete construction of a database, sequences need to be downloaded and subseqeuently indexed. 
-The default mode of the module `rip database` is `build`, which downloads and indexes all the sequences that have been requested by the user. 
-If a user would like to just download the sequences and index them later it is possible to do so, by specifying the flag `rip database --mode fetch`, to download the sequences first and then execute `rip database --mode index` in order to perform the indexing. 
+The default mode of the module `haystack database` is `build`, which downloads and indexes all the sequences that have been requested by the user.
+If a user would like to just download the sequences and index them later it is possible to do so, by specifying the flag `haystack database --mode fetch`, to download the sequences first and then execute `haystack database --mode index` in order to perform the indexing.
 If mode `fetch` is run first the mode `index` should be run subsequently, and not mode `build`, otherwise an error will be raised. If the user would like to build the database in one step then mode `build` is the correct choice. 
 
 Here is an example of building a database in two steps instead of one 
@@ -128,12 +128,12 @@ Here is an example of building a database in two steps instead of one
 Building a mitochondrial DNA database
 -------------------------------------
 
-When a user is providing a query about eukaryotes it is also possible to build a database with only mitochondrial genomes (by default whole genome assemblies will be fetched). In order to do that a user can specify the `--mtDNA` flag when running `rip database`. We strongly advise against having a mixed database of full eukaryotic genome assemblies for certain taxa and only mtDNA sequences for other taxa, as this will bias the identifications towards the taxa with full genome assemblies.
+When a user is providing a query about eukaryotes it is also possible to build a database with only mitochondrial genomes (by default whole genome assemblies will be fetched). In order to do that a user can specify the `--mtDNA` flag when running `haystack database`. We strongly advise against having a mixed database of full eukaryotic genome assemblies for certain taxa and only mtDNA sequences for other taxa, as this will bias the identifications towards the taxa with full genome assemblies.
 
 Preparing a sample for analysis
 -------------------------------
 
-After our database is built we need to prepare our samples for analysis. In order to do that we are going to use the `sample` module of rip. The input files can be SE, PE or collapsed reads. If the reads are collapsed they are going to be treated as SE reads. 
+After our database is built we need to prepare our samples for analysis. In order to do that we are going to use the `sample` module of haystack. The input files can be SE, PE or collapsed reads. If the reads are collapsed they are going to be treated as SE reads.
 
 It is possible to trim sequencing adapters and collapse PE reads by specifying the relative flags, and it also possible to download samples from the SRA if an sra accession is provided. 
 
@@ -151,12 +151,12 @@ After the sample preparation has finished a yaml file with all the configured an
 Sample analysis
 ---------------
 
-In order to analyse any sample we will need to use the `analyse` module of rip. The yaml files that specify the database and sample related options will also be needed for the `--database` and`--sample` flags.
+In order to analyse any sample we will need to use the `analyse` module of haystack. The yaml files that specify the database and sample related options will also be needed for the `--database` and`--sample` flags.
 
 Filtering Alignment
 -------------------
 
-The first step for the sample analysis is to filter in all the reads that align to any of the genomes in our database. For that we will need to use the `rip analyse --mode filter`. 
+The first step for the sample analysis is to filter in all the reads that align to any of the genomes in our database. For that we will need to use the `haystack analyse --mode filter`.
 
 Here is an example command 
 
@@ -165,7 +165,7 @@ Here is an example command
 Database Alignments
 -------------------
 
-After we have filtered our libraries we can align the filtered reads against all the genomes that are included in our database. This can be done by using mode `align` of `rip analyse`. 
+After we have filtered our libraries we can align the filtered reads against all the genomes that are included in our database. This can be done by using mode `align` of `haystack analyse`.
 
 For example
 
@@ -174,19 +174,19 @@ For example
 Likelihood calculation
 ----------------------
 
-After all the metagenomic individual alignments have been competed, the number of transitions and transversions will be calculated for every read that has aligned against any of the reference genomes in our database. Then the likelihoods and posterior probabilities for each read being sampled for a given reference genome will be calculated. For this step we can use the `likelihoods` mode of `rip analyse`.
+After all the metagenomic individual alignments have been competed, the number of transitions and transversions will be calculated for every read that has aligned against any of the reference genomes in our database. Then the likelihoods and posterior probabilities for each read being sampled for a given reference genome will be calculated. For this step we can use the `likelihoods` mode of `haystack analyse`.
 
     rip_multilevel analyse --mode likelihoods --database yersinia_example/database_build_config.yaml --sample ./samples/SRR12157896_config.yaml --analysis-output-dir ./analysis_output
 
 Important Note on the Dirichlet Assignment provess during Likelihood calculation
 --------------------------------------------------------------------------------
 
-It is important to be aware of the individual read posterior probability threshold, for a read to be assigned to a taxon. The three allowed options are 0.5 for 50% (least conservative option), 0.75 for 75% (conservative option) and 0.95 for 95% probability (most conservative option). As a default RIP uses the conservative 0.75 probability threshold for the Dirichlet assignment. The higher value you pick the more conservative the assignments become. It is useful to sometimes pick a value depending on what taxa are being identified. If there is a need to distinguish between closely related taxa then a more conservative threshold would increase the specificity of the analysis therefore being more appropriate, whereas when you're trying to generally characterise a metagenome a less conservative value could increase the sensitivity of the analysis be more helpful. 
+It is important to be aware of the individual read posterior probability threshold, for a read to be assigned to a taxon. The three allowed options are 0.5 for 50% (least conservative option), 0.75 for 75% (conservative option) and 0.95 for 95% probability (most conservative option). As a default HAYSTACK uses the conservative 0.75 probability threshold for the Dirichlet assignment. The higher value you pick the more conservative the assignments become. It is useful to sometimes pick a value depending on what taxa are being identified. If there is a need to distinguish between closely related taxa then a more conservative threshold would increase the specificity of the analysis therefore being more appropriate, whereas when you're trying to generally characterise a metagenome a less conservative value could increase the sensitivity of the analysis be more helpful.
 
 Single organism sample or metagenome ? 
 --------------------------------------
 
-Depending on whether we would like to identify the species a sample is belongs to, or perform a metagenomic analysis, we can use the `probabilities` or `abundances` mode of `rip analyse` respectively.
+Depending on whether we would like to identify the species a sample is belongs to, or perform a metagenomic analysis, we can use the `probabilities` or `abundances` mode of `haystack analyse` respectively.
 
 Assignment Probability Calculation
 ----------------------------------
@@ -205,7 +205,7 @@ In order to calculate mean posterior abundances we can run the following command
 Reads
 -----
 
-After the mean posterior abundances have been calculated for a sample all the reads that have been assigned to a taxon through the Dirichlet process can be outputted in separate bam files ready for further analyses (like assemblying or variant calling for instance) via the `rip reads` module. Reads that have been assigned to the Grey and Dark Matter are outputted in fastq files as they have not been uniquely assigned to a taxon.
+After the mean posterior abundances have been calculated for a sample all the reads that have been assigned to a taxon through the Dirichlet process can be outputted in separate bam files ready for further analyses (like assemblying or variant calling for instance) via the `haystack reads` module. Reads that have been assigned to the Grey and Dark Matter are outputted in fastq files as they have not been uniquely assigned to a taxon.
 
 Here is an example command
 
@@ -214,7 +214,7 @@ Here is an example command
 Mapdamage analysis
 ------------------
 
-If our samples are ancient we can use mapDamage to estimate the level of deamination in the reads that have aligned to any taxon in our database. For that we can use the `mapdamage` module of rip. The mapDamage analysis will be performed on the subset of reads that have been uniquely assigned to a taxon through the dirichlet process. This module can be either run independently or after the `rip reads` module.
+If our samples are ancient we can use mapDamage to estimate the level of deamination in the reads that have aligned to any taxon in our database. For that we can use the `mapdamage` module of haystack. The mapDamage analysis will be performed on the subset of reads that have been uniquely assigned to a taxon through the dirichlet process. This module can be either run independently or after the `haystack reads` module.
 
 Here is an example command 
 
@@ -223,7 +223,7 @@ Here is an example command
 Important note on sample analysis
 ---------------------------------
 
-The first 3 steps (filter, align, likelihoods) can be executed automatically when you call the probabilities or abundances mode of rip.
+The first 3 steps (filter, align, likelihoods) can be executed automatically when you call the probabilities or abundances mode of haystack.
 
 Important note on path notation
 -------------------------------
@@ -233,14 +233,14 @@ When providing paths for input or output files try and provide absolute paths. I
 Command Line Interface
 ======================
 
-rip config
+haystack config
 ----------
 
     -h, --help            show this help message and exit
     -e , --email          Email address for NCBI identification. Mandatory.
     -gc , --genome-cache-folder 
                           Path where all the genomes that are downloaded and/or
-                          used by rip are being stored. (default ~/rip_genomes/)
+                          used by haystack are being stored. (default ~/rip_genomes/)
     -b , --batchsize      Batchsize for fetching records from NCBI <int>
                           (default: 5)
     -mp , --mismatch-probability 
@@ -252,12 +252,12 @@ rip config
                           mutlifasta index for the filtering alignment (default:
                           2.5)
 
-rip database
+haystack database
 ------------
 
     -h, --help            show this help message and exit
     --dry-run
-    -m , --mode           Database creation mode for rip
+    -m , --mode           Database creation mode for haystack
     -o , --db-output      Path to the database output directory.
     -R , --refseq-rep     Use the prokaryotic representative species of the
                           RefSeq DB for the species id pipeline. only species no
@@ -288,16 +288,16 @@ rip database
                           List containing the names of specific genera the
                           abundances should be calculated on, separated by a
                           space character <genus1 genus2 genus3 ...>
-    -c , --cores          Number of cores for RIP to use
+    -c , --cores          Number of cores for HAYSTACK to use
     -M , --mem            Max memory resources allowed to be used ofr indexing
                           the input for the filtering alignment (default: max
                           available memory 8192.0)
     -u, --unlock          Unlock the working directory after smk is abruptly
                           killed <bool> (default: False)
-    -d, --debug           Debug the RIP workflow <bool> (default: False)
+    -d, --debug           Debug the HAYSTACK workflow <bool> (default: False)
     -smk , --snakemake    Snakemake flags (default: '')
 
-rip sample
+haystack sample
 ----------
 
     -h, --help            show this help message and exit
@@ -320,17 +320,17 @@ rip sample
                           True)
     -TF , --adaperremoval-flags 
                           Additional flags to provide to Adapterremoval <str>
-    -c , --cores          Number of cores for RIP to use
+    -c , --cores          Number of cores for HAYSTACK to use
     -M , --mem            Max memory resources allowed to be used ofr indexing
                           the input for the filtering alignment (default: max
                           available memory 8192.0)
     -u, --unlock          Unlock the working directory after smk is abruptly
                           killed <bool> (default: False)
-    -d, --debug           Debug the RIP workflow <bool> (default: False)
+    -d, --debug           Debug the HAYSTACK workflow <bool> (default: False)
     -smk , --snakemake    Snakemake flags (default: '')
     --dry-run
 
-rip analyse
+haystack analyse
 -----------
 
     -h, --help            show this help message and exit
@@ -348,13 +348,13 @@ rip analyse
                           Posterior probability threshold for a read to belong
                           to a certain species. Chose from 0.5, 0.75 and 0.95
                           (default:0.75).
-    -c , --cores          Number of cores for RIP to use
+    -c , --cores          Number of cores for HAYSTACK to use
     -M , --mem            Max memory resources allowed to be used ofr indexing
                           the input for the filtering alignment (default: max
                           available memory 8192.0)
     -u, --unlock          Unlock the working directory after smk is abruptly
                           killed <bool> (default: False)
-    -d, --debug           Debug the RIP workflow <bool> (default: False)
+    -d, --debug           Debug the HAYSTACK workflow <bool> (default: False)
     -smk , --snakemake    Snakemake flags (default: '')
     --dry-run
 

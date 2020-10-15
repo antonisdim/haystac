@@ -14,7 +14,7 @@ setuptools.setup(
     description="Species identification pipeline for both single species and metagenomic samples.",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/antonisdim/rip",
+    url="https://github.com/antonisdim/haystack",
     package_dir={
         "haystack": "haystack",
         "haystack.workflow": "haystack/workflow",

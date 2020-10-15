@@ -17,8 +17,8 @@
 
 # -- Project information -----------------------------------------------------
 
-project = "RIP"
-copyright = "2020, Evangelos A. Dimopoulos, Evan K. Irving-Pease"
+project = "HAYSTACK"
+copyright = "Copyright 2020, University of Oxford"
 author = "Evangelos A. Dimopoulos, Evan K. Irving-Pease"
 
 # The full version, including alpha/beta/rc tags
