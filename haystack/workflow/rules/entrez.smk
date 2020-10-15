@@ -13,7 +13,7 @@ MESSAGE_SUFFIX = "(output: {output} and log: {log})" if config["debug"] else ""
 
 
 from scripts.entrez_nuccore_query import CHUNK_SIZE
-from scripts.rip_utilities import normalise_name, get_accession_ftp_path
+from scripts.utilities import normalise_name, get_accession_ftp_path
 
 
 checkpoint entrez_find_accessions:

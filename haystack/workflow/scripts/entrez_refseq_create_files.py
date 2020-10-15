@@ -14,7 +14,7 @@ import os
 sys.path.append(os.getcwd())
 sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 
-from scripts.rip_utilities import get_accession_ftp_path
+from scripts.utilities import get_accession_ftp_path
 
 
 def entrez_refseq_create_files(

@@ -11,7 +11,7 @@ MAX_FRAG_LEN = 1000
 META_ALN_MIN_SCORE_CONSTANT = -6
 MESSAGE_SUFFIX = "(output: {output} and log: {log})" if config["debug"] else ""
 
-from scripts.rip_utilities import get_total_paths, normalise_name
+from scripts.utilities import get_total_paths, normalise_name
 
 
 def get_min_score(wildcards, input):

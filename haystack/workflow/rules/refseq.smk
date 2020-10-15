@@ -8,7 +8,7 @@ __license__ = "MIT"
 
 import pandas as pd
 
-from scripts.rip_utilities import normalise_name
+from scripts.utilities import normalise_name
 
 REFSEQ_REP_URL = "https://ftp.ncbi.nlm.nih.gov/genomes/GENOME_REPORTS/prok_representative_genomes.txt"
 MESSAGE_SUFFIX = "(output: {output} and log: {log})" if config["debug"] else ""

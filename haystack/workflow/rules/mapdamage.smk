@@ -7,7 +7,7 @@ __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
 
-from scripts.rip_utilities import get_total_paths, normalise_name
+from scripts.utilities import get_total_paths, normalise_name
 
 
 MESSAGE_SUFFIX = "(output: {output} and log: {log})" if config["debug"] else ""
