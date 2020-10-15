@@ -59,7 +59,7 @@ After deciding what taxa we would like to include in our database we need to con
 
 For example if we would like to build a database of the complete genomes of the species of the Yersinia genus we can use the following command 
 
-    rip_multilevel database --query '("Yersinia"[Organism] OR "Yersinia"[Organism]) AND "complete genome"[All Fields]' --db-output ./yersinia_example
+    haystack database --query '("Yersinia"[Organism] OR "Yersinia"[Organism]) AND "complete genome"[All Fields]' --db-output ./yersinia_example
 
 For each species (or any other user defined taxonomic rank), the longest sequence per taxon will be used to populate our database. 
 
@@ -68,7 +68,7 @@ Representative RefSeq species
 
 When constructing a database there is always the option to include the species of the Representative RefSeq database as well. All you need to do is include the corresponding flag in your command. 
 
-    rip_multilevel database --query '("Yersinia"[Organism] OR "Yersinia"[Organism]) AND "complete genome"[All Fields]' --db-output ./yersinia_example --refseq-rep True
+    haystack database --query '("Yersinia"[Organism] OR "Yersinia"[Organism]) AND "complete genome"[All Fields]' --db-output ./yersinia_example --refseq-rep True
 
 Providing custom accessions 
 ---------------------------
@@ -82,7 +82,7 @@ Here is an example of such a file:
 
 The we can simply run the following command 
 
-    rip_multilevel database --query '("Yersinia"[Organism] OR "Yersinia"[Organism]) AND "complete genome"[All Fields]' --db-output ./yersinia_example --accessions acc_example.txt
+    haystack database --query '("Yersinia"[Organism] OR "Yersinia"[Organism]) AND "complete genome"[All Fields]' --db-output ./yersinia_example --accessions acc_example.txt
 
 Providing custom sequences
 --------------------------
@@ -95,7 +95,7 @@ Here is an example of such a file:
 
 The we can simply run the following command 
 
-    rip_multilevel database --query '("Yersinia"[Organism] OR "Yersinia"[Organism]) AND "complete genome"[All Fields]' --db-output ./yersinia_example --sequences seq_example.txt
+    haystack database --query '("Yersinia"[Organism] OR "Yersinia"[Organism]) AND "complete genome"[All Fields]' --db-output ./yersinia_example --sequences seq_example.txt
 
 Combinations
 ------------
@@ -122,8 +122,8 @@ If mode `fetch` is run first the mode `index` should be run subsequently, and no
 
 Here is an example of building a database in two steps instead of one 
 
-    rip_multilevel database --mode fetch --query '("Yersinia"[Organism] OR "Yersinia"[Organism]) AND "complete genome"[All Fields]' --db-output ./yersinia_example
-    rip_multilevel database --mode build --db-output ./yersinia_example
+    haystack database --mode fetch --query '("Yersinia"[Organism] OR "Yersinia"[Organism]) AND "complete genome"[All Fields]' --db-output ./yersinia_example
+    haystack database --mode build --db-output ./yersinia_example
 
 Building a mitochondrial DNA database
 -------------------------------------
@@ -141,7 +141,7 @@ If you have SE or already collapsed reads you only need to specify a file path f
 
 Here is an example of downloading reads from the SRA, trimming sequencing adapters and collapsing reads. 
 
-    rip_multilevel sample --sra SRR12157896 --collapse --sample-output-dir samples
+    haystack sample --sra SRR12157896 --collapse --sample-output-dir samples
 
 Sample configuration yaml file
 --------------------------------
@@ -160,7 +160,7 @@ The first step for the sample analysis is to filter in all the reads that align 
 
 Here is an example command 
 
-    rip_multilevel analyse --mode filter --database yersinia_example/database_build_config.yaml --sample ./samples/SRR12157896_config.yaml --analysis-output-dir ./analysis_output
+    haystack analyse --mode filter --database yersinia_example/database_build_config.yaml --sample ./samples/SRR12157896_config.yaml --analysis-output-dir ./analysis_output
 
 Database Alignments
 -------------------
@@ -169,14 +169,14 @@ After we have filtered our libraries we can align the filtered reads against all
 
 For example
 
-    rip_multilevel analyse --mode align --database yersinia_example/database_build_config.yaml --sample ./samples/SRR12157896_config.yaml --analysis-output-dir ./analysis_output
+    haystack analyse --mode align --database yersinia_example/database_build_config.yaml --sample ./samples/SRR12157896_config.yaml --analysis-output-dir ./analysis_output
 
 Likelihood calculation
 ----------------------
 
 After all the metagenomic individual alignments have been competed, the number of transitions and transversions will be calculated for every read that has aligned against any of the reference genomes in our database. Then the likelihoods and posterior probabilities for each read being sampled for a given reference genome will be calculated. For this step we can use the `likelihoods` mode of `haystack analyse`.
 
-    rip_multilevel analyse --mode likelihoods --database yersinia_example/database_build_config.yaml --sample ./samples/SRR12157896_config.yaml --analysis-output-dir ./analysis_output
+    haystack analyse --mode likelihoods --database yersinia_example/database_build_config.yaml --sample ./samples/SRR12157896_config.yaml --analysis-output-dir ./analysis_output
 
 Important Note on the Dirichlet Assignment provess during Likelihood calculation
 --------------------------------------------------------------------------------
@@ -193,14 +193,14 @@ Assignment Probability Calculation
 
 In order to calculate posterior assignment probabilities we can run the following command
 
-    rip_multilevel analyse --mode probabilities --database yersinia_example/database_build_config.yaml --sample ./samples/SRR12157896_config.yaml --analysis-output-dir ./analysis_output
+    haystack analyse --mode probabilities --database yersinia_example/database_build_config.yaml --sample ./samples/SRR12157896_config.yaml --analysis-output-dir ./analysis_output
 
 Mean Posterior Abundances
 -------------------------
 
 In order to calculate mean posterior abundances we can run the following command 
 
-    rip_multilevel analyse --mode abundances --database yersinia_example/database_build_config.yaml --sample ./samples/SRR12157896_config.yaml --analysis-output-dir ./analysis_output
+    haystack analyse --mode abundances --database yersinia_example/database_build_config.yaml --sample ./samples/SRR12157896_config.yaml --analysis-output-dir ./analysis_output
 
 Reads
 -----
@@ -209,7 +209,7 @@ After the mean posterior abundances have been calculated for a sample all the re
 
 Here is an example command
 
-    rip_multilevel analyse --mode reads --database yersinia_example/database_build_config.yaml --sample ./samples/SRR12157896_config.yaml --analysis-output-dir ./analysis_output
+    haystack analyse --mode reads --database yersinia_example/database_build_config.yaml --sample ./samples/SRR12157896_config.yaml --analysis-output-dir ./analysis_output
 
 Mapdamage analysis
 ------------------
@@ -218,7 +218,7 @@ If our samples are ancient we can use mapDamage to estimate the level of deamina
 
 Here is an example command 
 
-    rip_multilevel analyse --mode mapdamage --database yersinia_example/database_build_config.yaml --sample ./samples/SRR12157896_config.yaml --analysis-output-dir ./analysis_output
+    haystack analyse --mode mapdamage --database yersinia_example/database_build_config.yaml --sample ./samples/SRR12157896_config.yaml --analysis-output-dir ./analysis_output
 
 Important note on sample analysis
 ---------------------------------
@@ -240,7 +240,7 @@ haystack config
     -e , --email          Email address for NCBI identification. Mandatory.
     -gc , --genome-cache-folder 
                           Path where all the genomes that are downloaded and/or
-                          used by haystack are being stored. (default ~/rip_genomes/)
+                          used by haystack are being stored. (default ~/haystack/cache/)
     -b , --batchsize      Batchsize for fetching records from NCBI <int>
                           (default: 5)
     -mp , --mismatch-probability 

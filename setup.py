@@ -24,7 +24,7 @@ setuptools.setup(
     include_package_data=True,
     entry_points="""
       [console_scripts]
-      haystack = haystack.haystack:Rip
+      haystack = haystack.haystack:haystack
       """,
     classifiers=["Programming Language :: Python :: 3", "License :: MIT License"],
     license="MIT",
