@@ -7,6 +7,8 @@ __copyright__ = "Copyright 2020, University of Oxford"
 __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
+import datetime
+
 import pathlib
 
 import argcomplete
@@ -25,25 +27,31 @@ from psutil import virtual_memory
 from pathlib import Path
 
 from workflow.scripts.utilities import (
+    ValidationError,
     EmailType,
     WritablePathType,
     PositiveIntType,
     FloatRangeType,
     IntRangeType,
     BoolType,
+    JsonType
 )
 
 os.environ["OPENBLAS_NUM_THREADS"] = "1"
 os.environ["OMP_NUM_THREADS"] = "1"
 
-MEGABYTE = float(1024 ** 2)
-MAX_MEM_MB = virtual_memory().total / MEGABYTE
 MAX_CPU = cpu_count()
+MAX_MEM_MB = int(virtual_memory().total / 1024 ** 2)
 
 CONFIG_DEFAULT = "./config/config.yaml"
 CONFIG_USER = pathlib.Path("~/.haystack/config.yaml").expanduser()
 
-thisdir = os.path.abspath(os.path.dirname(__file__))
+DATABASE_MODES = ["fetch", "index", "build"]
+TAXONOMIC_RANKS = ["genus", "species", "subspecies", "serotype"]
+
+RESTART_TIMES = 3
+
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
 # maximum concurrent Entrez requests
 MAX_ENTREZ_REQUESTS = 3
@@ -69,7 +77,7 @@ def interactive_config_input():
         else:
             break
     if count == 3:
-        raise RuntimeError("Please try haystack config again to input a valid email address.")
+        raise ValidationError("Please try haystack config again to input a valid email address.")
 
     cache = input(
         "Enter your preferred path for the genome cache. " "Press enter if you'd like to use the default location: "
@@ -108,13 +116,13 @@ def interactive_config_input():
 
     if os.path.exists(cache):
         if not os.access(cache, os.W_OK):
-            raise RuntimeError(
+            raise ValidationError(
                 "This directory path you have provided is not writable. "
                 "Please chose another path for your genomes directory."
             )
     else:
         if not os.access(os.path.dirname(cache), os.W_OK):
-            raise RuntimeError(
+            raise ValidationError(
                 "This directory path you have provided is not writable. "
                 "Please chose another path for your genomes directory."
             )
@@ -149,44 +157,44 @@ def check_config_arguments(args):
     if args["cache"]:
         if os.path.exists(args["cache"]):
             if not os.access(args["cache"], os.W_OK):
-                raise RuntimeError(
+                raise ValidationError(
                     "This directory path you have provided is not writable. "
                     "Please chose another path for your genomes directory."
                 )
         else:
             if not os.access(os.path.dirname(args["cache"]), os.W_OK):
-                raise RuntimeError(
+                raise ValidationError(
                     "This directory path you have provided is not writable. "
                     "Please chose another path for your genomes directory."
                 )
 
     if args["batchsize"]:
         if not isinstance(args["batchsize"], int):
-            raise RuntimeError("Please provide a positive integer for batchsize.")
+            raise ValidationError("Please provide a positive integer for batchsize.")
         if not args["batchsize"] > 0:
-            raise RuntimeError("Please provide a positive integer for batchsize.")
+            raise ValidationError("Please provide a positive integer for batchsize.")
 
     if args["mismatch_probability"]:
         if not (args["mismatch_probability"], float):
-            raise RuntimeError("Please provide a positive float for mismatch probability.")
+            raise ValidationError("Please provide a positive float for mismatch probability.")
         if not args["mismatch_probability"] > 0:
-            raise RuntimeError("Please provide a positive float for mismatch probability.")
+            raise ValidationError("Please provide a positive float for mismatch probability.")
 
     if args["bowtie2_threads"]:
         if not isinstance(args["bowtie2_threads"], int):
-            raise RuntimeError("Please provide a positive integer for the bowtie2 threads.")
+            raise ValidationError("Please provide a positive integer for the bowtie2 threads.")
         if not args["bowtie2_threads"] > 0:
-            raise RuntimeError("Please provide a positive integer for the bowtie2 threads.")
+            raise ValidationError("Please provide a positive integer for the bowtie2 threads.")
 
     if args["bowtie2_scaling"]:
         if not (args["bowtie2_scaling"], float):
-            raise RuntimeError("Please provide a positive float for the bowtie2 scaling factor.")
+            raise ValidationError("Please provide a positive float for the bowtie2 scaling factor.")
         if not args["bowtie2_scaling"] > 0:
-            raise RuntimeError("Please provide a positive float for the bowtie2 scaling factor.")
+            raise ValidationError("Please provide a positive float for the bowtie2 scaling factor.")
 
     if args["use_conda"]:
         if args["use_conda"] not in ["True", "False"]:
-            raise RuntimeError("Please either specify True or False for using conda.")
+            raise ValidationError("Please either specify True or False for using conda.")
 
 
 def str2bool(v):
@@ -231,7 +239,7 @@ The haystack commands are:
             self.config_default = yaml.safe_load(fin)
 
             # resolve the home directory of the user (i.e. ~/)
-            self.config_default["cache"] = pathlib.Path(self.config_default["cache"]).expanduser()
+            self.config_default["cache"] = str(pathlib.Path(self.config_default["cache"]).expanduser())
 
         try:
             # load the user config
@@ -252,8 +260,16 @@ The haystack commands are:
             )
             exit(1)
 
-        # use dispatch pattern to invoke method with same name
-        getattr(self, args.command)()
+        # merge the config dictionaries (giving precedence to the config_user)
+        self.config_merged = z = {**self.config_default, **self.config_user}
+
+        try:
+            # use dispatch pattern to invoke method with same name
+            getattr(self, args.command)()
+
+        except ValidationError as error:
+            print(f"haystack: error: {error}")
+            exit(1)
 
     def config(self):
         """
@@ -262,7 +278,6 @@ The haystack commands are:
         parser = argparse.ArgumentParser(description="Advanced configuration options for haystack")
 
         parser.add_argument(
-            # "-e",
             "--email",
             help="Email address for NCBI identification (mandatory).",
             metavar="<address>",
@@ -270,7 +285,6 @@ The haystack commands are:
         )
 
         parser.add_argument(
-            # "-c",
             "--cache",
             help=f"Cache folder for all the genomes downloaded from NCBI (default: {self.config_default['cache']}).",
             metavar="<path>",
@@ -278,7 +292,6 @@ The haystack commands are:
         )
 
         parser.add_argument(
-            # "-b",
             "--batchsize",
             help=f"Batch size for fetching records from NCBI (default: {self.config_default['batchsize']})",
             type=PositiveIntType(),
@@ -286,7 +299,6 @@ The haystack commands are:
         )
 
         parser.add_argument(
-            # "-mp",
             "--mismatch-probability",
             help=f"Base mismatch probability (default: {self.config_default['mismatch_probability']})",
             type=FloatRangeType(0.01, 0.10),
@@ -294,7 +306,6 @@ The haystack commands are:
         )
 
         parser.add_argument(
-            # "-t",
             "--bowtie2-threads",
             help=f"Number of threads to use for each bowtie2 alignment "
             f"(default: {self.config_default['bowtie2_threads']})",
@@ -303,7 +314,6 @@ The haystack commands are:
         )
 
         parser.add_argument(
-            # "-s",
             "--bowtie2-scaling",
             help=f"Rescaling factor to keep the bowtie2 mutlifasta index below the maximum memory limit "
             f"(default: {self.config_default['bowtie2_scaling']})",
@@ -312,14 +322,13 @@ The haystack commands are:
         )
 
         parser.add_argument(
-            # "-cn",
             "--use-conda",
             help=f"Use conda as a package manger (default: {self.config_default['use_conda']})",
             type=BoolType(),
             metavar="<bool>",
         )
 
-        # now that we're inside a subcommand, ignore the first two argvs
+        # now that we're inside a subcommand, ignore the first two arguments
         argcomplete.autocomplete(parser)
         args = parser.parse_args(sys.argv[2:])
 
@@ -332,331 +341,277 @@ The haystack commands are:
 
         # save the user config
         with open(CONFIG_USER, "w") as fout:
-            yaml.safe_dump(config_user, fout)
+            yaml.safe_dump(config_user, fout, default_flow_style=False)
 
-    def database(self):
-        parser = argparse.ArgumentParser(description="Build the database for haystack to use")
-
-        parser.add_argument("--dry-run", action="store_true")
-
+    def _common_arguments(self, parser):
+        """
+        Add the common arguments shared by all commands
+        """
         parser.add_argument(
-            "-m",
-            "--mode",
-            choices=["fetch", "index", "build"],
-            help="Database creation mode for haystack",
-            metavar="",
-            default="build",
+            "--cores",
+            help=f"Maximum number of CPU cores to use (default: {self.config_default['cores']}).",
+            metavar="<int>",
+            type=IntRangeType(1, MAX_CPU),
+            default=MAX_CPU if self.config_default["cores"] == "all" else self.config_default["cores"],
         )
 
         parser.add_argument(
-            "-o", "--output", help="Path to the database output directory.", metavar="", dest="db_output",
+            "--mem",
+            help=f"Maximum megabytes of memory to use (default: {self.config_default['mem']}).",
+            type=IntRangeType(1024, MAX_MEM_MB),
+            default=MAX_MEM_MB if self.config_default["mem"] == "all" else self.config_default["mem"],
+            metavar="<int>",
         )
+
         parser.add_argument(
-            "-R",
-            "--refseq-rep",
-            help="Use the prokaryotic representative species of the RefSeq DB "
-            "for the species id pipeline. only species no strains. "
-            "either or both of --refseq-rep and "
-            "--query should be set (default: False)",
-            type=bool,
-            default=False,
-            metavar="",
-        )
-        parser.add_argument(
-            "-MT",
-            "--mtDNA",
-            help="Download mitochondrial genomes for eukaryotes only. "
-            "Do not use with --refseq-rep or any queries for prokaryotes (default: False)",
+            "--unlock",
+            help="Unlock the working directory following a crash or hard restart (default: False).",
             action="store_true",
         )
+
         parser.add_argument(
-            "-q",
-            "--query",
-            help="Actual NCBI query in the NCBI query language. "
-            "Please refer to the documentation on how to construct one correctly.",
-            metavar="",
+            "--debug", help="Enable debugging mode (default: False)", action="store_true",
         )
+
         parser.add_argument(
-            "-Q",
-            "--query-file",  # todo check what Evan meant here
-            help="Actual NCBI query in the NCBI query language, stored in a simple text file.",
-            metavar="",
+            "--snakemake",
+            help="Pass additional flags to the `snakemake` scheduler.",
+            metavar="'<json>'",
+            type=JsonType()
         )
+
+    def database(self):
+        """
+        Build a database of target species
+        """
+        parser = argparse.ArgumentParser(description="Build a database of target species")
+
         parser.add_argument(
-            "-r",
+            "--mode",
+            choices=DATABASE_MODES,
+            help=f"Database creation mode for haystack (default: {self.config_default['mode']}).\n"
+            f"Alternatively choose 'fetch' to download the genomes, then 'index' to build the alignment indices.",
+            metavar="<mode>",
+            default=self.config_default["mode"],
+        )
+
+        parser.add_argument(
             "--rank",
-            help="Taxonomic rank to perform the identifications on (genus, species, subspecies, serotype) "
-            "<str> (default: species)",
-            choices=["genus", "species", "subspecies", "serotype"],
-            default="species",
-            metavar="",
-        )
-        parser.add_argument(
-            "-s",
-            "--sequences",
-            help="TAB DELIMITED input file containing the the name of the taxon with no special characters, "
-            "and an underscore '_' instead of spaces, a user defined accession code and the path of the fasta file. "
-            "The fasta file that the path point to can be either uncompressed or compressed with gzip/bgzip",
-            metavar="",
-            default="",
+            help=f"Taxonomic rank to perform the identifications on [{', '.join(TAXONOMIC_RANKS)}] "
+            f"(default: {self.config_default['rank']})",
+            choices=TAXONOMIC_RANKS,
+            default=self.config_default["rank"],
+            metavar="<rank>",
         )
 
         parser.add_argument(
-            "-a",
+            "--refseq-rep",
+            help="Include all prokaryotic species (no strains) from the representative RefSeq DB (default: False)",
+            action="store_true",
+        )
+
+        # TODO how can we validate these queries?
+        parser.add_argument(
+            "--query",
+            help="Database query in the NCBI query language. "
+            "Please refer to the documentation for assistance with constructing a valid query.",
+            metavar="<query>",
+        )
+
+        parser.add_argument(
+            "--query-file",
+            help="File containing a database query in the NCBI query language.",
+            metavar="<path>",
+            type=argparse.FileType("r"),
+        )
+
+        parser.add_argument(
+            "--mtDNA",
+            help="For eukaryotes, download mitochondrial genomes only. "
+            "Not to be used with --refseq-rep or queries containing prokaryotes (default: False)",
+            action="store_true",
+        )
+
+        # TODO validate that this is 2-column and tab delimited
+        parser.add_argument(
             "--accessions",
-            help="TAB DELIMITED input file containing the the name of the taxon with no special characters, "
-            "and an underscore '_' instead of spaces, a user defined valid NCBI nucleotide, assembly or WGS "
-            "accession code. ",
-            metavar="",
-            default="",
+            help="Tab delimited file containing one record per row: the name of the taxon, "
+            "and a valid NCBI accession code from the nucleotide, assembly or WGS databases.",
+            metavar="<path>",
+            type=argparse.FileType("r"),
+        )
+
+        # TODO validate that this is 3-column and tab delimited
+        parser.add_argument(
+            "--sequences",
+            help="Tab delimited file containing one record per row: the name of the taxon, a user defined "
+            "accession code, and the path to the fasta file (optionally compressed).",
+            metavar="<path>",
+            type=argparse.FileType("r"),
         )
 
         parser.add_argument(
-            "-S",
             "--seed",
-            help="Seed for the randomization of the genomes that each index chunk will include <int> (default 1)",
-            metavar="",
+            help=f"Random seed for database indexing (default: {self.config_default['seed']})",
+            metavar="<int>",
             type=int,
-            default=int(1),
+            default=self.config_default["seed"],
         )
 
         parser.add_argument(
-            "-g",
             "--genera",
+            help="Optional list of genera to restrict the abundance calculations.",
+            metavar="<genus>",
             nargs="+",
-            help="List containing the names of specific genera "
-            "the abundances should be calculated "
-            "on, separated by a space character <genus1 genus2 genus3 ...>",
-            metavar="",
             default=[],
         )
 
+        # add the common arguments
+        self._common_arguments(parser)
+
         parser.add_argument(
-            "-c", "--cores", help="Number of cores for HAYSTACK to use", type=int, metavar="", default=MAX_CPU,
-        )
-        parser.add_argument(
-            "-M",
-            "--mem",
-            help="Max memory resources allowed to be used for indexing the input for "
-            "the filtering alignment "
-            "(default: max available memory {})".format(MAX_MEM_MB),
-            type=float,
-            default=MAX_MEM_MB,
-            metavar="",
-        )
-        parser.add_argument(
-            "-u",
-            "--unlock",
-            action="store_true",
-            help="Unlock the working directory after smk is " "abruptly killed  <bool> (default: False)",
-        )
-        parser.add_argument(
-            "-d", "--debug", action="store_true", help="Debug the HAYSTACK workflow <bool> (default: False)",
-        )
-        parser.add_argument(
-            "-smk", "--snakemake", help="Snakemake flags (default: '')", metavar="",  # todo don't know how to do that
+            "--output",
+            help="Path to the database output directory (mandatory).",
+            metavar="<path>",
+            dest="db_output",
+            type=WritablePathType(),
+            required=True,
         )
 
-        # now that we're inside a subcommand, ignore the first
-        # TWO argvs, ie the command (git) and the subcommand (commit)
-        argcomplete.autocomplete(parser)
-        args = parser.parse_args(sys.argv[2:])
-
+        # print the help
         if len(sys.argv) == 2:
             parser.print_help()
             parser.exit()
 
-        snakefile = os.path.join(thisdir, "workflow", "database.smk")
-        if not os.path.exists(snakefile):
-            sys.stderr.write("Error: cannot find Snakefile at {}\n".format(snakefile))
-            sys.exit(-1)
+        # now that we're inside a subcommand, ignore the first two arguments
+        argcomplete.autocomplete(parser)
+        args = parser.parse_args(sys.argv[2:])
 
-        print("Running db creation, option={}".format(args.mode))
-
-        # actual arg parsing
-
-        repo_config_file = os.path.join(thisdir, "config", "config.yaml")
-        user_config_file = os.path.join(str(Path.home()), ".haystack", "config.yaml")
-
-        if not os.path.exists(user_config_file):
-            raise RuntimeError(
-                "Please run haystack config first in order to set up your "
-                "email address and desired path for storing the downloaded genomes."
-            )
-
-        # rip_config = self.config
-        with open(repo_config_file) as fin:
-            repo_rip_config = yaml.safe_load(fin)
-
-        with open(user_config_file) as fin:
-            user_rip_config = yaml.safe_load(fin)
-
-        repo_rip_config.update((k, v) for k, v in user_rip_config.items())
-
-        database_args = vars(args)
-
-        database_config = {k: v for k, v in repo_rip_config.items()}
-        database_config.update((k, v) for k, v in database_args.items())
-
+        # must specify at least one source for the database
         if (
-            database_config["refseq_rep"] is False
-            and database_config["query"] is None
-            and database_config["query_file"] is None
-            and database_config["accessions"] is None
-            and database_config["sequences"] is None
+            args.refseq_rep is False
+            and args.query is None
+            and args.query_file is None
+            and args.accessions is None
+            and args.sequences is None
         ):
-            raise RuntimeError(
-                "Please specify where HAYSTACK should get the database sequences from "
-                "(query, RefSeq Rep, custom accessions or custom seqeunces"
+            raise ValidationError(
+                "Please specify at least one of --refseq-rep, --query, --query-file, --accessions or --sequences"
             )
 
-        if database_config["mtDNA"] and database_config["refseq_rep"]:
-            raise RuntimeError(
-                "These flags are mutually exclusive. Either pick refseq-rep for prokaryotic "
-                "related queries or pick mtDNA for eukaryotic related queries."
+        if args.mtDNA and args.refseq_rep:
+            raise ValidationError(
+                "Please specify either `--mtDNA` or `--refseq-rep` but not both."
             )
 
-        if database_config["query"] and database_config["query_file"]:
-            raise RuntimeError(
-                "You cannot provide both a query and a query file. "
-                "Please chose only one option, and provide the only its respective flag."
+        if args.query and args.query_file:
+            raise ValidationError(
+                "Please specify either `--query <query>` or `--query-file <path>` but not both."
             )
 
-        if database_config["query_file"]:
-            with open(database_config["query_file"], "r") as fin:
-                database_config["query"] = fin.read().rstrip()
+        if args.query_file:
+            # load the query file
+            args.query = args.query_file.read().strip()
 
-            if database_config["query"] == "" or database_config["query"] == " ":
-                raise RuntimeError("The query file you provided was empty. Please provide a file with a valid query.")
+            if not args.query:
+                raise ValidationError(f"The query file '{args.query_file.name}' is empty.")
 
-        database_config["db_output"] = os.path.abspath(database_config["db_output"])
+        # resolve relative paths
+        args.db_output = os.path.abspath(args.db_output)
 
-        if database_config["db_output"]:
-            if os.path.exists(database_config["db_output"]):
-                if not os.access(database_config["db_output"], os.W_OK):
-                    raise RuntimeError(
-                        "This directory path you have provided is not writable. "
-                        "Please chose another path for your database output directory."
-                    )
-            else:
-                if not os.access(os.path.dirname(database_config["db_output"]), os.W_OK):
-                    raise RuntimeError(
-                        "This directory path you have provided is not writable. "
-                        "Please chose another path for your database output directory.."
-                    )
+        # add all command line options to the merged config
+        config = {**self.config_merged, **vars(args)}
 
-        if database_config["db_output"] is None:
-            raise RuntimeError(
-                "Please provide a valid directory path for the database outputs. "
-                "If the directory does not exist, do not worry the method will create it."
-            )
+        config_fetch = os.path.join(args.db_output, "database_fetch_config.yaml")
+        config_build = os.path.join(args.db_output, "database_build_config.yaml")
 
         target_list = []
 
-        if database_config["mode"] == "fetch":
-            if database_config["query"] != "":
-                target_list.append(database_config["db_output"] + "/bowtie/entrez_query.fasta.gz")
-            if database_config["refseq_rep"]:
-                target_list.append(database_config["db_output"] + "/bowtie/refseq_prok.fasta.gz")
-            if database_config["sequences"] != "":
-                target_list.append(database_config["db_output"] + "/bowtie/custom_seqs.fasta.gz")
-            if database_config["accessions"] != "":
-                target_list.append(database_config["db_output"] + "/bowtie/custom_acc.fasta.gz")
+        if args.mode == "fetch":
+            if args.query:
+                target_list.append("bowtie/entrez_query.fasta.gz")
+            if args.refseq_rep:
+                target_list.append("bowtie/refseq_prok.fasta.gz")
+            if args.sequences:
+                target_list.append("bowtie/custom_seqs.fasta.gz")
+            if args.accessions:
+                target_list.append("bowtie/custom_acc.fasta.gz")
 
-            database_fetch_yaml = os.path.join(
-                str(Path.home()), database_config["db_output"], "database_fetch_config.yaml",
-            )
-            if not os.path.exists(database_fetch_yaml):
-                os.makedirs(
-                    os.path.join(str(Path.home()), database_config["db_output"]), exist_ok=True,
-                )
-                with open(database_fetch_yaml, "w") as outfile:
-                    yaml.safe_dump(database_config, outfile, default_flow_style=False)
+            with open(config_fetch, "w") as fout:
+                yaml.safe_dump(config, fout, default_flow_style=False)
 
-            print("Please run haystack database --mode index after this step.")
+            print("Please run `haystack database --mode index` after this step.")
 
-        if database_config["mode"] == "index":
-            target_list.append(database_config["db_output"] + "/bowtie/bowtie_index.done")
+        elif args.mode == "index":
+            target_list.append("bowtie/bowtie_index.done")
 
-            database_fetch_yaml = os.path.join(
-                str(Path.home()), database_config["db_output"], "database_fetch_config.yaml",
-            )
-            if not os.path.exists(database_fetch_yaml):
-                raise RuntimeError(
-                    "Please run haystack database --mode fetch first, and then proceed indexing the database."
+            try:
+                with open(config_fetch, "r") as fin:
+                    config = yaml.safe_load(fin)
+            except FileNotFoundError:
+                raise ValidationError(
+                    "Please run haystack `database --mode fetch` before attempting to index the database."
                 )
 
-            with open(database_fetch_yaml, "r") as fin:
-                database_config = yaml.safe_load(fin)
+        elif args.mode == "build":
+            target_list.append("idx_database.done")
+            target_list.append("bowtie/bowtie_index.done")
 
-        if database_config["mode"] == "build":
-            target_list.append(database_config["db_output"] + "/idx_database.done")
-            target_list.append(database_config["db_output"] + "/bowtie/bowtie_index.done")
-
-            database_fetch_yaml = os.path.join(
-                str(Path.home()), database_config["db_output"], "database_fetch_config.yaml",
-            )
-            if os.path.exists(database_fetch_yaml):
-                raise RuntimeError(
-                    "You can not run haystack database --mode build after running --mode fetch. "
-                    "You need to run haystack database --mode index instead."
+            if os.path.exists(config_fetch):
+                raise ValidationError(
+                    "Please run haystack `database --mode index` as the database has alrady been fetched."
                 )
 
-            database_build_yaml = os.path.join(
-                str(Path.home()), database_config["db_output"], "database_build_config.yaml",
-            )
+            with open(config_build, "w") as fout:
+                yaml.safe_dump(config, fout, default_flow_style=False)
 
-            if not os.path.exists(database_build_yaml):
-                os.makedirs(
-                    os.path.join(str(Path.home()), database_config["db_output"]), exist_ok=True,
-                )
-                with open(database_build_yaml, "w") as outfile:
-                    yaml.safe_dump(database_config, outfile, default_flow_style=False)
+        config['workflow_dir'] = os.path.join(BASE_DIR, "workflow")  # TODO tidy up
+        config['mtDNA'] = str(args.mtDNA).lower()
+        config["sequences"] = config["sequences"] or ""
 
-        database_config["workflow_dir"] = os.path.join(thisdir, "workflow")
-        database_config["mtDNA"] = str(database_config["mtDNA"]).lower()
+        target_list = [os.path.join(args.db_output, target) for target in target_list]
+        snakefile = os.path.join(BASE_DIR, "workflow/database.smk")
 
-        user_options = {k: v for k, v in database_args.items() if (k, v) not in repo_rip_config.items()}
-        # print(database_config)
+        return self._run_snakemake(snakefile, args, config, target_list)
 
-        print("--------")
-        print("RUN DETAILS")
-        print("\n\tSnakefile: {}".format(snakefile))
-        print("\n\tConfig Parameters:\n")
-        if database_config["debug"]:
-            for (key, value,) in database_config.items():
-                print(f"{key:35}{value}")
-        else:
-            for (key, value,) in user_options.items():
-                print(f"{key:35}{value}")
+    @staticmethod
+    def _run_snakemake(snakefile, args, config, target_list):
+        """
+        Helper function for running the snakemake workflow
+        """
+        print("HAYSTACK\n")
+        print(f"Date: {datetime.datetime.now()}\n")
 
-        print("\n\tTarget Output Files:\n")
-        for target in target_list:
-            print(target)
-        print("--------")
+        print("Config parameters:\n")
+        params = config if args.debug else vars(args)
 
-        if database_config["debug"]:
-            printshellcmds = True
-            keepgoing = False
-            restart_times = 0
-        else:
-            printshellcmds = False
-            keepgoing = True
-            restart_times = 3
+        for key, value in params.items():
+            if value or args.debug:
+                print(f" {key}: {value}")
+        print("\n")
+
+        if args.debug:
+            print("Target files:\n")
+            for target in target_list:
+                print(" " + target)
+            print("\n")
+
+        # get any extra snakemake params
+        smk_params = config.pop('snakemake', {})
 
         status = snakemake.snakemake(
             snakefile,
-            config=database_config,
+            config=config,
             targets=target_list,
-            printshellcmds=printshellcmds,
-            dryrun=args.dry_run,
+            printshellcmds=args.debug,
             cores=int(args.cores),
-            keepgoing=keepgoing,
-            restart_times=restart_times,  # TODO find a better solution to this... 15 is way too many!
+            keepgoing=(not args.debug),
+            restart_times=0 if args.debug else RESTART_TIMES,
             unlock=args.unlock,
             show_failed_logs=args.debug,
             resources={"entrez_api": MAX_ENTREZ_REQUESTS},
-            use_conda=database_config["use_conda"],
+            use_conda=config['use_conda'],
+            **smk_params
         )
 
         # translate "success" into shell exit code of 0
@@ -759,31 +714,31 @@ The haystack commands are:
             parser.print_help()
             parser.exit()
 
-        snakefile = os.path.join(thisdir, "workflow", "sample.smk")
+        snakefile = os.path.join(BASE_DIR, "workflow", "sample.smk")
         if not os.path.exists(snakefile):
             sys.stderr.write("Error: cannot find Snakefile at {}\n".format(snakefile))
             sys.exit(-1)
 
-        repo_config_file = os.path.join(thisdir, "config", "config.yaml")
+        repo_config_file = os.path.join(BASE_DIR, "config", "config.yaml")
         user_config_file = os.path.join(str(Path.home()), ".haystack", "config.yaml")
 
         if not os.path.exists(user_config_file):
-            raise RuntimeError(
+            raise ValidationError(
                 "Please run haystack config first in order to set up your "
                 "email address and desired path for storing the downloaded genomes."
             )
 
         with open(repo_config_file) as fin:
-            repo_rip_config = yaml.safe_load(fin)
+            self.config_default = yaml.safe_load(fin)
 
         with open(user_config_file) as fin:
-            user_rip_config = yaml.safe_load(fin)
+            self.config_user = yaml.safe_load(fin)
 
-        repo_rip_config.update((k, v) for k, v in user_rip_config.items())
+        self.config_default.update((k, v) for k, v in self.config_user.items())
 
         sample_args = vars(args)
         # print(sample_args)
-        sample_config = {k: v for k, v in repo_rip_config.items()}
+        sample_config = {k: v for k, v in self.config_default.items()}
         sample_config.update((k, v) for k, v in sample_args.items())
 
         sample_config["sample_output_dir"] = os.path.abspath(sample_config["sample_output_dir"])
@@ -791,7 +746,7 @@ The haystack commands are:
         if sample_config["sample_output_dir"]:
             if os.path.exists(sample_config["sample_output_dir"]):
                 if not os.access(sample_config["sample_output_dir"], os.W_OK):
-                    raise RuntimeError(
+                    raise ValidationError(
                         "This directory path you have provided is not writable. "
                         "Please chose another path for your sample output directory."
                     )
@@ -799,13 +754,13 @@ The haystack commands are:
                 if not os.access(os.path.dirname(sample_config["sample_output_dir"]), os.W_OK) and not os.access(
                     os.path.dirname(os.path.dirname(sample_config["sample_output_dir"])), os.W_OK,
                 ):
-                    raise RuntimeError(
+                    raise ValidationError(
                         "This directory path you have provided is not writable. "
                         "Please chose another path for your sample output directory."
                     )
 
         if sample_config["sample_output_dir"] is None:
-            raise RuntimeError(
+            raise ValidationError(
                 "Please provide a valid directory path for the sample related outputs. "
                 "If the directory does not exist, do not worry the method will create it."
             )
@@ -826,28 +781,28 @@ The haystack commands are:
         if (sample_config["fastq_r1"] or sample_config["fastq_r2"] is not None) and (
             sample_config["fastq"] is not None
         ):
-            raise RuntimeError("Please use a correct combination of PE or SE reads.")
+            raise ValidationError("Please use a correct combination of PE or SE reads.")
 
         if sample_config["fastq"]:
             if not os.path.exists(sample_config["fastq"]):
-                raise RuntimeError(
+                raise ValidationError(
                     "The file path you provided to --fastq does not exist. " "Please provide a valid path"
                 )
 
         if sample_config["fastq_r1"]:
             if not os.path.exists(sample_config["fastq_r1"]):
-                raise RuntimeError(
+                raise ValidationError(
                     "The file path you provided to --fastq-r1 does not exist. " "Please provide a valid path"
                 )
 
         if sample_config["fastq_r2"]:
             if not os.path.exists(sample_config["fastq_r2"]):
-                raise RuntimeError(
+                raise ValidationError(
                     "The file path you provided to --fastq-r2 does not exist. " "Please provide a valid path"
                 )
 
         if sample_config["sra"] is None and sample_config["sample_prefix"] is None:
-            raise RuntimeError("Please provide a prefix name for the sample you want to analyse.")
+            raise ValidationError("Please provide a prefix name for the sample you want to analyse.")
 
         if sample_config["sra"] is not None:
             sample_config["sample_prefix"] = sample_config["sra"]
@@ -877,7 +832,7 @@ The haystack commands are:
 
         if sample_config["fastq"] and sample_config["collapse"]:
             raise (
-                RuntimeError(
+                ValidationError(
                     "You cannot collapse SE reads. Please delete the --collapse flag from your command, "
                     "or provide a different set of input files."
                 )
@@ -915,13 +870,13 @@ The haystack commands are:
             os.makedirs(
                 os.path.join(str(Path.home()), sample_config["sample_output_dir"]), exist_ok=True,
             )
-            sample_options = {k: v for k, v in sample_config.items() if (k, v) not in repo_rip_config.items()}
+            sample_options = {k: v for k, v in sample_config.items() if (k, v) not in self.config_default.items()}
             with open(sample_yaml, "w") as outfile:
                 yaml.safe_dump(sample_options, outfile, default_flow_style=False)
 
-        sample_config["workflow_dir"] = os.path.join(thisdir, "workflow")
+        sample_config["workflow_dir"] = os.path.join(BASE_DIR, "workflow")
 
-        user_options = {k: v for k, v in sample_args.items() if (k, v) not in repo_rip_config.items()}
+        user_options = {k: v for k, v in sample_args.items() if (k, v) not in self.config_default.items()}
         # print(database_config)
         # print(sample_config)
 
@@ -1043,35 +998,35 @@ The haystack commands are:
 
         print("The selected mode for sample analysis is {}".format(args.mode))
 
-        snakefile = os.path.join(thisdir, "workflow", "analyse.smk")
+        snakefile = os.path.join(BASE_DIR, "workflow", "analyse.smk")
         if not os.path.exists(snakefile):
             sys.stderr.write("Error: cannot find Snakefile at {}\n".format(snakefile))
             sys.exit(-1)
 
-        repo_config_file = os.path.join(thisdir, "config", "config.yaml")
+        repo_config_file = os.path.join(BASE_DIR, "config", "config.yaml")
         user_config_file = os.path.join(str(Path.home()), ".haystack", "config.yaml")
 
         if not os.path.exists(user_config_file):
-            raise RuntimeError(
+            raise ValidationError(
                 "Please run haystack config first in order to set up your "
                 "email address and desired path for storing the downloaded genomes."
             )
 
         with open(repo_config_file) as fin:
-            repo_rip_config = yaml.safe_load(fin)
+            self.config_default = yaml.safe_load(fin)
 
         with open(user_config_file) as fin:
-            user_rip_config = yaml.safe_load(fin)
+            self.config_user = yaml.safe_load(fin)
 
-        repo_rip_config.update((k, v) for k, v in user_rip_config.items())
+        self.config_default.update((k, v) for k, v in self.config_user.items())
 
         if not os.path.exists(args.database):
-            raise RuntimeError(
+            raise ValidationError(
                 "The path you provided for the database output directory is not valid. " "Please provide a valid path."
             )
 
         if not os.path.exists(args.sample):
-            raise RuntimeError(
+            raise ValidationError(
                 "The path you provided for the sample related output is not valid. " "Please provide a valid path."
             )
 
@@ -1086,17 +1041,17 @@ The haystack commands are:
                 database_config = yaml.safe_load(fin)
 
         if os.path.exists(db_build_yaml) and os.path.exists(db_fetch_yaml):
-            raise RuntimeError("The database has not been build correctly. Please re build the database.")
+            raise ValidationError("The database has not been build correctly. Please re build the database.")
 
         if os.path.exists(db_build_yaml) is False and os.path.exists(db_fetch_yaml) is False:
-            raise RuntimeError("The database has not been build correctly or at all. Please re build the database.")
+            raise ValidationError("The database has not been build correctly or at all. Please re build the database.")
 
         sample_yaml = os.path.join(args.sample, "sample_config.yaml")
         if os.path.exists(sample_yaml):
             with open(sample_yaml) as fin:
                 sample_config = yaml.safe_load(fin)
         else:
-            raise RuntimeError(
+            raise ValidationError(
                 "The sample yaml file does not exist in the path you provided. "
                 "Please make sure you have provided the right sample output path, or "
                 "make sure that you have run haystack sample first. "
@@ -1104,7 +1059,7 @@ The haystack commands are:
 
         analysis_args = vars(args)
 
-        analysis_config = {k: v for k, v in repo_rip_config.items()}
+        analysis_config = {k: v for k, v in self.config_default.items()}
         analysis_config.update((k, v) for k, v in database_config.items())
         analysis_config.update((k, v) for k, v in sample_config.items())
         analysis_config.update((k, v) for k, v in analysis_args.items())
@@ -1114,19 +1069,19 @@ The haystack commands are:
         if analysis_config["analysis_output_dir"]:
             if os.path.exists(analysis_config["analysis_output_dir"]):
                 if not os.access(analysis_config["analysis_output_dir"], os.W_OK):
-                    raise RuntimeError(
+                    raise ValidationError(
                         "This directory path you have provided is not writable. "
                         "Please chose another path for your sample output directory."
                     )
             else:
                 if not os.access(os.path.dirname(analysis_config["analysis_output_dir"]), os.W_OK):
-                    raise RuntimeError(
+                    raise ValidationError(
                         "This directory path you have provided is not writable. "
                         "Please chose another path for your sample output directory."
                     )
 
         if analysis_config["analysis_output_dir"] is None:
-            raise RuntimeError(
+            raise ValidationError(
                 "Please provide a valid directory path for the species identification related outputs. "
                 "If the directory does not exist, do not worry the method will create it."
             )
@@ -1196,13 +1151,13 @@ The haystack commands are:
             os.makedirs(
                 os.path.join(str(Path.home()), analysis_config["analysis_output_dir"]), exist_ok=True,
             )
-            analysis_options = {k: v for k, v in analysis_config.items() if (k, v) not in repo_rip_config.items()}
+            analysis_options = {k: v for k, v in analysis_config.items() if (k, v) not in self.config_default.items()}
             with open(analysis_yaml, "w") as outfile:
                 yaml.safe_dump(analysis_options, outfile, default_flow_style=False)
 
-        analysis_config["workflow_dir"] = os.path.join(thisdir, "workflow")
+        analysis_config["workflow_dir"] = os.path.join(BASE_DIR, "workflow")
 
-        user_options = {k: v for k, v in analysis_args.items() if (k, v) not in repo_rip_config.items()}
+        user_options = {k: v for k, v in analysis_args.items() if (k, v) not in self.config_default.items()}
 
         print("--------")
         print("RUN DETAILS")

@@ -26,6 +26,10 @@ TOO_MANY_REQUESTS_WAIT = 20
 MAX_RETRY_ATTEMPTS = 5
 
 
+class ValidationError(Exception):
+    pass
+
+
 class EmailType(object):
     """
     Supports checking email against different patterns. The current available patterns is:
@@ -61,7 +65,7 @@ class WritablePathType(object):
         from pathlib import Path
 
         try:
-            path = Path(value)
+            path = Path(value).expanduser()
             path.mkdir(parents=True, exist_ok=True)
             return value
         except Exception:
@@ -137,6 +141,19 @@ class BoolType(object):
             return False
         else:
             raise argparse.ArgumentTypeError(f"'{value}' is not a valid boolean")
+
+
+class JsonType(object):
+    """
+    Is this a valid JSON string
+    """
+
+    def __call__(self, value):
+        import json
+        try:
+            return json.loads(value)
+        except json.decoder.JSONDecodeError as error:
+            raise argparse.ArgumentTypeError(f"'{value}' is not a valid JSON string\n {error}")
 
 
 def get_total_paths(
