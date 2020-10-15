@@ -73,12 +73,9 @@ def get_idx_entrez(wildcards):
             normalise_name(seq["species"]),
             seq["GBSeq_accession-version"],
         )
+        inputs.append(config["cache"] + "/{orgname}/{accession}.1.bt2l".format(orgname=orgname, accession=accession))
         inputs.append(
-            config["cache"] + "/{orgname}/{accession}.1.bt2l".format(orgname=orgname, accession=accession)
-        )
-        inputs.append(
-            config["cache"]
-            + "/{orgname}/{accession}.fasta.gz.fai".format(orgname=orgname, accession=accession)
+            config["cache"] + "/{orgname}/{accession}.fasta.gz.fai".format(orgname=orgname, accession=accession)
         )
 
     return inputs
@@ -108,12 +105,9 @@ def get_idx_ref_gen(wildcards):
             normalise_name(seq["species"]),
             seq["GBSeq_accession-version"],
         )
+        inputs.append(config["cache"] + "/{orgname}/{accession}.1.bt2l".format(orgname=orgname, accession=accession))
         inputs.append(
-            config["cache"] + "/{orgname}/{accession}.1.bt2l".format(orgname=orgname, accession=accession)
-        )
-        inputs.append(
-            config["cache"]
-            + "/{orgname}/{accession}.fasta.gz.fai".format(orgname=orgname, accession=accession)
+            config["cache"] + "/{orgname}/{accession}.fasta.gz.fai".format(orgname=orgname, accession=accession)
         )
 
     return inputs
@@ -148,12 +142,9 @@ def get_idx_assembly(wildcards):
             normalise_name(seq["species"]),
             seq["GBSeq_accession-version"],
         )
+        inputs.append(config["cache"] + "/{orgname}/{accession}.1.bt2l".format(orgname=orgname, accession=accession))
         inputs.append(
-            config["cache"] + "/{orgname}/{accession}.1.bt2l".format(orgname=orgname, accession=accession)
-        )
-        inputs.append(
-            config["cache"]
-            + "/{orgname}/{accession}.fasta.gz.fai".format(orgname=orgname, accession=accession)
+            config["cache"] + "/{orgname}/{accession}.fasta.gz.fai".format(orgname=orgname, accession=accession)
         )
 
     return inputs
@@ -180,8 +171,7 @@ def get_idx_custom_seqs():
             seq["accession"],
         )
         inputs.append(
-            config["cache"]
-            + "/{orgname}/custom_seq-{accession}.1.bt2l".format(orgname=orgname, accession=accession)
+            config["cache"] + "/{orgname}/custom_seq-{accession}.1.bt2l".format(orgname=orgname, accession=accession)
         )
         inputs.append(
             config["cache"]
@@ -209,12 +199,9 @@ def get_idx_custom_acc():
             normalise_name(seq["species"]),
             seq["accession"],
         )
+        inputs.append(config["cache"] + "/{orgname}/{accession}.1.bt2l".format(orgname=orgname, accession=accession))
         inputs.append(
-            config["cache"] + "/{orgname}/{accession}.1.bt2l".format(orgname=orgname, accession=accession)
-        )
-        inputs.append(
-            config["cache"]
-            + "/{orgname}/{accession}.fasta.gz.fai".format(orgname=orgname, accession=accession)
+            config["cache"] + "/{orgname}/{accession}.fasta.gz.fai".format(orgname=orgname, accession=accession)
         )
 
     return inputs

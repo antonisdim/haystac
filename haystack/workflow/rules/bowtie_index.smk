@@ -42,10 +42,7 @@ def get_total_fasta_paths(wildcards):
             seq["GBSeq_accession-version"],
         )
 
-        inputs.append(
-            config["cache"]
-            + "/{orgname}/{accession}.fasta.gz".format(orgname=orgname, accession=accession,)
-        )
+        inputs.append(config["cache"] + "/{orgname}/{accession}.fasta.gz".format(orgname=orgname, accession=accession,))
 
     return inputs
 

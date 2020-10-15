@@ -35,13 +35,14 @@ class EmailType(object):
     """
 
     patterns = {
-        'RFC5322': re.compile(r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"),
+        "RFC5322": re.compile(r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"),
     }
 
     def __init__(self, pattern):
         if pattern not in self.patterns:
-            raise KeyError('{} is not a supported email pattern, choose from:'
-                           ' {}'.format(pattern, ','.join(self.patterns)))
+            raise KeyError(
+                "{} is not a supported email pattern, choose from:" " {}".format(pattern, ",".join(self.patterns))
+            )
         self._rules = pattern
         self._pattern = self.patterns[pattern]
 
@@ -86,6 +87,7 @@ class RangeType(object):
     """
     Is this a valid instance of `_type` and within the range [lower, upper]
     """
+
     def __init__(self, _type, lower, upper):
         self.type = _type
         self.lower = lower
@@ -96,8 +98,9 @@ class RangeType(object):
             if not (self.lower <= self.type(value) <= self.upper):
                 raise ValueError()
         except ValueError:
-            raise argparse.ArgumentTypeError(f"'{value}' is not a valid {self.type.__name__} in the range "
-                                             f"({self.lower}, {self.upper})")
+            raise argparse.ArgumentTypeError(
+                f"'{value}' is not a valid {self.type.__name__} in the range " f"({self.lower}, {self.upper})"
+            )
 
         return self.type(value)
 
@@ -106,6 +109,7 @@ class FloatRangeType(RangeType):
     """
     Is this a float() within the given range
     """
+
     def __init__(self, lower, upper):
         super().__init__(float, lower, upper)
 
@@ -114,6 +118,7 @@ class IntRangeType(RangeType):
     """
     Is this an int() within the given range
     """
+
     def __init__(self, lower, upper):
         super().__init__(int, lower, upper)
 
@@ -126,9 +131,9 @@ class BoolType(object):
     def __call__(self, value):
         if isinstance(value, bool):
             return value
-        if value.lower() in ('yes', 'true', 't', 'y', '1'):
+        if value.lower() in ("yes", "true", "t", "y", "1"):
             return True
-        elif value.lower() in ('no', 'false', 'f', 'n', '0'):
+        elif value.lower() in ("no", "false", "f", "n", "0"):
             return False
         else:
             raise argparse.ArgumentTypeError(f"'{value}' is not a valid boolean")
@@ -268,4 +273,3 @@ def get_accession_ftp_path(accession, config, attempt=1):
     except IndexError:
         time.sleep(TOO_MANY_REQUESTS_WAIT)
         get_accession_ftp_path(accession, config, attempt)
-

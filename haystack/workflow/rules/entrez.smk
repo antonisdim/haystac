@@ -194,10 +194,7 @@ def get_fasta_sequences(wildcards):
         orgname = normalise_name(seq["species"])
         accession = seq["GBSeq_accession-version"]
 
-        inputs.append(
-            config["cache"]
-            + "/{orgname}/{accession}.fasta.gz".format(orgname=orgname, accession=accession)
-        )
+        inputs.append(config["cache"] + "/{orgname}/{accession}.fasta.gz".format(orgname=orgname, accession=accession))
 
     return inputs
 

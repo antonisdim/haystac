@@ -77,8 +77,7 @@ def get_paths_for_custom_seqs():
             seq["accession"],
         )
         inputs.append(
-            config["cache"]
-            + "/{orgname}/custom_seq-{accession}.fasta.gz".format(orgname=orgname, accession=accession)
+            config["cache"] + "/{orgname}/custom_seq-{accession}.fasta.gz".format(orgname=orgname, accession=accession)
         )
 
     return inputs
@@ -140,10 +139,7 @@ def get_paths_for_custom_acc(wildcards):
             normalise_name(seq["species"]),
             seq["accession"],
         )
-        inputs.append(
-            config["cache"]
-            + "/{orgname}/{accession}.fasta.gz".format(orgname=orgname, accession=accession)
-        )
+        inputs.append(config["cache"] + "/{orgname}/{accession}.fasta.gz".format(orgname=orgname, accession=accession))
 
     return inputs
 

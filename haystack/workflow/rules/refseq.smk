@@ -90,10 +90,7 @@ def get_refseq_genome_sequences(wildcards):
             normalise_name(seq["species"]),
             seq["GBSeq_accession-version"],
         )
-        inputs.append(
-            config["cache"]
-            + "/{orgname}/{accession}.fasta.gz".format(orgname=orgname, accession=accession)
-        )
+        inputs.append(config["cache"] + "/{orgname}/{accession}.fasta.gz".format(orgname=orgname, accession=accession))
 
     return inputs
 
@@ -141,10 +138,7 @@ def get_assembly_genome_sequences(wildcards):
             normalise_name(seq["species"]),
             seq["GBSeq_accession-version"],
         )
-        inputs.append(
-            config["cache"]
-            + "/{orgname}/{accession}.fasta.gz".format(orgname=orgname, accession=accession)
-        )
+        inputs.append(config["cache"] + "/{orgname}/{accession}.fasta.gz".format(orgname=orgname, accession=accession))
 
     return inputs
 
