@@ -58,7 +58,8 @@ def calculate_probabilities(
         lambda num: (sum(num) + ((read_count - num.count()) * model_params["tv_missing_val"]))
     )
 
-    mismatch_df = merge(mismatch_df_ts, mismatch_df_tv, how='inner', on=['Taxon'])
+    mismatch_df = merge(mismatch_df_ts, mismatch_df_tv, how='outer', on=['Taxon'])
+    mismatch_df = mismatch_df.astype({"Ts": float, "Tv": float})
 
     # mismatch_df = ts_tv_matrix.groupby("Taxon").sum().astype({"Ts": float, "Tv": float})
 
