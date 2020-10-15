@@ -1,11 +1,20 @@
+# haystack config defaults
+
+cache:
+  ~/haystack/cache/
 batchsize:
   5
-rank:
-  'species'
 mismatch_probability:
   0.05
 bowtie2_threads:
   15
+use_conda:
+  True
+
+
+
+rank:
+  'species'
 bowtie2_scaling:
   5
 dry_run:
@@ -57,6 +66,4 @@ unlock:
   False
 debug:
   False
-use_conda:
-  True
 snakemake:

@@ -48,7 +48,7 @@ rule run_mapdamage:
             config["analysis_output_dir"]
             + "/rmdup_bam/{sample}/{reads}/{orgname}/{orgname}_{accession}_dirichlet_{reads}_rmdup.bam"
         ),
-        ref_genome=config["genome_cache_folder"] + "/{orgname}/{accession}.fasta.gz",
+        ref_genome=config["cache"] + "/{orgname}/{accession}.fasta.gz",
     log:
         config["analysis_output_dir"] + "/mapdamage/{sample}/{reads}/{orgname}_{accession}.log",
     output:

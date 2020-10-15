@@ -6,6 +6,10 @@ __copyright__ = "Copyright 2020, University of Oxford"
 __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
+import re
+
+import argparse
+
 import pandas as pd
 from Bio import Entrez
 import sys
@@ -20,6 +24,114 @@ from scripts.entrez_utils import ENTREZ_DB_ASSEMBLY
 
 TOO_MANY_REQUESTS_WAIT = 20
 MAX_RETRY_ATTEMPTS = 5
+
+
+class EmailType(object):
+    """
+    Supports checking email against different patterns. The current available patterns is:
+    RFC5322 (http://www.ietf.org/rfc/rfc5322.txt)
+
+    See https://gist.github.com/asfaltboy/79a02a2b9871501af5f00c95daaeb6e7
+    """
+
+    patterns = {
+        'RFC5322': re.compile(r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"),
+    }
+
+    def __init__(self, pattern):
+        if pattern not in self.patterns:
+            raise KeyError('{} is not a supported email pattern, choose from:'
+                           ' {}'.format(pattern, ','.join(self.patterns)))
+        self._rules = pattern
+        self._pattern = self.patterns[pattern]
+
+    def __call__(self, value):
+        if not self._pattern.match(value):
+            raise argparse.ArgumentTypeError(f"'{value}' is not a valid email - does not match {self._rules} rules")
+        return value
+
+
+class WritablePathType(object):
+    """
+    Is this a writable path.
+    """
+
+    def __call__(self, value):
+        from pathlib import Path
+
+        try:
+            path = Path(value)
+            path.mkdir(parents=True, exist_ok=True)
+            return value
+        except Exception:
+            raise argparse.ArgumentTypeError(f"'{value}' is not a valid writable path")
+
+
+class PositiveIntType(object):
+    """
+    Is this a positive integer
+    """
+
+    def __call__(self, value):
+        try:
+            if not int(value) > 0:
+                raise ValueError()
+        except ValueError:
+            raise argparse.ArgumentTypeError(f"'{value}' is not a valid positive integer")
+
+        return int(value)
+
+
+class RangeType(object):
+    """
+    Is this a valid instance of `_type` and within the range [lower, upper]
+    """
+    def __init__(self, _type, lower, upper):
+        self.type = _type
+        self.lower = lower
+        self.upper = upper
+
+    def __call__(self, value):
+        try:
+            if not (self.lower <= self.type(value) <= self.upper):
+                raise ValueError()
+        except ValueError:
+            raise argparse.ArgumentTypeError(f"'{value}' is not a valid {self.type.__name__} in the range "
+                                             f"({self.lower}, {self.upper})")
+
+        return self.type(value)
+
+
+class FloatRangeType(RangeType):
+    """
+    Is this a float() within the given range
+    """
+    def __init__(self, lower, upper):
+        super().__init__(float, lower, upper)
+
+
+class IntRangeType(RangeType):
+    """
+    Is this an int() within the given range
+    """
+    def __init__(self, lower, upper):
+        super().__init__(int, lower, upper)
+
+
+class BoolType(object):
+    """
+    Is this a valid boolean
+    """
+
+    def __call__(self, value):
+        if isinstance(value, bool):
+            return value
+        if value.lower() in ('yes', 'true', 't', 'y', '1'):
+            return True
+        elif value.lower() in ('no', 'false', 'f', 'n', '0'):
+            return False
+        else:
+            raise argparse.ArgumentTypeError(f"'{value}' is not a valid boolean")
 
 
 def get_total_paths(
@@ -156,3 +268,4 @@ def get_accession_ftp_path(accession, config, attempt=1):
     except IndexError:
         time.sleep(TOO_MANY_REQUESTS_WAIT)
         get_accession_ftp_path(accession, config, attempt)
+

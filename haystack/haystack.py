@@ -22,11 +22,17 @@ from Bio import Entrez
 from psutil import virtual_memory
 from pathlib import Path
 
+from workflow.scripts.utilities import EmailType, WritablePathType, PositiveIntType, FloatRangeType, IntRangeType, BoolType
+
 os.environ["OPENBLAS_NUM_THREADS"] = "1"
 os.environ["OMP_NUM_THREADS"] = "1"
 
 MEGABYTE = float(1024 ** 2)
 MAX_MEM_MB = virtual_memory().total / MEGABYTE
+MAX_CPU = cpu_count()
+
+CONFIG_DEFAULT = "./config/config.yaml"
+CONFIG_USER = "~/.haystack/config.yaml"
 
 thisdir = os.path.abspath(os.path.dirname(__file__))
 
@@ -56,10 +62,10 @@ def interactive_config_input():
     if count == 3:
         raise RuntimeError("Please try haystack config again to input a valid email address.")
 
-    genome_cache = input(
-        "Enter your preferred path for the genome cache folder. "
+    cache = input(
+        "Enter your preferred path for the genome cache. "
         "Press enter if you'd like to use the default location: "
-    ) or os.path.join(str(Path.home()), "rip_genomes")
+    ) or os.path.join(str(Path.home()), "haystack/cache/")  # TOOD use the fucking default!!
 
     batchsize = input(
         "Enter your preferred batchsize for fetching accession data from the NCBI. "
@@ -81,36 +87,36 @@ def interactive_config_input():
     ) or float(15)
 
     use_conda = (
-        input(
-            "Enter your preference about using conda as a package manager. "
-            "Press enter if you'd like to use the default value: "
-        )
-        or True
+            input(
+                "Enter your preference about using conda as a package manager. "
+                "Press enter if you'd like to use the default value: "
+            )
+            or True
     )
 
-    genome_cache = genome_cache.rstrip("/")
+    cache = cache.rstrip("/")
 
-    if os.path.exists(genome_cache):
-        if not os.access(genome_cache, os.W_OK):
+    if os.path.exists(cache):
+        if not os.access(cache, os.W_OK):
             raise RuntimeError(
                 "This directory path you have provided is not writable. "
                 "Please chose another path for your genomes directory."
             )
     else:
-        if not os.access(os.path.dirname(genome_cache), os.W_OK):
+        if not os.access(os.path.dirname(cache), os.W_OK):
             raise RuntimeError(
                 "This directory path you have provided is not writable. "
                 "Please chose another path for your genomes directory."
             )
 
     user_data = {
-        "genome_cache_folder": os.path.abspath(genome_cache),
-        "email": entrez_email,
-        "batchsize": int(batchsize),
+        "cache":                os.path.abspath(cache),
+        "email":                entrez_email,
+        "batchsize":            int(batchsize),
         "mismatch_probability": float(mismatch_probability),
-        "bowtie2_threads": int(bowtie2_threads),
-        "bowtie2_scaling": float(bowtie2_scaling),
-        "use_conda": use_conda,
+        "bowtie2_threads":      int(bowtie2_threads),
+        "bowtie2_scaling":      float(bowtie2_scaling),
+        "use_conda":            use_conda,
     }
 
     check_config_arguments(user_data)
@@ -119,7 +125,6 @@ def interactive_config_input():
 
 
 def check_config_arguments(args):
-
     """Function to check config arguments and raise errors if they are not suitable"""
 
     if args["email"]:
@@ -131,15 +136,15 @@ def check_config_arguments(args):
                 "The address is stored locally on your computer only: "
             )
 
-    if args["genome_cache_folder"]:
-        if os.path.exists(args["genome_cache_folder"]):
-            if not os.access(args["genome_cache_folder"], os.W_OK):
+    if args["cache"]:
+        if os.path.exists(args["cache"]):
+            if not os.access(args["cache"], os.W_OK):
                 raise RuntimeError(
                     "This directory path you have provided is not writable. "
                     "Please chose another path for your genomes directory."
                 )
         else:
-            if not os.access(os.path.dirname(args["genome_cache_folder"]), os.W_OK):
+            if not os.access(os.path.dirname(args["cache"]), os.W_OK):
                 raise RuntimeError(
                     "This directory path you have provided is not writable. "
                     "Please chose another path for your genomes directory."
@@ -185,90 +190,97 @@ def str2bool(v):
         raise argparse.ArgumentTypeError("Boolean value expected.")
 
 
+# ----------------------------------------------------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------------------------------------
+
 class Haystack(object):
 
     def __init__(self):
         parser = argparse.ArgumentParser(
             description="HAYSTACK: A Bayesian framework for robust and rapid species identification",
-            usage="""haystack <module> [<args>]
+            usage="""haystack <command> [<args>]
 
-The haystack modules are:
-   config             Advanced configuration options for haystack
-   database           Build a database of target species
-   sample             Prepare a sample for analysis
-   analyse            Analyse a sample against a database
-""",
-        )
+The haystack commands are:
+   config         Advanced configuration options for haystack
+   database       Build a database of target species
+   sample         Prepare a sample for analysis
+   analyse        Analyse a sample against a database
+   
+""", )
         parser.add_argument(
-            "command", choices=["config", "database", "sample", "analyse"], help="Command to run"  # , required=True
+            "command", choices=["config", "database", "sample", "analyse"], help="Command to run",
         )
 
         # get the command
-        argcomplete.autocomplete(parser)
+        argcomplete.autocomplete(parser)  # TODO autocomplete does not work
         args = parser.parse_args(sys.argv[1:2])
-        if not hasattr(self, args.command):
-            print("Unrecognized command")
-            parser.print_help()
-            exit(1)
+
+        # load the config defaults
+        with open(CONFIG_DEFAULT) as fin:
+            self.config_default = yaml.safe_load(fin)
 
         # use dispatch pattern to invoke method with same name
         getattr(self, args.command)()
 
-    @staticmethod
-    def config():
-        parser = argparse.ArgumentParser(description="Advanced options for haystack configuration")
-        # prefixing the argument with -- means it's optional
+    def config(self):
+        parser = argparse.ArgumentParser(description="Advanced configuration options for haystack")
 
         parser.add_argument(
-            "-e", "--email", help="Email address for NCBI identification. Mandatory.", metavar="",
-        )
-        parser.add_argument(
-            "-gc",
-            "--genome-cache-folder",
-            help="Path where all the genomes that are downloaded and/or used by haystack are being stored. "
-            "(default ~/rip_genomes/)",
-            metavar="",
+            # "-e",
+            "--email",
+            help="Email address for NCBI identification (mandatory).",
+            metavar="<address>",
+            type=EmailType('RFC5322'),
         )
 
         parser.add_argument(
-            "-b",
+            # "-c",
+            "--cache",
+            help=f"Cache folder for all the genomes downloaded from NCBI (default: {self.config_default['cache']}).",
+            metavar="<path>",
+            type=WritablePathType()
+        )
+
+        parser.add_argument(
+            # "-b",
             "--batchsize",
-            help="Batchsize for fetching records from NCBI  <int> (default: 5)",
-            type=int,
-            metavar="",
+            help=f"Batch size for fetching records from NCBI (default: {self.config_default['batchsize']})",
+            type=PositiveIntType(),
+            metavar="<int>",
         )
 
         parser.add_argument(
-            "-mp",
+            # "-mp",
             "--mismatch-probability",
-            help="Base mismatch probability <float> (default: 0.05)",
-            type=float,
-            metavar="",
+            help=f"Base mismatch probability (default: {self.config_default['mismatch_probability']})",
+            type=FloatRangeType(0.01, 0.10),
+            metavar="<float>",
         )
+
         parser.add_argument(
-            "-t",
+            # "-t",
             "--bowtie2-threads",
-            help="Threads for the bowtie2 alignments <int> (default: 1)",
-            type=int,
-            metavar="",
+            help=f"Number of threads to use for each bowtie2 alignment "
+                 f"(default: {self.config_default['bowtie2_threads']})",
+            type=IntRangeType(1, MAX_CPU),
+            metavar="<int>",
         )
 
         parser.add_argument(
-            "-s",
+            # "-s",
             "--bowtie2-scaling",
-            help="Factor to rescale/chunk the input file for the mutlifasta "
-            "index for the filtering alignment (default: 2.5)",
-            type=float,
-            metavar="",
+            help=f"Rescaling factor to keep the bowtie2 mutlifasta index below the maximum memory limit "
+                 f"(default: {self.config_default['bowtie2_scaling']})",
+            type=FloatRangeType(0, 100),
+            metavar="<float>",
         )
 
         parser.add_argument(
-            "-cn",
+            # "-cn",
             "--use-conda",
-            help="Use conda as a package manger for HAYSTACK (default: True)",
-            type=str2bool,
-            default=True,
-            metavar="",
+            help=f"Use conda as a package manger (default: {self.config_default['use_conda']})",
+            type=BoolType(),
+            metavar="<bool>",
         )
 
         # now that we're inside a subcommand, ignore the first
@@ -286,16 +298,14 @@ The haystack modules are:
 
         if os.path.exists(repo_config_file):
             with open(repo_config_file) as fin:
-                repo_rip_config = yaml.safe_load(fin)
+                repo_config = yaml.safe_load(fin)
         else:
             raise RuntimeError("The config file in the code file directory is missing. Please reinstall the package.")
-
-        user_rip_config = os.path.join(str(Path.home()), ".haystack", "config.yaml")
 
         if not os.path.exists(os.path.join(str(Path.home()), ".haystack")):
             os.makedirs(os.path.join(str(Path.home()), ".haystack"), exist_ok=True)
 
-        if not os.path.exists(user_rip_config):
+        if not os.path.exists(CONFIG_USER):
             if len(sys.argv) > 2:
                 raise RuntimeError(
                     "You haven not configured haystack yet. "
@@ -304,14 +314,14 @@ The haystack modules are:
                     "before configuring any individual options."
                 )
             user_config = interactive_config_input()
-            user_non_default_config = {k: v for k, v in user_config.items() if (k, v) not in repo_rip_config.items()}
+            user_non_default_config = {k: v for k, v in user_config.items() if (k, v) not in repo_config.items()}
 
-            with open(user_rip_config, "w") as outfile:
+            with open(CONFIG_USER, "w") as outfile:
                 yaml.safe_dump(user_non_default_config, outfile, default_flow_style=False)
 
             exit()
 
-        if os.path.exists(user_rip_config):
+        if os.path.exists(CONFIG_USER):
             if len(sys.argv) == 2:
                 user_config = interactive_config_input()
                 user_non_default_config = {
@@ -321,24 +331,23 @@ The haystack modules are:
                 }
                 # print(user_config)
                 # print(user_non_default_config)
-                with open(user_rip_config) as fin:
+                with open(CONFIG_USER) as fin:
                     user_options = yaml.safe_load(fin)
                     user_options.update(user_non_default_config)
 
-                with open(user_rip_config, "w") as outfile:
+                with open(CONFIG_USER, "w") as outfile:
                     yaml.safe_dump(user_options, outfile, default_flow_style=False)
             else:
                 check_config_arguments(config_args)
-                with open(user_rip_config) as fin:
+                with open(CONFIG_USER) as fin:
                     user_options = yaml.safe_load(fin)
                     user_options.update((k, v) for k, v in config_args.items() if v is not None)
 
-                with open(user_rip_config, "w") as outfile:
+                with open(CONFIG_USER, "w") as outfile:
                     yaml.safe_dump(user_options, outfile, default_flow_style=False)
 
     def database(self):
         parser = argparse.ArgumentParser(description="Build the database for haystack to use")
-        # prefixing the argument with -- means it's optional
 
         parser.add_argument("--dry-run", action="store_true")
 
@@ -358,9 +367,9 @@ The haystack modules are:
             "-R",
             "--refseq-rep",
             help="Use the prokaryotic representative species of the RefSeq DB "
-            "for the species id pipeline. only species no strains. "
-            "either or both of --refseq-rep and "
-            "--query should be set (default: False)",
+                 "for the species id pipeline. only species no strains. "
+                 "either or both of --refseq-rep and "
+                 "--query should be set (default: False)",
             type=bool,
             default=False,
             metavar="",
@@ -369,14 +378,14 @@ The haystack modules are:
             "-MT",
             "--mtDNA",
             help="Download mitochondrial genomes for eukaryotes only. "
-            "Do not use with --refseq-rep or any queries for prokaryotes (default: False)",
+                 "Do not use with --refseq-rep or any queries for prokaryotes (default: False)",
             action="store_true",
         )
         parser.add_argument(
             "-q",
             "--query",
             help="Actual NCBI query in the NCBI query language. "
-            "Please refer to the documentation on how to construct one correctly.",
+                 "Please refer to the documentation on how to construct one correctly.",
             metavar="",
         )
         parser.add_argument(
@@ -389,7 +398,7 @@ The haystack modules are:
             "-r",
             "--rank",
             help="Taxonomic rank to perform the identifications on (genus, species, subspecies, serotype) "
-            "<str> (default: species)",
+                 "<str> (default: species)",
             choices=["genus", "species", "subspecies", "serotype"],
             default="species",
             metavar="",
@@ -398,8 +407,8 @@ The haystack modules are:
             "-s",
             "--sequences",
             help="TAB DELIMITED input file containing the the name of the taxon with no special characters, "
-            "and an underscore '_' instead of spaces, a user defined accession code and the path of the fasta file. "
-            "The fasta file that the path point to can be either uncompressed or compressed with gzip/bgzip",
+                 "and an underscore '_' instead of spaces, a user defined accession code and the path of the fasta file. "
+                 "The fasta file that the path point to can be either uncompressed or compressed with gzip/bgzip",
             metavar="",
             default="",
         )
@@ -408,8 +417,8 @@ The haystack modules are:
             "-a",
             "--accessions",
             help="TAB DELIMITED input file containing the the name of the taxon with no special characters, "
-            "and an underscore '_' instead of spaces, a user defined valid NCBI nucleotide, assembly or WGS "
-            "accession code. ",
+                 "and an underscore '_' instead of spaces, a user defined valid NCBI nucleotide, assembly or WGS "
+                 "accession code. ",
             metavar="",
             default="",
         )
@@ -428,21 +437,21 @@ The haystack modules are:
             "--genera",
             nargs="+",
             help="List containing the names of specific genera "
-            "the abundances should be calculated "
-            "on, separated by a space character <genus1 genus2 genus3 ...>",
+                 "the abundances should be calculated "
+                 "on, separated by a space character <genus1 genus2 genus3 ...>",
             metavar="",
             default=[],
         )
 
         parser.add_argument(
-            "-c", "--cores", help="Number of cores for HAYSTACK to use", type=int, metavar="", default=cpu_count(),
+            "-c", "--cores", help="Number of cores for HAYSTACK to use", type=int, metavar="", default=MAX_CPU,
         )
         parser.add_argument(
             "-M",
             "--mem",
             help="Max memory resources allowed to be used for indexing the input for "
-            "the filtering alignment "
-            "(default: max available memory {})".format(MAX_MEM_MB),
+                 "the filtering alignment "
+                 "(default: max available memory {})".format(MAX_MEM_MB),
             type=float,
             default=MAX_MEM_MB,
             metavar="",
@@ -502,11 +511,11 @@ The haystack modules are:
         database_config.update((k, v) for k, v in database_args.items())
 
         if (
-            database_config["refseq_rep"] is False
-            and database_config["query"] is None
-            and database_config["query_file"] is None
-            and database_config["accessions"] is None
-            and database_config["sequences"] is None
+                database_config["refseq_rep"] is False
+                and database_config["query"] is None
+                and database_config["query_file"] is None
+                and database_config["accessions"] is None
+                and database_config["sequences"] is None
         ):
             raise RuntimeError(
                 "Please specify where HAYSTACK should get the database sequences from "
@@ -666,7 +675,6 @@ The haystack modules are:
         return 0 if status else 1
 
     def sample(self):
-        # NOT prefixing the argument with -- means it's not optional
         parser = argparse.ArgumentParser(description="Prepare a sample for analysis")
 
         parser.add_argument(
@@ -730,14 +738,14 @@ The haystack modules are:
         )
 
         parser.add_argument(
-            "-c", "--cores", help="Number of cores for HAYSTACK to use", metavar="", type=int, default=cpu_count(),
+            "-c", "--cores", help="Number of cores for HAYSTACK to use", metavar="", type=int, default=MAX_CPU,
         )
         parser.add_argument(
             "-M",
             "--mem",
             help="Max memory resources allowed to be used ofr indexing the input for "
-            "the filtering alignment "
-            "(default: max available memory {})".format(MAX_MEM_MB),
+                 "the filtering alignment "
+                 "(default: max available memory {})".format(MAX_MEM_MB),
             type=float,
             default=MAX_MEM_MB,
             metavar="",
@@ -801,7 +809,7 @@ The haystack modules are:
                     )
             else:
                 if not os.access(os.path.dirname(sample_config["sample_output_dir"]), os.W_OK) and not os.access(
-                    os.path.dirname(os.path.dirname(sample_config["sample_output_dir"])), os.W_OK,
+                        os.path.dirname(os.path.dirname(sample_config["sample_output_dir"])), os.W_OK,
                 ):
                     raise RuntimeError(
                         "This directory path you have provided is not writable. "
@@ -828,7 +836,7 @@ The haystack modules are:
             sample_config["SE"] = True
 
         if (sample_config["fastq_r1"] or sample_config["fastq_r2"] is not None) and (
-            sample_config["fastq"] is not None
+                sample_config["fastq"] is not None
         ):
             raise RuntimeError("Please use a correct combination of PE or SE reads.")
 
@@ -901,19 +909,22 @@ The haystack modules are:
         if sample_config["trim_adapters"]:
             if sample_config["PE_MODERN"]:
                 data_preprocessing = sample_config[
-                    "sample_output_dir"
-                ] + "/fastq_inputs/PE_mod/{sample}_R1_adRm.fastq.gz".format(sample=sample_config["sample_prefix"])
+                                         "sample_output_dir"
+                                     ] + "/fastq_inputs/PE_mod/{sample}_R1_adRm.fastq.gz".format(
+                    sample=sample_config["sample_prefix"])
             elif sample_config["PE_ANCIENT"]:
                 data_preprocessing = sample_config[
-                    "sample_output_dir"
-                ] + "/fastq_inputs/PE_anc/{sample}_adRm.fastq.gz".format(sample=sample_config["sample_prefix"])
+                                         "sample_output_dir"
+                                     ] + "/fastq_inputs/PE_anc/{sample}_adRm.fastq.gz".format(
+                    sample=sample_config["sample_prefix"])
             elif sample_config["SE"]:
                 data_preprocessing = sample_config[
-                    "sample_output_dir"
-                ] + "/fastq_inputs/SE/{sample}_adRm.fastq.gz".format(sample=sample_config["sample_prefix"])
+                                         "sample_output_dir"
+                                     ] + "/fastq_inputs/SE/{sample}_adRm.fastq.gz".format(
+                    sample=sample_config["sample_prefix"])
             target_list.append(data_preprocessing)
 
-        sample_yaml = os.path.join(str(Path.home()), sample_config["sample_output_dir"], "sample_config.yaml",)
+        sample_yaml = os.path.join(str(Path.home()), sample_config["sample_output_dir"], "sample_config.yaml", )
 
         if not os.path.exists(sample_yaml):
             os.makedirs(
@@ -974,11 +985,11 @@ The haystack modules are:
 
     def analyse(self):
         parser = argparse.ArgumentParser(description="Analyse a sample")
-        # NOT prefixing the argument with -- means it's not optional
+
         parser.add_argument(
             "-m",
             "--mode",
-            choices=["filter", "align", "likelihoods", "probabilities", "abundances", "reads", "mapdamage",],
+            choices=["filter", "align", "likelihoods", "probabilities", "abundances", "reads", "mapdamage", ],
             help="Analysis mode for the selected sample",
             metavar="",
         )
@@ -993,8 +1004,8 @@ The haystack modules are:
             "--genera",
             nargs="+",
             help="List containing the names of specific genera "
-            "the abundances should be calculated "
-            "on, separated by a space character <genus1 genus2 genus3 ...>",
+                 "the abundances should be calculated "
+                 "on, separated by a space character <genus1 genus2 genus3 ...>",
             metavar="",
             default=[],
         )
@@ -1005,21 +1016,21 @@ The haystack modules are:
             "-T",
             "--read-probability-threshold",
             help="Posterior probability threshold for a read to belong to a certain species. "
-            "Chose from 0.5, 0.75 and 0.95 (default:0.75).",
+                 "Chose from 0.5, 0.75 and 0.95 (default:0.75).",
             choices=[0.5, 0.75, 0.95],
             default=float(0.75),
             type=float,
             metavar="",
         )
         parser.add_argument(
-            "-c", "--cores", help="Number of cores for HAYSTACK to use", metavar="", type=int, default=cpu_count(),
+            "-c", "--cores", help="Number of cores for HAYSTACK to use", metavar="", type=int, default=MAX_CPU,
         )
         parser.add_argument(
             "-M",
             "--mem",
             help="Max memory resources allowed to be used ofr indexing the input for "
-            "the filtering alignment "
-            "(default: max available memory {})".format(MAX_MEM_MB),
+                 "the filtering alignment "
+                 "(default: max available memory {})".format(MAX_MEM_MB),
             type=float,
             default=MAX_MEM_MB,
             metavar="",
@@ -1173,7 +1184,6 @@ The haystack modules are:
             )
 
         if args.mode == "abundances":
-
             target_list.append(
                 analysis_config["analysis_output_dir"]
                 + "/probabilities/{sample}/{sample}_posterior_abundance.tsv".format(
@@ -1182,7 +1192,6 @@ The haystack modules are:
             )
 
         if args.mode == "reads":
-
             target_list.append(
                 analysis_config["analysis_output_dir"]
                 + "/dirichlet_reads/{sample}_dirichlet_reads.done".format(sample=analysis_config["sample_prefix"])

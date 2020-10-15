@@ -91,7 +91,7 @@ def get_refseq_genome_sequences(wildcards):
             seq["GBSeq_accession-version"],
         )
         inputs.append(
-            config["genome_cache_folder"]
+            config["cache"]
             + "/{orgname}/{accession}.fasta.gz".format(orgname=orgname, accession=accession)
         )
 
@@ -142,7 +142,7 @@ def get_assembly_genome_sequences(wildcards):
             seq["GBSeq_accession-version"],
         )
         inputs.append(
-            config["genome_cache_folder"]
+            config["cache"]
             + "/{orgname}/{accession}.fasta.gz".format(orgname=orgname, accession=accession)
         )
 

@@ -238,7 +238,7 @@ haystack config
 
     -h, --help            show this help message and exit
     -e , --email          Email address for NCBI identification. Mandatory.
-    -gc , --genome-cache-folder 
+    -gc , --cache
                           Path where all the genomes that are downloaded and/or
                           used by haystack are being stored. (default ~/haystack/cache/)
     -b , --batchsize      Batchsize for fetching records from NCBI <int>

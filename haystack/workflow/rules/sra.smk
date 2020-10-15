@@ -32,8 +32,8 @@ rule get_sra_fastq_pe:
     log:
         temp(config["sample_output_dir"] + "/sra_data/PE/{accession}.log"),
     params:
-        extra="", # optional extra arguments
-    threads: 6 # defaults to 6
+        extra="",
+    threads: 6
     message:
         "Download SRA files for accession {wildcards.accession} {MESSAGE_SUFFIX}"
     conda:

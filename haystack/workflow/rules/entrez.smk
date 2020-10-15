@@ -153,15 +153,15 @@ def get_rsync_url(wildcards):
 
 rule entrez_download_sequence:
     output:
-        config["genome_cache_folder"] + "/{orgname}/{accession}.fasta.gz",
+        config["cache"] + "/{orgname}/{accession}.fasta.gz",
     log:
-        config["genome_cache_folder"] + "/{orgname}/{accession}.log",
+        config["cache"] + "/{orgname}/{accession}.log",
     benchmark:
         repeat("benchmarks/entrez_download_sequence_{orgname}_{accession}.benchmark.txt", 1)
     params:
         assembly=False,
         url=get_rsync_url,
-        temp_out=config["genome_cache_folder"] + "/temp_{accession}.fasta.gz",
+        temp_out=config["cache"] + "/temp_{accession}.fasta.gz",
     message:
         "Downloading accession {wildcards.accession} for taxon {wildcards.orgname} {MESSAGE_SUFFIX}"
     resources:
@@ -195,7 +195,7 @@ def get_fasta_sequences(wildcards):
         accession = seq["GBSeq_accession-version"]
 
         inputs.append(
-            config["genome_cache_folder"]
+            config["cache"]
             + "/{orgname}/{accession}.fasta.gz".format(orgname=orgname, accession=accession)
         )
 

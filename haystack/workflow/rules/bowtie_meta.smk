@@ -24,7 +24,7 @@ def get_min_score(wildcards, input):
 rule align_taxon_single_end:
     input:
         fastq=config["analysis_output_dir"] + "/fastq/SE/{sample}_mapq.fastq.gz",
-        db_idx=config["genome_cache_folder"] + "/{orgname}/{accession}.1.bt2l",
+        db_idx=config["cache"] + "/{orgname}/{accession}.1.bt2l",
         readlen=config["analysis_output_dir"] + "/fastq/SE/{sample}_mapq.readlen",
     log:
         config["analysis_output_dir"] + "/alignments/{sample}/SE/{orgname}/{accession}.log",
@@ -47,7 +47,7 @@ rule align_taxon_single_end:
     shell:
         "( bowtie2 --time --no-unal --no-discordant --no-mixed --ignore-quals --mp 6,6 --np 6 "
         "   --score-min L,{params.min_score},0.0 --gbar 1000 -q --threads {threads} "
-        '   -x {config[genome_cache_folder]}/"{wildcards.orgname}"/{wildcards.accession} '
+        '   -x {config[cache]}/"{wildcards.orgname}"/{wildcards.accession} '
         "   -I {params.min_frag_length} -X {params.max_frag_length} "
         "   -U {input.fastq} "
         "| samtools sort -O bam -o {output.bam_file} ) 2> {log}; "
@@ -58,7 +58,7 @@ rule align_taxon_paired_end:
     input:
         fastq_r1=config["analysis_output_dir"] + "/fastq/PE/{sample}_R1_mapq.fastq.gz",
         fastq_r2=config["analysis_output_dir"] + "/fastq/PE/{sample}_R2_mapq.fastq.gz",
-        db_idx=config["genome_cache_folder"] + "/{orgname}/{accession}.1.bt2l",
+        db_idx=config["cache"] + "/{orgname}/{accession}.1.bt2l",
         readlen=config["analysis_output_dir"] + "/fastq/PE/{sample}_mapq_pair.readlen",
     log:
         config["analysis_output_dir"] + "/alignments/{sample}/PE/{orgname}/{accession}.log",
@@ -77,7 +77,7 @@ rule align_taxon_paired_end:
     shell:
         "( bowtie2 --time --no-unal --no-discordant --no-mixed --ignore-quals --mp 6,6 --np 6 "
         "--score-min L,{params.min_score},0.0 --gbar 1000 -q --threads {threads} "
-        '-x {config[genome_cache_folder]}/"{wildcards.orgname}"/{wildcards.accession} '
+        '-x {config[cache]}/"{wildcards.orgname}"/{wildcards.accession} '
         "-I {params.min_frag_length} -X {params.max_frag_length} "
         "-1 {input.fastq_r1} -2 {input.fastq_r2} "
         "| samtools sort -O bam -o {output.bam_file} ) 2> {log} "

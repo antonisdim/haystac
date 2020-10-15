@@ -43,7 +43,7 @@ def get_total_fasta_paths(wildcards):
         )
 
         inputs.append(
-            config["genome_cache_folder"]
+            config["cache"]
             + "/{orgname}/{accession}.fasta.gz".format(orgname=orgname, accession=accession,)
         )
 
