@@ -8,13 +8,11 @@ mismatch_probability:
 bowtie2_threads:
   15
 bowtie2_scaling:
-  5
+  5.0
 use_conda:
   True
 
 # `haystack database` defaults
-mode:
-  build
 rank:
   'species'
 seed:
@@ -29,34 +27,5 @@ collapse:
   False
 trim_adapters:
   True
-
-#sample_prefix:
-#  ""
-#sample_output_dir:
-#  ""
-#fastq:
-#  None
-#fastq_r1:
-#  None
-#fastq_r2:
-#  None
-#sra:
-#  None
-#collapse:
-#  False
-#adaperremoval_flags:
-#  ""
-#database:
-#  None
-#sample:
-#  None
-#analysis_output_dir:
-#  None
-#read_probability_threshold:
-#  0.75
-#
-#unlock:
-#  False
-#debug:
-#  False
-#snakemake:
+read_probability_threshold:
+  0.75

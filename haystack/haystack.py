@@ -46,7 +46,9 @@ MAX_MEM_MB = int(virtual_memory().total / 1024 ** 2)
 CONFIG_DEFAULT = "./config/config.yaml"
 CONFIG_USER = pathlib.Path("~/.haystack/config.yaml").expanduser()
 
+COMMANDS = ["config", "database", "sample", "analyse"]
 DATABASE_MODES = ["fetch", "index", "build"]
+ANALYSIS_MODES = ["filter", "align", "likelihoods", "probabilities", "abundances", "reads", "mapdamage"]
 TAXONOMIC_RANKS = ["genus", "species", "subspecies", "serotype"]
 
 RESTART_TIMES = 3
@@ -71,9 +73,7 @@ The haystack commands are:
    
 """,
         )
-        parser.add_argument(
-            "command", choices=["config", "database", "sample", "analyse"], help="Command to run",
-        )
+        parser.add_argument("command", choices=COMMANDS, help="Command to run")
 
         # get the command
         argcomplete.autocomplete(parser)  # TODO autocomplete does not work
@@ -120,214 +120,215 @@ The haystack commands are:
         """
         Advanced configuration options for haystack
         """
-        parser = argparse.ArgumentParser(description="Advanced configuration options for haystack")
-
-        parser.add_argument(
-            "--email",
-            help="Email address for NCBI identification (mandatory).",
-            metavar="<address>",
-            type=EmailType("RFC5322"),
+        # noinspection PyTypeChecker
+        parser = argparse.ArgumentParser(
+            prog="haystack config",
+            description="Advanced configuration options for haystack",
+            formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+            add_help=False,
         )
 
-        parser.add_argument(
+        # if the email hasn't been set before then it's mandatory to do it now
+        required = parser.add_argument_group("Required arguments") if not self.config_user.get("email") else None
+        optional = parser.add_argument_group("Optional arguments")
+
+        # add the help option manually so we can control where it is shown in the menu
+        optional.add_argument(
+            "-h", "--help", action="help", default=argparse.SUPPRESS, help="Show this help message and exit"
+        )
+
+        # determine which group email belongs in
+        group = required or optional
+
+        group.add_argument(
+            "--email",
+            help="Email address for NCBI identification",
+            metavar="<address>",
+            type=EmailType("RFC5322"),
+            default=argparse.SUPPRESS,
+            required=not self.config_user.get("email")
+        )
+
+        # TODO add a --clear-cache option
+        optional.add_argument(
             "--cache",
-            help=f"Cache folder for all the genomes downloaded from NCBI (default: {self.config_default['cache']}).",
+            help="Cache folder for storing all the genomes downloaded from NCBI",
             metavar="<path>",
             type=WritablePathType(),
             default=self.config_default["cache"],
         )
 
-        parser.add_argument(
+        optional.add_argument(
             "--batchsize",
-            help=f"Batch size for fetching records from NCBI (default: {self.config_default['batchsize']})",
+            help="Batch size for fetching records from NCBI",
             type=PositiveIntType(),
             metavar="<int>",
             default=self.config_default["batchsize"],
         )
 
-        parser.add_argument(
+        optional.add_argument(
             "--mismatch-probability",
-            help=f"Base mismatch probability (default: {self.config_default['mismatch_probability']})",
+            help="Base mismatch probability",
             type=FloatRangeType(0.01, 0.10),
             metavar="<float>",
             default=self.config_default["mismatch_probability"],
         )
 
-        parser.add_argument(
+        optional.add_argument(
             "--bowtie2-threads",
-            help=f"Number of threads to use for each bowtie2 alignment "
-            f"(default: {self.config_default['bowtie2_threads']})",
+            help="Number of threads to use for each bowtie2 alignment",
             type=IntRangeType(1, MAX_CPU),
             metavar="<int>",
             default=self.config_default["bowtie2_threads"],
         )
 
-        parser.add_argument(
+        optional.add_argument(
             "--bowtie2-scaling",
-            help=f"Rescaling factor to keep the bowtie2 mutlifasta index below the maximum memory limit "
-            f"(default: {self.config_default['bowtie2_scaling']})",
+            help="Rescaling factor to keep the bowtie2 mutlifasta index below the maximum memory limit",
             type=FloatRangeType(0, 100),
             metavar="<float>",
             default=self.config_default["bowtie2_scaling"],
         )
 
-        parser.add_argument(
+        optional.add_argument(
             "--use-conda",
-            help=f"Use conda as a package manger (default: {self.config_default['use_conda']})",
+            help="Use conda as a package manger",
             type=BoolType(),
             metavar="<bool>",
             default=self.config_default["use_conda"],
         )
 
+        # print the help
+        if len(sys.argv) == 2:
+            parser.print_help()
+            parser.exit()
+
         # now that we're inside a subcommand, ignore the first two arguments
         argcomplete.autocomplete(parser)
         args = parser.parse_args(sys.argv[2:])
 
-        config_user = dict()
-
         # get the user choices that differ from the defaults
         for key, value in vars(args).items():
-            if value != self.config_default.get(key) and value is not None:
-                config_user[key] = value
+            if value != self.config_default.get(key) or self.config_user.get(key):
+                self.config_user[key] = value
 
         # save the user config
         with open(CONFIG_USER, "w") as fout:
-            yaml.safe_dump(config_user, fout, default_flow_style=False)
-
-    def _common_arguments(self, parser):
-        """
-        Add the common arguments shared by the `database`, `sample` and `analyse` commands
-        """
-        parser.add_argument(
-            "--cores",
-            help=f"Maximum number of CPU cores to use (default: {self.config_default['cores']}).",
-            metavar="<int>",
-            type=IntRangeType(1, MAX_CPU),
-            default=MAX_CPU if self.config_default["cores"] == "all" else self.config_default["cores"],
-        )
-
-        parser.add_argument(
-            "--mem",
-            help=f"Maximum megabytes of memory to use (default: {self.config_default['mem']}).",
-            type=IntRangeType(1024, MAX_MEM_MB),
-            default=MAX_MEM_MB if self.config_default["mem"] == "all" else self.config_default["mem"],
-            metavar="<int>",
-        )
-
-        parser.add_argument(
-            "--unlock",
-            help="Unlock the output directory following a crash or hard restart (default: False).",
-            action="store_true",
-        )
-
-        parser.add_argument(
-            "--debug", help="Enable debugging mode (default: False)", action="store_true",
-        )
-
-        parser.add_argument(
-            "--snakemake",
-            help="Pass additional flags to the `snakemake` scheduler.",
-            metavar="'<json>'",
-            type=JsonType(),
-        )
+            yaml.safe_dump(self.config_user, fout, default_flow_style=False)
 
     def database(self):
         """
         Build a database of target species
         """
-        parser = argparse.ArgumentParser(description="Build a database of target species")
+        # noinspection PyTypeChecker
+        parser = argparse.ArgumentParser(
+            prog="haystack database",
+            description="Build a database of target species",
+            formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+            add_help=False,
+        )
 
-        parser.add_argument(
+        required = parser.add_argument_group("Required arguments")
+
+        required.add_argument(
             "--mode",
-            choices=DATABASE_MODES,
-            help=f"Database creation mode for haystack (default: {self.config_default['mode']}).\n"
-            f"Alternatively choose 'fetch' to download the genomes, then 'index' to build the alignment indices.",
+            help="Database creation mode for haystack [%(choices)s]",
             metavar="<mode>",
-            default=self.config_default["mode"],
+            choices=DATABASE_MODES,
+            required=True,
+            default=argparse.SUPPRESS,
         )
 
-        parser.add_argument(
-            "--rank",
-            help=f"Taxonomic rank to perform the identifications on [{', '.join(TAXONOMIC_RANKS)}] "
-            f"(default: {self.config_default['rank']})",
-            choices=TAXONOMIC_RANKS,
-            default=self.config_default["rank"],
-            metavar="<rank>",
+        required.add_argument(
+            "--output",
+            help="Path to the database output directory",
+            metavar="<path>",
+            dest="db_output",
+            type=WritablePathType(),
+            required=True,
+            default=argparse.SUPPRESS,
         )
 
-        parser.add_argument(
-            "--refseq-rep",
-            help="Include all prokaryotic species (no strains) from the representative RefSeq DB (default: False)",
-            action="store_true",
-        )
+        choice = parser.add_argument_group("Required choice")
 
         # TODO how can we validate these queries?
-        parser.add_argument(
+        choice.add_argument(
             "--query",
             help="Database query in the NCBI query language. "
             "Please refer to the documentation for assistance with constructing a valid query.",
             metavar="<query>",
+            default=argparse.SUPPRESS,
         )
 
-        parser.add_argument(
+        choice.add_argument(
             "--query-file",
             help="File containing a database query in the NCBI query language.",
             metavar="<path>",
             type=argparse.FileType("r"),
-        )
-
-        parser.add_argument(
-            "--mtDNA",
-            help="For eukaryotes, download mitochondrial genomes only. "
-            "Not to be used with --refseq-rep or queries containing prokaryotes (default: False)",
-            action="store_true",
+            default=argparse.SUPPRESS,
         )
 
         # TODO validate that this is 2-column and tab delimited
-        parser.add_argument(
+        choice.add_argument(
             "--accessions",
             help="Tab delimited file containing one record per row: the name of the taxon, "
             "and a valid NCBI accession code from the nucleotide, assembly or WGS databases.",
             metavar="<path>",
             type=argparse.FileType("r"),
+            default=argparse.SUPPRESS,
         )
 
         # TODO validate that this is 3-column and tab delimited
-        parser.add_argument(
+        choice.add_argument(
             "--sequences",
             help="Tab delimited file containing one record per row: the name of the taxon, a user defined "
             "accession code, and the path to the fasta file (optionally compressed).",
             metavar="<path>",
             type=argparse.FileType("r"),
+            default=argparse.SUPPRESS,
         )
 
-        parser.add_argument(
+        choice.add_argument(
+            "--refseq-rep",
+            help="Include all prokaryotic species (excluding strains) from the representative RefSeq DB",
+            action="store_true",
+        )
+
+        optional = parser.add_argument_group("Optional arguments")
+
+        optional.add_argument(
+            "--rank",
+            help="Taxonomic rank to perform the identifications on [%(choices)s]",
+            metavar="<rank>",
+            choices=TAXONOMIC_RANKS,
+            default=self.config_default["rank"],
+        )
+
+        optional.add_argument(
+            "--genera",
+            help="List of genera to restrict the abundance calculations.",
+            metavar="<genus>",
+            nargs="+",
+            default=None,
+        )
+
+        optional.add_argument(
+            "--mtDNA",
+            help="For eukaryotes, download mitochondrial genomes only. "
+            "Not to be used with --refseq-rep or queries containing prokaryotes",
+            action="store_true",
+        )
+
+        optional.add_argument(
             "--seed",
-            help=f"Random seed for database indexing (default: {self.config_default['seed']})",
+            help="Random seed for database indexing",
             metavar="<int>",
             type=int,
             default=self.config_default["seed"],
         )
 
-        parser.add_argument(
-            "--genera",
-            help="Optional list of genera to restrict the abundance calculations.",
-            metavar="<genus>",
-            nargs="+",
-            default=[],
-        )
-
         # add the common arguments
         self._common_arguments(parser)
-
-        parser.add_argument(
-            "--output",
-            help="Path to the database output directory (mandatory).",
-            metavar="<path>",
-            dest="db_output",
-            type=WritablePathType(),
-            required=True,
-        )
 
         # print the help
         if len(sys.argv) == 2:
@@ -420,77 +421,96 @@ The haystack commands are:
         """
         Prepare a sample for analysis
         """
-        parser = argparse.ArgumentParser(description="Prepare a sample for analysis")
-
-        # TODO do we need this?
-        parser.add_argument(
-            "--sample-prefix", help="Sample prefix for all the future analysis.", metavar="<prefix>",
+        # noinspection PyTypeChecker
+        parser = argparse.ArgumentParser(
+            prog="haystack sample",
+            description="Prepare a sample for analysis",
+            formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+            add_help=False,
         )
 
-        parser.add_argument(
+        required = parser.add_argument_group("Required arguments")
+
+        # TODO do we need this?
+        required.add_argument(
+            "--sample-prefix",
+            help="Sample prefix for all the future analysis.",
+            metavar="<prefix>",
+            default=argparse.SUPPRESS,
+        )
+
+        required.add_argument(
+            "--output",
+            help="Path to the sample output directory",
+            metavar="<path>",
+            dest="sample_output_dir",
+            type=WritablePathType(),
+            required=True,
+            default=argparse.SUPPRESS,
+        )
+
+        choice = parser.add_argument_group("Required choice")
+
+        choice.add_argument(
             "--fastq",
             help="Single-end fastq input file (optionally compressed).",
             metavar="<path>",
             type=argparse.FileType("r"),
+            default=argparse.SUPPRESS,
         )
 
-        parser.add_argument(
+        choice.add_argument(
             "--fastq-r1",
             help="Paired-end forward strand (R1) fastq input file.",
             metavar="<path>",
             type=argparse.FileType("r"),
+            default=argparse.SUPPRESS,
         )
 
-        parser.add_argument(
+        choice.add_argument(
             "--fastq-r2",
             help="Paired-end reverse strand (R2) fastq input file.",
             metavar="<path>",
             type=argparse.FileType("r"),
+            default=argparse.SUPPRESS,
         )
 
-        parser.add_argument(
+        # TODO make an SraType that validates the code and returns the tuple (accession, paired|single)
+        choice.add_argument(
+            "--sra",
+            help="Download fastq input from the SRA database",
+            metavar="<accession>",
+            default=argparse.SUPPRESS,
+        )
+
+        optional = parser.add_argument_group("Optional arguments")
+
+        optional.add_argument(
             "--collapse",
-            help=f"Collapse overlapping paired-end reads, e.g. for aDNA (default: {self.config_default['collapse']})",
+            help="Collapse overlapping paired-end reads, e.g. for aDNA",
             type=BoolType(),
             metavar="<bool>",
             default=self.config_default["collapse"],
         )
 
-        # TODO how to validate these accessions? do they follow a standard pattern?
-        parser.add_argument(
-            "--sra",
-            help="Download fastq input from the SRA database",
-            metavar="<accession>",
-        )
-
-        parser.add_argument(
+        optional.add_argument(
             "--trim-adapters",
-            help=f"Automatically trim sequencing adapters from fastq input "
-            f"(default: {self.config_default['trim_adapters']})",
+            help="Automatically trim sequencing adapters from fastq input",
             type=BoolType(),
             metavar="<bool>",
             default=self.config_default["trim_adapters"],
         )
 
-        # TODO does this work?
-        parser.add_argument(
+        # TODO does this do anything?
+        optional.add_argument(
             "--adaperremoval-flags",
-            help="Pass additional flags to `AdapterRemoval`.",
+            help="Pass additional flags to `AdapterRemoval`",
             metavar="'<json>'",
             type=JsonType(),
         )
 
         # add the common arguments
         self._common_arguments(parser)
-
-        parser.add_argument(
-            "--output",
-            help="Path to the sample output directory (mandatory).",
-            metavar="<path>",
-            dest="sample_output_dir",
-            type=WritablePathType(),
-            required=True,
-        )
 
         # print the help
         if len(sys.argv) == 2:
@@ -503,19 +523,13 @@ The haystack commands are:
 
         # must specify exactly one source for the sample
         if bool(args.fastq) + (bool(args.fastq_r1) and bool(args.fastq_r2)) + bool(args.sra) != 1:
-            raise ValidationError(
-                "Please specify either --sra or --fastq, or both --fastq-r1 and --fastq-r2."
-            )
+            raise ValidationError("Please specify either --sra or --fastq, or both --fastq-r1 and --fastq-r2.")
 
         if args.collapse and not (args.fastq_r1 and args.fastq_r2):
-            raise ValidationError(
-                "Collapse can only be used with --fastq-r1 and --fastq-r2."
-            )
+            raise ValidationError("Collapse can only be used with --fastq-r1 and --fastq-r2.")
 
         if not args.sample_prefix and not args.sra:
-            raise ValidationError(
-                "Please provide a --sample-prefix name."
-            )
+            raise ValidationError("Please provide a --sample-prefix name.")
 
         # resolve relative paths
         args.sample_output_dir = os.path.abspath(args.sample_output_dir)
@@ -537,12 +551,10 @@ The haystack commands are:
         # TODO rethink this...
         if args.sra:
             if args.sample_prefix:
-                raise ValidationError(
-                    "--sample-prefix cannot be used with and SRA accession."
-                )
+                raise ValidationError("--sample-prefix cannot be used with and SRA accession.")
 
             # use the SRA accession as the sample prefix
-            config['sample_prefix'] = args.sra
+            config["sample_prefix"] = args.sra
 
             # get paired/single status of the accession
             Entrez.email = config["email"]
@@ -571,9 +583,8 @@ The haystack commands are:
             elif config["SE"]:
                 target_list.append(f"fastq_inputs/SE/{config['sample_prefix']}_adRm.fastq.gz")
 
-        config_sample = os.path.join(args.sample_output_dir, "database_fetch_config.yaml")
+        config_sample = os.path.join(args.sample_output_dir, "sample_config.yaml")
 
-        print(config)
         with open(config_sample, "w") as fout:
             yaml.safe_dump(config, fout, default_flow_style=False)
 
@@ -584,287 +595,197 @@ The haystack commands are:
 
         return self._run_snakemake(snakefile, args, config, target_list)
 
-
-
-
     def analyse(self):
-        parser = argparse.ArgumentParser(description="Analyse a sample")
+        """
+        Analyse a sample against a database
+        """
+        # noinspection PyTypeChecker
+        parser = argparse.ArgumentParser(
+            prog="haystack analyse",
+            description="Analyse a sample against a database",
+            formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+            add_help=False,
+        )
 
-        parser.add_argument(
-            "-m",
+        required = parser.add_argument_group("Required arguments")
+
+        required.add_argument(
             "--mode",
-            choices=["filter", "align", "likelihoods", "probabilities", "abundances", "reads", "mapdamage",],
-            help="Analysis mode for the selected sample",
-            metavar="",
+            help="Analysis mode for the selected sample [%(choices)s]",
+            metavar="<mode>",
+            choices=ANALYSIS_MODES,
+            required=True,
+            default=argparse.SUPPRESS,
         )
-        parser.add_argument(
-            "-D", "--database", help="Path to the database output directory. MANDATORY", metavar="",
+
+        required.add_argument(
+            "--database",
+            help="Path to the database output directory",
+            metavar="<path>",
+            required=True,
+            default=argparse.SUPPRESS,
         )
-        parser.add_argument(
-            "-S", "--sample", help="Path to the sample output directory. MANDATORY", metavar="",
+
+        required.add_argument(
+            "--sample",
+            help="Path to the sample output directory",
+            metavar="<path>",
+            required=True,
+            default=argparse.SUPPRESS,
         )
-        parser.add_argument(
-            "-g",
+
+        required.add_argument(
+            "--output",
+            help="Path to the analysis output directory",
+            metavar="<path>",
+            dest="analysis_output_dir",
+            type=WritablePathType(),
+            required=True,
+            default=argparse.SUPPRESS,
+        )
+
+        optional = parser.add_argument_group("Optional arguments")
+
+        optional.add_argument(
             "--genera",
+            help="List of genera to restrict the abundance calculations.",
+            metavar="<genus>",
             nargs="+",
-            help="List containing the names of specific genera "
-            "the abundances should be calculated "
-            "on, separated by a space character <genus1 genus2 genus3 ...>",
-            metavar="",
             default=[],
         )
-        parser.add_argument(
-            "-o", "--output", help="Path to results directory.", metavar="", dest="analysis_output_dir",
-        )
-        parser.add_argument(
-            "-T",
+
+        # TODO shorten this name! (e.g. --min-prob)
+        optional.add_argument(
             "--read-probability-threshold",
-            help="Posterior probability threshold for a read to belong to a certain species. "
-            "Chose from 0.5, 0.75 and 0.95 (default:0.75).",
-            choices=[0.5, 0.75, 0.95],
-            default=float(0.75),
-            type=float,
-            metavar="",
+            help="Minimum posterior probability to assign an aligned read to a given species",
+            type=FloatRangeType(0, 100),
+            metavar="<float>",
+            default=self.config_default["read_probability_threshold"],
         )
-        parser.add_argument(
-            "-c", "--cores", help="Number of cores for HAYSTACK to use", metavar="", type=int, default=MAX_CPU,
-        )
-        parser.add_argument(
-            "-M",
-            "--mem",
-            help="Max memory resources allowed to be used ofr indexing the input for "
-            "the filtering alignment "
-            "(default: max available memory {})".format(MAX_MEM_MB),
-            type=float,
-            default=MAX_MEM_MB,
-            metavar="",
-        )
-        parser.add_argument(
-            "-u",
-            "--unlock",
-            action="store_true",
-            help="Unlock the working directory after smk is " "abruptly killed  <bool> (default: False)",
-        )
-        parser.add_argument(
-            "-d", "--debug", action="store_true", help="Debug the HAYSTACK workflow <bool> (default: False)",
-        )
-        parser.add_argument(
-            "-smk", "--snakemake", help="Snakemake flags (default: '')", metavar="",
-        )
-        parser.add_argument("--dry-run", action="store_true")
 
-        argcomplete.autocomplete(parser)
-        args = parser.parse_args(sys.argv[2:])
+        # TODO do we also need an option for the mean posterior abundance?
 
+        # add the common arguments
+        self._common_arguments(parser)
+
+        # print the help
         if len(sys.argv) == 2:
             parser.print_help()
             parser.exit()
 
-        print("The selected mode for sample analysis is {}".format(args.mode))
+        # now that we're inside a subcommand, ignore the first two arguments
+        argcomplete.autocomplete(parser)
+        args = parser.parse_args(sys.argv[2:])
 
-        snakefile = os.path.join(BASE_DIR, "workflow", "analyse.smk")
-        if not os.path.exists(snakefile):
-            sys.stderr.write("Error: cannot find Snakefile at {}\n".format(snakefile))
-            sys.exit(-1)
+        config_fetch = os.path.join(args.db_output, "database_fetch_config.yaml")
+        config_build = os.path.join(args.db_output, "database_build_config.yaml")
+        config_sample = os.path.join(args.sample_output_dir, "sample_config.yaml")
 
-        repo_config_file = os.path.join(BASE_DIR, "config", "config.yaml")
-        user_config_file = os.path.join(str(Path.home()), ".haystack", "config.yaml")
-
-        if not os.path.exists(user_config_file):
-            raise ValidationError(
-                "Please run haystack config first in order to set up your "
-                "email address and desired path for storing the downloaded genomes."
-            )
-
-        with open(repo_config_file) as fin:
-            self.config_default = yaml.safe_load(fin)
-
-        with open(user_config_file) as fin:
-            self.config_user = yaml.safe_load(fin)
-
-        self.config_default.update((k, v) for k, v in self.config_user.items())
-
-        if not os.path.exists(args.database):
-            raise ValidationError(
-                "The path you provided for the database output directory is not valid. " "Please provide a valid path."
-            )
-
-        if not os.path.exists(args.sample):
-            raise ValidationError(
-                "The path you provided for the sample related output is not valid. " "Please provide a valid path."
-            )
-
-        db_fetch_yaml = os.path.join(args.database, "database_fetch_config.yaml")
-        if os.path.exists(db_fetch_yaml):
-            with open(db_fetch_yaml) as fin:
+        try:
+            # load the database config
+            database_config_file = config_fetch if os.path.exists(config_fetch) else config_build
+            with open(database_config_file, "r") as fin:
                 database_config = yaml.safe_load(fin)
+        except FileNotFoundError:
+            raise ValidationError(
+                "The database has not been built correctly. Please rebuild the database using `haystack database`"
+            )
 
-        db_build_yaml = os.path.join(args.database, "database_build_config.yaml")
-        if os.path.exists(db_build_yaml):
-            with open(db_build_yaml) as fin:
-                database_config = yaml.safe_load(fin)
-
-        if os.path.exists(db_build_yaml) and os.path.exists(db_fetch_yaml):
-            raise ValidationError("The database has not been build correctly. Please re build the database.")
-
-        if os.path.exists(db_build_yaml) is False and os.path.exists(db_fetch_yaml) is False:
-            raise ValidationError("The database has not been build correctly or at all. Please re build the database.")
-
-        sample_yaml = os.path.join(args.sample, "sample_config.yaml")
-        if os.path.exists(sample_yaml):
-            with open(sample_yaml) as fin:
+        try:
+            # load the sample config
+            with open(config_sample, "r") as fin:
                 sample_config = yaml.safe_load(fin)
-        else:
+        except FileNotFoundError:
             raise ValidationError(
-                "The sample yaml file does not exist in the path you provided. "
-                "Please make sure you have provided the right sample output path, or "
-                "make sure that you have run haystack sample first. "
+                "The sample has not been prepared correctly. Please pre-process the samples using `haystack sample`"
             )
 
-        analysis_args = vars(args)
-
-        analysis_config = {k: v for k, v in self.config_default.items()}
-        analysis_config.update((k, v) for k, v in database_config.items())
-        analysis_config.update((k, v) for k, v in sample_config.items())
-        analysis_config.update((k, v) for k, v in analysis_args.items())
-
-        analysis_config["analysis_output_dir"] = os.path.abspath(analysis_config["analysis_output_dir"])
-
-        if analysis_config["analysis_output_dir"]:
-            if os.path.exists(analysis_config["analysis_output_dir"]):
-                if not os.access(analysis_config["analysis_output_dir"], os.W_OK):
-                    raise ValidationError(
-                        "This directory path you have provided is not writable. "
-                        "Please chose another path for your sample output directory."
-                    )
-            else:
-                if not os.access(os.path.dirname(analysis_config["analysis_output_dir"]), os.W_OK):
-                    raise ValidationError(
-                        "This directory path you have provided is not writable. "
-                        "Please chose another path for your sample output directory."
-                    )
-
-        if analysis_config["analysis_output_dir"] is None:
-            raise ValidationError(
-                "Please provide a valid directory path for the species identification related outputs. "
-                "If the directory does not exist, do not worry the method will create it."
-            )
-        # print(analysis_config)
+        # add all command line options to the merged config
+        config = {**self.config_merged, **database_config, **sample_config, **vars(args)}
 
         target_list = []
 
         if args.mode == "filter":
-            bowtie = ""
-            if analysis_config["PE_MODERN"]:
-                bowtie = analysis_config["analysis_output_dir"] + "/fastq/PE/{sample}_mapq_pair.readlen".format(
-                    sample=analysis_config["sample_prefix"]
-                )
-            elif analysis_config["PE_ANCIENT"] or analysis_config["SE"]:
-                bowtie = analysis_config["analysis_output_dir"] + "/fastq/SE/{sample}_mapq.readlen".format(
-                    sample=analysis_config["sample_prefix"]
-                )
-            target_list.append(bowtie)
+            if config["PE_MODERN"]:
+                target_list.append(f"/fastq/PE/{config['sample_prefix']}_mapq_pair.readlen")
+            else:
+                target_list.append(f"/fastq/SE/{config['sample_prefix']}_mapq.readlen")
 
-        if args.mode == "align":
-            target_list.append(
-                analysis_config["analysis_output_dir"]
-                + "/sigma/{sample}_alignments.done".format(sample=analysis_config["sample_prefix"])
-            )
+        elif args.mode == "align":
+            target_list.append(f"/sigma/{config['sample_prefix']}_alignments.done")
 
-        if args.mode == "likelihoods":
-            target_list.append(
-                analysis_config["analysis_output_dir"]
-                + "/probabilities/{sample}/{sample}_likelihood_ts_tv_matrix.csv".format(
-                    sample=analysis_config["sample_prefix"]
-                )
-            )
+        elif args.mode == "likelihoods":
+            target_list.append(f"/probabilities/{config['sample_prefix']}/{config['sample_prefix']}_likelihood_ts_tv_matrix.csv")
 
-        if args.mode == "probabilities":
-            target_list.append(
-                analysis_config["analysis_output_dir"]
-                + "/probabilities/{sample}/{sample}_posterior_probabilities.tsv".format(
-                    sample=analysis_config["sample_prefix"]
-                )
-            )
+        elif args.mode == "probabilities":
+            target_list.append(f"/probabilities/{config['sample_prefix']}/{config['sample_prefix']}_posterior_probabilities.tsv")
 
-        if args.mode == "abundances":
-            target_list.append(
-                analysis_config["analysis_output_dir"]
-                + "/probabilities/{sample}/{sample}_posterior_abundance.tsv".format(
-                    sample=analysis_config["sample_prefix"]
-                )
-            )
+        elif args.mode == "abundances":
+            target_list.append(f"/probabilities/{config['sample_prefix']}/{config['sample_prefix']}_posterior_abundance.tsv")
 
-        if args.mode == "reads":
-            target_list.append(
-                analysis_config["analysis_output_dir"]
-                + "/dirichlet_reads/{sample}_dirichlet_reads.done".format(sample=analysis_config["sample_prefix"])
-            )
+        elif args.mode == "reads":
+            target_list.append("/dirichlet_reads/{config['sample_prefix']}_dirichlet_reads.done")
 
-        if args.mode == "mapdamage":
-            target_list.append(
-                analysis_config["analysis_output_dir"]
-                + "/mapdamage/{sample}_mapdamage.done".format(sample=analysis_config["sample_prefix"])
-            )
+        elif args.mode == "mapdamage":
+            target_list.append(f"/mapdamage/{config['sample_prefix']}_mapdamage.done")
 
-        analysis_yaml = os.path.join(
-            str(Path.home()), analysis_config["analysis_output_dir"], analysis_config["sample_prefix"] + "_config.yaml",
+        config_analysis = os.path.join(args.analysis_output_dir, args.sample_prefix + "_config.yaml")
+
+        with open(config_analysis, "w") as fout:
+            yaml.safe_dump(config, fout, default_flow_style=False)
+
+        config["workflow_dir"] = os.path.join(BASE_DIR, "workflow")  # TODO tidy up
+
+        target_list = [os.path.join(args.analysis_output_dir, target) for target in target_list]
+        snakefile = os.path.join(BASE_DIR, "workflow/analyse.smk")
+
+        return self._run_snakemake(snakefile, args, config, target_list)
+
+    def _common_arguments(self, parser):
+        """
+        Add the common arguments shared by the `database`, `sample` and `analyse` commands
+        """
+        common = parser.add_argument_group("Common arguments")
+
+        # add the help option manually so we can control where it is shown in the menu
+        common.add_argument(
+            "-h", "--help", action="help", default=argparse.SUPPRESS, help="Show this help message and exit"
         )
 
-        if not os.path.exists(analysis_yaml):
-            os.makedirs(
-                os.path.join(str(Path.home()), analysis_config["analysis_output_dir"]), exist_ok=True,
-            )
-            analysis_options = {k: v for k, v in analysis_config.items() if (k, v) not in self.config_default.items()}
-            with open(analysis_yaml, "w") as outfile:
-                yaml.safe_dump(analysis_options, outfile, default_flow_style=False)
-
-        analysis_config["workflow_dir"] = os.path.join(BASE_DIR, "workflow")
-
-        user_options = {k: v for k, v in analysis_args.items() if (k, v) not in self.config_default.items()}
-
-        print("--------")
-        print("RUN DETAILS")
-        print("\n\tanalyse.smk: {}".format(snakefile))
-        print("\n\tConfig Parameters:\n")
-        if args.debug:
-            for (key, value,) in analysis_config.items():
-                print(f"{key:35}{value}")
-        else:
-            for (key, value,) in user_options.items():
-                print(f"{key:35}{value}")
-
-        print("\n\tTarget Output Files:\n")
-        for target in target_list:
-            print(target)
-        print("--------")
-
-        if args.debug:
-            printshellcmds = True
-            keepgoing = False
-            restart_times = 0
-        else:
-            printshellcmds = False
-            keepgoing = True
-            restart_times = 3
-
-        status = snakemake.snakemake(
-            snakefile,
-            config=analysis_config,
-            targets=target_list,
-            printshellcmds=printshellcmds,
-            dryrun=args.dry_run,
-            cores=int(args.cores),
-            keepgoing=keepgoing,
-            restart_times=restart_times,
-            unlock=args.unlock,
-            show_failed_logs=args.debug,
-            resources={"entrez_api": MAX_ENTREZ_REQUESTS},
-            use_conda=analysis_config["use_conda"],
+        common.add_argument(
+            "--cores",
+            help="Maximum number of CPU cores to use",
+            metavar="<int>",
+            type=IntRangeType(1, MAX_CPU),
+            default=MAX_CPU if self.config_default["cores"] == "all" else self.config_default["cores"],
         )
 
-        # translate "success" into shell exit code of 0
-        return 0 if status else 1
+        common.add_argument(
+            "--mem",
+            help="Maximum memory (MB) to use",
+            type=IntRangeType(1024, MAX_MEM_MB),
+            default=MAX_MEM_MB if self.config_default["mem"] == "all" else self.config_default["mem"],
+            metavar="<int>",
+        )
+
+        common.add_argument(
+            "--unlock",
+            help="Unlock the output directory following a crash or hard restart",
+            action="store_true",
+            default=argparse.SUPPRESS,
+        )
+
+        common.add_argument(
+            "--debug", help="Enable debugging mode", action="store_true", default=argparse.SUPPRESS,
+        )
+
+        common.add_argument(
+            "--snakemake",
+            help="Pass additional flags to the `snakemake` scheduler.",
+            metavar="'<json>'",
+            type=JsonType(),
+            default=argparse.SUPPRESS,
+        )
 
     @staticmethod
     def _run_snakemake(snakefile, args, config, target_list):
