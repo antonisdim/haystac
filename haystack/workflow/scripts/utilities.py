@@ -30,6 +30,21 @@ class ValidationError(Exception):
     pass
 
 
+class ArgumentCustomFormatter(argparse.HelpFormatter):
+    """
+    Custom formatter for argparse
+    """
+
+    def _get_help_string(self, action):
+        message = action.help
+        if "%(default)" not in action.help:
+            if action.default is not argparse.SUPPRESS and action.default is not None:
+                defaulting_nargs = [argparse.OPTIONAL, argparse.ZERO_OR_MORE]
+                if action.option_strings or action.nargs in defaulting_nargs:
+                    message += " (default: %(default)s)"
+        return message
+
+
 class EmailType(object):
     """
     Supports checking email against different patterns. The current available patterns is:

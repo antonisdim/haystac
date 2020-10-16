@@ -28,6 +28,7 @@ from pathlib import Path
 
 from workflow.scripts.utilities import (
     ValidationError,
+    ArgumentCustomFormatter,
     EmailType,
     WritablePathType,
     PositiveIntType,
@@ -124,7 +125,7 @@ The haystack commands are:
         parser = argparse.ArgumentParser(
             prog="haystack config",
             description="Advanced configuration options for haystack",
-            formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+            formatter_class=ArgumentCustomFormatter,
             add_help=False,
         )
 
@@ -133,9 +134,7 @@ The haystack commands are:
         optional = parser.add_argument_group("Optional arguments")
 
         # add the help option manually so we can control where it is shown in the menu
-        optional.add_argument(
-            "-h", "--help", action="help", default=argparse.SUPPRESS, help="Show this help message and exit"
-        )
+        optional.add_argument("-h", "--help", action="help", help="Show this help message and exit")
 
         # determine which group email belongs in
         group = required or optional
@@ -145,8 +144,7 @@ The haystack commands are:
             help="Email address for NCBI identification",
             metavar="<address>",
             type=EmailType("RFC5322"),
-            default=argparse.SUPPRESS,
-            required=not self.config_user.get("email")
+            required=not self.config_user.get("email"),
         )
 
         # TODO add a --clear-cache option
@@ -224,7 +222,7 @@ The haystack commands are:
         parser = argparse.ArgumentParser(
             prog="haystack database",
             description="Build a database of target species",
-            formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+            formatter_class=ArgumentCustomFormatter,
             add_help=False,
         )
 
@@ -236,7 +234,6 @@ The haystack commands are:
             metavar="<mode>",
             choices=DATABASE_MODES,
             required=True,
-            default=argparse.SUPPRESS,
         )
 
         required.add_argument(
@@ -246,7 +243,6 @@ The haystack commands are:
             dest="db_output",
             type=WritablePathType(),
             required=True,
-            default=argparse.SUPPRESS,
         )
 
         choice = parser.add_argument_group("Required choice")
@@ -257,7 +253,6 @@ The haystack commands are:
             help="Database query in the NCBI query language. "
             "Please refer to the documentation for assistance with constructing a valid query.",
             metavar="<query>",
-            default=argparse.SUPPRESS,
         )
 
         choice.add_argument(
@@ -265,7 +260,6 @@ The haystack commands are:
             help="File containing a database query in the NCBI query language.",
             metavar="<path>",
             type=argparse.FileType("r"),
-            default=argparse.SUPPRESS,
         )
 
         # TODO validate that this is 2-column and tab delimited
@@ -275,7 +269,6 @@ The haystack commands are:
             "and a valid NCBI accession code from the nucleotide, assembly or WGS databases.",
             metavar="<path>",
             type=argparse.FileType("r"),
-            default=argparse.SUPPRESS,
         )
 
         # TODO validate that this is 3-column and tab delimited
@@ -285,7 +278,6 @@ The haystack commands are:
             "accession code, and the path to the fasta file (optionally compressed).",
             metavar="<path>",
             type=argparse.FileType("r"),
-            default=argparse.SUPPRESS,
         )
 
         choice.add_argument(
@@ -425,7 +417,7 @@ The haystack commands are:
         parser = argparse.ArgumentParser(
             prog="haystack sample",
             description="Prepare a sample for analysis",
-            formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+            formatter_class=ArgumentCustomFormatter,
             add_help=False,
         )
 
@@ -433,10 +425,7 @@ The haystack commands are:
 
         # TODO do we need this?
         required.add_argument(
-            "--sample-prefix",
-            help="Sample prefix for all the future analysis.",
-            metavar="<prefix>",
-            default=argparse.SUPPRESS,
+            "--sample-prefix", help="Sample prefix for all the future analysis.", metavar="<prefix>",
         )
 
         required.add_argument(
@@ -446,7 +435,6 @@ The haystack commands are:
             dest="sample_output_dir",
             type=WritablePathType(),
             required=True,
-            default=argparse.SUPPRESS,
         )
 
         choice = parser.add_argument_group("Required choice")
@@ -456,7 +444,6 @@ The haystack commands are:
             help="Single-end fastq input file (optionally compressed).",
             metavar="<path>",
             type=argparse.FileType("r"),
-            default=argparse.SUPPRESS,
         )
 
         choice.add_argument(
@@ -464,7 +451,6 @@ The haystack commands are:
             help="Paired-end forward strand (R1) fastq input file.",
             metavar="<path>",
             type=argparse.FileType("r"),
-            default=argparse.SUPPRESS,
         )
 
         choice.add_argument(
@@ -472,15 +458,11 @@ The haystack commands are:
             help="Paired-end reverse strand (R2) fastq input file.",
             metavar="<path>",
             type=argparse.FileType("r"),
-            default=argparse.SUPPRESS,
         )
 
         # TODO make an SraType that validates the code and returns the tuple (accession, paired|single)
         choice.add_argument(
-            "--sra",
-            help="Download fastq input from the SRA database",
-            metavar="<accession>",
-            default=argparse.SUPPRESS,
+            "--sra", help="Download fastq input from the SRA database", metavar="<accession>",
         )
 
         optional = parser.add_argument_group("Optional arguments")
@@ -603,7 +585,7 @@ The haystack commands are:
         parser = argparse.ArgumentParser(
             prog="haystack analyse",
             description="Analyse a sample against a database",
-            formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+            formatter_class=ArgumentCustomFormatter,
             add_help=False,
         )
 
@@ -615,23 +597,14 @@ The haystack commands are:
             metavar="<mode>",
             choices=ANALYSIS_MODES,
             required=True,
-            default=argparse.SUPPRESS,
         )
 
         required.add_argument(
-            "--database",
-            help="Path to the database output directory",
-            metavar="<path>",
-            required=True,
-            default=argparse.SUPPRESS,
+            "--database", help="Path to the database output directory", metavar="<path>", required=True,
         )
 
         required.add_argument(
-            "--sample",
-            help="Path to the sample output directory",
-            metavar="<path>",
-            required=True,
-            default=argparse.SUPPRESS,
+            "--sample", help="Path to the sample output directory", metavar="<path>", required=True,
         )
 
         required.add_argument(
@@ -641,7 +614,6 @@ The haystack commands are:
             dest="analysis_output_dir",
             type=WritablePathType(),
             required=True,
-            default=argparse.SUPPRESS,
         )
 
         optional = parser.add_argument_group("Optional arguments")
@@ -715,13 +687,19 @@ The haystack commands are:
             target_list.append(f"/sigma/{config['sample_prefix']}_alignments.done")
 
         elif args.mode == "likelihoods":
-            target_list.append(f"/probabilities/{config['sample_prefix']}/{config['sample_prefix']}_likelihood_ts_tv_matrix.csv")
+            target_list.append(
+                f"/probabilities/{config['sample_prefix']}/{config['sample_prefix']}_likelihood_ts_tv_matrix.csv"
+            )
 
         elif args.mode == "probabilities":
-            target_list.append(f"/probabilities/{config['sample_prefix']}/{config['sample_prefix']}_posterior_probabilities.tsv")
+            target_list.append(
+                f"/probabilities/{config['sample_prefix']}/{config['sample_prefix']}_posterior_probabilities.tsv"
+            )
 
         elif args.mode == "abundances":
-            target_list.append(f"/probabilities/{config['sample_prefix']}/{config['sample_prefix']}_posterior_abundance.tsv")
+            target_list.append(
+                f"/probabilities/{config['sample_prefix']}/{config['sample_prefix']}_posterior_abundance.tsv"
+            )
 
         elif args.mode == "reads":
             target_list.append("/dirichlet_reads/{config['sample_prefix']}_dirichlet_reads.done")
@@ -748,9 +726,7 @@ The haystack commands are:
         common = parser.add_argument_group("Common arguments")
 
         # add the help option manually so we can control where it is shown in the menu
-        common.add_argument(
-            "-h", "--help", action="help", default=argparse.SUPPRESS, help="Show this help message and exit"
-        )
+        common.add_argument("-h", "--help", action="help", help="Show this help message and exit")
 
         common.add_argument(
             "--cores",
@@ -769,14 +745,11 @@ The haystack commands are:
         )
 
         common.add_argument(
-            "--unlock",
-            help="Unlock the output directory following a crash or hard restart",
-            action="store_true",
-            default=argparse.SUPPRESS,
+            "--unlock", help="Unlock the output directory following a crash or hard restart", action="store_true",
         )
 
         common.add_argument(
-            "--debug", help="Enable debugging mode", action="store_true", default=argparse.SUPPRESS,
+            "--debug", help="Enable debugging mode", action="store_true",
         )
 
         common.add_argument(
@@ -784,7 +757,6 @@ The haystack commands are:
             help="Pass additional flags to the `snakemake` scheduler.",
             metavar="'<json>'",
             type=JsonType(),
-            default=argparse.SUPPRESS,
         )
 
     @staticmethod
