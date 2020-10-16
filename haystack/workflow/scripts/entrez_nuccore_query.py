@@ -25,7 +25,7 @@ from scripts.entrez_utils import (
     ENTREZ_RETTYPE_GB,
 )
 
-CHUNK_SIZE = 20
+CHUNK_SIZE = 20  # TODO make this available to `haystack config`
 TOO_MANY_REQUESTS_WAIT = 7
 MAX_RETRY_ATTEMPTS = 10
 

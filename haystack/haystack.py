@@ -790,6 +790,7 @@ The haystack commands are:
             show_failed_logs=args.debug,
             resources={"entrez_api": MAX_ENTREZ_REQUESTS},
             use_conda=config["use_conda"],
+            verbose=args.debug,
             **smk_params,
         )
 
