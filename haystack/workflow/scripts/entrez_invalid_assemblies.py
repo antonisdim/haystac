@@ -8,11 +8,10 @@ __license__ = "MIT"
 
 import csv
 import os
+import pandas as pd
 import sys
 import time
 import urllib.error
-
-import pandas as pd
 from Bio import Entrez
 
 sys.path.append(os.getcwd())

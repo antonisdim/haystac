@@ -7,13 +7,12 @@ __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
 import http.client
+import socket
 import sys
 import time
 import urllib.error
-from datetime import datetime
-import socket
-
 from Bio import Entrez
+from datetime import datetime
 
 # the maximum number of attempts to make for a failed query
 MAX_RETRY_ATTEMPTS = 2

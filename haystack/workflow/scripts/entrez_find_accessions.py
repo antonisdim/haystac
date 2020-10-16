@@ -6,7 +6,6 @@ __copyright__ = "Copyright 2020, University of Oxford"
 __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
-import csv
 import os
 import sys
 
@@ -16,7 +15,6 @@ sys.path.append(os.getcwd())
 sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 
 from scripts.entrez_utils import (
-    guts_of_entrez,
     ENTREZ_DB_NUCCORE,
     ENTREZ_RETMODE_XML,
     ENTREZ_RETTYPE_GB,
@@ -52,5 +50,4 @@ def entrez_find_accessions(config, output_file):
 
 
 if __name__ == "__main__":
-
     entrez_find_accessions(config=snakemake.config, output_file=snakemake.output[0])

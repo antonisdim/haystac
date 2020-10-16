@@ -30,7 +30,6 @@ rule entrez_custom_sequences:
 
 
 def get_paths_for_custom_seqs():
-
     if config["sequences"] == "":
         return ""
 
@@ -99,7 +98,6 @@ rule entrez_aggregate_custom_seqs:
 
 
 def get_paths_for_custom_acc(wildcards):
-
     if config["accessions"] == "":
         return ""
 

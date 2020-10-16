@@ -6,12 +6,12 @@ __copyright__ = "Copyright 2020, University of Oxford"
 __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
-import os
-import sys
 import gzip
+
+import os
 import pandas as pd
 import shutil
-
+import sys
 from Bio import bgzf
 
 

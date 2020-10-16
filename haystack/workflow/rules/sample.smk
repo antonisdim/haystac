@@ -10,7 +10,6 @@ MESSAGE_SUFFIX = "(output: {output} and log: {log})" if config["debug"] else ""
 
 
 def get_inputs_for_count_fastq_len(wildcards):
-
     if config["trim_adapters"]:
         if config["PE_MODERN"]:
             return config["sample_output_dir"] + "/fastq_inputs/PE_mod/{sample}_R1_adRm.fastq.gz".format(

@@ -7,13 +7,12 @@ __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
 import csv
-import os
-import sys
-import pandas as pd
 import itertools
+import os
+import pandas as pd
+import sys
 import time
 import urllib.error
-
 from Bio import Entrez
 
 sys.path.append(os.getcwd())

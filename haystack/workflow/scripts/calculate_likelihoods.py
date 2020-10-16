@@ -6,13 +6,11 @@ __copyright__ = "Copyright 2020, University of Oxford"
 __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
-
 import json
-import os
-import sys
-
 import numpy as np
+import os
 import pandas as pd
+import sys
 
 
 def calculate_likelihoods(ts_tv_file, readlen_file, taxa_file_paths, config, output_matrix, output_params):

@@ -6,11 +6,11 @@ __copyright__ = "Copyright 2020, University of Oxford"
 __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
-import sys
-
-from Bio import SeqIO
-import pandas as pd
 import gzip
+
+import pandas as pd
+import sys
+from Bio import SeqIO
 
 
 def get_dark_matter_reads_se(input_fastq, matrix_file, output_fastq):

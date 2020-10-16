@@ -11,7 +11,6 @@ import pandas as pd
 
 MESSAGE_SUFFIX = "(output: {output} and log: {log})" if config["debug"] else ""
 
-
 from scripts.entrez_nuccore_query import CHUNK_SIZE
 from scripts.utilities import normalise_name, get_accession_ftp_path
 
@@ -108,7 +107,6 @@ rule entrez_taxa_query:
 
 
 def pick_after_refseq_prok(wildcards):
-
     if config["refseq_rep"]:
         return config["db_output"] + "/entrez/genbank-genomes.tsv"
     else:

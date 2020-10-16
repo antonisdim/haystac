@@ -8,8 +8,7 @@ __license__ = "MIT"
 
 import pandas as pd
 
-
-from scripts.utilities import get_total_paths, normalise_name
+from scripts.utilities import normalise_name
 
 MESSAGE_SUFFIX = "(output: {output} and log: {log})" if config["debug"] else ""
 

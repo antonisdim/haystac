@@ -6,10 +6,9 @@ __copyright__ = "Copyright 2020, University of Oxford"
 __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
-import sys
-
-import pysam
 import pandas as pd
+import pysam
+import sys
 
 
 def get_dirichlet_reads(input_bam, output_bam, matrix_file, taxon):

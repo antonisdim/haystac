@@ -6,14 +6,11 @@ __copyright__ = "Copyright 2020, University of Oxford"
 __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
-
-import sys
-
 import numpy as np
-import pandas as pd
-from scipy.stats import beta
-from scipy.stats import hmean
 import os
+import pandas as pd
+import sys
+from scipy.stats import beta, hmean
 
 
 def calculate_dirichlet_abundances(ts_tv_file, pvaluesfile, total_fastq_reads, sample_abundance):

@@ -6,11 +6,8 @@ __copyright__ = "Copyright 2020, University of Oxford"
 __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
-import sys
-
 import pandas as pd
-
-import os.path
+import sys
 
 
 def entrez_pick_sequences(config, nuccore_file, taxa_file, output_file):

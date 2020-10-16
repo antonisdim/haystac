@@ -6,10 +6,9 @@ __copyright__ = "Copyright 2020, University of Oxford"
 __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
-import sys
-
-import pandas as pd
 import os
+import pandas as pd
+import sys
 
 sys.path.append(os.getcwd())
 sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))

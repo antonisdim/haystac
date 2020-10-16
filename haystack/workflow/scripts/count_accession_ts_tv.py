@@ -6,9 +6,10 @@ __copyright__ = "Copyright 2020, University of Oxford"
 __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
-import sys
-import pysam
 from collections import defaultdict
+
+import pysam
+import sys
 
 
 def read_pair_generator(bam, region_string=None):

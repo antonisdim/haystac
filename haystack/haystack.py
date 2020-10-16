@@ -7,25 +7,19 @@ __copyright__ = "Copyright 2020, University of Oxford"
 __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
-import datetime
-
-import pathlib
+import os.path
+from multiprocessing import cpu_count
 
 import argcomplete
 import argparse
-import os.path
-import re
-import sys
+import datetime
 import os
-
+import pathlib
 import snakemake
+import sys
 import yaml
-
-from multiprocessing import cpu_count
 from Bio import Entrez
 from psutil import virtual_memory
-from pathlib import Path
-
 from workflow.scripts.utilities import (
     ValidationError,
     ArgumentCustomFormatter,
@@ -44,7 +38,9 @@ os.environ["OMP_NUM_THREADS"] = "1"
 MAX_CPU = cpu_count()
 MAX_MEM_MB = int(virtual_memory().total / 1024 ** 2)
 
-CONFIG_DEFAULT = "./config/config.yaml"
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+
+CONFIG_DEFAULT = f"{BASE_DIR}/config/config.yaml"
 CONFIG_USER = pathlib.Path("~/.haystack/config.yaml").expanduser()
 
 COMMANDS = ["config", "database", "sample", "analyse"]
@@ -53,8 +49,6 @@ ANALYSIS_MODES = ["filter", "align", "likelihoods", "probabilities", "abundances
 TAXONOMIC_RANKS = ["genus", "species", "subspecies", "serotype"]
 
 RESTART_TIMES = 3
-
-BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
 # maximum concurrent Entrez requests
 MAX_ENTREZ_REQUESTS = 3

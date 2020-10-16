@@ -11,7 +11,6 @@ from math import ceil
 
 from psutil import virtual_memory
 
-
 MEGABYTE = float(1024 ** 2)
 MAX_MEM_MB = virtual_memory().total / MEGABYTE
 MESSAGE_SUFFIX = "(output: {output} and log: {log})" if config["debug"] else ""
@@ -82,7 +81,6 @@ checkpoint calculate_bt2_idx_chunks:
 
 
 def get_bt2_idx_filter_chunk(wildcards):
-
     """Pick the files for the specific bt2 index chunk"""
 
     fasta_paths_random = []
@@ -147,7 +145,6 @@ rule bowtie_index:
 
 
 def get__bt2_idx_chunk_paths(wildcards):
-
     """Get the paths for the index chunks for the filtering bowtie2 alignment"""
 
     get_chunk_num = checkpoints.calculate_bt2_idx_chunks.get()

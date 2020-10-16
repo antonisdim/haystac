@@ -8,13 +8,11 @@ __license__ = "MIT"
 
 from math import ceil
 
-
 SUBSAMPLE_FIXED_READS = 200000
 MESSAGE_SUFFIX = "(output: {output} and log: {log})" if config["debug"] else ""
 
 
 def get_inputs_for_bowtie_r1(wildcards):
-
     if config["trim_adapters"]:
         if config["PE_MODERN"]:
             return config["sample_output_dir"] + "/fastq_inputs/PE_mod/{sample}_R1_adRm.fastq.gz".format(
@@ -36,7 +34,6 @@ def get_inputs_for_bowtie_r1(wildcards):
 
 
 def get_inputs_for_bowtie_r2(wildcards):
-
     if config["trim_adapters"]:
         if config["PE_MODERN"]:
             return config["sample_output_dir"] + "/fastq_inputs/PE_mod/{sample}_R2_adRm.fastq.gz".format(

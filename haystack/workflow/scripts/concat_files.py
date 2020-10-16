@@ -11,7 +11,6 @@ import sys
 
 
 def concat_files(list_of_files, output_file):
-
     """Concatenating files that are provided as input into a single file."""
 
     print("Concatenating files ...", file=sys.stderr)

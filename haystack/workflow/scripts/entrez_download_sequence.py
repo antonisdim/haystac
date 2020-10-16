@@ -6,17 +6,12 @@ __copyright__ = "Copyright 2020, University of Oxford"
 __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
+import argparse
 import os
 import sys
-import gzip
-import urllib.error
 import time
-import subprocess
-import shutil
-import argparse
-
-from Bio import Entrez
-from Bio import bgzf
+import urllib.error
+from Bio import Entrez, bgzf
 
 sys.path.append(os.getcwd())
 sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))

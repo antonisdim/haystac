@@ -8,9 +8,8 @@ __license__ = "MIT"
 
 import csv
 import os
-import sys
-
 import pandas as pd
+import sys
 from Bio import Entrez
 
 sys.path.append(os.getcwd())

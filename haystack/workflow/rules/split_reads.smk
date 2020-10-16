@@ -168,7 +168,6 @@ def get_dirichlet_bams(wildcards):
 
 
 def get_grey_matter_reads():
-
     if config["PE_MODERN"]:
         return [
             config["analysis_output_dir"] + "/dirichlet_reads/{sample}/Grey_Matter/Grey_Matter_dirichlet_R1.fastq.gz",
@@ -180,7 +179,6 @@ def get_grey_matter_reads():
 
 
 def get_dark_matter_reads():
-
     if config["PE_MODERN"]:
         return [
             config["analysis_output_dir"] + "/dirichlet_reads/{sample}/Dark_Matter/Dark_Matter_dirichlet_R1.fastq.gz",

@@ -6,16 +6,14 @@ __copyright__ = "Copyright 2020, University of Oxford"
 __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
-import re
-
 import argparse
-
-import pandas as pd
-from Bio import Entrez
-import sys
 import os
-import urllib.error
+import pandas as pd
+import re
+import sys
 import time
+import urllib.error
+from Bio import Entrez
 
 sys.path.append(os.getcwd())
 sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
@@ -246,7 +244,6 @@ def normalise_name(taxon):
 
 
 def check_unique_taxa_in_custom_input(accessions, sequences):
-
     """Checks that custom input files have only one entry per taxon"""
 
     if accessions != "" and sequences != "":

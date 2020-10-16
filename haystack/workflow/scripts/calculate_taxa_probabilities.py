@@ -6,12 +6,10 @@ __copyright__ = "Copyright 2020, University of Oxford"
 __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
-
-import sys
-
 import numpy as np
-import pandas as pd
 import os
+import pandas as pd
+import sys
 
 
 def calculate_taxa_probabilities(
