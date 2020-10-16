@@ -134,6 +134,7 @@ The haystack commands are:
             help=f"Cache folder for all the genomes downloaded from NCBI (default: {self.config_default['cache']}).",
             metavar="<path>",
             type=WritablePathType(),
+            default=self.config_default["cache"],
         )
 
         parser.add_argument(
@@ -141,6 +142,7 @@ The haystack commands are:
             help=f"Batch size for fetching records from NCBI (default: {self.config_default['batchsize']})",
             type=PositiveIntType(),
             metavar="<int>",
+            default=self.config_default["batchsize"],
         )
 
         parser.add_argument(
@@ -148,6 +150,7 @@ The haystack commands are:
             help=f"Base mismatch probability (default: {self.config_default['mismatch_probability']})",
             type=FloatRangeType(0.01, 0.10),
             metavar="<float>",
+            default=self.config_default["mismatch_probability"],
         )
 
         parser.add_argument(
@@ -156,6 +159,7 @@ The haystack commands are:
             f"(default: {self.config_default['bowtie2_threads']})",
             type=IntRangeType(1, MAX_CPU),
             metavar="<int>",
+            default=self.config_default["bowtie2_threads"],
         )
 
         parser.add_argument(
@@ -164,6 +168,7 @@ The haystack commands are:
             f"(default: {self.config_default['bowtie2_scaling']})",
             type=FloatRangeType(0, 100),
             metavar="<float>",
+            default=self.config_default["bowtie2_scaling"],
         )
 
         parser.add_argument(
@@ -171,6 +176,7 @@ The haystack commands are:
             help=f"Use conda as a package manger (default: {self.config_default['use_conda']})",
             type=BoolType(),
             metavar="<bool>",
+            default=self.config_default["use_conda"],
         )
 
         # now that we're inside a subcommand, ignore the first two arguments
@@ -190,7 +196,7 @@ The haystack commands are:
 
     def _common_arguments(self, parser):
         """
-        Add the common arguments shared by all commands
+        Add the common arguments shared by the `database`, `sample` and `analyse` commands
         """
         parser.add_argument(
             "--cores",
@@ -210,7 +216,7 @@ The haystack commands are:
 
         parser.add_argument(
             "--unlock",
-            help="Unlock the working directory following a crash or hard restart (default: False).",
+            help="Unlock the output directory following a crash or hard restart (default: False).",
             action="store_true",
         )
 
@@ -333,13 +339,7 @@ The haystack commands are:
         args = parser.parse_args(sys.argv[2:])
 
         # must specify at least one source for the database
-        if (
-            args.refseq_rep is False
-            and args.query is None
-            and args.query_file is None
-            and args.accessions is None
-            and args.sequences is None
-        ):
+        if not (args.refseq_rep or args.query or args.query_file or args.accessions or args.sequences):
             raise ValidationError(
                 "Please specify at least one of --refseq-rep, --query, --query-file, --accessions or --sequences"
             )
@@ -369,6 +369,7 @@ The haystack commands are:
         target_list = []
 
         if args.mode == "fetch":
+            # TODO can this be replaced with a single target? and the conditional logic moved into an input function
             if args.query:
                 target_list.append("bowtie/entrez_query.fasta.gz")
             if args.refseq_rep:
@@ -421,269 +422,170 @@ The haystack commands are:
         """
         parser = argparse.ArgumentParser(description="Prepare a sample for analysis")
 
+        # TODO do we need this?
         parser.add_argument(
-            "--sample-prefix",
-            help="Sample prefix for all the future analysis. Optional if SRA accession is provided instead",
-            metavar="",
-            default="",
+            "--sample-prefix", help="Sample prefix for all the future analysis.", metavar="<prefix>",
         )
 
         parser.add_argument(
-            "--fastq", help="Path to the fastq input file. Can be raw or with adapters removed", metavar="",
+            "--fastq",
+            help="Single-end fastq input file (optionally compressed).",
+            metavar="<path>",
+            type=argparse.FileType("r"),
         )
+
         parser.add_argument(
             "--fastq-r1",
-            help="Path to the mate 1 fastq input file, if reads are PE. " "Can be raw or with adapters removed",
-            metavar="",
+            help="Paired-end forward strand (R1) fastq input file.",
+            metavar="<path>",
+            type=argparse.FileType("r"),
         )
+
         parser.add_argument(
             "--fastq-r2",
-            help="Path to the mate 2 fastq input file, if reads are PE. " "Can be raw or with adapters removed",
-            metavar="",
+            help="Paired-end reverse strand (R2) fastq input file.",
+            metavar="<path>",
+            type=argparse.FileType("r"),
         )
 
         parser.add_argument(
-            "--sra", help="Fetch raw data files from the SRA using the provided accession code <str>", metavar="",
+            "--collapse",
+            help=f"Collapse overlapping paired-end reads, e.g. for aDNA (default: {self.config_default['collapse']})",
+            type=BoolType(),
+            metavar="<bool>",
+            default=self.config_default["collapse"],
+        )
+
+        # TODO how to validate these accessions? do they follow a standard pattern?
+        parser.add_argument(
+            "--sra",
+            help="Download fastq input from the SRA database",
+            metavar="<accession>",
         )
 
         parser.add_argument(
-            "--collapse", help="Collapse paired end reads <bool> (default: False)", default=False, action="store_true",
-        )
-        parser.add_argument(
-            "--not-trim-adapters",
-            help="Do not remove adapters from raw fastq files <bool> (default: False)",
-            action="store_true",
-        )
-        parser.add_argument(
-            "--adaperremoval-flags", help="Additional flags to provide to Adapterremoval <str>", default="", metavar="",
+            "--trim-adapters",
+            help=f"Automatically trim sequencing adapters from fastq input "
+            f"(default: {self.config_default['trim_adapters']})",
+            type=BoolType(),
+            metavar="<bool>",
+            default=self.config_default["trim_adapters"],
         )
 
+        # TODO does this work?
+        parser.add_argument(
+            "--adaperremoval-flags",
+            help="Pass additional flags to `AdapterRemoval`.",
+            metavar="'<json>'",
+            type=JsonType(),
+        )
+
+        # add the common arguments
         self._common_arguments(parser)
 
         parser.add_argument(
             "--output",
-            help="Path to the directory where all the sample related outputs are going to be stored <str>",
-            metavar="",
-            default="",
+            help="Path to the sample output directory (mandatory).",
+            metavar="<path>",
             dest="sample_output_dir",
+            type=WritablePathType(),
             required=True,
         )
 
+        # print the help
         if len(sys.argv) == 2:
             parser.print_help()
             parser.exit()
 
+        # now that we're inside a subcommand, ignore the first two arguments
         argcomplete.autocomplete(parser)
         args = parser.parse_args(sys.argv[2:])
 
-        snakefile = os.path.join(BASE_DIR, "workflow", "sample.smk")
-        if not os.path.exists(snakefile):
-            sys.stderr.write("Error: cannot find Snakefile at {}\n".format(snakefile))
-            sys.exit(-1)
-
-        repo_config_file = os.path.join(BASE_DIR, "config", "config.yaml")
-        user_config_file = os.path.join(str(Path.home()), ".haystack", "config.yaml")
-
-        if not os.path.exists(user_config_file):
+        # must specify exactly one source for the sample
+        if bool(args.fastq) + (bool(args.fastq_r1) and bool(args.fastq_r2)) + bool(args.sra) != 1:
             raise ValidationError(
-                "Please run haystack config first in order to set up your "
-                "email address and desired path for storing the downloaded genomes."
+                "Please specify either --sra or --fastq, or both --fastq-r1 and --fastq-r2."
             )
 
-        with open(repo_config_file) as fin:
-            self.config_default = yaml.safe_load(fin)
-
-        with open(user_config_file) as fin:
-            self.config_user = yaml.safe_load(fin)
-
-        self.config_default.update((k, v) for k, v in self.config_user.items())
-
-        sample_args = vars(args)
-        # print(sample_args)
-        sample_config = {k: v for k, v in self.config_default.items()}
-        sample_config.update((k, v) for k, v in sample_args.items())
-
-        sample_config["sample_output_dir"] = os.path.abspath(sample_config["sample_output_dir"])
-
-        if sample_config["sample_output_dir"]:
-            if os.path.exists(sample_config["sample_output_dir"]):
-                if not os.access(sample_config["sample_output_dir"], os.W_OK):
-                    raise ValidationError(
-                        "This directory path you have provided is not writable. "
-                        "Please chose another path for your sample output directory."
-                    )
-            else:
-                if not os.access(os.path.dirname(sample_config["sample_output_dir"]), os.W_OK) and not os.access(
-                    os.path.dirname(os.path.dirname(sample_config["sample_output_dir"])), os.W_OK,
-                ):
-                    raise ValidationError(
-                        "This directory path you have provided is not writable. "
-                        "Please chose another path for your sample output directory."
-                    )
-
-        if sample_config["sample_output_dir"] is None:
+        if args.collapse and not (args.fastq_r1 and args.fastq_r2):
             raise ValidationError(
-                "Please provide a valid directory path for the sample related outputs. "
-                "If the directory does not exist, do not worry the method will create it."
+                "Collapse can only be used with --fastq-r1 and --fastq-r2."
             )
 
-        sample_config["PE_ANCIENT"] = False
-        sample_config["PE_MODERN"] = False
-        sample_config["SE"] = False
+        if not args.sample_prefix and not args.sra:
+            raise ValidationError(
+                "Please provide a --sample-prefix name."
+            )
 
-        if sample_config["fastq_r1"] is not None and sample_config["fastq_r2"] is not None:
-            if sample_config["collapse"]:
-                sample_config["PE_ANCIENT"] = True
-            else:
-                sample_config["PE_MODERN"] = True
+        # resolve relative paths
+        args.sample_output_dir = os.path.abspath(args.sample_output_dir)
 
-        if sample_config["fastq"] is not None:
-            sample_config["SE"] = True
+        # cast all paths as strings
+        args.fastq = args.fastq.name if args.fastq else ""
+        args.fastq_r1 = args.fastq_r1.name if args.fastq_r1 else ""
+        args.fastq_r2 = args.fastq_r2.name if args.fastq_r2 else ""
 
-        if (sample_config["fastq_r1"] or sample_config["fastq_r2"] is not None) and (
-            sample_config["fastq"] is not None
-        ):
-            raise ValidationError("Please use a correct combination of PE or SE reads.")
+        # add all command line options to the merged config
+        config = {**self.config_merged, **vars(args)}
 
-        if sample_config["fastq"]:
-            if not os.path.exists(sample_config["fastq"]):
+        # TODO are these flags really necessary?
+        #      why not combine into one single config value? (e.g. config["mode"] = SE|PE|COLLAPSE
+        config["SE"] = not (args.fastq_r1 and args.fastq_r2)
+        config["PE_ANCIENT"] = not config["SE"] and args.collapse
+        config["PE_MODERN"] = not config["SE"] and not args.collapse
+
+        # TODO rethink this...
+        if args.sra:
+            if args.sample_prefix:
                 raise ValidationError(
-                    "The file path you provided to --fastq does not exist. " "Please provide a valid path"
+                    "--sample-prefix cannot be used with and SRA accession."
                 )
 
-        if sample_config["fastq_r1"]:
-            if not os.path.exists(sample_config["fastq_r1"]):
-                raise ValidationError(
-                    "The file path you provided to --fastq-r1 does not exist. " "Please provide a valid path"
-                )
+            # use the SRA accession as the sample prefix
+            config['sample_prefix'] = args.sra
 
-        if sample_config["fastq_r2"]:
-            if not os.path.exists(sample_config["fastq_r2"]):
-                raise ValidationError(
-                    "The file path you provided to --fastq-r2 does not exist. " "Please provide a valid path"
-                )
-
-        if sample_config["sra"] is None and sample_config["sample_prefix"] is None:
-            raise ValidationError("Please provide a prefix name for the sample you want to analyse.")
-
-        if sample_config["sra"] is not None:
-            sample_config["sample_prefix"] = sample_config["sra"]
-
-            Entrez.email = sample_config["email"]
-            sra_id = Entrez.read(Entrez.esearch(db="sra", term=sample_config["sra"]))["IdList"]
+            # get paired/single status of the accession
+            Entrez.email = config["email"]
+            sra_id = Entrez.read(Entrez.esearch(db="sra", term=config["sra"]))["IdList"]
             if "paired" in str(Entrez.read(Entrez.esummary(db="sra", id=sra_id))).lower():
-                if sample_config["collapse"]:
-                    sample_config["PE_ANCIENT"] = True
+                if config["collapse"]:
+                    config["PE_ANCIENT"] = True
                 else:
-                    sample_config["PE_MODERN"] = True
+                    config["PE_MODERN"] = True
+
+                config["fastq_r1"] = f"sra_data/PE/{config['sra']}_R1.fastq.gz"
+                config["fastq_r2"] = f"sra_data/PE/{config['sra']}_R1.fastq.gz"
+
             else:
-                sample_config["SE"] = True
+                config["SE"] = True
+                config["fastq"] = f"sra_data/SE/{config['sra']}.fastq.gz"
 
-        if sample_config["sra"] is not None:
-            if sample_config["PE_MODERN"] or sample_config["PE_ANCIENT"]:
-                sample_config["fastq_r1"] = "{prefix}/sra_data/PE/{accession}_R1.fastq.gz".format(
-                    prefix=sample_config["sample_output_dir"], accession=sample_config["sra"],
-                )
-                sample_config["fastq_r2"] = "{prefix}/sra_data/PE/{accession}_R2.fastq.gz".format(
-                    prefix=sample_config["sample_output_dir"], accession=sample_config["sra"],
-                )
-            elif sample_config["SE"]:
-                sample_config["fastq"] = "{prefix}/sra_data/SE/{accession}.fastq.gz".format(
-                    prefix=sample_config["sample_output_dir"], accession=sample_config["sra"],
-                )
+        target_list = []
+        target_list.append(f"fastq_inputs/meta/{config['sample_prefix']}.size")
 
-        if sample_config["fastq"] and sample_config["collapse"]:
-            raise (
-                ValidationError(
-                    "You cannot collapse SE reads. Please delete the --collapse flag from your command, "
-                    "or provide a different set of input files."
-                )
-            )
+        if config["trim_adapters"]:
+            if config["PE_MODERN"]:
+                target_list.append(f"fastq_inputs/PE_mod/{config['sample_prefix']}_R1_adRm.fastq.gz")
+            elif config["PE_ANCIENT"]:
+                target_list.append(f"fastq_inputs/PE_anc/{config['sample_prefix']}_adRm.fastq.gz")
+            elif config["SE"]:
+                target_list.append(f"fastq_inputs/SE/{config['sample_prefix']}_adRm.fastq.gz")
 
-        target_list = [
-            sample_config["sample_output_dir"]
-            + "/fastq_inputs/meta/{sample}.size".format(sample=sample_config["sample_prefix"])
-        ]
+        config_sample = os.path.join(args.sample_output_dir, "database_fetch_config.yaml")
 
-        if sample_config["not_trim_adapters"]:
-            sample_config["trim_adapters"] = False
-        else:
-            sample_config["trim_adapters"] = True
+        print(config)
+        with open(config_sample, "w") as fout:
+            yaml.safe_dump(config, fout, default_flow_style=False)
 
-        data_preprocessing = ""
-        if sample_config["trim_adapters"]:
-            if sample_config["PE_MODERN"]:
-                data_preprocessing = sample_config[
-                    "sample_output_dir"
-                ] + "/fastq_inputs/PE_mod/{sample}_R1_adRm.fastq.gz".format(sample=sample_config["sample_prefix"])
-            elif sample_config["PE_ANCIENT"]:
-                data_preprocessing = sample_config[
-                    "sample_output_dir"
-                ] + "/fastq_inputs/PE_anc/{sample}_adRm.fastq.gz".format(sample=sample_config["sample_prefix"])
-            elif sample_config["SE"]:
-                data_preprocessing = sample_config[
-                    "sample_output_dir"
-                ] + "/fastq_inputs/SE/{sample}_adRm.fastq.gz".format(sample=sample_config["sample_prefix"])
-            target_list.append(data_preprocessing)
+        config["workflow_dir"] = os.path.join(BASE_DIR, "workflow")  # TODO tidy up
 
-        sample_yaml = os.path.join(str(Path.home()), sample_config["sample_output_dir"], "sample_config.yaml",)
+        target_list = [os.path.join(args.sample_output_dir, target) for target in target_list]
+        snakefile = os.path.join(BASE_DIR, "workflow/sample.smk")
 
-        if not os.path.exists(sample_yaml):
-            os.makedirs(
-                os.path.join(str(Path.home()), sample_config["sample_output_dir"]), exist_ok=True,
-            )
-            sample_options = {k: v for k, v in sample_config.items() if (k, v) not in self.config_default.items()}
-            with open(sample_yaml, "w") as outfile:
-                yaml.safe_dump(sample_options, outfile, default_flow_style=False)
+        return self._run_snakemake(snakefile, args, config, target_list)
 
-        sample_config["workflow_dir"] = os.path.join(BASE_DIR, "workflow")
 
-        user_options = {k: v for k, v in sample_args.items() if (k, v) not in self.config_default.items()}
-        # print(database_config)
-        # print(sample_config)
 
-        print("--------")
-        print("RUN DETAILS")
-        print("\n\tSnakefile: {}".format(snakefile))
-        print("\n\tConfig Parameters:\n")
-        if args.debug:
-            for (key, value,) in sample_config.items():
-                print(f"{key:35}{value}")
-        else:
-            for (key, value,) in user_options.items():
-                print(f"{key:35}{value}")
-
-        print("\n\tTarget Output Files:\n")
-        for target in target_list:
-            print(target)
-        print("--------")
-
-        if args.debug:
-            printshellcmds = True
-            keepgoing = False
-            restart_times = 0
-        else:
-            printshellcmds = False
-            keepgoing = True
-            restart_times = 3
-
-        status = snakemake.snakemake(
-            snakefile,
-            config=sample_config,
-            targets=target_list,
-            printshellcmds=printshellcmds,
-            dryrun=args.dry_run,
-            cores=int(args.cores),
-            keepgoing=keepgoing,
-            restart_times=restart_times,  # TODO find a better solution to this... 15 is way too many!
-            unlock=args.unlock,
-            show_failed_logs=args.debug,
-            resources={"entrez_api": MAX_ENTREZ_REQUESTS},
-            use_conda=sample_config["use_conda"],
-        )
-
-        # translate "success" into shell exit code of 0
-        return 0 if status else 1
 
     def analyse(self):
         parser = argparse.ArgumentParser(description="Analyse a sample")
@@ -987,7 +889,7 @@ The haystack commands are:
             print("\n")
 
         # get any extra snakemake params
-        smk_params = config.pop("snakemake", {})
+        smk_params = config.pop("snakemake") or {}
 
         status = snakemake.snakemake(
             snakefile,

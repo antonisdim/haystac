@@ -25,6 +25,11 @@ mem:
   all
 
 # `haystack sample` defaults
+collapse:
+  False
+trim_adapters:
+  True
+
 #sample_prefix:
 #  ""
 #sample_output_dir:
@@ -39,8 +44,6 @@ mem:
 #  None
 #collapse:
 #  False
-#trim_adapters:
-#  True
 #adaperremoval_flags:
 #  ""
 #database:
