@@ -126,8 +126,8 @@ The haystack commands are:
         with open(CONFIG_DEFAULT) as fin:
             self.config_default = yaml.safe_load(fin)
 
-            # resolve the home directory of the user (i.e. ~/)
-            self.config_default["cache"] = str(pathlib.Path(self.config_default["cache"]).expanduser())
+            # resolve relative paths
+            self.config_default["cache"] = str(pathlib.Path(self.config_default["cache"]).absolute())
 
         try:
             # load the user config
@@ -229,6 +229,10 @@ The haystack commands are:
         for key, value in vars(args).items():
             if value != self.config_default.get(key) or (value is not None and self.config_user.get(key) is not None):
                 self.config_user[key] = value
+
+        # resolve relative paths
+        if self.config_user.get("cache"):
+            self.config_user["cache"] = str(pathlib.Path(self.config_user["cache"]).absolute())
 
         # save the user config
         with open(CONFIG_USER, "w") as fout:
@@ -797,6 +801,8 @@ The haystack commands are:
             verbose=args.debug,
             **smk_params,
         )
+
+        # TODO should we delete the `.snakemake` metadata directory?
 
         # translate "success" into shell exit code of 0
         return 0 if status else 1
