@@ -22,3 +22,6 @@ results*/*
 *test*
 prime
 *sh
+build
+dist
+*.egg-info/

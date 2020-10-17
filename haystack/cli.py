@@ -20,7 +20,7 @@ import sys
 import yaml
 from Bio import Entrez
 from psutil import virtual_memory
-from workflow.scripts.utilities import (
+from haystack.workflow.scripts.utilities import (
     ValidationError,
     ArgumentCustomFormatter,
     EmailType,
@@ -57,11 +57,10 @@ MAX_ENTREZ_REQUESTS = 3
 class Haystack(object):
     def __init__(self):
         parser = argparse.ArgumentParser(
-            description="HAYSTACK: A Bayesian framework for robust and rapid species identification",
             usage="""haystack <command> [<args>]
 
 The haystack commands are:
-   config         Advanced configuration options for haystack
+   config         Configuration options
    database       Build a database of target species
    sample         Prepare a sample for analysis
    analyse        Analyse a sample against a database
@@ -69,6 +68,11 @@ The haystack commands are:
 """,
         )
         parser.add_argument("command", choices=COMMANDS, help="Command to run")
+
+        # print the help
+        if len(sys.argv) == 1:
+            parser.print_help()
+            parser.exit()
 
         # get the command
         argcomplete.autocomplete(parser)  # TODO autocomplete does not work
@@ -113,12 +117,12 @@ The haystack commands are:
 
     def config(self):
         """
-        Advanced configuration options for haystack
+        Configuration options
         """
         # noinspection PyTypeChecker
         parser = argparse.ArgumentParser(
             prog="haystack config",
-            description="Advanced configuration options for haystack",
+            description="Configuration options",
             formatter_class=ArgumentCustomFormatter,
             add_help=False,
         )
