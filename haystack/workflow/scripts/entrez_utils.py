@@ -20,6 +20,8 @@ MAX_RETRY_ATTEMPTS = 2
 # time to wait in seconds before repeating a failed query
 RETRY_WAIT_TIME = 2
 
+TOO_MANY_REQUESTS_WAIT = 20
+
 ENTREZ_DB_NUCCORE = "nuccore"
 ENTREZ_DB_TAXA = "taxonomy"
 ENTREZ_DB_ASSEMBLY = "assembly"
@@ -126,3 +128,47 @@ def guts_of_entrez(db, retmode, rettype, chunk, batch_size):
                 print(
                     "Discarding this accession as it is a bad record {}.".format(accession), file=sys.stderr,
                 )
+
+
+def get_accession_ftp_path(accession, config, attempt=1):
+    """Get a valid NCBI ftp path from an accession."""
+
+    Entrez.email = config["email"]
+    try:
+        handle = Entrez.esearch(db=ENTREZ_DB_ASSEMBLY, term=accession + ' AND "latest refseq"[filter]')
+        # or handle = Entrez.esearch(db=ENTREZ_DB_ASSEMBLY,
+        # term=accession + ' AND ((latest[filter] OR "latest refseq"[filter])')
+        assembly_record = Entrez.read(handle)
+        esummary_handle = Entrez.esummary(db=ENTREZ_DB_ASSEMBLY, id=assembly_record["IdList"], report="full")
+        try:
+            esummary_record = Entrez.read(esummary_handle, validate=False)
+        except RuntimeError:
+            return ""
+        refseq_ftp = esummary_record["DocumentSummarySet"]["DocumentSummary"][0]["FtpPath_RefSeq"]
+        genbank_ftp = esummary_record["DocumentSummarySet"]["DocumentSummary"][0]["FtpPath_GenBank"]
+
+        if refseq_ftp != "":
+            return refseq_ftp
+        else:
+            return genbank_ftp
+
+    except urllib.error.HTTPError as e:
+        if e.code == 429:
+
+            attempt += 1
+
+            if attempt > MAX_RETRY_ATTEMPTS:
+                print("Exceeded maximum attempts {}...".format(attempt), file=sys.stderr)
+                return None
+            else:
+                time.sleep(TOO_MANY_REQUESTS_WAIT)
+                get_accession_ftp_path(accession, config, attempt)
+
+        else:
+            raise RuntimeError("There was a urllib.error.HTTPError with code {}".format(e))
+
+    except IndexError:
+        time.sleep(TOO_MANY_REQUESTS_WAIT)
+        get_accession_ftp_path(accession, config, attempt)
+
+

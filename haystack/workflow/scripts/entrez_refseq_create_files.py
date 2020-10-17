@@ -9,7 +9,7 @@ __license__ = "MIT"
 import pandas as pd
 import sys
 
-from haystack.workflow.scripts.utilities import get_accession_ftp_path
+from haystack.workflow.scripts.entrez_utils import get_accession_ftp_path
 
 
 def entrez_refseq_create_files(
