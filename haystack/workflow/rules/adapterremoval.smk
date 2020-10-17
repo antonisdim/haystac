@@ -11,7 +11,7 @@ MESSAGE_SUFFIX = "(output: {output} and log: {log})" if config["debug"] else ""
 
 rule adapterremoval_single_end:
     input:
-        fastq=config["fastq"] if config["fastq"] else config["fastq_r1"],
+        fastq=config["fastq"],
     log:
         config["sample_output_dir"] + "/fastq_inputs/SE/{accession}_adRm.log",
     output:
@@ -22,15 +22,22 @@ rule adapterremoval_single_end:
         "Trimming sequencing adapters from file {input.fastq} {MESSAGE_SUFFIX}"
     conda:
         "../envs/adapterremoval.yaml"
+    params:
+        basename=config["sample_output_dir"] + "/fastq_inputs/SE/{accession}",
     shell:
-        "(AdapterRemoval --file1 {input} --basename {config[sample_output_dir]}/fastq_inputs/SE/{wildcards.accession} "
-        "--gzip --minlength 15 --trimns; "
-        "cat {config[sample_output_dir]}/fastq_inputs/SE/{wildcards.accession}.truncated.gz 1> {output}) 2> {log}"
+        "(AdapterRemoval"
+        "   --file1 {input}"
+        "   --basename {params.basename} "
+        "   --gzip "
+        "   --minlength 15 "
+        "   --trimns && "
+        " cat {params.basename}.truncated.gz > {output}"
+        ") 2> {log}"
 
 
 rule adapterremoval_paired_end_ancient:
     input:
-        fastq_r1=config["fastq_r1"] if config["fastq_r1"] else config["fastq"],
+        fastq_r1=config["fastq_r1"],
         fastq_r2=config["fastq_r2"],
     log:
         config["sample_output_dir"] + "/fastq_inputs/PE_anc/{accession}_adRm.log",
@@ -43,18 +50,24 @@ rule adapterremoval_paired_end_ancient:
         "{MESSAGE_SUFFIX}"
     conda:
         "../envs/adapterremoval.yaml"
+    params:
+        basename=config["sample_output_dir"] + "/fastq_inputs/PE_anc/{accession}",
     shell:
-        "(AdapterRemoval --file1 {input.fastq_r1}  --file2 {input.fastq_r2} "
-        "--basename {config[sample_output_dir]}/fastq_inputs/PE_anc/{wildcards.accession} --gzip "
-        "--collapse-deterministic  --minlength 15 "
-        "--trimns; cat {config[sample_output_dir]}/fastq_inputs/PE_anc/{wildcards.accession}.collapsed.gz "+
-        "{config[sample_output_dir]}/fastq_inputs/PE_anc/{wildcards.accession}.collapsed.truncated.gz 1> {output}) "
-        "2> {log}"
+        "(AdapterRemoval"
+        "   --file1 {input.fastq_r1} "
+        "   --file2 {input.fastq_r2} "
+        "   --basename {params.basename} "
+        "   --gzip "
+        "   --collapse-deterministic "
+        "   --minlength 15 "
+        "   --trimns && "
+        " cat {params.basename}.collapsed.gz {params.basename}.collapsed.truncated.gz 1> {output}"
+        ") 2> {log}"
 
 
 rule adapterremoval_paired_end_modern:
     input:
-        fastq_r1=config["fastq_r1"] if config["fastq_r1"] else config["fastq"],
+        fastq_r1=config["fastq_r1"],
         fastq_r2=config["fastq_r2"],
     log:
         config["sample_output_dir"] + "/fastq_inputs/PE_mod/{accession}_adRm.log",
@@ -68,10 +81,16 @@ rule adapterremoval_paired_end_modern:
         "{MESSAGE_SUFFIX}"
     conda:
         "../envs/adapterremoval.yaml"
+    params:
+        basename=config["sample_output_dir"] + "/fastq_inputs/PE_mod/{accession}",
     shell:
-        "(AdapterRemoval --file1 {input.fastq_r1}  --file2 {input.fastq_r2} "
-        "--basename {config[sample_output_dir]}/fastq_inputs/PE_mod/{wildcards.accession} --gzip --minlength 15 --trimns; "
-        "cat {config[sample_output_dir]}/fastq_inputs/PE_mod/{wildcards.accession}.pair1.truncated.gz "
-        "1> {output.fastq_r1}; "
-        "cat {config[sample_output_dir]}/fastq_inputs/PE_mod/{wildcards.accession}.pair2.truncated.gz "
-        "1> {output.fastq_r2}) 2> {log}"
+        "(AdapterRemoval"
+        "   --file1 {input.fastq_r1}"
+        "   --file2 {input.fastq_r2} "
+        "   --basename {params.basename}"
+        "   --gzip "
+        "   --minlength 15 "
+        "   --trimns &&"
+        " cat {params.basename}.pair1.truncated.gz 1> {output.fastq_r1} && "
+        " cat {params.basename}.pair2.truncated.gz 1> {output.fastq_r2} "
+        ") 2> {log}"

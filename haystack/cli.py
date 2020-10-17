@@ -59,6 +59,7 @@ class Haystack(object):
     """
     Command-line interface for running `haystack`
     """
+
     def __init__(self):
         parser = argparse.ArgumentParser(
             usage="""haystack <command> [<args>]
@@ -457,17 +458,11 @@ The haystack commands are:
         )
 
         choice.add_argument(
-            "--fastq-r1",
-            help="Paired-end forward strand (R1) fastq input file.",
-            metavar="<path>",
-            type=FileType("r"),
+            "--fastq-r1", help="Paired-end forward strand (R1) fastq input file.", metavar="<path>", type=FileType("r"),
         )
 
         choice.add_argument(
-            "--fastq-r2",
-            help="Paired-end reverse strand (R2) fastq input file.",
-            metavar="<path>",
-            type=FileType("r"),
+            "--fastq-r2", help="Paired-end reverse strand (R2) fastq input file.", metavar="<path>", type=FileType("r"),
         )
 
         # TODO make an SraType that validates the code and returns the tuple (accession, paired|single)
