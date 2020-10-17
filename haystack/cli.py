@@ -20,6 +20,7 @@ import sys
 import yaml
 from Bio import Entrez
 from psutil import virtual_memory
+
 from haystack.workflow.scripts.utilities import (
     ValidationError,
     ArgumentCustomFormatter,
@@ -365,6 +366,11 @@ The haystack commands are:
 
         # resolve relative paths
         args.db_output = os.path.abspath(args.db_output)
+
+        # cast all `None` paths as "" or ele smk complains when parsing the rules
+        args.query_file = args.query_file or ""
+        args.accessions = args.accessions or ""
+        args.sequences = args.sequences or ""
 
         # add all command line options to the merged config
         config = {**self.config_merged, **vars(args)}
