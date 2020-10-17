@@ -23,8 +23,6 @@ rule entrez_custom_sequences:
     message:
         "Adding the user provided fasta sequence {wildcards.accession} for taxon {wildcards.orgname} to the "
         "database {MESSAGE_SUFFIX}"
-    conda:
-        "../envs/entrez.yaml"
     script:
         "../scripts/entrez_custom_sequences.py"
 
@@ -91,8 +89,6 @@ rule entrez_aggregate_custom_seqs:
         config["db_output"] + "/bowtie/custom_seqs.fasta.gz",
     message:
         "Concatenating all the user provided sequences {MESSAGE_SUFFIX}"
-    conda:
-        "../envs/bt2_multifasta.yaml"
     script:
         "../scripts/bowtie2_multifasta.py"
 
@@ -151,7 +147,5 @@ rule entrez_aggregate_custom_acc:
         config["db_output"] + "/bowtie/custom_acc.fasta.gz",
     message:
         "Concatenating all the sequences from user provided accessions {MESSAGE_SUFFIX}"
-    conda:
-        "../envs/bt2_multifasta.yaml"
     script:
         "../scripts/bowtie2_multifasta.py"

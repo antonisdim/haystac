@@ -63,8 +63,6 @@ checkpoint entrez_invalid_assemblies:
         "Finding if assemblies are not part of the RefSeq database {MESSAGE_SUFFIX}"
     resources:
         entrez_api=1,
-    conda:
-        "../envs/entrez.yaml"
     script:
         "../scripts/entrez_invalid_assemblies.py"
 
@@ -106,8 +104,6 @@ rule entrez_refseq_genbank_multifasta:
         repeat("benchmarks/entrez_refseq_genbank_multifasta_.benchmark.txt", 1)
     message:
         "Concatenating all the fasta sequences for all the taxa that can be found in RefSeq and Genbank {MESSAGE_SUFFIX}"
-    conda:
-        "../envs/bt2_multifasta.yaml"
     script:
         "../scripts/bowtie2_multifasta.py"
 
@@ -154,8 +150,6 @@ rule entrez_assembly_multifasta:
         repeat("benchmarks/entrez_assembly_multifasta.benchmark.txt", 1)
     message:
         "Concatenating all the fasta sequences for all the taxa that can be found in the Assembly database {MESSAGE_SUFFIX}"
-    conda:
-        "../envs/bt2_multifasta.yaml"
     script:
         "../scripts/bowtie2_multifasta.py"
 

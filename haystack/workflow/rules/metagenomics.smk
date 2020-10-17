@@ -37,8 +37,6 @@ rule count_accession_ts_tv:
         pairs=config["PE_MODERN"],
     message:
         "Counting the number of transitions and transversions per read for taxon {wildcards.orgname} {MESSAGE_SUFFIX}"
-    conda:
-        "../envs/count_accessions.yaml"
     script:
         "../scripts/count_accession_ts_tv.py"
 
@@ -112,8 +110,6 @@ rule calculate_likelihoods:
     message:
         "Calculating the likelihoods and performing the Dirichlet assignment of the reads in sample "
         "{wildcards.sample} to the taxa in our database {MESSAGE_SUFFIX}"
-    conda:
-        "../envs/maths.yaml"
     script:
         "../scripts/calculate_likelihoods.py"
 
@@ -133,8 +129,6 @@ rule calculate_taxa_probabilities:
         submatrices=False,
     message:
         "Calculating the taxonomic assignment posterior probabilities for sample {wildcards.sample} {MESSAGE_SUFFIX}"
-    conda:
-        "../envs/maths.yaml"
     script:
         "../scripts/calculate_taxa_probabilities.py"
 
@@ -154,8 +148,6 @@ rule coverage_t_test:
     message:
         "Performing a T-Test to assess if reads from sample {wildcards.sample} represent "
         "a random genome sample of taxon {wildcards.orgname} {MESSAGE_SUFFIX}"
-    conda:
-        "../envs/maths.yaml"
     script:
         "../scripts/coverage_t_test.py"
 
@@ -227,7 +219,5 @@ rule calculate_dirichlet_abundances:
         repeat("benchmarks/calculate_dirichlet_abundances_{sample}.benchmark.txt", 1)
     message:
         "Calculating the mean posterior abundance for sample {wildcards.sample} {MESSAGE_SUFFIX}"
-    conda:
-        "../envs/maths.yaml"
     script:
         "../scripts/calculate_dirichlet_abundances.py"

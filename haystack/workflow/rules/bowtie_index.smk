@@ -74,8 +74,6 @@ checkpoint calculate_bt2_idx_chunks:
         mem_rescale_factor=config["bowtie2_scaling"],
     message:
         "The number of index chunks needed for the filtering alignment are being calculated {MESSAGE_SUFFIX}"
-    conda:
-        "../envs/calc_bt2_idx_chunks.yaml"
     script:
         "../scripts/calculate_bt2_idx_chunks.py"
 
@@ -114,8 +112,6 @@ rule create_bt2_idx_filter_chunk:
         config["db_output"] + "/bowtie/chunk{chunk_num}.fasta.gz",
     message:
         "Creating chunk {wildcards.chunk_num} of the genome database index {MESSAGE_SUFFIX}"
-    conda:
-        "../envs/bt2_multifasta.yaml"
     script:
         "../scripts/bowtie2_multifasta.py"
 

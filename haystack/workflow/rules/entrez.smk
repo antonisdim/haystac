@@ -25,8 +25,6 @@ checkpoint entrez_find_accessions:
         "Finding all the accessions, whose metadata are going to be fetched, for the entrez query {MESSAGE_SUFFIX}"
     resources:
         entrez_api=1,
-    conda:
-        "../envs/entrez.yaml"
     script:
         "../scripts/entrez_find_accessions.py"
 
@@ -45,8 +43,6 @@ rule entrez_nuccore_query:
         "{MESSAGE_SUFFIX}"
     resources:
         entrez_api=1,
-    conda:
-        "../envs/entrez.yaml"
     script:
         "../scripts/entrez_nuccore_query.py"
 
@@ -101,13 +97,11 @@ rule entrez_taxa_query:
         "Querying the NCBI Taxonomy database and fetching taxonomic metadata {MESSAGE_SUFFIX}"
     resources:
         entrez_api=1,
-    conda:
-        "../envs/entrez.yaml"
     script:
         "../scripts/entrez_taxonomy_query.py"
 
 
-def pick_after_refseq_prok(wildcards):
+def pick_after_refseq_prok(_):
     if config["refseq_rep"]:
         return config["db_output"] + "/entrez/genbank-genomes.tsv"
     else:
@@ -127,8 +121,6 @@ checkpoint entrez_pick_sequences:
         repeat("benchmarks/entrez_pick_sequences_entrez.benchmark.txt", 1)
     message:
         "Selecting the longest sequence per taxon in the entrez query {MESSAGE_SUFFIX}"
-    conda:
-        "../envs/entrez.yaml"
     script:
         "../scripts/entrez_pick_sequences.py"
 
@@ -176,7 +168,7 @@ rule entrez_download_sequence:
         "--accession {wildcards.accession} --email {config[email]} --output_file {output}) 2> {log}"
 
 
-def get_fasta_sequences(wildcards):
+def get_fasta_sequences(_):
     """
     Get all the FASTA sequences for the multi-FASTA file.
     """
@@ -209,7 +201,5 @@ rule entrez_multifasta:
         repeat("benchmarks/entrez_multifasta_entrez_query.benchmark.txt", 1)
     message:
         "Concatenating all the fasta sequences for all the taxa of the entrez query {MESSAGE_SUFFIX}"
-    conda:
-        "../envs/bt2_multifasta.yaml"
     script:
         "../scripts/bowtie2_multifasta.py"

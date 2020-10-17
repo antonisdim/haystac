@@ -32,8 +32,6 @@ rule get_dirichlet_reads:
     message:
         "Preparing bam files with the Dirichlet assigned reads for taxon {wildcards.orgname} "
         "for sample {wildcards.sample} {MESSAGE_SUFFIX}"
-    conda:
-        "../envs/dirichlet_reads.yaml"
     script:
         "../scripts/get_dirichlet_reads.py"
 
@@ -53,8 +51,6 @@ rule get_grey_matter_reads_se:
     message:
         "Preparing fastq files with all the reads that got assigned to the Grey Matter "
         "for sample {wildcards.sample} {MESSAGE_SUFFIX}"
-    conda:
-        "../envs/grey_matter_reads.yaml"
     script:
         "../scripts/get_grey_matter_reads_se.py"
 
@@ -76,8 +72,6 @@ rule get_grey_matter_reads_pe:
     message:
         "Preparing fastq files with all the reads that got assigned to the Grey Matter "
         "for sample {wildcards.sample} {MESSAGE_SUFFIX}"
-    conda:
-        "../envs/grey_matter_reads.yaml"
     script:
         "../scripts/get_grey_matter_reads_pe.py"
 
@@ -97,8 +91,6 @@ rule get_dark_matter_reads_se:
     message:
         "Preparing fastq files with all the reads that got assigned to the Dark Matter "
         "for sample {wildcards.sample} {MESSAGE_SUFFIX}"
-    conda:
-        "../envs/grey_matter_reads.yaml"
     script:
         "../scripts/get_dark_matter_reads_se.py"
 
@@ -120,8 +112,6 @@ rule get_dark_matter_reads_pe:
     message:
         "Preparing fastq files with all the reads that got assigned to the Dark Matter "
         "for sample {wildcards.sample} {MESSAGE_SUFFIX}"
-    conda:
-        "../envs/grey_matter_reads.yaml"
     script:
         "../scripts/get_dark_matter_reads_pe.py"
 

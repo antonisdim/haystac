@@ -1,4 +1,12 @@
-snakemake>=5.20.1
 argcomplete>=1.12.1
 argparse>=1.4.0
 biopython>=1.77
+numpy>=1.19.2
+pandas>=1.0.3
+psutil>=5.7.2
+pysam>=0.15.3
+pyyaml>=5.3.1
+scipy>=1.4.1
+setuptools>=49.6.0
+snakemake>=5.20.1
+yaml>=0.2.5
