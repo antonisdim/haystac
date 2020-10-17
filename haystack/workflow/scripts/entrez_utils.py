@@ -170,5 +170,3 @@ def get_accession_ftp_path(accession, config, attempt=1):
     except IndexError:
         time.sleep(TOO_MANY_REQUESTS_WAIT)
         get_accession_ftp_path(accession, config, attempt)
-
-

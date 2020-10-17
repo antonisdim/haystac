@@ -92,7 +92,8 @@ The haystack commands are:
 
         try:
             # call the class method with the name given by `command`
-            getattr(self, args.command)()
+            reval = getattr(self, args.command)()
+            exit(reval)
 
         except ValidationError as error:
             print(f"haystack: error: {error}")
@@ -226,7 +227,7 @@ The haystack commands are:
 
         # get the user choices that differ from the defaults
         for key, value in vars(args).items():
-            if value != self.config_default.get(key) or self.config_user.get(key):
+            if value != self.config_default.get(key) or (value is not None and self.config_user.get(key) is not None):
                 self.config_user[key] = value
 
         # save the user config
