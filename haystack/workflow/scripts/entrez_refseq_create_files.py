@@ -6,14 +6,10 @@ __copyright__ = "Copyright 2020, University of Oxford"
 __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
-import os
 import pandas as pd
 import sys
 
-sys.path.append(os.getcwd())
-sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
-
-from scripts.utilities import get_accession_ftp_path
+from haystack.workflow.scripts.utilities import get_accession_ftp_path
 
 
 def entrez_refseq_create_files(

@@ -6,15 +6,9 @@ __copyright__ = "Copyright 2020, University of Oxford"
 __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
-import os
-import sys
-
 from Bio import Entrez
 
-sys.path.append(os.getcwd())
-sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
-
-from scripts.entrez_utils import (
+from haystack.workflow.scripts.entrez_utils import (
     ENTREZ_DB_NUCCORE,
     ENTREZ_RETMODE_XML,
     ENTREZ_RETTYPE_GB,

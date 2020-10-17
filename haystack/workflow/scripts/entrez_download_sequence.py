@@ -7,16 +7,12 @@ __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
 import argparse
-import os
 import sys
 import time
 import urllib.error
 from Bio import Entrez, bgzf
 
-sys.path.append(os.getcwd())
-sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
-
-from scripts.entrez_utils import (
+from haystack.workflow.scripts.entrez_utils import (
     guts_of_entrez,
     ENTREZ_DB_NUCCORE,
     ENTREZ_RETMODE_TEXT,

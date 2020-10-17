@@ -15,7 +15,7 @@ MEGABYTE = float(1024 ** 2)
 MAX_MEM_MB = virtual_memory().total / MEGABYTE
 MESSAGE_SUFFIX = "(output: {output} and log: {log})" if config["debug"] else ""
 
-from scripts.utilities import get_total_paths, normalise_name
+from haystack.workflow.scripts.utilities import get_total_paths, normalise_name
 
 
 def get_total_fasta_paths(wildcards):

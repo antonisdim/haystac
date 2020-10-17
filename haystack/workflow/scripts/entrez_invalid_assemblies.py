@@ -7,17 +7,13 @@ __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
 import csv
-import os
 import pandas as pd
 import sys
 import time
 import urllib.error
 from Bio import Entrez
 
-sys.path.append(os.getcwd())
-sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
-
-from scripts.entrez_utils import ENTREZ_DB_ASSEMBLY
+from haystack.workflow.scripts.entrez_utils import ENTREZ_DB_ASSEMBLY
 
 TOO_MANY_REQUESTS_WAIT = 10
 MAX_RETRY_ATTEMPTS = 5

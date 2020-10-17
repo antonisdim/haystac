@@ -6,7 +6,7 @@ __copyright__ = "Copyright 2020, University of Oxford"
 __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
-from scripts.utilities import get_total_paths, normalise_name
+from haystack.workflow.scripts.utilities import get_total_paths, normalise_name
 
 MESSAGE_SUFFIX = "(output: {output} and log: {log})" if config["debug"] else ""
 

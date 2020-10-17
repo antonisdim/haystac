@@ -11,8 +11,8 @@ import pandas as pd
 
 MESSAGE_SUFFIX = "(output: {output} and log: {log})" if config["debug"] else ""
 
-from scripts.entrez_nuccore_query import CHUNK_SIZE
-from scripts.utilities import normalise_name, get_accession_ftp_path
+from haystack.workflow.scripts.entrez_nuccore_query import CHUNK_SIZE
+from haystack.workflow.scripts.utilities import normalise_name, get_accession_ftp_path
 
 
 checkpoint entrez_find_accessions:
