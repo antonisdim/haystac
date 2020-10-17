@@ -24,6 +24,7 @@ from haystack.workflow.scripts.utilities import (
     ValidationError,
     ArgumentCustomFormatter,
     EmailType,
+    FileType,
     WritablePathType,
     PositiveIntType,
     FloatRangeType,
@@ -55,6 +56,9 @@ MAX_ENTREZ_REQUESTS = 3
 
 
 class Haystack(object):
+    """
+    Command-line interface for running `haystack`
+    """
     def __init__(self):
         parser = argparse.ArgumentParser(
             usage="""haystack <command> [<args>]
@@ -69,14 +73,51 @@ The haystack commands are:
         )
         parser.add_argument("command", choices=COMMANDS, help="Command to run")
 
-        # print the help
-        if len(sys.argv) == 1:
+        # get the CLI arguments
+        args = self._parse_args(parser, level=1)
+
+        # load the config files
+        self._load_config()
+
+        # email address is mandatory, unless we are running `haystack config`
+        if args.command != "config" and not self.config_user.get("email"):
+            print(
+                "Before using haystack, please configure your email address.\n"
+                "This is a required step for running NCBI queries\n\n"
+                "`haystack config --email <address>`"
+            )
+            exit(1)
+
+        try:
+            # call the class method with the name given by `command`
+            getattr(self, args.command)()
+
+        except ValidationError as error:
+            print(f"haystack: error: {error}")
+            exit(1)
+
+    @staticmethod
+    def _parse_args(parser, level=1):
+        """
+        Handle the nested-subcommand CLI interface.
+        """
+
+        # if we don't have enough arguments, then print the help
+        if len(sys.argv) <= level:
             parser.print_help()
             parser.exit()
 
+        # slice the CLI arguments
+        argv = sys.argv[1:2] if level == 1 else sys.argv[level:]
+
         # get the command
         argcomplete.autocomplete(parser)  # TODO autocomplete does not work
-        args = parser.parse_args(sys.argv[1:2])
+        return parser.parse_args(argv)
+
+    def _load_config(self):
+        """
+        Load the default and user space config files.
+        """
 
         # load the default config
         with open(CONFIG_DEFAULT) as fin:
@@ -96,24 +137,8 @@ The haystack commands are:
 
             self.config_user = dict()
 
-        if args.command != "config" and not self.config_user.get("email"):
-            # email address is mandatory
-            print(
-                "Before using haystack, please set your email address. This is a required step for running NCBI "
-                "queries\n\n`haystack config --email <address>`"
-            )
-            exit(1)
-
         # merge the config dictionaries (giving precedence to the config_user)
-        self.config_merged = z = {**self.config_default, **self.config_user}
-
-        try:
-            # use dispatch pattern to invoke method with same name
-            getattr(self, args.command)()
-
-        except ValidationError as error:
-            print(f"haystack: error: {error}")
-            exit(1)
+        self.config_merged = {**self.config_default, **self.config_user}
 
     def config(self):
         """
@@ -194,14 +219,8 @@ The haystack commands are:
             default=self.config_default["use_conda"],
         )
 
-        # print the help
-        if len(sys.argv) == 2:
-            parser.print_help()
-            parser.exit()
-
-        # now that we're inside a subcommand, ignore the first two arguments
-        argcomplete.autocomplete(parser)
-        args = parser.parse_args(sys.argv[2:])
+        # get the CLI arguments
+        args = self._parse_args(parser, level=2)
 
         # get the user choices that differ from the defaults
         for key, value in vars(args).items():
@@ -257,7 +276,7 @@ The haystack commands are:
             "--query-file",
             help="File containing a database query in the NCBI query language.",
             metavar="<path>",
-            type=argparse.FileType("r"),
+            type=FileType("r"),
         )
 
         # TODO validate that this is 2-column and tab delimited
@@ -266,7 +285,7 @@ The haystack commands are:
             help="Tab delimited file containing one record per row: the name of the taxon, "
             "and a valid NCBI accession code from the nucleotide, assembly or WGS databases.",
             metavar="<path>",
-            type=argparse.FileType("r"),
+            type=FileType("r"),
         )
 
         # TODO validate that this is 3-column and tab delimited
@@ -275,7 +294,7 @@ The haystack commands are:
             help="Tab delimited file containing one record per row: the name of the taxon, a user defined "
             "accession code, and the path to the fasta file (optionally compressed).",
             metavar="<path>",
-            type=argparse.FileType("r"),
+            type=FileType("r"),
         )
 
         choice.add_argument(
@@ -320,14 +339,8 @@ The haystack commands are:
         # add the common arguments
         self._common_arguments(parser)
 
-        # print the help
-        if len(sys.argv) == 2:
-            parser.print_help()
-            parser.exit()
-
-        # now that we're inside a subcommand, ignore the first two arguments
-        argcomplete.autocomplete(parser)
-        args = parser.parse_args(sys.argv[2:])
+        # get the CLI arguments
+        args = self._parse_args(parser, level=2)
 
         # must specify at least one source for the database
         if not (args.refseq_rep or args.query or args.query_file or args.accessions or args.sequences):
@@ -343,10 +356,11 @@ The haystack commands are:
 
         if args.query_file:
             # load the query file
-            args.query = args.query_file.read().strip()
+            with open(args.query_file) as fin:
+                args.query = fin.read().strip()
 
             if not args.query:
-                raise ValidationError(f"The query file '{args.query_file.name}' is empty.")
+                raise ValidationError(f"The query file '{args.query_file}' is empty.")
 
         # resolve relative paths
         args.db_output = os.path.abspath(args.db_output)
@@ -357,7 +371,7 @@ The haystack commands are:
         config_fetch = os.path.join(args.db_output, "database_fetch_config.yaml")
         config_build = os.path.join(args.db_output, "database_build_config.yaml")
 
-        target_list = []
+        target_list = list()
 
         if args.mode == "fetch":
             # TODO can this be replaced with a single target? and the conditional logic moved into an input function
@@ -392,15 +406,13 @@ The haystack commands are:
 
             if os.path.exists(config_fetch):
                 raise ValidationError(
-                    "Please run haystack `database --mode index` as the database has alrady been fetched."
+                    "Please run haystack `database --mode index` as the database has already been fetched."
                 )
 
             with open(config_build, "w") as fout:
                 yaml.safe_dump(config, fout, default_flow_style=False)
 
-        config["workflow_dir"] = os.path.join(BASE_DIR, "workflow")  # TODO tidy up
         config["mtDNA"] = str(args.mtDNA).lower()
-        config["sequences"] = config["sequences"] or ""
 
         target_list = [os.path.join(args.db_output, target) for target in target_list]
         snakefile = os.path.join(BASE_DIR, "workflow/database.smk")
@@ -441,21 +453,21 @@ The haystack commands are:
             "--fastq",
             help="Single-end fastq input file (optionally compressed).",
             metavar="<path>",
-            type=argparse.FileType("r"),
+            type=FileType("r"),
         )
 
         choice.add_argument(
             "--fastq-r1",
             help="Paired-end forward strand (R1) fastq input file.",
             metavar="<path>",
-            type=argparse.FileType("r"),
+            type=FileType("r"),
         )
 
         choice.add_argument(
             "--fastq-r2",
             help="Paired-end reverse strand (R2) fastq input file.",
             metavar="<path>",
-            type=argparse.FileType("r"),
+            type=FileType("r"),
         )
 
         # TODO make an SraType that validates the code and returns the tuple (accession, paired|single)
@@ -492,14 +504,8 @@ The haystack commands are:
         # add the common arguments
         self._common_arguments(parser)
 
-        # print the help
-        if len(sys.argv) == 2:
-            parser.print_help()
-            parser.exit()
-
-        # now that we're inside a subcommand, ignore the first two arguments
-        argcomplete.autocomplete(parser)
-        args = parser.parse_args(sys.argv[2:])
+        # get the CLI arguments
+        args = self._parse_args(parser, level=2)
 
         # must specify exactly one source for the sample
         if bool(args.fastq) + (bool(args.fastq_r1) and bool(args.fastq_r2)) + bool(args.sra) != 1:
@@ -514,10 +520,10 @@ The haystack commands are:
         # resolve relative paths
         args.sample_output_dir = os.path.abspath(args.sample_output_dir)
 
-        # cast all paths as strings
-        args.fastq = args.fastq.name if args.fastq else ""
-        args.fastq_r1 = args.fastq_r1.name if args.fastq_r1 else ""
-        args.fastq_r2 = args.fastq_r2.name if args.fastq_r2 else ""
+        # cast all `None` paths as "" or ele smk complains when parsing the rules
+        args.fastq = args.fastq or ""
+        args.fastq_r1 = args.fastq_r1 or ""
+        args.fastq_r2 = args.fastq_r2 or ""
 
         # add all command line options to the merged config
         config = {**self.config_merged, **vars(args)}
@@ -552,7 +558,7 @@ The haystack commands are:
                 config["SE"] = True
                 config["fastq"] = f"sra_data/SE/{config['sra']}.fastq.gz"
 
-        target_list = []
+        target_list = list()
         target_list.append(f"fastq_inputs/meta/{config['sample_prefix']}.size")
 
         if config["trim_adapters"]:
@@ -567,8 +573,6 @@ The haystack commands are:
 
         with open(config_sample, "w") as fout:
             yaml.safe_dump(config, fout, default_flow_style=False)
-
-        config["workflow_dir"] = os.path.join(BASE_DIR, "workflow")  # TODO tidy up
 
         target_list = [os.path.join(args.sample_output_dir, target) for target in target_list]
         snakefile = os.path.join(BASE_DIR, "workflow/sample.smk")
@@ -638,14 +642,8 @@ The haystack commands are:
         # add the common arguments
         self._common_arguments(parser)
 
-        # print the help
-        if len(sys.argv) == 2:
-            parser.print_help()
-            parser.exit()
-
-        # now that we're inside a subcommand, ignore the first two arguments
-        argcomplete.autocomplete(parser)
-        args = parser.parse_args(sys.argv[2:])
+        # get the CLI arguments
+        args = self._parse_args(parser, level=2)
 
         config_fetch = os.path.join(args.db_output, "database_fetch_config.yaml")
         config_build = os.path.join(args.db_output, "database_build_config.yaml")
@@ -673,7 +671,7 @@ The haystack commands are:
         # add all command line options to the merged config
         config = {**self.config_merged, **database_config, **sample_config, **vars(args)}
 
-        target_list = []
+        target_list = list()
 
         if args.mode == "filter":
             if config["PE_MODERN"]:
@@ -709,8 +707,6 @@ The haystack commands are:
 
         with open(config_analysis, "w") as fout:
             yaml.safe_dump(config, fout, default_flow_style=False)
-
-        config["workflow_dir"] = os.path.join(BASE_DIR, "workflow")  # TODO tidy up
 
         target_list = [os.path.join(args.analysis_output_dir, target) for target in target_list]
         snakefile = os.path.join(BASE_DIR, "workflow/analyse.smk")
@@ -764,6 +760,8 @@ The haystack commands are:
         """
         print("HAYSTACK\n")
         print(f"Date: {datetime.datetime.now()}\n")
+
+        config["workflow_dir"] = os.path.join(BASE_DIR, "workflow")
 
         print("Config parameters:\n")
         params = config if args.debug else vars(args)
