@@ -11,6 +11,7 @@ import pandas as pd
 
 from haystack.workflow.scripts.utilities import normalise_name
 from haystack.workflow.scripts.entrez_utils import get_accession_ftp_path
+from haystack.workflow.scripts.entrez_nuccore_query import ENTREZ_URL
 
 
 rule entrez_nuccore_query:
@@ -76,7 +77,8 @@ def get_rsync_url(wildcards):
         if file_url != "_genomic.fna.gz":
             return file_url
         else:
-            return ""
+            # download from Entrez efetch
+            return ENTREZ_URL + f"efetch.fcgi?db=nuccore&id={wildcards.accession}&rettype=fasta&retmode=text"
     except RuntimeError:
         return ""
     except TypeError:
@@ -104,13 +106,10 @@ rule entrez_download_sequence:
     conda:
         "../envs/seq_download.yaml"
     shell:
-        "(if [[ -n '{params.url}' && ! `{config[mtDNA]}` ]]; "
-        "   then (wget -q -O - {params.url} | gunzip | bgzip -f > {output}); "
-        "   else (python {config[workflow_dir]}/scripts/entrez_download_sequence.py "
-        "           --accession {wildcards.accession} "
-        "           --email {config[email]} "
-        "           --output_file {output}); "
-        "fi) 2> {log}"
+        "(if [[ '{params.url}' == *'_genomic.fna.gz' && ! `{config[mtDNA]}` ]]; "
+        "   then (wget -q -O - '{params.url}' | gunzip | bgzip -f > {output}); "
+        "   else (wget -q -O - '{params.url}' | bgzip -f > {output}); "
+        "fi && gzip -l {output} | awk 'NR==2 {{exit($2==0)}}' ) 2> {log}"
 
 
 def get_fasta_sequences(_):

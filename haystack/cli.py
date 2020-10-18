@@ -799,6 +799,7 @@ The haystack commands are:
             resources={"entrez_api": MAX_ENTREZ_REQUESTS},
             use_conda=config["use_conda"],
             verbose=args.debug,
+            keep_incomplete=args.debug,
             **smk_params,
         )
 
