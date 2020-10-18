@@ -150,8 +150,10 @@ rule extract_fastq_paired_end:
     log:
         config["analysis_output_dir"] + "/fastq/PE/{sample}_mapq.log",
     output:
-        config["analysis_output_dir"] + "/fastq/PE/{sample}_R1_mapq.fastq.gz",
-        config["analysis_output_dir"] + "/fastq/PE/{sample}_R2_mapq.fastq.gz",
+        fastq_r1=config["analysis_output_dir"] + "/fastq/PE/{sample}_R1_mapq.fastq.gz",
+        fastq_r2=config["analysis_output_dir"] + "/fastq/PE/{sample}_R2_mapq.fastq.gz",
+        temp_r1=temp(config["analysis_output_dir"] + "/fastq/PE/{sample}_temp_R1_mapq.fastq.gz"),
+        temp_r2=temp(config["analysis_output_dir"] + "/fastq/PE/{sample}_temp_R2_mapq.fastq.gz"),
     benchmark:
         repeat("benchmarks/extract_fastq_paired_end_{sample}.benchmark.txt", 1)
     message:
@@ -159,13 +161,11 @@ rule extract_fastq_paired_end:
     conda:
         "../envs/extract_fastq.yaml"
     shell:
-        "( samtools view -h -F 4 {input} "
-        "| samtools fastq -c 6 -1 {config[analysis_output_dir]}/fastq/PE/{wildcards.sample}_temp_R1.fastq.gz "
-        "-2 {config[analysis_output_dir]}/fastq/PE/{wildcards.sample}_temp_R2.fastq.gz -0 /dev/null -s /dev/null -;"
-        "seqkit rmdup -n {config[analysis_output_dir]}/fastq/PE/{wildcards.sample}_temp_R1.fastq.gz -o {output[0]}; "
-        "seqkit rmdup -n {config[analysis_output_dir]}/fastq/PE/{wildcards.sample}_temp_R2.fastq.gz -o {output[1]}; "
-        "unlink {config[analysis_output_dir]}/fastq/PE/{wildcards.sample}_temp_R1.fastq.gz; "
-        "unlink {config[analysis_output_dir]}/fastq/PE/{wildcards.sample}_temp_R2.fastq.gz ) 2> {log}"
+        "( samtools view -h -F 4 {input} | "
+        "  samtools fastq -c 6 -1 {output.temp_r1} -2 {output.temp_r2} -0 /dev/null -s /dev/null - &&"
+        "  seqkit rmdup -n {output.temp_r1} -o {output.fastq_r1} &&"
+        "  seqkit rmdup -n {output.temp_r2} -o {output.fastq_r2} "
+        ") 2> {log}"
 
 
 rule average_fastq_read_len_single_end:
@@ -204,8 +204,8 @@ rule average_fastq_read_len_paired_end:
         "../envs/seqtk.yaml"
     shell:
         "( seqtk sample {input.mate1} {SUBSAMPLE_FIXED_READS} | seqtk seq -A | grep -v '^>' "
-        "| awk '{{count++; bases += length}} END{{print bases/count}}' 1> {output.mate1} ) 2>> {log}; "
+        "| awk '{{count++; bases += length}} END{{print bases/count}}' 1> {output.mate1} ) 2>> {log} && "
         "( seqtk sample {input.mate2} {SUBSAMPLE_FIXED_READS} | seqtk seq -A | grep -v '^>' "
-        "| awk '{{count++; bases += length}} END{{print bases/count}}' 1> {output.mate2} ) 2>> {log}; "
+        "| awk '{{count++; bases += length}} END{{print bases/count}}' 1> {output.mate2} ) 2>> {log} && "
         "( cat {output.mate1} {output.mate2} "
         "| awk '{{sum += $1; n++ }} END {{if (n>0) print sum/n;}}' 1> {output.pair} ) 2>> {log} "

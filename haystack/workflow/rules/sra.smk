@@ -22,7 +22,7 @@ rule get_sra_fastq_se:
     conda:
         "../envs/sra_tools.yaml"
     shell:
-        "(fasterq-dump --split-files {wildcards.accession} --outdir {config[sample_output_dir]}/sra_data/SE/) &> {log}"
+        "fasterq-dump --split-files {wildcards.accession} --outdir {config[sample_output_dir]}/sra_data/SE/ &> {log}"
 
 
 rule get_sra_fastq_pe:
@@ -39,7 +39,7 @@ rule get_sra_fastq_pe:
     conda:
         "../envs/sra_tools.yaml"
     shell:
-        "(fasterq-dump --split-files {wildcards.accession} --outdir {config[sample_output_dir]}/sra_data/PE/) &> {log}"
+        "fasterq-dump --split-files {wildcards.accession} --outdir {config[sample_output_dir]}/sra_data/PE/ &> {log}"
 
 
 rule compress_sra_fastq_se:
@@ -55,7 +55,7 @@ rule compress_sra_fastq_se:
 
 rule compress_sra_fastq_pe:
     input:
-        r1=config["sample_output_dir"] + "/sra_data/PE/{accession}_1.fastq",
+        r1=config["sample_output_dir"] + "/sra_data/PE/{accession}_1.fastq",  # TODO do we need to keep these? temp()?
         r2=config["sample_output_dir"] + "/sra_data/PE/{accession}_2.fastq",
     output:
         r1=config["sample_output_dir"] + "/sra_data/PE/{accession}_R1.fastq.gz",

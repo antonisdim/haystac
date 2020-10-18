@@ -37,7 +37,7 @@ rule dedup_merged_mapdamage:
     conda:
         "../envs/dedup.yaml"
     shell:
-        "(dedup --merged --input {input.bam} --output {params.output}) &> {log}"
+        "dedup --merged --input {input.bam} --output {params.output} &> {log}"
 
 
 rule run_mapdamage:

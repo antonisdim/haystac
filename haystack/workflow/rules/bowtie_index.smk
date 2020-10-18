@@ -135,9 +135,10 @@ rule bowtie_index:
     threads: config["bowtie2_threads"]
     conda:
         "../envs/bowtie2.yaml"
+    params:
+        basename=config["db_output"] + "/bowtie/chunk{chunk_num}"
     shell:
-        "bowtie2-build --large-index --threads {threads} {input.fasta_chunk} "
-        "{config[db_output]}/bowtie/chunk{wildcards.chunk_num} &> {log}"
+        "bowtie2-build --large-index --threads {threads} {input.fasta_chunk} {params.basename} &> {log}"
 
 
 def get__bt2_idx_chunk_paths(wildcards):

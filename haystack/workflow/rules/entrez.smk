@@ -162,10 +162,13 @@ rule entrez_download_sequence:
     conda:
         "../envs/seq_download.yaml"
     shell:
-        '([ -n "{params.url}" ] && ! "{config[mtDNA]}" && (wget -q -O {params.temp_out} {params.url} ; '
-        "gunzip -c {params.temp_out} | bgzip -f > {output}); unlink {params.temp_out} || "
-        "python {config[workflow_dir]}/scripts/entrez_download_sequence.py "
-        "--accession {wildcards.accession} --email {config[email]} --output_file {output}) 2> {log}"
+        "(if [[ -n '{params.url}' && ! `{config[mtDNA]}` ]]; "
+        "   then (wget -q wget -O - {params.url} | gunzip | bgzip -f > {output}); "
+        "   else (python {config[workflow_dir]}/scripts/entrez_download_sequence.py "
+        "           --accession {wildcards.accession} "
+        "           --email {config[email]} "
+        "           --output_file {output}); "
+        "fi) 2> {log}"
 
 
 def get_fasta_sequences(_):

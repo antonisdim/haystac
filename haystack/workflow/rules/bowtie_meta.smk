@@ -37,8 +37,7 @@ rule align_taxon_single_end:
         )
     params:
         min_score=get_min_score,
-        min_frag_length=MIN_FRAG_LEN,
-        max_frag_length=MAX_FRAG_LEN,
+        basename=config["cache"] + '/"{orgname}"/{accession}',
     threads: config["bowtie2_threads"]
     message:
         "Aligning the filtered reads from sample {wildcards.sample} against taxon {wildcards.orgname} {MESSAGE_SUFFIX}"
@@ -47,11 +46,9 @@ rule align_taxon_single_end:
     shell:
         "( bowtie2 --time --no-unal --no-discordant --no-mixed --ignore-quals --mp 6,6 --np 6 "
         "   --score-min L,{params.min_score},0.0 --gbar 1000 -q --threads {threads} "
-        '   -x {config[cache]}/"{wildcards.orgname}"/{wildcards.accession} '
-        "   -I {params.min_frag_length} -X {params.max_frag_length} "
-        "   -U {input.fastq} "
-        "| samtools sort -O bam -o {output.bam_file} ) 2> {log}; "
-        "samtools index {output.bam_file}"
+        "   -x {params.basename} -I {MIN_FRAG_LEN} -X {MAX_FRAG_LEN} -U {input.fastq} "
+        "| samtools sort -O bam -o {output.bam_file} && samtools index {output.bam_file} "
+        ") 2> {log}"
 
 
 rule align_taxon_paired_end:
@@ -67,8 +64,7 @@ rule align_taxon_paired_end:
         bai_file=config["analysis_output_dir"] + "/alignments/{sample}/PE/{orgname}/{orgname}_{accession}.bam.bai",
     params:
         min_score=get_min_score,
-        min_frag_length=MIN_FRAG_LEN,
-        max_frag_length=MAX_FRAG_LEN,
+        basename=config["cache"] + '/"{orgname}"/{accession}'
     threads: config["bowtie2_threads"]
     message:
         "Aligning the filtered reads from sample {wildcards.sample} against taxon {wildcards.orgname} {MESSAGE_SUFFIX}"
@@ -76,12 +72,10 @@ rule align_taxon_paired_end:
         "../envs/bowtie2.yaml"
     shell:
         "( bowtie2 --time --no-unal --no-discordant --no-mixed --ignore-quals --mp 6,6 --np 6 "
-        "--score-min L,{params.min_score},0.0 --gbar 1000 -q --threads {threads} "
-        '-x {config[cache]}/"{wildcards.orgname}"/{wildcards.accession} '
-        "-I {params.min_frag_length} -X {params.max_frag_length} "
-        "-1 {input.fastq_r1} -2 {input.fastq_r2} "
-        "| samtools sort -O bam -o {output.bam_file} ) 2> {log} "
-        "; samtools index {output.bam_file}"
+        "   --score-min L,{params.min_score},0.0 --gbar 1000 -q --threads {threads} "
+        "   -x {params.basename} -I {MIN_FRAG_LEN} -X {MAX_FRAG_LEN} -1 {input.fastq_r1} -2 {input.fastq_r2} "
+        "| samtools sort -O bam -o {output.bam_file} && samtools index {output.bam_file} "
+        ") 2> {log}"
 
 
 # noinspection PyUnresolvedReferences
