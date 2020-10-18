@@ -7,168 +7,115 @@ __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
 import csv
-import itertools
-import os
-import pandas as pd
+
 import sys
+import json
 import time
-import urllib.error
-from Bio import Entrez
+import pandas as pd
 
-from haystack.workflow.scripts.entrez_utils import (
-    guts_of_entrez,
-    ENTREZ_DB_NUCCORE,
-    ENTREZ_RETMODE_XML,
-    ENTREZ_RETTYPE_GB,
-)
+import requests
+from urllib.parse import quote_plus
+from xml.etree import cElementTree as ElementTree
 
-CHUNK_SIZE = 20  # TODO make this available to `haystack config`
-TOO_MANY_REQUESTS_WAIT = 7
-MAX_RETRY_ATTEMPTS = 10
+# base url of the Entrez web service
+ENTREZ_URL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/"
 
+# number of seconds to wait before making a new request
+ENTREZ_WAIT_TIME = 1
 
-def gen_dict_extract(key, var):
-    """Find keys in nested dictionaries"""
-    if hasattr(var, "items"):
-        for k, v in var.items():
-            if k == key:
-                yield v
-            if isinstance(v, dict):
-                for result in gen_dict_extract(key, v):
-                    yield result
-            elif isinstance(v, list):
-                for d in v:
-                    for result in gen_dict_extract(key, d):
-                        yield result
-    elif isinstance(var, list):
-        for d in var:
-            for result in gen_dict_extract(key, d):
-                yield result
+# how many seconds to wait between retries (weighted by number of attempts)
+ENTREZ_RETRY_WAIT = 2
+
+# maximum number of times to retry fetching an Entrez record before giving up
+ENTREZ_MAX_RETRY = 3
 
 
-def chunker(seq, size):
-    return (seq[pos : pos + size] for pos in range(0, len(seq), size))
+def entrez_esearch(database, query, attempts=1):
+    """
+    Execute an Entrez esearch query and return the search keys
+    """
+    r = requests.get(ENTREZ_URL + f"esearch.fcgi?db={database}&term={quote_plus(query)}&usehistory=y")
+
+    if not r.ok:
+        # handle Too Many Requests error
+        if attempts < ENTREZ_MAX_RETRY:
+            wait = ENTREZ_RETRY_WAIT * attempts
+            print(
+                "WARNING: Entrez esearch query failed on attempt #{attempt}, retrying after {wait} seconds.",
+                file=sys.stderr,
+            )
+            time.sleep(wait)
+            return entrez_esearch(database, query, attempts + 1)
+        else:
+            r.raise_for_status()
+
+    etree = ElementTree.XML(r.text)
+
+    # get the search keys
+    key = etree.find("QueryKey").text
+    webenv = etree.find("WebEnv").text
+
+    return key, webenv
 
 
-def entrez_nuccore_query(input_file, config, query_chunk_num, output_file, attempt=1):
+def entrez_esummary(database, key, webenv, attempts=1):
+    """
+    Fetch the Entrez esummary records for an esearch query.
+    """
+    r = requests.get(ENTREZ_URL + f"esummary.fcgi?db={database}&query_key={key}&WebEnv={webenv}")
+
+    if not r.ok:
+        # handle Too Many Requests error
+        if attempts < ENTREZ_MAX_RETRY:
+            wait = ENTREZ_RETRY_WAIT * attempts
+            print(
+                "WARNING: Entrez esummary query failed on attempt #{attempt}, retrying after {wait} seconds.",
+                file=sys.stderr,
+            )
+            time.sleep(wait)
+            return entrez_esummary(database, key, webenv, attempts + 1)
+        else:
+            r.raise_for_status()
+
+    return ElementTree.XML(r.text)
+
+
+def element_tree_to_dict(etree):
+    """
+    Convert an ElementTree object into a list of dicts.
+    """
+    data = []
+
+    for row_node in etree:
+        row = {}
+        for col_node in row_node:
+            col = col_node.attrib.get("Name", col_node.tag)
+            row[col] = col_node.text
+
+        data.append(row)
+
+    return data
+
+
+def entrez_nuccore_query(query, output_file):
     """
     Query the NCBI nuccore database to get a list of sequence accessions and their metadata.
     """
+    # execute the search
+    key, webenv = entrez_esearch("nuccore", query)
 
-    time.sleep(int(query_chunk_num) // 3)
-    Entrez.email = config["email"]
+    # fetch the results
+    etree = entrez_esummary("nuccore", key, webenv)
 
-    accessions_df = pd.read_csv(input_file, sep="\t")
-    if len(accessions_df) > 1:
-        accessions = accessions_df.squeeze().to_list()
-    else:
-        accessions = [accessions_df.squeeze()]
+    # convert the ElementTree into a a list of dicts
+    data = element_tree_to_dict(etree)
 
-    entrez_query_list = next(itertools.islice(chunker(accessions, CHUNK_SIZE), int(query_chunk_num), None))
-    entrez_query_list = [acc + "[Accession]" for acc in entrez_query_list]
+    # print(data)
 
-    entrez_query = " OR ".join(entrez_query_list)
-
-    # entrez_query = config['entrez']['queries'][query_chunk]
-
-    # get list of entries for given query
-    print(
-        "Getting list of Accessions for term={} ...\n".format(entrez_query), file=sys.stderr,
-    )
-
-    retmax = config["batchsize"]
-    counter = 0
-    dictwriter_counter = 0
-
-    with open(output_file, "a") as fout:
-        file_empty = os.stat(output_file).st_size == 0
-        fieldnames = [
-            "AccessionVersion",
-            "TSeq_taxid",
-            "GBSeq_organism",
-            "GBSeq_definition",
-            "Length",
-        ]
-        w = csv.DictWriter(fout, fieldnames, delimiter="\t", extrasaction="ignore")
-        if file_empty:
-            w.writeheader()
-
-        while True:
-            handle = Entrez.esearch(
-                db=ENTREZ_DB_NUCCORE,
-                term=entrez_query,
-                retmax=retmax,
-                idtype="acc",
-                usehistory="y",
-                retstart=retmax * counter,
-                rettype=ENTREZ_RETTYPE_GB,
-                retmode=ENTREZ_RETMODE_XML,
-            )
-
-            handle_reader = Entrez.read(handle)
-            accessions = handle_reader["IdList"]
-
-            if counter == 0:
-                resultset = int(handle_reader["Count"])
-                total_records = resultset
-                print("Total number of sequences {}\n".format(resultset), file=sys.stderr)
-            else:
-                print(
-                    "Remaining sequences to be downloaded {}\n".format(resultset), file=sys.stderr,
-                )
-
-            if not accessions:
-                # stop iterating when we get an empty resultset
-                if dictwriter_counter == total_records:
-                    print(
-                        "A total of {} records have been saved successfully.\n".format(total_records), file=sys.stderr,
-                    )
-                else:
-                    print("dictwriter_counter\t", dictwriter_counter, file=sys.stderr)
-                    print("total_records\t", total_records, file=sys.stderr)
-                    raise RuntimeError(
-                        "A total of {} records have been saved successfully. Please check the relevant "
-                        "log file to see which ones failed.\n".format(dictwriter_counter)
-                    )
-                break
-
-            try:
-                records = guts_of_entrez(ENTREZ_DB_NUCCORE, ENTREZ_RETMODE_XML, ENTREZ_RETTYPE_GB, accessions, retmax,)
-                for node in records:
-                    # print(node)
-
-                    node["TSeq_taxid"] = [
-                        val.replace("taxon:", "")
-                        for val in gen_dict_extract("GBQualifier_value", node)
-                        if "taxon:" in val
-                    ].pop()
-                    # print("iterating on node", file=sys.stderr)
-                    w.writerow(node)
-                    dictwriter_counter += 1
-
-                print("done for this slice\n", file=sys.stderr)
-
-                counter += 1
-                resultset -= retmax
-                if resultset < 0:
-                    resultset = 0
-
-            except urllib.error.URLError as e:
-                print("Network problem: {}".format(e), file=sys.stderr)
-
-                attempt += 1
-
-                if attempt > MAX_RETRY_ATTEMPTS:
-                    print(
-                        "Exceeded maximum attempts {}...".format(attempt), file=sys.stderr,
-                    )
-                    return None
-                else:
-                    time.sleep(TOO_MANY_REQUESTS_WAIT)
-                    print("Starting attempt {}...".format(attempt), file=sys.stderr)
-                    entrez_nuccore_query(input_file, config, query_chunk_num, output_file, attempt=1)
-
-        print("COMPLETE", file=sys.stderr)
+    with open(output_file, "w") as fout:
+        w = csv.DictWriter(fout, data[0].keys(), delimiter="\t")
+        w.writeheader()
+        w.writerows(data)
 
 
 if __name__ == "__main__":
@@ -176,8 +123,5 @@ if __name__ == "__main__":
     sys.stderr = open(snakemake.log[0], "w")
 
     entrez_nuccore_query(
-        input_file=snakemake.input[0],
-        config=snakemake.config,
-        query_chunk_num=snakemake.wildcards.chunk,
-        output_file=snakemake.output[0],
+        query=snakemake.config["query"], output_file=snakemake.output[0],
     )

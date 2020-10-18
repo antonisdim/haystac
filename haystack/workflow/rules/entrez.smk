@@ -9,7 +9,6 @@ __license__ = "MIT"
 import os
 import pandas as pd
 
-from haystack.workflow.scripts.entrez_nuccore_query import CHUNK_SIZE
 from haystack.workflow.scripts.utilities import normalise_name
 from haystack.workflow.scripts.entrez_utils import get_accession_ftp_path
 
@@ -24,7 +23,7 @@ rule entrez_nuccore_query:
     message:
         "Fetching sequence metadata from the NCBI Nucleotide database for the query."
     script:
-        "../scripts/entrez_url_query.py"
+        "../scripts/entrez_nuccore_query.py"
 
 
 rule entrez_taxa_query:
