@@ -6,16 +6,13 @@ __copyright__ = "Copyright 2020, University of Oxford"
 __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
-import csv
-
-import sys
-import json
-import time
-import pandas as pd
-
-import requests
-from urllib.parse import quote_plus
 from xml.etree import cElementTree as ElementTree
+
+import csv
+import requests
+import sys
+import time
+from urllib.parse import quote_plus
 
 # base url of the Entrez web service
 ENTREZ_URL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/"

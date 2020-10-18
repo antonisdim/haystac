@@ -194,9 +194,7 @@ def get_total_paths(
         invalid_assemblies = checkpoints.entrez_invalid_assemblies.get()
         invalid_assembly_sequences = pd.read_csv(invalid_assemblies.output[0], sep="\t")
 
-        assemblies = assemblies[
-            ~assemblies["AccessionVersion"].isin(invalid_assembly_sequences["AccessionVersion"])
-        ]
+        assemblies = assemblies[~assemblies["AccessionVersion"].isin(invalid_assembly_sequences["AccessionVersion"])]
 
         sources = [
             refseq_genomes,
@@ -222,9 +220,7 @@ def get_total_paths(
         sequences_df = sequences_df.append(custom_seqs)
 
     if accessions:
-        custom_accessions = pd.read_csv(
-            accessions, sep="\t", header=None, names=["species", "AccessionVersion"],
-        )
+        custom_accessions = pd.read_csv(accessions, sep="\t", header=None, names=["species", "AccessionVersion"],)
 
         sequences_df = sequences_df.append(custom_accessions)
 
