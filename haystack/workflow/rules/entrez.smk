@@ -9,8 +9,6 @@ __license__ = "MIT"
 import os
 import pandas as pd
 
-MESSAGE_SUFFIX = "(output: {output} and log: {log})" if config["debug"] else ""
-
 from haystack.workflow.scripts.entrez_nuccore_query import CHUNK_SIZE
 from haystack.workflow.scripts.utilities import normalise_name
 from haystack.workflow.scripts.entrez_utils import get_accession_ftp_path
@@ -22,7 +20,7 @@ checkpoint entrez_find_accessions:
     benchmark:
         repeat("benchmarks/entrez_find_accessions.benchmark.txt", 1)
     message:
-        "Finding all the accessions, whose metadata are going to be fetched, for the entrez query {MESSAGE_SUFFIX}"
+        "Finding all the accessions, whose metadata are going to be fetched, for the entrez query."
     resources:
         entrez_api=1,
     script:
@@ -39,8 +37,7 @@ rule entrez_nuccore_query:
     benchmark:
         repeat("benchmarks/entrez_nuccore_query_entrez_{chunk}.benchmark.txt", 1)
     message:
-        "Fetching sequence metadata from the NCBI Nucleotide database for accession chunk {wildcards.chunk} "
-        "{MESSAGE_SUFFIX}"
+        "Fetching sequence metadata from the NCBI Nucleotide database for accession chunk {wildcards.chunk}."
     resources:
         entrez_api=1,
     script:
@@ -78,8 +75,7 @@ rule entrez_aggregate_nuccore:
     benchmark:
         repeat("benchmarks/entrez_aggregate_nuccore_entrez.benchmark.txt", 1)
     message:
-        "Concatenating all the temporary output files containing accession metadata from the NCBI Nucleotide "
-        "database {MESSAGE_SUFFIX}"
+        "Concatenating all the temporary output files containing accession metadata from the NCBI Nucleotide database."
     shell:
         "awk 'FNR>1 || NR==1' {input} 1> {output}"
 
@@ -94,7 +90,7 @@ rule entrez_taxa_query:
     benchmark:
         repeat("benchmarks/entrez_taxa_query_entrez.benchmark.txt", 1)
     message:
-        "Querying the NCBI Taxonomy database and fetching taxonomic metadata {MESSAGE_SUFFIX}"
+        "Querying the NCBI Taxonomy database and fetching taxonomic metadata."
     resources:
         entrez_api=1,
     script:
@@ -120,7 +116,7 @@ checkpoint entrez_pick_sequences:
     benchmark:
         repeat("benchmarks/entrez_pick_sequences_entrez.benchmark.txt", 1)
     message:
-        "Selecting the longest sequence per taxon in the entrez query {MESSAGE_SUFFIX}"
+        "Selecting the longest sequence per taxon in the entrez query."
     script:
         "../scripts/entrez_pick_sequences.py"
 
@@ -154,7 +150,7 @@ rule entrez_download_sequence:
         url=get_rsync_url,
         temp_out=config["cache"] + "/temp_{accession}.fasta.gz",
     message:
-        "Downloading accession {wildcards.accession} for taxon {wildcards.orgname} {MESSAGE_SUFFIX}"
+        "Downloading accession {wildcards.accession} for taxon {wildcards.orgname}."
     resources:
         entrez_api=1,
     wildcard_constraints:
@@ -203,6 +199,6 @@ rule entrez_multifasta:
     benchmark:
         repeat("benchmarks/entrez_multifasta_entrez_query.benchmark.txt", 1)
     message:
-        "Concatenating all the fasta sequences for all the taxa of the entrez query {MESSAGE_SUFFIX}"
+        "Concatenating all the fasta sequences for all the taxa of the entrez query."
     script:
         "../scripts/bowtie2_multifasta.py"

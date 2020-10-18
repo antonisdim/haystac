@@ -9,7 +9,6 @@ __license__ = "MIT"
 MIN_FRAG_LEN = 0
 MAX_FRAG_LEN = 1000
 META_ALN_MIN_SCORE_CONSTANT = -6
-MESSAGE_SUFFIX = "(output: {output} and log: {log})" if config["debug"] else ""
 
 from haystack.workflow.scripts.utilities import get_total_paths, normalise_name
 
@@ -40,7 +39,7 @@ rule align_taxon_single_end:
         basename=config["cache"] + '/"{orgname}"/{accession}',
     threads: config["bowtie2_threads"]
     message:
-        "Aligning the filtered reads from sample {wildcards.sample} against taxon {wildcards.orgname} {MESSAGE_SUFFIX}"
+        "Aligning the filtered reads from sample {wildcards.sample} against taxon {wildcards.orgname}."
     conda:
         "../envs/bowtie2.yaml"
     shell:
@@ -64,10 +63,10 @@ rule align_taxon_paired_end:
         bai_file=config["analysis_output_dir"] + "/alignments/{sample}/PE/{orgname}/{orgname}_{accession}.bam.bai",
     params:
         min_score=get_min_score,
-        basename=config["cache"] + '/"{orgname}"/{accession}'
+        basename=config["cache"] + '/"{orgname}"/{accession}',
     threads: config["bowtie2_threads"]
     message:
-        "Aligning the filtered reads from sample {wildcards.sample} against taxon {wildcards.orgname} {MESSAGE_SUFFIX}"
+        "Aligning the filtered reads from sample {wildcards.sample} against taxon {wildcards.orgname}."
     conda:
         "../envs/bowtie2.yaml"
     shell:

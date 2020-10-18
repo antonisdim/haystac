@@ -9,7 +9,6 @@ __license__ = "MIT"
 from math import ceil
 
 SUBSAMPLE_FIXED_READS = 200000
-MESSAGE_SUFFIX = "(output: {output} and log: {log})" if config["debug"] else ""
 
 
 def get_inputs_for_bowtie_r1(wildcards):
@@ -59,7 +58,7 @@ rule bowtie_alignment_single_end:
     threads: config["bowtie2_threads"]
     message:
         "The filtering alignment for sample {wildcards.sample}, for index chunk number {wildcards.chunk_num} "
-        "is being executed {MESSAGE_SUFFIX}"
+        "is being executed."
     conda:
         "../envs/bowtie2.yaml"
     shell:
@@ -83,7 +82,7 @@ rule bowtie_alignment_paired_end:
     threads: config["bowtie2_threads"]
     message:
         "The filtering alignment for sample {wildcards.sample}, for index chunk number {wildcards.chunk_num} "
-        "is being executed {MESSAGE_SUFFIX}"
+        "is being executed."
     conda:
         "../envs/bowtie2.yaml"
     shell:
@@ -116,8 +115,7 @@ rule merge_bams:
     output:
         config["analysis_output_dir"] + "/bam/{read_mode}_{sample}_sorted.bam",
     message:
-        "Merging the bam files produced by the filtering alignment stage for sample {wildcards.sample} "
-        "{MESSAGE_SUFFIX}"
+        "Merging the bam files produced by the filtering alignment stage for sample {wildcards.sample}."
     wildcard_constraints:
         read_mode="[^-_]+",
     conda:
@@ -157,7 +155,7 @@ rule extract_fastq_paired_end:
     benchmark:
         repeat("benchmarks/extract_fastq_paired_end_{sample}.benchmark.txt", 1)
     message:
-        "Extracting the aligned reads for sample {wildcards.sample} {MESSAGE_SUFFIX}"
+        "Extracting the aligned reads for sample {wildcards.sample}."
     conda:
         "../envs/extract_fastq.yaml"
     shell:
@@ -178,7 +176,7 @@ rule average_fastq_read_len_single_end:
     benchmark:
         repeat("benchmarks/average_fastq_read_len_single_end_{sample}.benchmark.txt", 1)
     message:
-        "Calculating the average read length for sample {wildcards.sample} {MESSAGE_SUFFIX}"
+        "Calculating the average read length for sample {wildcards.sample}."
     conda:
         "../envs/seqtk.yaml"
     shell:
@@ -199,7 +197,7 @@ rule average_fastq_read_len_paired_end:
     benchmark:
         repeat("benchmarks/average_fastq_read_len_paired_end_{sample}.benchmark.txt", 1)
     message:
-        "Calculating the average read length for sample {wildcards.sample} {MESSAGE_SUFFIX}"
+        "Calculating the average read length for sample {wildcards.sample}."
     conda:
         "../envs/seqtk.yaml"
     shell:

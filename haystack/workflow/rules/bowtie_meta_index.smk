@@ -10,8 +10,6 @@ import pandas as pd
 
 from haystack.workflow.scripts.utilities import normalise_name
 
-MESSAGE_SUFFIX = "(output: {output} and log: {log})" if config["debug"] else ""
-
 
 rule fasta_idx:
     input:
@@ -21,7 +19,7 @@ rule fasta_idx:
     benchmark:
         repeat("benchmarks/fasta_idx_{orgname}_{accession}.benchmark.txt", 1)
     message:
-        "Indexing fasta file with accession {wildcards.accession} for taxon {wildcards.orgname} {MESSAGE_SUFFIX}"
+        "Indexing fasta file with accession {wildcards.accession} for taxon {wildcards.orgname}."
     conda:
         "../envs/samtools.yaml"
     shell:
@@ -46,7 +44,7 @@ rule index_database_entrez:
         "Preparing the bowtie2 index for genome {wildcards.accession} of taxon {wildcards.orgname}."
     threads: config["bowtie2_threads"]
     params:
-        basename=config["cache"] + '/"{orgname}"/{accession}'
+        basename=config["cache"] + '/"{orgname}"/{accession}',
     conda:
         "../envs/bowtie2.yaml"
     shell:

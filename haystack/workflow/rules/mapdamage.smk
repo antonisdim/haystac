@@ -8,8 +8,6 @@ __license__ = "MIT"
 
 from haystack.workflow.scripts.utilities import get_total_paths, normalise_name
 
-MESSAGE_SUFFIX = "(output: {output} and log: {log})" if config["debug"] else ""
-
 
 rule dedup_merged_mapdamage:
     input:
@@ -32,8 +30,7 @@ rule dedup_merged_mapdamage:
     params:
         output=config["analysis_output_dir"] + "/rmdup_bam/{sample}/{reads}/{orgname}/",
     message:
-        "Removing duplicate reads that were aligned to taxon {wildcards.orgname}, for sample {wildcards.sample} "
-        "{MESSAGE_SUFFIX}"
+        "Removing duplicate reads that were aligned to taxon {wildcards.orgname}, for sample {wildcards.sample}."
     conda:
         "../envs/dedup.yaml"
     shell:
@@ -52,7 +49,7 @@ rule run_mapdamage:
     output:
         directory(config["analysis_output_dir"] + "/mapdamage/{sample}/{reads}/{orgname}-{accession}"),
     message:
-        "Performing a mapDamage analysis for taxon {wildcards.orgname}, for sample {wildcards.sample} {MESSAGE_SUFFIX}"
+        "Performing a mapDamage analysis for taxon {wildcards.orgname}, for sample {wildcards.sample}."
     conda:
         "../envs/mapdamage.yaml"
     shell:

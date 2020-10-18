@@ -8,8 +8,6 @@ __license__ = "MIT"
 
 from haystack.workflow.scripts.utilities import get_total_paths, normalise_name
 
-MESSAGE_SUFFIX = "(output: {output} and log: {log})" if config["debug"] else ""
-
 
 def get_bams_for_ts_tv_count(wildcards):
     if config["PE_MODERN"]:
@@ -36,7 +34,7 @@ rule count_accession_ts_tv:
     params:
         pairs=config["PE_MODERN"],
     message:
-        "Counting the number of transitions and transversions per read for taxon {wildcards.orgname} {MESSAGE_SUFFIX}"
+        "Counting the number of transitions and transversions per read for taxon {wildcards.orgname}."
     script:
         "../scripts/count_accession_ts_tv.py"
 
@@ -83,7 +81,7 @@ rule initial_ts_tv:
     benchmark:
         repeat("benchmarks/initial_ts_tv_{sample}.benchmark.txt", 1)
     message:
-        "Concatenating all the Ts and Tv count files for sample {wildcards.sample} {MESSAGE_SUFFIX}"
+        "Concatenating all the Ts and Tv count files for sample {wildcards.sample}."
     script:
         "../scripts/concat_files.py"
 
@@ -109,7 +107,7 @@ rule calculate_likelihoods:
         repeat("benchmarks/calculate_likelihoods_{sample}.benchmark.txt", 1)
     message:
         "Calculating the likelihoods and performing the Dirichlet assignment of the reads in sample "
-        "{wildcards.sample} to the taxa in our database {MESSAGE_SUFFIX}"
+        "{wildcards.sample} to the taxa in our database."
     script:
         "../scripts/calculate_likelihoods.py"
 
@@ -128,7 +126,7 @@ rule calculate_taxa_probabilities:
     params:
         submatrices=False,
     message:
-        "Calculating the taxonomic assignment posterior probabilities for sample {wildcards.sample} {MESSAGE_SUFFIX}"
+        "Calculating the taxonomic assignment posterior probabilities for sample {wildcards.sample}."
     script:
         "../scripts/calculate_taxa_probabilities.py"
 
@@ -146,8 +144,8 @@ rule coverage_t_test:
             "benchmarks/coverage_t_test_{sample}_{orgname}_{accession}_{reads}.benchmark.txt", 1,
         )
     message:
-        "Performing a T-Test to assess if reads from sample {wildcards.sample} represent "
-        "a random genome sample of taxon {wildcards.orgname} {MESSAGE_SUFFIX}"
+        "Performing a T-Test to assess if reads from sample {wildcards.sample} represent a random genome sample of "
+        "taxon {wildcards.orgname}."
     script:
         "../scripts/coverage_t_test.py"
 
@@ -201,7 +199,7 @@ rule cat_pvalues:
     benchmark:
         repeat("benchmarks/cat_pvalues_{sample}.benchmark.txt", 1)
     message:
-        "Concatenating all the T-Test p-value outputs for sample {wildcards.sample} {MESSAGE_SUFFIX}"
+        "Concatenating all the T-Test p-value outputs for sample {wildcards.sample}."
     script:
         "../scripts/concat_files.py"
 
@@ -218,6 +216,6 @@ rule calculate_dirichlet_abundances:
     benchmark:
         repeat("benchmarks/calculate_dirichlet_abundances_{sample}.benchmark.txt", 1)
     message:
-        "Calculating the mean posterior abundance for sample {wildcards.sample} {MESSAGE_SUFFIX}"
+        "Calculating the mean posterior abundance for sample {wildcards.sample}."
     script:
         "../scripts/calculate_dirichlet_abundances.py"

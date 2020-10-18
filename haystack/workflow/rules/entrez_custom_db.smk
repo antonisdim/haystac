@@ -10,8 +10,6 @@ import pandas as pd
 
 from haystack.workflow.scripts.utilities import normalise_name, check_unique_taxa_in_custom_input
 
-MESSAGE_SUFFIX = "(output: {output} and log: {log})" if config["debug"] else ""
-
 
 rule entrez_custom_sequences:
     input:
@@ -21,8 +19,7 @@ rule entrez_custom_sequences:
     output:
         config["cache"] + "/{orgname}/custom_seq-{accession}.fasta.gz",
     message:
-        "Adding the user provided fasta sequence {wildcards.accession} for taxon {wildcards.orgname} to the "
-        "database {MESSAGE_SUFFIX}"
+        "Adding the user provided fasta sequence {wildcards.accession} for taxon {wildcards.orgname} to the database."
     script:
         "../scripts/entrez_custom_sequences.py"
 
@@ -88,7 +85,7 @@ rule entrez_aggregate_custom_seqs:
     output:
         config["db_output"] + "/bowtie/custom_seqs.fasta.gz",
     message:
-        "Concatenating all the user provided sequences {MESSAGE_SUFFIX}"
+        "Concatenating all the user provided sequences."
     script:
         "../scripts/bowtie2_multifasta.py"
 
@@ -146,6 +143,6 @@ rule entrez_aggregate_custom_acc:
     output:
         config["db_output"] + "/bowtie/custom_acc.fasta.gz",
     message:
-        "Concatenating all the sequences from user provided accessions {MESSAGE_SUFFIX}"
+        "Concatenating all the sequences from user provided accessions."
     script:
         "../scripts/bowtie2_multifasta.py"

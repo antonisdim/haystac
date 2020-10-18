@@ -11,7 +11,6 @@ import pandas as pd
 from haystack.workflow.scripts.utilities import normalise_name
 
 REFSEQ_REP_URL = "https://ftp.ncbi.nlm.nih.gov/genomes/GENOME_REPORTS/prok_representative_genomes.txt"
-MESSAGE_SUFFIX = "(output: {output} and log: {log})" if config["debug"] else ""
 
 
 rule download_refseq_representative_table:
@@ -22,7 +21,7 @@ rule download_refseq_representative_table:
     benchmark:
         repeat("benchmarks/prok_report_download.benchmark.txt", 3)
     message:
-        "Downloading the list of representative species from RefSeq {MESSAGE_SUFFIX}"
+        "Downloading the list of representative species from RefSeq."
     conda:
         "../envs/wget.yaml"
     shell:
@@ -45,7 +44,7 @@ checkpoint entrez_refseq_accessions:
     resources:
         entrez_api=1,
     message:
-        "Splitting the representative RefSeq table in smaller tables {MESSAGE_SUFFIX}"
+        "Splitting the representative RefSeq table in smaller tables."
     script:
         "../scripts/entrez_refseq_create_files.py"
 
@@ -60,7 +59,7 @@ checkpoint entrez_invalid_assemblies:
     benchmark:
         repeat("benchmarks/entrez_valid_assemblies.benchmark.txt", 1)
     message:
-        "Finding if assemblies are not part of the RefSeq database {MESSAGE_SUFFIX}"
+        "Finding if assemblies are not part of the RefSeq database."
     resources:
         entrez_api=1,
     script:
@@ -103,7 +102,7 @@ rule entrez_refseq_genbank_multifasta:
     benchmark:
         repeat("benchmarks/entrez_refseq_genbank_multifasta_.benchmark.txt", 1)
     message:
-        "Concatenating all the fasta sequences for all the taxa that can be found in RefSeq and Genbank {MESSAGE_SUFFIX}"
+        "Concatenating all the fasta sequences for all the taxa that can be found in RefSeq and Genbank."
     script:
         "../scripts/bowtie2_multifasta.py"
 
@@ -149,7 +148,7 @@ rule entrez_assembly_multifasta:
     benchmark:
         repeat("benchmarks/entrez_assembly_multifasta.benchmark.txt", 1)
     message:
-        "Concatenating all the fasta sequences for all the taxa that can be found in the Assembly database {MESSAGE_SUFFIX}"
+        "Concatenating all the fasta sequences for all the taxa that can be found in the Assembly database."
     script:
         "../scripts/bowtie2_multifasta.py"
 
@@ -165,6 +164,6 @@ rule entrez_refseq_prok_multifasta:
     benchmark:
         repeat("benchmarks/entrez_refseq_prok_multifasta.benchmark.txt", 1)
     message:
-        "Concatenating input files {input.assemblies} and {input.refseq} {MESSAGE_SUFFIX}"
+        "Concatenating input files {input.assemblies} and {input.refseq}."
     shell:
         "cat {input.assemblies} {input.refseq} > {output}"

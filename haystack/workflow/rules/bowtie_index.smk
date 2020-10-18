@@ -13,7 +13,6 @@ from psutil import virtual_memory
 
 MEGABYTE = float(1024 ** 2)
 MAX_MEM_MB = virtual_memory().total / MEGABYTE
-MESSAGE_SUFFIX = "(output: {output} and log: {log})" if config["debug"] else ""
 
 from haystack.workflow.scripts.utilities import get_total_paths, normalise_name
 
@@ -56,7 +55,7 @@ rule random_db_paths:
     params:
         seed=config["seed"],
     message:
-        "The database genomes are being placed in a random order {MESSAGE_SUFFIX}"
+        "The database genomes are being placed in a random order."
     script:
         "../scripts/random_db_paths.py"
 
@@ -73,7 +72,7 @@ checkpoint calculate_bt2_idx_chunks:
         mem_resources=float(config["mem"]),
         mem_rescale_factor=config["bowtie2_scaling"],
     message:
-        "The number of index chunks needed for the filtering alignment are being calculated {MESSAGE_SUFFIX}"
+        "The number of index chunks needed for the filtering alignment are being calculated."
     script:
         "../scripts/calculate_bt2_idx_chunks.py"
 
@@ -111,7 +110,7 @@ rule create_bt2_idx_filter_chunk:
     output:
         config["db_output"] + "/bowtie/chunk{chunk_num}.fasta.gz",
     message:
-        "Creating chunk {wildcards.chunk_num} of the genome database index {MESSAGE_SUFFIX}"
+        "Creating chunk {wildcards.chunk_num} of the genome database index."
     script:
         "../scripts/bowtie2_multifasta.py"
 
@@ -131,12 +130,12 @@ rule bowtie_index:
     benchmark:
         repeat("benchmarks/bowtie_index_chunk{chunk_num}.benchmark.txt", 1)
     message:
-        "Bowtie2 index for chunk {input.fasta_chunk} is being built {MESSAGE_SUFFIX}"
+        "Bowtie2 index for chunk {input.fasta_chunk} is being built."
     threads: config["bowtie2_threads"]
     conda:
         "../envs/bowtie2.yaml"
     params:
-        basename=config["db_output"] + "/bowtie/chunk{chunk_num}"
+        basename=config["db_output"] + "/bowtie/chunk{chunk_num}",
     shell:
         "bowtie2-build --large-index --threads {threads} {input.fasta_chunk} {params.basename} &> {log}"
 

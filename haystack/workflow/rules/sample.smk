@@ -6,8 +6,6 @@ __copyright__ = "Copyright 2020, University of Oxford"
 __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
-MESSAGE_SUFFIX = "(output: {output} and log: {log})" if config["debug"] else ""
-
 
 def get_inputs_for_count_fastq_len(wildcards):
     if config["trim_adapters"]:
@@ -43,7 +41,7 @@ rule count_fastq_length:
     benchmark:
         repeat("benchmarks/count_fastq_length_{sample}.benchmark.txt", 1)
     message:
-        "Counting the number of reads in sample {wildcards.sample} {MESSAGE_SUFFIX}"
+        "Counting the number of reads in sample {wildcards.sample}."
     conda:
         "../envs/seqtk.yaml"
     shell:

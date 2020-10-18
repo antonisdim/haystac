@@ -6,8 +6,6 @@ __copyright__ = "Copyright 2020, University of Oxford"
 __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
-MESSAGE_SUFFIX = "(output: {output} and log: {log})" if config["debug"] else ""
-
 
 rule adapterremoval_single_end:
     input:
@@ -19,7 +17,7 @@ rule adapterremoval_single_end:
     benchmark:
         repeat("benchmarks/adapterremoval_single_end_{accession}.benchmark.txt", 1)
     message:
-        "Trimming sequencing adapters from file {input.fastq} {MESSAGE_SUFFIX}"
+        "Trimming sequencing adapters from file {input.fastq}."
     conda:
         "../envs/adapterremoval.yaml"
     params:
@@ -32,7 +30,7 @@ rule adapterremoval_single_end:
         "   --minlength 15 "
         "   --trimns && "
         " cat {params.basename}.truncated.gz > {output}"
-        ") 2> {log}"  # TODO why are you using `cat` instead of `mv`? do we need to keep the original?
+        ") 2> {log}" # TODO why are you using `cat` instead of `mv`? do we need to keep the original?
 
 
 rule adapterremoval_paired_end_ancient:
@@ -46,8 +44,7 @@ rule adapterremoval_paired_end_ancient:
     benchmark:
         repeat("benchmarks/adapterremoval_paired_end_ancient_{accession}.benchmark.txt", 1)
     message:
-        "Trimming sequencing adapters and collapsing reads from files {input.fastq_r1} and {input.fastq_r2} "
-        "{MESSAGE_SUFFIX}"
+        "Trimming sequencing adapters and collapsing reads from files {input.fastq_r1} and {input.fastq_r2}."
     conda:
         "../envs/adapterremoval.yaml"
     params:
@@ -77,8 +74,7 @@ rule adapterremoval_paired_end_modern:
     benchmark:
         repeat("benchmarks/adapterremoval_paired_end_modern_{accession}.benchmark.txt", 1)
     message:
-        "Trimming sequencing adapters from files {input.fastq_r1} and {input.fastq_r2} "
-        "{MESSAGE_SUFFIX}"
+        "Trimming sequencing adapters from files {input.fastq_r1} and {input.fastq_r2}."
     conda:
         "../envs/adapterremoval.yaml"
     params:
