@@ -138,7 +138,7 @@ def get_dirichlet_bams(wildcards):
     for key, seq in sequences.iterrows():
         orgname, accession = (
             normalise_name(seq["species"]),
-            seq["GBSeq_accession-version"],
+            seq["AccessionVersion"],
         )
 
         inputs.append(

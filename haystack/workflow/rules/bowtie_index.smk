@@ -37,7 +37,7 @@ def get_total_fasta_paths(wildcards):
     for key, seq in sequences.iterrows():
         orgname, accession = (
             normalise_name(seq["species"]),
-            seq["GBSeq_accession-version"],
+            seq["AccessionVersion"],
         )
 
         inputs.append(config["cache"] + "/{orgname}/{accession}.fasta.gz".format(orgname=orgname, accession=accession,))

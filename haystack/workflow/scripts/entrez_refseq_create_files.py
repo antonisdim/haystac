@@ -114,7 +114,7 @@ def entrez_refseq_create_files(
         "#Species/genus"
     ].str.replace(")", "")
 
-    header = ["species", "GBSeq_accession-version"]
+    header = ["species", "AccessionVersion"]
 
     if config["sequences"]:
         custom_fasta_paths = pd.read_csv(

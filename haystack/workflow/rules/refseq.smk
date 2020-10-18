@@ -85,7 +85,7 @@ def get_refseq_genome_sequences(wildcards):
     for key, seq in sequences.iterrows():
         orgname, accession = (
             normalise_name(seq["species"]),
-            seq["GBSeq_accession-version"],
+            seq["AccessionVersion"],
         )
         inputs.append(config["cache"] + "/{orgname}/{accession}.fasta.gz".format(orgname=orgname, accession=accession))
 
@@ -123,7 +123,7 @@ def get_assembly_genome_sequences(wildcards):
     invalid_assembly_sequences = pd.read_csv(invalid_assemblies.output[0], sep="\t")
 
     assembly_sequences = assembly_sequences[
-        ~assembly_sequences["GBSeq_accession-version"].isin(invalid_assembly_sequences["GBSeq_accession-version"])
+        ~assembly_sequences["AccessionVersion"].isin(invalid_assembly_sequences["AccessionVersion"])
     ]
 
     inputs = []
@@ -131,7 +131,7 @@ def get_assembly_genome_sequences(wildcards):
     for key, seq in assembly_sequences.iterrows():
         orgname, accession = (
             normalise_name(seq["species"]),
-            seq["GBSeq_accession-version"],
+            seq["AccessionVersion"],
         )
         inputs.append(config["cache"] + "/{orgname}/{accession}.fasta.gz".format(orgname=orgname, accession=accession))
 

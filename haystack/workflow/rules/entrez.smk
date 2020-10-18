@@ -14,70 +14,17 @@ from haystack.workflow.scripts.utilities import normalise_name
 from haystack.workflow.scripts.entrez_utils import get_accession_ftp_path
 
 
-checkpoint entrez_find_accessions:
-    output:
-        temp(config["db_output"] + "/entrez/entrez-accessions.tsv"),
-    benchmark:
-        repeat("benchmarks/entrez_find_accessions.benchmark.txt", 1)
-    message:
-        "Finding all the accessions, whose metadata are going to be fetched, for the entrez query."
-    resources:
-        entrez_api=1,
-    script:
-        "../scripts/entrez_find_accessions.py"
-
-
 rule entrez_nuccore_query:
-    input:
-        config["db_output"] + "/entrez/entrez-accessions.tsv",
-    output:
-        temp(config["db_output"] + "/entrez/entrez_{chunk}-nuccore.tsv"),
-    log:
-        config["db_output"] + "/entrez/entrez_{chunk}-nuccore.log",
-    benchmark:
-        repeat("benchmarks/entrez_nuccore_query_entrez_{chunk}.benchmark.txt", 1)
-    message:
-        "Fetching sequence metadata from the NCBI Nucleotide database for accession chunk {wildcards.chunk}."
-    resources:
-        entrez_api=1,
-    script:
-        "../scripts/entrez_nuccore_query.py"
-
-
-def get_nuccore_chunks(_):
-    """
-    Get all the accession chunks for the {query}-nuccore.tsv file.
-    """
-    # noinspection PyUnresolvedReferences
-    pick_accessions = checkpoints.entrez_find_accessions.get()
-    sequences = pd.read_csv(pick_accessions.output[0], sep="\t")
-
-    if len(sequences) == 0:
-        raise RuntimeError("The entrez find accessions file is empty.")
-
-    if len(sequences) % CHUNK_SIZE == 0:
-        tot_chunks = len(sequences) / float(CHUNK_SIZE)
-    else:
-        tot_chunks = (len(sequences) // float(CHUNK_SIZE)) + 1
-
-    inputs = []
-    for chunk_num in range(int(tot_chunks)):
-        inputs.append(config["db_output"] + "/entrez/entrez_{chunk}-nuccore.tsv".format(chunk=chunk_num))
-
-    return inputs
-
-
-rule entrez_aggregate_nuccore:
-    input:
-        get_nuccore_chunks,
     output:
         config["db_output"] + "/entrez/entrez-nuccore.tsv",
+    log:
+        config["db_output"] + "/entrez/entrez-nuccore.tsv.log",
     benchmark:
-        repeat("benchmarks/entrez_aggregate_nuccore_entrez.benchmark.txt", 1)
+        repeat("benchmarks/entrez_nuccore_query.benchmark.txt", 1)
     message:
-        "Concatenating all the temporary output files containing accession metadata from the NCBI Nucleotide database."
-    shell:
-        "awk 'FNR>1 || NR==1' {input} 1> {output}"
+        "Fetching sequence metadata from the NCBI Nucleotide database for the query."
+    script:
+        "../scripts/entrez_url_query.py"
 
 
 rule entrez_taxa_query:
@@ -101,7 +48,7 @@ def pick_after_refseq_prok(_):
     if config["refseq_rep"]:
         return config["db_output"] + "/entrez/genbank-genomes.tsv"
     else:
-        return config["db_output"] + "/entrez/entrez_0-nuccore.tsv"
+        return config["db_output"] + "/entrez/entrez-nuccore.tsv"
 
 
 checkpoint entrez_pick_sequences:
@@ -159,7 +106,7 @@ rule entrez_download_sequence:
         "../envs/seq_download.yaml"
     shell:
         "(if [[ -n '{params.url}' && ! `{config[mtDNA]}` ]]; "
-        "   then (wget -q wget -O - {params.url} | gunzip | bgzip -f > {output}); "
+        "   then (wget -q -O - {params.url} | gunzip | bgzip -f > {output}); "
         "   else (python {config[workflow_dir]}/scripts/entrez_download_sequence.py "
         "           --accession {wildcards.accession} "
         "           --email {config[email]} "
@@ -182,7 +129,7 @@ def get_fasta_sequences(_):
 
     for key, seq in sequences.iterrows():
         orgname = normalise_name(seq["species"])
-        accession = seq["GBSeq_accession-version"]
+        accession = seq["AccessionVersion"]
 
         inputs.append(config["cache"] + "/{orgname}/{accession}.fasta.gz".format(orgname=orgname, accession=accession))
 

@@ -37,7 +37,7 @@ def entrez_find_accessions(config, output_file):
     accessions = handle_reader["IdList"]
 
     with open(output_file, "w") as fout:
-        acc_col = ["GBSeq_accession-version"]
+        acc_col = ["AccessionVersion"]
         acc_col.extend(accessions)
 
         print("\n".join(acc_col), file=fout)

@@ -70,7 +70,7 @@ def get_idx_entrez(wildcards):
     for key, seq in sequences.iterrows():
         orgname, accession = (
             normalise_name(seq["species"]),
-            seq["GBSeq_accession-version"],
+            seq["AccessionVersion"],
         )
         inputs.append(config["cache"] + "/{orgname}/{accession}.1.bt2l".format(orgname=orgname, accession=accession))
         inputs.append(
@@ -102,7 +102,7 @@ def get_idx_ref_gen(wildcards):
     for key, seq in sequences.iterrows():
         orgname, accession = (
             normalise_name(seq["species"]),
-            seq["GBSeq_accession-version"],
+            seq["AccessionVersion"],
         )
         inputs.append(config["cache"] + "/{orgname}/{accession}.1.bt2l".format(orgname=orgname, accession=accession))
         inputs.append(
@@ -129,7 +129,7 @@ def get_idx_assembly(wildcards):
     invalid_assembly_sequences = pd.read_csv(invalid_assemblies.output[0], sep="\t")
 
     assemblies = assemblies[
-        ~assemblies["GBSeq_accession-version"].isin(invalid_assembly_sequences["GBSeq_accession-version"])
+        ~assemblies["AccessionVersion"].isin(invalid_assembly_sequences["AccessionVersion"])
     ]
 
     sequences = assemblies
@@ -139,7 +139,7 @@ def get_idx_assembly(wildcards):
     for key, seq in sequences.iterrows():
         orgname, accession = (
             normalise_name(seq["species"]),
-            seq["GBSeq_accession-version"],
+            seq["AccessionVersion"],
         )
         inputs.append(config["cache"] + "/{orgname}/{accession}.1.bt2l".format(orgname=orgname, accession=accession))
         inputs.append(

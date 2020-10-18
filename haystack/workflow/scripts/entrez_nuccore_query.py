@@ -83,11 +83,11 @@ def entrez_nuccore_query(input_file, config, query_chunk_num, output_file, attem
     with open(output_file, "a") as fout:
         file_empty = os.stat(output_file).st_size == 0
         fieldnames = [
-            "GBSeq_accession-version",
+            "AccessionVersion",
             "TSeq_taxid",
             "GBSeq_organism",
             "GBSeq_definition",
-            "GBSeq_length",
+            "Length",
         ]
         w = csv.DictWriter(fout, fieldnames, delimiter="\t", extrasaction="ignore")
         if file_empty:

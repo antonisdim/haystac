@@ -32,7 +32,7 @@ def entrez_taxonomy_query(config, nuccore_file, output_file):
     retmax = config["batchsize"]
 
     # load the unique list of taxa from the nuccore resultset
-    accessions = pd.read_csv(nuccore_file, sep="\t", usecols=["TSeq_taxid"], squeeze=True).unique()
+    accessions = pd.read_csv(nuccore_file, sep="\t", usecols=["TaxId"], squeeze=True).unique()
 
     with open(output_file, "w") as fout:
         columns = [

@@ -58,7 +58,7 @@ def get_ts_tv_count_paths(wildcards):
     for key, seq in sequences.iterrows():
         orgname, accession = (
             normalise_name(seq["species"]),
-            seq["GBSeq_accession-version"],
+            seq["AccessionVersion"],
         )
 
         inputs.append(
@@ -176,7 +176,7 @@ def get_t_test_values_paths(wildcards):
     for key, seq in sequences.iterrows():
         orgname, accession = (
             normalise_name(seq["species"]),
-            seq["GBSeq_accession-version"],
+            seq["AccessionVersion"],
         )
 
         inputs.append(

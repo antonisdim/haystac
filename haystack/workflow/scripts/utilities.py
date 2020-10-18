@@ -195,7 +195,7 @@ def get_total_paths(
         invalid_assembly_sequences = pd.read_csv(invalid_assemblies.output[0], sep="\t")
 
         assemblies = assemblies[
-            ~assemblies["GBSeq_accession-version"].isin(invalid_assembly_sequences["GBSeq_accession-version"])
+            ~assemblies["AccessionVersion"].isin(invalid_assembly_sequences["AccessionVersion"])
         ]
 
         sources = [
@@ -213,17 +213,17 @@ def get_total_paths(
 
     if sequences:
         custom_fasta_paths = pd.read_csv(
-            sequences, sep="\t", header=None, names=["species", "GBSeq_accession-version", "path"],
+            sequences, sep="\t", header=None, names=["species", "AccessionVersion", "path"],
         )
 
-        custom_seqs = custom_fasta_paths[["species", "GBSeq_accession-version"]]
-        custom_seqs["GBSeq_accession-version"] = "custom_seq-" + custom_seqs["GBSeq_accession-version"].astype(str)
+        custom_seqs = custom_fasta_paths[["species", "AccessionVersion"]]
+        custom_seqs["AccessionVersion"] = "custom_seq-" + custom_seqs["AccessionVersion"].astype(str)
 
         sequences_df = sequences_df.append(custom_seqs)
 
     if accessions:
         custom_accessions = pd.read_csv(
-            accessions, sep="\t", header=None, names=["species", "GBSeq_accession-version"],
+            accessions, sep="\t", header=None, names=["species", "AccessionVersion"],
         )
 
         sequences_df = sequences_df.append(custom_accessions)

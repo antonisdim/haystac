@@ -25,7 +25,7 @@ def entrez_invalid_assemblies(config, assemblies, output, attempt=1):
     Entrez.email = config["email"]
 
     with open(output, "w") as fout:
-        columns = ["species", "GBSeq_accession-version"]
+        columns = ["species", "AccessionVersion"]
         w = csv.DictWriter(fout, columns, delimiter="\t", extrasaction="ignore")
         w.writeheader()
 
@@ -35,13 +35,13 @@ def entrez_invalid_assemblies(config, assemblies, output, attempt=1):
 
             try:
                 handle = Entrez.esearch(
-                    db=ENTREZ_DB_ASSEMBLY, term=acc["GBSeq_accession-version"] + ' AND "latest refseq"[filter]',
+                    db=ENTREZ_DB_ASSEMBLY, term=acc["AccessionVersion"] + ' AND "latest refseq"[filter]',
                 )
                 assembly_record = Entrez.read(handle)
 
                 if not len(assembly_record["IdList"]) > 0:
                     invalid_assemblies["species"] = acc["species"]
-                    invalid_assemblies["GBSeq_accession-version"] = acc["GBSeq_accession-version"]
+                    invalid_assemblies["AccessionVersion"] = acc["AccessionVersion"]
 
                     print(invalid_assemblies, file=sys.stderr)
                     w.writerow(invalid_assemblies)
