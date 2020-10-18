@@ -11,7 +11,6 @@ import pandas as pd
 
 from haystack.workflow.scripts.utilities import normalise_name
 from haystack.workflow.scripts.entrez_utils import get_accession_ftp_path
-from haystack.workflow.scripts.entrez_nuccore_query import ENTREZ_URL
 
 
 rule entrez_nuccore_query:
@@ -77,8 +76,7 @@ def get_rsync_url(wildcards):
         if file_url != "_genomic.fna.gz":
             return file_url
         else:
-            # download from Entrez efetch
-            return ENTREZ_URL + f"efetch.fcgi?db=nuccore&id={wildcards.accession}&rettype=fasta&retmode=text"
+            return ""
     except RuntimeError:
         return ""
     except TypeError:
@@ -90,26 +88,22 @@ rule entrez_download_sequence:
     output:
         config["cache"] + "/{orgname}/{accession}.fasta.gz",
     log:
-        config["cache"] + "/{orgname}/{accession}.log",
+        config["cache"] + "/{orgname}/{accession}.fasta.gz.log",
     benchmark:
         repeat("benchmarks/entrez_download_sequence_{orgname}_{accession}.benchmark.txt", 1)
     params:
-        assembly=False,
         url=get_rsync_url,
-        temp_out=config["cache"] + "/temp_{accession}.fasta.gz",
     message:
         "Downloading accession {wildcards.accession} for taxon {wildcards.orgname}."
-    resources:
-        entrez_api=1,
     wildcard_constraints:
         accession="[^-]+",
-    conda:
-        "../envs/seq_download.yaml"
     shell:
-        "(if [[ '{params.url}' == *'_genomic.fna.gz' && ! `{config[mtDNA]}` ]]; "
-        "   then (wget -q -O - '{params.url}' | gunzip | bgzip -f > {output}); "
-        "   else (wget -q -O - '{params.url}' | bgzip -f > {output}); "
-        "fi && gzip -l {output} | awk 'NR==2 {{exit($2==0)}}' ) 2> {log}"
+        "(if [[ -n '{params.url}' && ! `{config[mtDNA]}` ]]; "
+        "   then (wget -q -O - '{params.url}' | gunzip ); "
+        "   else (python {config[workflow_dir]}/scripts/entrez_download_sequence.py"
+        "           --database nuccore "
+        "           --accession {wildcards.accession} ); "
+        "fi) | bgzip -f 1> {output} 2> {log}"
 
 
 def get_fasta_sequences(_):

@@ -6,46 +6,27 @@ __copyright__ = "Copyright 2020, University of Oxford"
 __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
-from xml.etree import cElementTree as ElementTree
+from xml.etree import ElementTree
 
 import csv
 import requests
 import sys
-import time
 from urllib.parse import quote_plus
 
 # base url of the Entrez web service
 ENTREZ_URL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/"
 
-# number of seconds to wait before making a new request
-ENTREZ_WAIT_TIME = 1
 
-# how many seconds to wait between retries (weighted by number of attempts)
-ENTREZ_RETRY_WAIT = 2
-
-# maximum number of times to retry fetching an Entrez record before giving up
-ENTREZ_MAX_RETRY = 3
-
-
-def entrez_esearch(database, query, attempts=1):
+def entrez_esearch(database, query):
     """
     Execute an Entrez esearch query and return the search keys
     """
     r = requests.get(ENTREZ_URL + f"esearch.fcgi?db={database}&term={quote_plus(query)}&usehistory=y")
 
     if not r.ok:
-        # handle Too Many Requests error
-        if attempts < ENTREZ_MAX_RETRY:
-            wait = ENTREZ_RETRY_WAIT * attempts
-            print(
-                "WARNING: Entrez esearch query failed on attempt #{attempt}, retrying after {wait} seconds.",
-                file=sys.stderr,
-            )
-            time.sleep(wait)
-            return entrez_esearch(database, query, attempts + 1)
-        else:
-            r.raise_for_status()
+        r.raise_for_status()
 
+    # parse the XML result
     etree = ElementTree.XML(r.text)
 
     # get the search keys
@@ -55,24 +36,14 @@ def entrez_esearch(database, query, attempts=1):
     return key, webenv
 
 
-def entrez_esummary(database, key, webenv, attempts=1):
+def entrez_esummary(database, key, webenv):
     """
     Fetch the Entrez esummary records for an esearch query.
     """
     r = requests.get(ENTREZ_URL + f"esummary.fcgi?db={database}&query_key={key}&WebEnv={webenv}")
 
     if not r.ok:
-        # handle Too Many Requests error
-        if attempts < ENTREZ_MAX_RETRY:
-            wait = ENTREZ_RETRY_WAIT * attempts
-            print(
-                "WARNING: Entrez esummary query failed on attempt #{attempt}, retrying after {wait} seconds.",
-                file=sys.stderr,
-            )
-            time.sleep(wait)
-            return entrez_esummary(database, key, webenv, attempts + 1)
-        else:
-            r.raise_for_status()
+        r.raise_for_status()
 
     return ElementTree.XML(r.text)
 
@@ -106,8 +77,6 @@ def entrez_nuccore_query(query, output_file):
 
     # convert the ElementTree into a a list of dicts
     data = element_tree_to_dict(etree)
-
-    # print(data)
 
     with open(output_file, "w") as fout:
         w = csv.DictWriter(fout, data[0].keys(), delimiter="\t")
