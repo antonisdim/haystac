@@ -34,6 +34,7 @@ def entrez_invalid_assemblies(config, assemblies, output, attempt=1):
             invalid_assemblies = dict()
 
             try:
+                # TODO refactor this out
                 handle = Entrez.esearch(
                     db=ENTREZ_DB_ASSEMBLY, term=acc["AccessionVersion"] + ' AND "latest refseq"[filter]',
                 )

@@ -50,6 +50,7 @@ def chunker(seq, size):
     return (seq[pos : pos + size] for pos in range(0, len(seq), size))
 
 
+# TODO refactor this out
 def entrez_efetch(db, retmode, rettype, webenv, query_key, attempt=1):
     try:
         return Entrez.efetch(
@@ -85,6 +86,7 @@ def entrez_efetch(db, retmode, rettype, webenv, query_key, attempt=1):
             return None
 
 
+# TODO refactor this out
 def guts_of_entrez(db, retmode, rettype, chunk, batch_size):
     # print info about number of records
     print(
@@ -141,6 +143,7 @@ def guts_of_entrez(db, retmode, rettype, chunk, batch_size):
                 )
 
 
+# TODO refactor this out
 def get_accession_ftp_path(accession, config, attempt=1):
     """Get a valid NCBI ftp path from an accession."""
 

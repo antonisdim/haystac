@@ -21,13 +21,15 @@ def entrez_download_sequence(accession, output_file):
     """
     Fetch the Entrez fasta record for a nuccore accession.
     """
+
+    # open the output file stream
+    bgzip_fout = bgzf.open(output_file, "wt")
+
     # query the assembly database to see if there is an FTP url we can use
     key, webenv, id_list = entrez_esearch("assembly", accession + ' AND "latest refseq"[filter]')
 
-    # open the output file stream
-    fout = bgzf.open(output_file, "wt")
-
     if len(id_list) == 1:
+        # get the ID of the corresponding assembly
         assembly_id = id_list.pop()
 
         # fetch the assembly record
@@ -43,10 +45,10 @@ def entrez_download_sequence(accession, output_file):
             # add missing filename
             ftp_url = os.path.join(ftp_stub, os.path.basename(ftp_stub) + "_genomic.fna.gz")
 
-            # read the FTP stream, unzip the contents and write them one line at a time
+            # read the FTP stream, unzip the contents and write them one line at a time to our bgzip file
             with gzip.open(urllib.request.urlretrieve(ftp_url)[0]) as fin:
                 for line in fin:
-                    print(line.strip().decode("utf-8"), file=fout)
+                    print(line.strip().decode("utf-8"), file=bgzip_fout)
 
     else:
         # fetch the fasta record from nuccore
@@ -75,11 +77,11 @@ def entrez_download_sequence(accession, output_file):
             # fetch all the accessions at once
             r = entrez_request(f"efetch.fcgi?db=nuccore&id={accessions}&rettype=fasta&retmode=text")
 
-        # write the fasta data
-        print(r.text, file=fout)
+        # write the fasta data to our bgzip file
+        print(r.text, file=bgzip_fout)
 
     # close the bgzip file
-    fout.close()
+    bgzip_fout.close()
 
 
 if __name__ == "__main__":

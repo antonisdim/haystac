@@ -548,6 +548,7 @@ The haystack commands are:
             # use the SRA accession as the sample prefix
             config["sample_prefix"] = args.sra
 
+            # TODO refactor this out
             # get paired/single status of the accession
             Entrez.email = config["email"]
             sra_id = Entrez.read(Entrez.esearch(db="sra", term=config["sra"]))["IdList"]
