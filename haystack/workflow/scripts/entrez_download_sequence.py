@@ -10,23 +10,17 @@ import gzip
 from xml.etree import ElementTree
 
 import os
-import requests
 import sys
 import urllib
 from Bio import bgzf
 
-from haystack.workflow.scripts.entrez_utils import (
-    ENTREZ_URL,
-    entrez_esearch,
-    entrez_range_accessions,
-)
+from haystack.workflow.scripts.entrez_utils import entrez_esearch, entrez_range_accessions, entrez_request
 
 
 def entrez_download_sequence(accession, output_file):
     """
     Fetch the Entrez fasta record for a nuccore accession.
     """
-
     # query the assembly database to see if there is an FTP url we can use
     key, webenv, id_list = entrez_esearch("assembly", accession + ' AND "latest refseq"[filter]')
 
@@ -37,10 +31,7 @@ def entrez_download_sequence(accession, output_file):
         assembly_id = id_list.pop()
 
         # fetch the assembly record
-        r = requests.get(ENTREZ_URL + f"esummary.fcgi?db=assembly&id={assembly_id}")
-
-        if not r.ok:
-            r.raise_for_status()
+        r = entrez_request(f"esummary.fcgi?db=assembly&id={assembly_id}")
 
         # parse the XML result
         etree = ElementTree.XML(r.text)
@@ -59,19 +50,13 @@ def entrez_download_sequence(accession, output_file):
 
     else:
         # fetch the fasta record from nuccore
-        r = requests.get(ENTREZ_URL + f"efetch.fcgi?db=nuccore&id={accession}&rettype=fasta&retmode=text")
-
-        if not r.ok:
-            r.raise_for_status()
+        r = entrez_request(f"efetch.fcgi?db=nuccore&id={accession}&rettype=fasta&retmode=text")
 
         # the fasta may be empty if this is a "master record" containing multiple other records (e.g. NZ_APLR00000000.1)
         if len(r.text.strip()) == 0:
 
             # get the full GenBank XML record
-            r = requests.get(ENTREZ_URL + f"efetch.fcgi?db=nuccore&id={accession}&rettype=gb&retmode=xml")
-
-            if not r.ok:
-                r.raise_for_status()
+            r = entrez_request(f"efetch.fcgi?db=nuccore&id={accession}&rettype=gb&retmode=xml")
 
             # parse the XML result
             etree = ElementTree.XML(r.text)
@@ -88,10 +73,7 @@ def entrez_download_sequence(accession, output_file):
             accessions = ",".join(entrez_range_accessions(accession, first, last))
 
             # fetch all the accessions at once
-            r = requests.get(ENTREZ_URL + f"efetch.fcgi?db=nuccore&id={accessions}&rettype=fasta&retmode=text")
-
-            if not r.ok:
-                r.raise_for_status()
+            r = entrez_request(f"efetch.fcgi?db=nuccore&id={accessions}&rettype=fasta&retmode=text")
 
         # write the fasta data
         print(r.text, file=fout)

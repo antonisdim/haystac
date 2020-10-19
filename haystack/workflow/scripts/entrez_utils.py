@@ -6,6 +6,7 @@ __copyright__ = "Copyright 2020, University of Oxford"
 __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
+
 from xml.etree import ElementTree
 
 import http.client
@@ -20,6 +21,9 @@ from urllib.parse import quote_plus
 
 # base url of the Entrez web service
 ENTREZ_URL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/"
+
+# maximum 1 request per X seconds
+ENTREZ_RATE_LIMIT = 1
 
 # the maximum number of attempts to make for a failed query
 MAX_RETRY_ATTEMPTS = 2
@@ -179,14 +183,25 @@ def get_accession_ftp_path(accession, config, attempt=1):
         get_accession_ftp_path(accession, config, attempt)
 
 
+def entrez_request(url):
+    """
+    Helper function to ensure that we never exceed the rate limit.
+    """
+    r = requests.get(ENTREZ_URL + url)
+
+    if not r.ok:
+        r.raise_for_status()
+
+    time.sleep(ENTREZ_RATE_LIMIT)
+
+    return r
+
+
 def entrez_esearch(database, query):
     """
     Execute an Entrez esearch query and return the search keys
     """
-    r = requests.get(ENTREZ_URL + f"esearch.fcgi?db={database}&term={quote_plus(query)}&usehistory=y")
-
-    if not r.ok:
-        r.raise_for_status()
+    r = entrez_request(f"esearch.fcgi?db={database}&term={quote_plus(query)}&usehistory=y")
 
     # parse the XML result
     etree = ElementTree.XML(r.text)
@@ -203,10 +218,7 @@ def entrez_esummary(database, key, webenv):
     """
     Fetch the Entrez esummary records for an esearch query.
     """
-    r = requests.get(ENTREZ_URL + f"esummary.fcgi?db={database}&query_key={key}&WebEnv={webenv}")
-
-    if not r.ok:
-        r.raise_for_status()
+    r = entrez_request(f"esummary.fcgi?db={database}&query_key={key}&WebEnv={webenv}")
 
     return ElementTree.XML(r.text)
 

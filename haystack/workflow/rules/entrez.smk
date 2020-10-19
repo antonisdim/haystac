@@ -77,7 +77,7 @@ rule entrez_download_sequence:
     wildcard_constraints:
         accession="[^-]+",
     resources:
-        entrez_api=3, # TODO we use the full allocation because of the assembly -> nuccore -> master record checks
+        entrez_api=1,
     script:
         "../scripts/entrez_download_sequence.py"
 
