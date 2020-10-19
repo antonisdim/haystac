@@ -190,6 +190,7 @@ def entrez_request(url):
     """
     Helper function to ensure that we never exceed the rate limit.
     """
+    # TODO if config['api_key'] is set then append it here...
     r = requests.get(ENTREZ_URL + url)
 
     if not r.ok:

@@ -81,6 +81,8 @@ The haystack commands are:
         # load the config files
         self._load_config()
 
+        # TODO drop this setting entirely and replace with OPTIONAL `api_key`
+        #      https://www.ncbi.nlm.nih.gov/books/NBK25497/#:~:text=By%20including%20an%20API%20key,.gov%2Faccount%2F)
         # email address is mandatory, unless we are running `haystack config`
         if args.command != "config" and not self.config_user.get("email"):
             print(
