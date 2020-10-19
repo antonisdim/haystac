@@ -39,6 +39,9 @@ def entrez_download_sequence(accession, output_file):
         # fetch the assembly record
         r = requests.get(ENTREZ_URL + f"esummary.fcgi?db=assembly&id={assembly_id}")
 
+        if not r.ok:
+            r.raise_for_status()
+
         # parse the XML result
         etree = ElementTree.XML(r.text)
 
@@ -56,13 +59,19 @@ def entrez_download_sequence(accession, output_file):
 
     else:
         # fetch the fasta record from nuccore
-        fasta = requests.get(ENTREZ_URL + f"efetch.fcgi?db=nuccore&id={accession}&rettype=fasta&retmode=text").text
+        r = requests.get(ENTREZ_URL + f"efetch.fcgi?db=nuccore&id={accession}&rettype=fasta&retmode=text")
+
+        if not r.ok:
+            r.raise_for_status()
 
         # the fasta may be empty if this is a "master record" containing multiple other records (e.g. NZ_APLR00000000.1)
-        if len(fasta.strip()) == 0:
+        if len(r.text.strip()) == 0:
 
             # get the full GenBank XML record
             r = requests.get(ENTREZ_URL + f"efetch.fcgi?db=nuccore&id={accession}&rettype=gb&retmode=xml")
+
+            if not r.ok:
+                r.raise_for_status()
 
             # parse the XML result
             etree = ElementTree.XML(r.text)
@@ -79,10 +88,13 @@ def entrez_download_sequence(accession, output_file):
             accessions = ",".join(entrez_range_accessions(accession, first, last))
 
             # fetch all the accessions at once
-            fasta = requests.get(ENTREZ_URL + f"efetch.fcgi?db=nuccore&id={accessions}&rettype=fasta&retmode=text").text
+            r = requests.get(ENTREZ_URL + f"efetch.fcgi?db=nuccore&id={accessions}&rettype=fasta&retmode=text")
+
+            if not r.ok:
+                r.raise_for_status()
 
         # write the fasta data
-        print(fasta, file=fout)
+        print(r.text, file=fout)
 
     # close the bgzip file
     fout.close()
