@@ -6,11 +6,9 @@ __copyright__ = "Copyright 2020, University of Oxford"
 __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
-import os
 import pandas as pd
 
 from haystack.workflow.scripts.utilities import normalise_name
-from haystack.workflow.scripts.entrez_utils import get_accession_ftp_path
 
 
 rule entrez_nuccore_query:
@@ -67,23 +65,6 @@ checkpoint entrez_pick_sequences:
         "../scripts/entrez_pick_sequences.py"
 
 
-def get_rsync_url(wildcards):
-    """Function to get NCBI urls for the database genomes"""
-
-    try:
-        url = get_accession_ftp_path(wildcards.accession, config)
-        file_url = os.path.join(url, os.path.basename(url) + "_genomic.fna.gz")
-        if file_url != "_genomic.fna.gz":
-            return file_url
-        else:
-            return ""
-    except RuntimeError:
-        return ""
-    except TypeError:
-        # sometimes NCBI returns a None type url, but the URL does exist if I do it independently
-        get_rsync_url(wildcards)
-
-
 rule entrez_download_sequence:
     output:
         config["cache"] + "/{orgname}/{accession}.fasta.gz",
@@ -91,19 +72,14 @@ rule entrez_download_sequence:
         config["cache"] + "/{orgname}/{accession}.fasta.gz.log",
     benchmark:
         repeat("benchmarks/entrez_download_sequence_{orgname}_{accession}.benchmark.txt", 1)
-    params:
-        url=get_rsync_url,
     message:
         "Downloading accession {wildcards.accession} for taxon {wildcards.orgname}."
     wildcard_constraints:
         accession="[^-]+",
-    shell:
-        "(if [[ -n '{params.url}' && ! `{config[mtDNA]}` ]]; "
-        "   then (wget -q -O - '{params.url}' | gunzip ); "
-        "   else (python {config[workflow_dir]}/scripts/entrez_download_sequence.py"
-        "           --database nuccore "
-        "           --accession {wildcards.accession} ); "
-        "fi) | bgzip -f 1> {output} 2> {log}"
+    resources:
+        entrez_api=3, # TODO we use the full allocation because of the assembly -> nuccore -> master record checks
+    script:
+        "../scripts/entrez_download_sequence.py"
 
 
 def get_fasta_sequences(_):

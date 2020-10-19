@@ -6,13 +6,20 @@ __copyright__ = "Copyright 2020, University of Oxford"
 __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
+from xml.etree import ElementTree
+
 import http.client
+import requests
 import socket
 import sys
 import time
 import urllib.error
 from Bio import Entrez
 from datetime import datetime
+from urllib.parse import quote_plus
+
+# base url of the Entrez web service
+ENTREZ_URL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/"
 
 # the maximum number of attempts to make for a failed query
 MAX_RETRY_ATTEMPTS = 2
@@ -170,3 +177,56 @@ def get_accession_ftp_path(accession, config, attempt=1):
     except IndexError:
         time.sleep(TOO_MANY_REQUESTS_WAIT)
         get_accession_ftp_path(accession, config, attempt)
+
+
+def entrez_esearch(database, query):
+    """
+    Execute an Entrez esearch query and return the search keys
+    """
+    r = requests.get(ENTREZ_URL + f"esearch.fcgi?db={database}&term={quote_plus(query)}&usehistory=y")
+
+    if not r.ok:
+        r.raise_for_status()
+
+    # parse the XML result
+    etree = ElementTree.XML(r.text)
+
+    # get the search keys
+    key = etree.find("QueryKey").text
+    webenv = etree.find("WebEnv").text
+    id_list = [id.text for id in etree.findall(".//Id")]
+
+    return key, webenv, id_list
+
+
+def entrez_esummary(database, key, webenv):
+    """
+    Fetch the Entrez esummary records for an esearch query.
+    """
+    r = requests.get(ENTREZ_URL + f"esummary.fcgi?db={database}&query_key={key}&WebEnv={webenv}")
+
+    if not r.ok:
+        r.raise_for_status()
+
+    return ElementTree.XML(r.text)
+
+
+def entrez_range_accessions(accession, first, last):
+    """
+    Return a range between two accession codes (e.g. ABC001 -> ABC005)
+    """
+    # sanity check that the items are equal length and in order
+    assert len(first) == len(last) and first < last
+
+    # find the index of the first difference
+    idx = [i for i in range(len(first)) if first[i] != last[i]][0]
+
+    try:
+        # return the range
+        return [f"{first[:idx]}{item}" for item in range(int(first[idx:]), int(last[idx:]) + 1)]
+    except ValueError:
+        print(
+            f"ERROR: Could not resolve the accession range {first}-{last} for master record {accession}",
+            file=sys.stderr,
+        )
+        exit(1)

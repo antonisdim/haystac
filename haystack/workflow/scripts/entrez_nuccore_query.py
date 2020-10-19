@@ -6,46 +6,10 @@ __copyright__ = "Copyright 2020, University of Oxford"
 __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
-from xml.etree import ElementTree
-
 import csv
-import requests
 import sys
-from urllib.parse import quote_plus
 
-# base url of the Entrez web service
-ENTREZ_URL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/"
-
-
-def entrez_esearch(database, query):
-    """
-    Execute an Entrez esearch query and return the search keys
-    """
-    r = requests.get(ENTREZ_URL + f"esearch.fcgi?db={database}&term={quote_plus(query)}&usehistory=y")
-
-    if not r.ok:
-        r.raise_for_status()
-
-    # parse the XML result
-    etree = ElementTree.XML(r.text)
-
-    # get the search keys
-    key = etree.find("QueryKey").text
-    webenv = etree.find("WebEnv").text
-
-    return key, webenv
-
-
-def entrez_esummary(database, key, webenv):
-    """
-    Fetch the Entrez esummary records for an esearch query.
-    """
-    r = requests.get(ENTREZ_URL + f"esummary.fcgi?db={database}&query_key={key}&WebEnv={webenv}")
-
-    if not r.ok:
-        r.raise_for_status()
-
-    return ElementTree.XML(r.text)
+from haystack.workflow.scripts.entrez_utils import entrez_esearch, entrez_esummary
 
 
 def element_tree_to_dict(etree):
@@ -70,7 +34,7 @@ def entrez_nuccore_query(query, output_file):
     Query the NCBI nuccore database to get a list of sequence accessions and their metadata.
     """
     # execute the search
-    key, webenv = entrez_esearch("nuccore", query)
+    key, webenv, _ = entrez_esearch("nuccore", query)
 
     # fetch the results
     etree = entrez_esummary("nuccore", key, webenv)
