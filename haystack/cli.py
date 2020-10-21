@@ -664,6 +664,11 @@ The haystack commands are:
         # get the CLI arguments
         args = self._parse_args(parser, level=2)
 
+        # resolve relative paths
+        args.db_output = os.path.abspath(args.db_output)
+        args.sample_output_dir = os.path.abspath(args.sample_output_dir)
+        args.analysis_output_dir = os.path.abspath(args.analysis_output_dir)
+
         config_fetch = os.path.join(args.db_output, "database_fetch_config.yaml")
         config_build = os.path.join(args.db_output, "database_build_config.yaml")
         config_sample = os.path.join(args.sample_output_dir, "sample_config.yaml")
@@ -694,33 +699,33 @@ The haystack commands are:
 
         if args.mode == "filter":
             if config["PE_MODERN"]:
-                target_list.append(f"/fastq/PE/{config['sample_prefix']}_mapq_pair.readlen")
+                target_list.append(f"fastq/PE/{config['sample_prefix']}_mapq_pair.readlen")
             else:
-                target_list.append(f"/fastq/SE/{config['sample_prefix']}_mapq.readlen")
+                target_list.append(f"fastq/SE/{config['sample_prefix']}_mapq.readlen")
 
         elif args.mode == "align":
-            target_list.append(f"/sigma/{config['sample_prefix']}_alignments.done")
+            target_list.append(f"sigma/{config['sample_prefix']}_alignments.done")
 
         elif args.mode == "likelihoods":
             target_list.append(
-                f"/probabilities/{config['sample_prefix']}/{config['sample_prefix']}_likelihood_ts_tv_matrix.csv"
+                f"probabilities/{config['sample_prefix']}/{config['sample_prefix']}_likelihood_ts_tv_matrix.csv"
             )
 
         elif args.mode == "probabilities":
             target_list.append(
-                f"/probabilities/{config['sample_prefix']}/{config['sample_prefix']}_posterior_probabilities.tsv"
+                f"probabilities/{config['sample_prefix']}/{config['sample_prefix']}_posterior_probabilities.tsv"
             )
 
         elif args.mode == "abundances":
             target_list.append(
-                f"/probabilities/{config['sample_prefix']}/{config['sample_prefix']}_posterior_abundance.tsv"
+                f"probabilities/{config['sample_prefix']}/{config['sample_prefix']}_posterior_abundance.tsv"
             )
 
         elif args.mode == "reads":
             target_list.append("/dirichlet_reads/{config['sample_prefix']}_dirichlet_reads.done")
 
         elif args.mode == "mapdamage":
-            target_list.append(f"/mapdamage/{config['sample_prefix']}_mapdamage.done")
+            target_list.append(f"mapdamage/{config['sample_prefix']}_mapdamage.done")
 
         config_analysis = os.path.join(args.analysis_output_dir, config["sample_prefix"] + "_config.yaml")
 
