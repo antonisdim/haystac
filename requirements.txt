@@ -10,4 +10,3 @@ requests>=2.24.0
 scipy>=1.4.1
 setuptools>=49.6.0
 snakemake>=5.20.1
-yaml>=0.2.5
