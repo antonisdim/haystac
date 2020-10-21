@@ -722,7 +722,7 @@ The haystack commands are:
         elif args.mode == "mapdamage":
             target_list.append(f"/mapdamage/{config['sample_prefix']}_mapdamage.done")
 
-        config_analysis = os.path.join(args.analysis_output_dir, args.sample_prefix + "_config.yaml")
+        config_analysis = os.path.join(args.analysis_output_dir, config["sample_prefix"] + "_config.yaml")
 
         with open(config_analysis, "w") as fout:
             yaml.safe_dump(config, fout, default_flow_style=False)
