@@ -611,11 +611,21 @@ The haystack commands are:
         )
 
         required.add_argument(
-            "--database", help="Path to the database output directory", metavar="<path>", required=True,
+            "--database",
+            help="Path to the database output directory",
+            metavar="<path>",
+            dest="db_output",
+            type=WritablePathType(),
+            required=True,
         )
 
         required.add_argument(
-            "--sample", help="Path to the sample output directory", metavar="<path>", required=True,
+            "--sample",
+            help="Path to the sample output directory",
+            metavar="<path>",
+            dest="sample_output_dir",
+            type=WritablePathType(),
+            required=True,
         )
 
         required.add_argument(
