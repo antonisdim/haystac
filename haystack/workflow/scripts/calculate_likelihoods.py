@@ -20,7 +20,6 @@ def calculate_likelihoods(ts_tv_file, readlen_file, taxa_file_paths, config, out
     """
     assert os.stat(ts_tv_file).st_size, f"The ts_tv count file is empty {ts_tv_file}"
     assert os.stat(readlen_file).st_size, f"The read length is empty {readlen_file}"
-    # assert os.stat(taxa_file_paths).st_size, f"The taxa list is empty {taxa_file_paths}"
     assert len(taxa_file_paths) > 0, f"The taxa list is empty {taxa_file_paths}"
 
     print("Reading the initial Ts/Tv matrix.", file=sys.stderr)
@@ -113,10 +112,6 @@ def calculate_likelihoods(ts_tv_file, readlen_file, taxa_file_paths, config, out
     )
 
     print(init_ts_tv, file=sys.stderr)
-
-    # do the dirichlet assignment
-    # init_ts_tv['Dirichlet_Assignment'] = np.nan
-    # init_ts_tv['Dirichlet_Assignment'] = init_ts_tv.where(init_ts_tv['Likelihood'] >= 0.95, 0).astype('int')
 
     # every likelihood equal or above 0.95 gets assigned as 1, everything below as 0
     init_ts_tv["Dirichlet_Assignment"] = (

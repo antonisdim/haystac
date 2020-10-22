@@ -28,7 +28,6 @@ def calculate_dirichlet_abundances(ts_tv_file, p_values_file, total_fastq_reads,
         pd.read_csv(p_values_file, sep="\t", names=["species", "pvalue"])
         .groupby("species")
         .apply(hmean)
-        # .squeeze()
         .astype("float64")
         .rename("Taxon")
     )

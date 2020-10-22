@@ -51,9 +51,6 @@ def calculate_probabilities(
     )
 
     mismatch_df = mismatch_df.astype({"Ts": float, "Tv": float})
-
-    # mismatch_df = ts_tv_matrix.groupby("Taxon").sum().astype({"Ts": float, "Tv": float})
-
     mismatch_df.reset_index(inplace=True)
     mismatch_df["Posterior"] = np.nan
     mismatch_df["Read_Count"] = read_count

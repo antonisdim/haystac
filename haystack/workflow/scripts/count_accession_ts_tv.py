@@ -37,13 +37,6 @@ def read_pair_generator(bam, region_string=None):
             del read_dict[qname]
 
 
-# def mutation_type(alleles):
-#     """
-#     Is this mutation a transition (A <-> G and C <-> T) or a transversion (everything else).
-#     """
-#     return 'ts' if set(alleles) == {'A', 'G'} or set(alleles) == {'C', 'T'} else 'tv'
-
-
 def mutation_type(alleles):
     """
     Is this mutation a transition (A <-> G and C <-> T) or a transversion (everything else).

@@ -85,8 +85,6 @@ rule bowtie_alignment_paired_end:
 def get_sorted_bam_paths(wildcards):
     """Get the sorted bam paths for each index chunk"""
 
-    # get_chunk_num = checkpoints.calculate_bt2_idx_chunks.get(query=wildcards.query)
-    # idx_chunk_total = ceil(float(open(get_chunk_num.output[0]).read().strip()))
     idx_chunk_total = ceil(float(open(config["db_output"] + "/bowtie/bt2_idx_chunk_num.txt").read().strip()))
 
     reads = ["PE"] if config["PE_MODERN"] else ["SE"]
