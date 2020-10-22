@@ -96,6 +96,7 @@ The haystack commands are:
             exit(reval)
 
         except ValidationError as error:
+            # TODO how does snakemake colour it's output? make these messages print red for consistency
             print(f"haystack: error: {error}")
             exit(1)
 
@@ -350,7 +351,9 @@ The haystack commands are:
         args = self._parse_args(parser, level=2)
 
         # must specify at least one source for the database
-        if not (args.refseq_rep or args.query or args.query_file or args.accessions or args.sequences):
+        if args.mode != "index" and not (
+            args.refseq_rep or args.query or args.query_file or args.accessions or args.sequences
+        ):
             raise ValidationError(
                 "Please specify at least one of --refseq-rep, --query, --query-file, --accessions or --sequences"
             )
@@ -368,6 +371,8 @@ The haystack commands are:
 
             if not args.query:
                 raise ValidationError(f"The query file '{args.query_file}' is empty.")
+
+        db_original = args.db_output
 
         # resolve relative paths
         args.db_output = os.path.abspath(os.path.expanduser(args.db_output))
@@ -428,12 +433,13 @@ The haystack commands are:
         target_list = [os.path.join(args.db_output, target) for target in target_list]
         snakefile = os.path.join(CODE_DIR, "workflow/database.smk")
 
-        recode = self._run_snakemake(snakefile, args, config, target_list)
+        # run the `haystack` workflow
+        exit_code = self._run_snakemake(snakefile, args, config, target_list)
 
-        if recode == 0 and not args.unlock:
-            print("Please run `haystack database --mode index` after this step.")
+        if args.mode == "fetch" and exit_code == 0 and not args.unlock:
+            print(f"Please run `haystack database --mode index --output {db_original}` after this step.")
 
-        return recode
+        return exit_code
 
     def sample(self):
         """
@@ -812,11 +818,9 @@ The haystack commands are:
             targets=target_list,
             cores=int(args.cores),
             resources={"entrez_api": MAX_ENTREZ_REQUESTS},
-
             # handle the rule-specific conda environments
             use_conda=config["use_conda"],
             conda_prefix=os.path.join(config["cache"], "conda") if config["use_conda"] else None,
-
             # set all the debugging flags
             printreason=args.debug,
             printshellcmds=args.debug,
@@ -827,7 +831,6 @@ The haystack commands are:
             keepgoing=(not args.debug),
             force_incomplete=(not args.debug),
             unlock=args.unlock,
-
             # pass on any CLI arguments from the --snakemake flag
             **smk_params,
         )
