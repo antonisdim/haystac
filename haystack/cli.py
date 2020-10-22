@@ -53,7 +53,7 @@ TAXONOMIC_RANKS = ["genus", "species", "subspecies", "serotype"]
 RESTART_TIMES = 3
 
 # maximum concurrent Entrez requests
-MAX_ENTREZ_REQUESTS = 3
+MAX_ENTREZ_REQUESTS = 3  # TODO change this to 10 if the api_key is set
 
 
 class Haystack(object):
@@ -812,19 +812,25 @@ The haystack commands are:
             snakefile,
             config=config,
             targets=target_list,
-            printreason=args.debug,
-            printshellcmds=args.debug,
             cores=int(args.cores),
-            keepgoing=(not args.debug),
-            restart_times=0 if args.debug else RESTART_TIMES,
-            unlock=args.unlock,
-            show_failed_logs=args.debug,
             resources={"entrez_api": MAX_ENTREZ_REQUESTS},
+
+            # handle the rule-specific conda environments
             use_conda=config["use_conda"],
             conda_prefix=config["cache"] if config["use_conda"] else None,
+
+            # set all the debugging flags
+            printreason=args.debug,
+            printshellcmds=args.debug,
+            show_failed_logs=args.debug,
             verbose=args.debug,
             keep_incomplete=args.debug,
+            restart_times=0 if args.debug else RESTART_TIMES,
+            keepgoing=(not args.debug),
             force_incomplete=(not args.debug),
+            unlock=args.unlock,
+
+            # pass on any CLI arguments from the --snakemake flag
             **smk_params,
         )
 
