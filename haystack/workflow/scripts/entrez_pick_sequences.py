@@ -36,16 +36,21 @@ def entrez_pick_sequences(config, nuccore_file, taxa_file, output_file):
 
         # the entrez query might give a different accession for a certain species than the refseq rep one and
         # I don't want that. If the species exists in the refseq I want to keep the refseq records
-        selected_sequences = selected_sequences[~selected_sequences["species"].str.replace(" ", "_").
-            isin(refseq_genomes.species)]
-        selected_sequences = selected_sequences[~selected_sequences["species"].str.replace(" ", "_").
-            isin(genbank_genomes.species)]
-        selected_sequences = selected_sequences[~selected_sequences["species"].str.replace(" ", "_").
-            isin(assemblies.species)]
-        selected_sequences = selected_sequences[~selected_sequences["species"].str.replace(" ", "_").
-            isin(refseq_plasmids.species)]
-        selected_sequences = selected_sequences[~selected_sequences["species"].str.replace(" ", "_").
-            isin(genbank_plasmids.species)]
+        selected_sequences = selected_sequences[
+            ~selected_sequences["species"].str.replace(" ", "_").isin(refseq_genomes.species)
+        ]
+        selected_sequences = selected_sequences[
+            ~selected_sequences["species"].str.replace(" ", "_").isin(genbank_genomes.species)
+        ]
+        selected_sequences = selected_sequences[
+            ~selected_sequences["species"].str.replace(" ", "_").isin(assemblies.species)
+        ]
+        selected_sequences = selected_sequences[
+            ~selected_sequences["species"].str.replace(" ", "_").isin(refseq_plasmids.species)
+        ]
+        selected_sequences = selected_sequences[
+            ~selected_sequences["species"].str.replace(" ", "_").isin(genbank_plasmids.species)
+        ]
 
     print(
         "selected the longest sequence per species, writing it to a file", file=sys.stderr,

@@ -134,7 +134,7 @@ rule calculate_taxa_probabilities:
 rule coverage_t_test:
     input:
         config["analysis_output_dir"] + "/alignments/{sample}/{reads}/{orgname}/{orgname}_{accession}.bam",
-        config["cache"] + "/{orgname}/{accession}.fasta.gz.fai",
+        config["cache"] + "/ncbi/{orgname}/{accession}.fasta.gz.fai",
     output:
         config["analysis_output_dir"] + "/probabilities/{sample}/{orgname}_t_test_pvalue_{accession}_{reads}.txt",
     log:

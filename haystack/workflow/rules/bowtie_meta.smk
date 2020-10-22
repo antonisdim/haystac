@@ -23,7 +23,7 @@ def get_min_score(wildcards, input):
 rule align_taxon_single_end:
     input:
         fastq=config["analysis_output_dir"] + "/fastq/SE/{sample}_mapq.fastq.gz",
-        db_idx=config["cache"] + "/{orgname}/{accession}.1.bt2l",
+        db_idx=config["cache"] + "/ncbi/{orgname}/{accession}.1.bt2l",
         readlen=config["analysis_output_dir"] + "/fastq/SE/{sample}_mapq.readlen",
     log:
         config["analysis_output_dir"] + "/alignments/{sample}/SE/{orgname}/{accession}.log",
@@ -36,7 +36,7 @@ rule align_taxon_single_end:
         )
     params:
         min_score=get_min_score,
-        basename=config["cache"] + '/"{orgname}"/{accession}',
+        basename=config["cache"] + "/ncbi/{orgname}/{accession}",
     threads: config["bowtie2_threads"]
     message:
         "Aligning the filtered reads from sample {wildcards.sample} against taxon {wildcards.orgname}."
@@ -54,7 +54,7 @@ rule align_taxon_paired_end:
     input:
         fastq_r1=config["analysis_output_dir"] + "/fastq/PE/{sample}_R1_mapq.fastq.gz",
         fastq_r2=config["analysis_output_dir"] + "/fastq/PE/{sample}_R2_mapq.fastq.gz",
-        db_idx=config["cache"] + "/{orgname}/{accession}.1.bt2l",
+        db_idx=config["cache"] + "/ncbi/{orgname}/{accession}.1.bt2l",
         readlen=config["analysis_output_dir"] + "/fastq/PE/{sample}_mapq_pair.readlen",
     log:
         config["analysis_output_dir"] + "/alignments/{sample}/PE/{orgname}/{accession}.log",
@@ -63,7 +63,7 @@ rule align_taxon_paired_end:
         bai_file=config["analysis_output_dir"] + "/alignments/{sample}/PE/{orgname}/{orgname}_{accession}.bam.bai",
     params:
         min_score=get_min_score,
-        basename=config["cache"] + '/"{orgname}"/{accession}',
+        basename=config["cache"] + "/ncbi/{orgname}/{accession}",
     threads: config["bowtie2_threads"]
     message:
         "Aligning the filtered reads from sample {wildcards.sample} against taxon {wildcards.orgname}."

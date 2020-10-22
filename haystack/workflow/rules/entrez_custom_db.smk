@@ -15,9 +15,9 @@ rule entrez_custom_sequences:
     input:
         config["sequences"],
     log:
-        config["cache"] + "/{orgname}/custom_seq-{accession}.log",
+        config["cache"] + "/ncbi/{orgname}/custom_seq-{accession}.log",
     output:
-        config["cache"] + "/{orgname}/custom_seq-{accession}.fasta.gz",
+        config["cache"] + "/ncbi/{orgname}/custom_seq-{accession}.fasta.gz",
     message:
         "Adding the user provided fasta sequence {wildcards.accession} for taxon {wildcards.orgname} to the database."
     script:
@@ -72,7 +72,8 @@ def get_paths_for_custom_seqs():
             seq["accession"],
         )
         inputs.append(
-            config["cache"] + "/{orgname}/custom_seq-{accession}.fasta.gz".format(orgname=orgname, accession=accession)
+            config["cache"]
+            + "/ncbi/{orgname}/custom_seq-{accession}.fasta.gz".format(orgname=orgname, accession=accession)
         )
 
     return inputs
@@ -132,7 +133,9 @@ def get_paths_for_custom_acc(wildcards):
             normalise_name(seq["species"]),
             seq["accession"],
         )
-        inputs.append(config["cache"] + "/{orgname}/{accession}.fasta.gz".format(orgname=orgname, accession=accession))
+        inputs.append(
+            config["cache"] + "/ncbi/{orgname}/{accession}.fasta.gz".format(orgname=orgname, accession=accession)
+        )
 
     return inputs
 

@@ -13,9 +13,9 @@ from haystack.workflow.scripts.utilities import normalise_name
 
 rule fasta_idx:
     input:
-        config["cache"] + "/{orgname}/{accession}.fasta.gz",
+        config["cache"] + "/ncbi/{orgname}/{accession}.fasta.gz",
     output:
-        config["cache"] + "/{orgname}/{accession}.fasta.gz.fai",
+        config["cache"] + "/ncbi/{orgname}/{accession}.fasta.gz.fai",
     benchmark:
         repeat("benchmarks/fasta_idx_{orgname}_{accession}.benchmark.txt", 1)
     message:
@@ -28,15 +28,15 @@ rule fasta_idx:
 
 rule index_database_entrez:
     input:
-        config["cache"] + "/{orgname}/{accession}.fasta.gz",
+        config["cache"] + "/ncbi/{orgname}/{accession}.fasta.gz",
     log:
-        config["cache"] + "/{orgname}/{accession}_index.log",
+        config["cache"] + "/ncbi/{orgname}/{accession}_index.log",
     output:
         expand(
-            config["cache"] + "/{orgname}/{accession}.{n}.bt2l", n=[1, 2, 3, 4], allow_missing=True,
+            config["cache"] + "/ncbi/{orgname}/{accession}.{n}.bt2l", n=[1, 2, 3, 4], allow_missing=True,
         ),
         expand(
-            config["cache"] + "/{orgname}/{accession}.rev.{n}.bt2l", n=[1, 2], allow_missing=True,
+            config["cache"] + "/ncbi/{orgname}/{accession}.rev.{n}.bt2l", n=[1, 2], allow_missing=True,
         ),
     benchmark:
         repeat("benchmarks/index_database_{orgname}_{accession}.benchmark.txt", 1)
@@ -44,7 +44,7 @@ rule index_database_entrez:
         "Preparing the bowtie2 index for genome {wildcards.accession} of taxon {wildcards.orgname}."
     threads: config["bowtie2_threads"]
     params:
-        basename=config["cache"] + '/"{orgname}"/{accession}',
+        basename=config["cache"] + "/ncbi/{orgname}/{accession}",
     conda:
         "../envs/bowtie2.yaml"
     shell:
@@ -72,9 +72,11 @@ def get_idx_entrez(wildcards):
             normalise_name(seq["species"]),
             seq["AccessionVersion"],
         )
-        inputs.append(config["cache"] + "/{orgname}/{accession}.1.bt2l".format(orgname=orgname, accession=accession))
         inputs.append(
-            config["cache"] + "/{orgname}/{accession}.fasta.gz.fai".format(orgname=orgname, accession=accession)
+            config["cache"] + "/ncbi/{orgname}/{accession}.1.bt2l".format(orgname=orgname, accession=accession)
+        )
+        inputs.append(
+            config["cache"] + "/ncbi/{orgname}/{accession}.fasta.gz.fai".format(orgname=orgname, accession=accession)
         )
 
     return inputs
@@ -104,9 +106,11 @@ def get_idx_ref_gen(wildcards):
             normalise_name(seq["species"]),
             seq["AccessionVersion"],
         )
-        inputs.append(config["cache"] + "/{orgname}/{accession}.1.bt2l".format(orgname=orgname, accession=accession))
         inputs.append(
-            config["cache"] + "/{orgname}/{accession}.fasta.gz.fai".format(orgname=orgname, accession=accession)
+            config["cache"] + "/ncbi/{orgname}/{accession}.1.bt2l".format(orgname=orgname, accession=accession)
+        )
+        inputs.append(
+            config["cache"] + "/ncbi/{orgname}/{accession}.fasta.gz.fai".format(orgname=orgname, accession=accession)
         )
 
     return inputs
@@ -139,9 +143,11 @@ def get_idx_assembly(wildcards):
             normalise_name(seq["species"]),
             seq["AccessionVersion"],
         )
-        inputs.append(config["cache"] + "/{orgname}/{accession}.1.bt2l".format(orgname=orgname, accession=accession))
         inputs.append(
-            config["cache"] + "/{orgname}/{accession}.fasta.gz.fai".format(orgname=orgname, accession=accession)
+            config["cache"] + "/ncbi/{orgname}/{accession}.1.bt2l".format(orgname=orgname, accession=accession)
+        )
+        inputs.append(
+            config["cache"] + "/ncbi/{orgname}/{accession}.fasta.gz.fai".format(orgname=orgname, accession=accession)
         )
 
     return inputs
@@ -168,11 +174,12 @@ def get_idx_custom_seqs():
             seq["accession"],
         )
         inputs.append(
-            config["cache"] + "/{orgname}/custom_seq-{accession}.1.bt2l".format(orgname=orgname, accession=accession)
+            config["cache"]
+            + "/ncbi/{orgname}/custom_seq-{accession}.1.bt2l".format(orgname=orgname, accession=accession)
         )
         inputs.append(
             config["cache"]
-            + "/{orgname}/custom_seq-{accession}.fasta.gz.fai".format(orgname=orgname, accession=accession)
+            + "/ncbi/{orgname}/custom_seq-{accession}.fasta.gz.fai".format(orgname=orgname, accession=accession)
         )
 
     return inputs
@@ -196,9 +203,11 @@ def get_idx_custom_acc():
             normalise_name(seq["species"]),
             seq["accession"],
         )
-        inputs.append(config["cache"] + "/{orgname}/{accession}.1.bt2l".format(orgname=orgname, accession=accession))
         inputs.append(
-            config["cache"] + "/{orgname}/{accession}.fasta.gz.fai".format(orgname=orgname, accession=accession)
+            config["cache"] + "/ncbi/{orgname}/{accession}.1.bt2l".format(orgname=orgname, accession=accession)
+        )
+        inputs.append(
+            config["cache"] + "/ncbi/{orgname}/{accession}.fasta.gz.fai".format(orgname=orgname, accession=accession)
         )
 
     return inputs

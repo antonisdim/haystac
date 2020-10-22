@@ -67,9 +67,9 @@ checkpoint entrez_pick_sequences:
 
 rule entrez_download_sequence:
     output:
-        config["cache"] + "/{orgname}/{accession}.fasta.gz",
+        config["cache"] + "/ncbi/{orgname}/{accession}.fasta.gz",
     log:
-        config["cache"] + "/{orgname}/{accession}.fasta.gz.log",
+        config["cache"] + "/ncbi/{orgname}/{accession}.fasta.gz.log",
     benchmark:
         repeat("benchmarks/entrez_download_sequence_{orgname}_{accession}.benchmark.txt", 1)
     message:
@@ -99,7 +99,9 @@ def get_fasta_sequences(_):
         orgname = normalise_name(seq["species"])
         accession = seq["AccessionVersion"]
 
-        inputs.append(config["cache"] + "/{orgname}/{accession}.fasta.gz".format(orgname=orgname, accession=accession))
+        inputs.append(
+            config["cache"] + "/ncbi/{orgname}/{accession}.fasta.gz".format(orgname=orgname, accession=accession)
+        )
 
     return inputs
 
