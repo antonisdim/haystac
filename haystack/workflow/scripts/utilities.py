@@ -227,9 +227,9 @@ def valid_format(accession, orgname):
     """Checks for illegal characters in user provided accessions"""
 
     illegals = list(r'\/:*?"<>|')
-    valid_acc = next((True for illegal in illegals if accession in illegal), False)
+    not_valid_acc = next((True for illegal in illegals if accession in illegal), False)
 
-    if not valid_acc:
+    if not_valid_acc:
         raise RuntimeError(
             "The accession for {orgname} contains an illegal character. "
             "Please fix the accession.".format(orgname=orgname)
