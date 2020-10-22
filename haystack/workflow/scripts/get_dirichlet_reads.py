@@ -35,9 +35,10 @@ def get_dirichlet_reads(input_bam, output_bam, matrix_file, taxon):
 
 
 if __name__ == "__main__":
-    # redirect all output to the log
+    # noinspection PyUnresolvedReferences
     sys.stderr = open(snakemake.log[0], "w")
 
+    # noinspection PyUnresolvedReferences
     get_dirichlet_reads(
         input_bam=snakemake.input[0],
         output_bam=snakemake.output[0],

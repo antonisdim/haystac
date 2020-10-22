@@ -32,6 +32,7 @@ def entrez_invalid_assemblies(assemblies, output):
 
 
 if __name__ == "__main__":
+    # noinspection PyUnresolvedReferences
     entrez_invalid_assemblies(
         assemblies=snakemake.input[0], output=snakemake.output[0],
     )

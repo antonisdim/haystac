@@ -108,25 +108,6 @@ def calculate_likelihoods(ts_tv_file, readlen_file, taxa_file_paths, config, out
     print("calculating the proper likelihood", file=sys.stderr)
     init_ts_tv["Likelihood"] = np.nan
 
-    # todo could you please double check that the following for loop is equivalent to this SQL statement:
-    #  UPDATE ts_tv
-    #  JOIN
-    #  (SELECT read_id, sum(ll_nom)+(@total_taxa - count(taxa_id)) * @data_ts_missing * @data_tv_missing AS denominator
-    #  FROM ts_tv GROUP BY read_id) AS den
-    #  ON ts_tv.read_id = den.read_id
-    #  SET Likelihood = ll_nom / denominator;
-    #  I needed to add some brackets in order to ensure the right order of the calculations.
-    #  Also it needed to change to group['Taxon'].unique().
-    #  The only reason it is in a for loop is because I want to assign the likelihoods I calculate per read to
-    #  the right rows. If there's a more straightforward way happy to change it
-
-    # for index, group in init_ts_tv.groupby('Read_ID'):
-    #     init_ts_tv['Likelihood'] = init_ts_tv['ll_nom'].transform(lambda nom: nom / (
-    #             sum(nom) + ((total_taxa_count - len(group['Taxon'].unique())) * data_ts_missing * data_tv_missing)))
-
-    # todo How about this. We group by read_id, therefore the number of non NA rows in that group should be the number
-    #  of taxa this read has aligned to. Therefore this complex query can happen in one go.
-
     init_ts_tv["Likelihood"] = init_ts_tv.groupby("Read_ID")["ll_nom"].transform(
         lambda nom: nom / (sum(nom) + ((total_taxa_count - nom.count()) * data_ts_missing * data_tv_missing))
     )
@@ -163,9 +144,10 @@ def calculate_likelihoods(ts_tv_file, readlen_file, taxa_file_paths, config, out
 
 
 if __name__ == "__main__":
-    # redirect all output to the log
+    # noinspection PyUnresolvedReferences
     sys.stderr = open(snakemake.log[0], "w")
 
+    # noinspection PyUnresolvedReferences
     calculate_likelihoods(
         ts_tv_file=snakemake.input[0],
         readlen_file=snakemake.input[1],

@@ -17,19 +17,13 @@ MAX_MEM_MB = virtual_memory().total / MEGABYTE
 from haystack.workflow.scripts.utilities import get_total_paths, normalise_name
 
 
-def get_total_fasta_paths(wildcards):
+def get_total_fasta_paths(_):
     """
     Get all the individual fasta file paths for the taxa in our database.
     """
 
     sequences = get_total_paths(
-        wildcards,
-        checkpoints,
-        config["query"],
-        config["refseq_rep"],
-        config["sequences"],
-        config["accessions"],
-        config["genera"],
+        checkpoints, config["query"], config["refseq_rep"], config["sequences"], config["accessions"], config["genera"]
     )
 
     inputs = []
@@ -140,9 +134,10 @@ rule bowtie_index:
         "bowtie2-build --large-index --threads {threads} {input.fasta_chunk} {params.basename} &> {log}"
 
 
-def get__bt2_idx_chunk_paths(wildcards):
+def get__bt2_idx_chunk_paths(_):
     """Get the paths for the index chunks for the filtering bowtie2 alignment"""
 
+    # noinspection PyUnresolvedReferences
     get_chunk_num = checkpoints.calculate_bt2_idx_chunks.get()
     idx_chunk_total = ceil(float(open(get_chunk_num.output[0]).read().strip()))
 

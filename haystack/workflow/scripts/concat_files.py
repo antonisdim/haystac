@@ -25,7 +25,8 @@ def concat_files(list_of_files, output_file):
 
 
 if __name__ == "__main__":
-    # redirect all output to the log
+    # noinspection PyUnresolvedReferences
     sys.stderr = open(snakemake.log[0], "w")
 
+    # noinspection PyUnresolvedReferences
     concat_files(list_of_files=snakemake.input, output_file=snakemake.output[0])

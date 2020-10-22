@@ -10,8 +10,8 @@ import gzip
 from xml.etree import ElementTree
 
 import sys
-import urllib
 from Bio import bgzf
+from urllib.request import urlretrieve
 
 from haystack.workflow.scripts.entrez_utils import entrez_range_accessions, entrez_request, entrez_assembly_ftp
 
@@ -29,7 +29,7 @@ def entrez_download_sequence(accession, output_file):
 
         if ftp_url:
             # read the FTP stream, unzip the contents and write them one line at a time to our bgzip file
-            with gzip.open(urllib.request.urlretrieve(ftp_url)[0]) as fin:
+            with gzip.open(urlretrieve(ftp_url)[0]) as fin:
                 for line in fin:
                     print(line.strip().decode("utf-8"), file=bgzip_fout)
 
@@ -65,4 +65,5 @@ def entrez_download_sequence(accession, output_file):
 
 
 if __name__ == "__main__":
+    # noinspection PyUnresolvedReferences
     entrez_download_sequence(accession=snakemake.wildcards.accession, output_file=snakemake.output[0])

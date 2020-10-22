@@ -54,9 +54,10 @@ def genome_sizes(taxon_fasta_idx):
 
 
 if __name__ == "__main__":
-    # redirect all output to the log
+    # noinspection PyUnresolvedReferences
     sys.stderr = open(snakemake.log[0], "w")
 
+    # noinspection PyUnresolvedReferences
     coverage_t_test(
         bam=snakemake.input[0],
         taxon_fasta_idx=snakemake.input[1],

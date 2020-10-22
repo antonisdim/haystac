@@ -67,6 +67,7 @@ def entrez_pick_sequences(config, nuccore_file, taxa_file, output_file):
 
 
 if __name__ == "__main__":
+    # noinspection PyUnresolvedReferences
     entrez_pick_sequences(
         config=snakemake.config,
         nuccore_file=snakemake.input[0],

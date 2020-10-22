@@ -68,9 +68,10 @@ def entrez_custom_sequences(config, taxon, output_file):
 
 
 if __name__ == "__main__":
-    # redirect all output to the log
+    # noinspection PyUnresolvedReferences
     sys.stderr = open(snakemake.log[0], "w")
 
+    # noinspection PyUnresolvedReferences
     entrez_custom_sequences(
         config=snakemake.config, taxon=snakemake.wildcards.orgname, output_file=snakemake.output[0],
     )

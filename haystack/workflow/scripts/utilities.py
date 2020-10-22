@@ -139,9 +139,7 @@ class JsonType(object):
             raise argparse.ArgumentTypeError(f"'{value}' is not a valid JSON string\n {error}")
 
 
-def get_total_paths(
-    wildcards, checkpoints, entrez_query, with_refseq_rep, sequences, accessions, specific_genera,
-):
+def get_total_paths(checkpoints, entrez_query, with_refseq_rep, sequences, accessions, specific_genera):
     """
     Get all the individual fasta file paths for the taxa in our database.
     """
@@ -157,7 +155,6 @@ def get_total_paths(
 
     if with_refseq_rep:
         refseq_rep_prok = checkpoints.entrez_refseq_accessions.get()
-
         refseq_genomes = pd.read_csv(refseq_rep_prok.output.refseq_genomes, sep="\t")
         genbank_genomes = pd.read_csv(refseq_rep_prok.output.genbank_genomes, sep="\t")
         assemblies = pd.read_csv(refseq_rep_prok.output.assemblies, sep="\t")
@@ -212,10 +209,8 @@ def check_unique_taxa_in_custom_input(accessions, sequences):
     """Checks that custom input files have only one entry per taxon"""
 
     if accessions != "" and sequences != "":
-        custom_fasta_paths = pd.read_csv(
-            config["sequences"], sep="\t", header=None, names=["species", "accession", "path"],
-        )
-        custom_accessions = pd.read_csv(config["accessions"], sep="\t", header=None, names=["species", "accession"],)
+        custom_fasta_paths = pd.read_csv(sequences, sep="\t", header=None, names=["species", "accession", "path"])
+        custom_accessions = pd.read_csv(accessions, sep="\t", header=None, names=["species", "accession"])
 
         taxon_acc = custom_accessions["species"].tolist()
         taxon_seq = custom_fasta_paths["species"].tolist()

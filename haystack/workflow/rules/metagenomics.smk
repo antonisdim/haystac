@@ -41,13 +41,7 @@ def get_ts_tv_count_paths(wildcards):
     Get all the individual cav file paths for the taxa in our database.
     """
     sequences = get_total_paths(
-        wildcards,
-        checkpoints,
-        config["query"],
-        config["refseq_rep"],
-        config["sequences"],
-        config["accessions"],
-        config["genera"],
+        checkpoints, config["query"], config["refseq_rep"], config["sequences"], config["accessions"], config["genera"]
     )
 
     inputs = []
@@ -117,8 +111,6 @@ rule calculate_taxa_probabilities:
         config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_posterior_probabilities.log",
     benchmark:
         repeat("benchmarks/calculate_taxa_probabilities_{sample}.benchmark.txt", 1)
-    params:
-        submatrices=False,
     message:
         "Calculating the taxonomic assignment posterior probabilities for sample {wildcards.sample}."
     script:
@@ -150,13 +142,7 @@ def get_t_test_values_paths(wildcards):
     """
 
     sequences = get_total_paths(
-        wildcards,
-        checkpoints,
-        config["query"],
-        config["refseq_rep"],
-        config["sequences"],
-        config["accessions"],
-        config["genera"],
+        checkpoints, config["query"], config["refseq_rep"], config["sequences"], config["accessions"], config["genera"]
     )
 
     inputs = []

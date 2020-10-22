@@ -31,9 +31,10 @@ def get_dark_matter_reads_se(input_fastq, matrix_file, output_fastq):
 
 
 if __name__ == "__main__":
-    # redirect all output to the log
+    # noinspection PyUnresolvedReferences
     sys.stderr = open(snakemake.log[0], "w")
 
+    # noinspection PyUnresolvedReferences
     get_dark_matter_reads_se(
         input_fastq=snakemake.input[0], matrix_file=snakemake.input[1], output_fastq=snakemake.output[0],
     )

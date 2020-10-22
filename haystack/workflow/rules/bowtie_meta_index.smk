@@ -51,7 +51,7 @@ rule index_database_entrez:
         "bowtie2-build --large-index --threads {threads} {input} {params.basename} &> {log}"
 
 
-def get_idx_entrez(wildcards):
+def get_idx_entrez(_):
     """
     Get all the index paths for the taxa in our database from the entrez query.
     """
@@ -78,7 +78,7 @@ def get_idx_entrez(wildcards):
     return inputs
 
 
-def get_idx_ref_gen(wildcards):
+def get_idx_ref_gen(_):
     """
     Get all the index paths for the taxa in our database from the refseq rep and genbank.
     """
@@ -108,7 +108,7 @@ def get_idx_ref_gen(wildcards):
     return inputs
 
 
-def get_idx_assembly(wildcards):
+def get_idx_assembly(_):
     """
     Get all the individual bam file paths for the taxa in our database.
     """

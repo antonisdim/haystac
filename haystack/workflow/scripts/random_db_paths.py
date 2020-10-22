@@ -21,9 +21,10 @@ def random_db_paths(input_list, output, seed):
 
 
 if __name__ == "__main__":
-    # redirect all output to the log
+    # noinspection PyUnresolvedReferences
     sys.stderr = open(snakemake.log[0], "w")
 
+    # noinspection PyUnresolvedReferences
     random_db_paths(
         input_list=snakemake.input, output=snakemake.output[0], seed=snakemake.params[0],
     )

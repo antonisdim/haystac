@@ -31,6 +31,7 @@ def entrez_nuccore_query(query, output_file):
 
 
 if __name__ == "__main__":
+    # noinspection PyUnresolvedReferences
     entrez_nuccore_query(
         query=snakemake.config["query"], output_file=snakemake.output[0],
     )

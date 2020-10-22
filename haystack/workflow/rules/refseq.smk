@@ -68,6 +68,7 @@ def get_refseq_genome_sequences(wildcards):
     """
     Get all the FASTA sequences for the multi-FASTA file.
     """
+    # noinspection PyUnresolvedReferences
     pick_sequences = checkpoints.entrez_refseq_accessions.get()
     refseq_sequences = pd.read_csv(pick_sequences.output.refseq_genomes, sep="\t")
     genbank_sequences = pd.read_csv(pick_sequences.output.genbank_genomes, sep="\t")

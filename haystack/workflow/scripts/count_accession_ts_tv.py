@@ -111,9 +111,10 @@ def count_ts_tv_init(bam_file, output_file, taxon, pairs=False):
 
 
 if __name__ == "__main__":
-    # redirect all output to the log
+    # noinspection PyUnresolvedReferences
     sys.stderr = open(snakemake.log[0], "w")
 
+    # noinspection PyUnresolvedReferences
     count_ts_tv_init(
         bam_file=snakemake.input[0],
         output_file=snakemake.output[0],

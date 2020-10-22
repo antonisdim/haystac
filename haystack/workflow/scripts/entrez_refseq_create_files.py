@@ -27,6 +27,7 @@ def entrez_refseq_create_files(
 
     assemblies = prok_refseq_rep_rmdup.loc[prok_refseq_rep_rmdup["WGS"].notna(), ["#Species/genus", "WGS"]]
 
+    # TODO nasty! this needs refactoring
     assemblies["#Species/genus"] = assemblies["#Species/genus"].str.replace(" ", "_")
     assemblies["#Species/genus"] = assemblies["#Species/genus"].str.replace("/", "_")
     assemblies["#Species/genus"] = assemblies["#Species/genus"].str.replace("'", "")
@@ -37,6 +38,7 @@ def entrez_refseq_create_files(
         prok_refseq_rep_rmdup["Chromosome RefSeq"].notna(), ["#Species/genus", "Chromosome RefSeq"],
     ]
 
+    # TODO nasty! this needs refactoring
     nuccore["#Species/genus"] = nuccore["#Species/genus"].str.replace(" ", "_")
     nuccore["#Species/genus"] = nuccore["#Species/genus"].str.replace("'", "")
     nuccore["#Species/genus"] = nuccore["#Species/genus"].str.replace("(", "")
@@ -46,6 +48,7 @@ def entrez_refseq_create_files(
         prok_refseq_rep_rmdup["Chromosome GenBank"].notna(), ["#Species/genus", "Chromosome GenBank"],
     ]
 
+    # TODO nasty! this needs refactoring
     genbank["#Species/genus"] = genbank["#Species/genus"].str.replace(" ", "_")
     genbank["#Species/genus"] = genbank["#Species/genus"].str.replace("'", "")
     genbank["#Species/genus"] = genbank["#Species/genus"].str.replace("(", "")
@@ -89,6 +92,7 @@ def entrez_refseq_create_files(
     nuccore_plasmids.loc[:, "Plasmid RefSeq"] = nuccore_plasmids["Plasmid RefSeq"].str.split(",")
     nuccore_plasmids_exploded = nuccore_plasmids.explode("Plasmid RefSeq")
 
+    # TODO nasty! this needs refactoring
     nuccore_plasmids_exploded["#Species/genus"] = nuccore_plasmids_exploded["#Species/genus"].str.replace(" ", "_")
     nuccore_plasmids_exploded["#Species/genus"] = nuccore_plasmids_exploded["#Species/genus"].str.replace("/", "_")
     nuccore_plasmids_exploded["#Species/genus"] = nuccore_plasmids_exploded["#Species/genus"].str.replace("'", "")
@@ -98,6 +102,7 @@ def entrez_refseq_create_files(
     genbank_plasmids_filtered.loc[:, "Plasmid GenBank"] = genbank_plasmids_filtered["Plasmid GenBank"].str.split(",")
     genbank_plasmids_filtered_exploded = genbank_plasmids_filtered.explode("Plasmid GenBank")
 
+    # TODO nasty! this needs refactoring
     genbank_plasmids_filtered_exploded["#Species/genus"] = genbank_plasmids_filtered_exploded[
         "#Species/genus"
     ].str.replace(" ", "_")
@@ -149,7 +154,7 @@ def entrez_refseq_create_files(
         if key in genbank_plasmids_to_drop:
             continue
         accession = seq["Plasmid GenBank"]
-        url = entrez_assembly_ftp(accession, config)
+        url = entrez_assembly_ftp(accession)
         if url != "":
             genbank_plasmids_to_drop.append(key)
     genbank_plasmids_filtered_exploded.drop(genbank_plasmids_to_drop, inplace=True)
@@ -159,7 +164,7 @@ def entrez_refseq_create_files(
         if key in nuccore_plasmids_to_drop:
             continue
         accession = seq["Plasmid RefSeq"]
-        url = entrez_assembly_ftp(accession, config)
+        url = entrez_assembly_ftp(accession)
         if url != "":
             nuccore_plasmids_to_drop.append(key)
     nuccore_plasmids_exploded.drop(nuccore_plasmids_to_drop, inplace=True)
@@ -173,9 +178,10 @@ def entrez_refseq_create_files(
 
 
 if __name__ == "__main__":
-    # redirect all output to the log
+    # noinspection PyUnresolvedReferences
     sys.stderr = open(snakemake.log[0], "w")
 
+    # noinspection PyUnresolvedReferences
     entrez_refseq_create_files(
         config=snakemake.config,
         input_file=snakemake.input[0],

@@ -40,9 +40,10 @@ def get_grey_matter_reads(input_fastq_r1, input_fastq_r2, matrix_file, output_fa
 
 
 if __name__ == "__main__":
-    # redirect all output to the log
+    # noinspection PyUnresolvedReferences
     sys.stderr = open(snakemake.log[0], "w")
 
+    # noinspection PyUnresolvedReferences
     get_grey_matter_reads(
         input_fastq_r1=snakemake.input[0],
         input_fastq_r2=snakemake.input[1],

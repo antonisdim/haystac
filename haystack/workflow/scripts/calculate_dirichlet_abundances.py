@@ -13,19 +13,19 @@ import sys
 from scipy.stats import beta, hmean
 
 
-def calculate_dirichlet_abundances(ts_tv_file, pvaluesfile, total_fastq_reads, sample_abundance):
+def calculate_dirichlet_abundances(ts_tv_file, p_values_file, total_fastq_reads, sample_abundance):
     """
     Function that calculates the mean posterior abundances of species in metagenomic samples/libraries.
     """
 
     assert os.stat(ts_tv_file).st_size, f"The ts_tv count file is empty {ts_tv_file}"
-    assert os.stat(pvaluesfile).st_size, f"The t-test p values file is empty {pvaluesfile}"
+    assert os.stat(p_values_file).st_size, f"The t-test p values file is empty {p_values_file}"
     assert os.stat(total_fastq_reads).st_size, f"The total fastq reads file is empty {total_fastq_reads}"
 
     # I calculate the coverage of each taxon from reads in its bam/pileup file. Let's go there
 
     t_test_vector = (
-        pd.read_csv(pvaluesfile, sep="\t", names=["species", "pvalue"])
+        pd.read_csv(p_values_file, sep="\t", names=["species", "pvalue"])
         .groupby("species")
         .apply(hmean)
         # .squeeze()
@@ -97,19 +97,18 @@ def calculate_dirichlet_abundances(ts_tv_file, pvaluesfile, total_fastq_reads, s
         posterior_abundance.iloc[idx, 6] = a.loc[posterior_abundance.iloc[idx, 0]]
         posterior_abundance.iloc[idx, 7] = t_test_vector.loc[posterior_abundance.iloc[idx, 0]]
 
-    # Write the file into a file. Don't need to return anything. Back to anns_pipeline
-
     with open(sample_abundance, "w") as output_handle:
         posterior_abundance.to_csv(path_or_buf=output_handle, sep="\t", index=False, header=True)
 
 
 if __name__ == "__main__":
-    # redirect all output to the log
+    # noinspection PyUnresolvedReferences
     sys.stderr = open(snakemake.log[0], "w")
 
+    # noinspection PyUnresolvedReferences
     calculate_dirichlet_abundances(
         ts_tv_file=snakemake.input[0],
-        pvaluesfile=snakemake.input[1],
+        p_values_file=snakemake.input[1],
         total_fastq_reads=snakemake.input[2],
         sample_abundance=snakemake.output[0],
     )
