@@ -120,13 +120,13 @@ def entrez_assembly_ftp(accession):
     etree = ElementTree.XML(r.text)
 
     # preference RefSeq URLs over GenBank URLs
-    ftp_stub = etree.find(".//FtpPath_RefSeq").text or etree.find(".//FtpPath_GenBank").text
+    ftp_stub = etree.find(".//FtpPath_RefSeq") or etree.find(".//FtpPath_GenBank")
 
     if not ftp_stub:
         return ""
 
     # append the fasta filename
-    return os.path.join(ftp_stub, os.path.basename(ftp_stub) + "_genomic.fna.gz")
+    return os.path.join(ftp_stub.text, os.path.basename(ftp_stub.text) + "_genomic.fna.gz")
 
 
 def entrez_range_accessions(accession, first, last):
