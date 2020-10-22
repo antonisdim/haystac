@@ -30,30 +30,6 @@ class ArgumentCustomFormatter(argparse.HelpFormatter):
         return message
 
 
-class EmailType(object):
-    """
-    Supports checking email against different patterns. The current available patterns is:
-    RFC5322 (http://www.ietf.org/rfc/rfc5322.txt)
-
-    See https://gist.github.com/asfaltboy/79a02a2b9871501af5f00c95daaeb6e7
-    """
-
-    patterns = {
-        "RFC5322": re.compile(r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"),
-    }
-
-    def __init__(self, pattern):
-        if pattern not in self.patterns:
-            raise KeyError(f"{pattern} is not a supported email pattern, choose from: {','.join(self.patterns)}")
-        self._rules = pattern
-        self._pattern = self.patterns[pattern]
-
-    def __call__(self, value):
-        if not self._pattern.match(value):
-            raise argparse.ArgumentTypeError(f"'{value}' is not a valid email - does not match {self._rules} rules")
-        return value
-
-
 class FileType(argparse.FileType):
     """
     Override argparse.FileType to return the filename, rather than an open file handle.

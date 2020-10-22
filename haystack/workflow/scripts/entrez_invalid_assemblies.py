@@ -13,7 +13,7 @@ import time
 import urllib.error
 from Bio import Entrez
 
-from haystack.workflow.scripts.entrez_utils import ENTREZ_DB_ASSEMBLY
+from haystack.workflow.scripts.entrez_utils import ENTREZ_DB_ASSEMBLY, ENTREZ_EMAIL
 
 TOO_MANY_REQUESTS_WAIT = 10
 MAX_RETRY_ATTEMPTS = 5
@@ -22,7 +22,7 @@ MAX_RETRY_ATTEMPTS = 5
 def entrez_invalid_assemblies(config, assemblies, output, attempt=1):
     assemblies_file = pd.read_csv(assemblies, sep="\t")
 
-    Entrez.email = config["email"]
+    Entrez.email = ENTREZ_EMAIL
 
     with open(output, "w") as fout:
         columns = ["species", "AccessionVersion"]

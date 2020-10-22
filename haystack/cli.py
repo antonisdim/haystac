@@ -19,10 +19,10 @@ import yaml
 from Bio import Entrez
 from psutil import virtual_memory
 
+from haystack.workflow.scripts.entrez_utils import ENTREZ_EMAIL, ENTREZ_REQUEST_RATE_LOW, ENTREZ_REQUEST_RATE_HIGH
 from haystack.workflow.scripts.utilities import (
     ValidationError,
     ArgumentCustomFormatter,
-    EmailType,
     FileType,
     WritablePathType,
     PositiveIntType,
@@ -50,9 +50,6 @@ TAXONOMIC_RANKS = ["genus", "species", "subspecies", "serotype"]
 
 RESTART_TIMES = 3
 
-# maximum concurrent Entrez requests
-MAX_ENTREZ_REQUESTS = 3  # TODO change this to 10 if the api_key is set
-
 
 class Haystack(object):
     """
@@ -78,17 +75,6 @@ The haystack commands are:
 
         # load the config files
         self._load_config()
-
-        # TODO drop this setting entirely and replace with OPTIONAL `api_key`
-        #      https://www.ncbi.nlm.nih.gov/books/NBK25497/#:~:text=By%20including%20an%20API%20key,.gov%2Faccount%2F)
-        # email address is mandatory, unless we are running `haystack config`
-        if args.command != "config" and not self.config_user.get("email"):
-            print(
-                "Before using haystack, please configure your email address.\n"
-                "This is a required step for running NCBI queries\n\n"
-                "`haystack config --email <address>`"
-            )
-            exit(1)
 
         try:
             # call the class method with the name given by `command`
@@ -141,6 +127,11 @@ The haystack commands are:
 
             self.config_user = dict()
 
+        # maximum concurrent Entrez requests
+        self.max_entrez_requests = (
+            ENTREZ_REQUEST_RATE_HIGH if self.config_user.get("api_key") else ENTREZ_REQUEST_RATE_LOW
+        )
+
         # merge the config dictionaries (giving precedence to the config_user)
         self.config_merged = {**self.config_default, **self.config_user}
 
@@ -156,33 +147,28 @@ The haystack commands are:
             add_help=False,
         )
 
-        # if the email hasn't been set before then it's mandatory to do it now
-        required = parser.add_argument_group("Required arguments") if not self.config_user.get("email") else None
         optional = parser.add_argument_group("Optional arguments")
 
         # add the help option manually so we can control where it is shown in the menu
         optional.add_argument("-h", "--help", action="help", help="Show this help message and exit")
 
-        # determine which group email belongs in
-        group = required or optional
-
-        group.add_argument(
-            "--email",
-            help="Email address for NCBI identification",
-            metavar="<address>",
-            type=EmailType("RFC5322"),
-            required=not self.config_user.get("email"),
-        )
-
         # TODO add a --clear-cache option
         optional.add_argument(
             "--cache",
-            help="Cache folder for storing all the genomes downloaded from NCBI",
+            help="Cache folder for storing genomes downloaded from NCBI and other shared data",
             metavar="<path>",
             type=WritablePathType(),
             default=self.config_default["cache"],
         )
 
+        optional.add_argument(
+            "--api-key",
+            help=f"Personal NCBI API key (increases max concurrent requests from {ENTREZ_REQUEST_RATE_LOW} to "
+            f"{ENTREZ_REQUEST_RATE_HIGH}, https://www.ncbi.nlm.nih.gov/account/register/)",
+            metavar="<code>",
+        )
+
+        # TODO refactor this out
         optional.add_argument(
             "--batchsize",
             help="Batch size for fetching records from NCBI",
@@ -560,7 +546,7 @@ The haystack commands are:
 
             # TODO refactor this out
             # get paired/single status of the accession
-            Entrez.email = config["email"]
+            Entrez.email = ENTREZ_EMAIL
             sra_id = Entrez.read(Entrez.esearch(db="sra", term=config["sra"]))["IdList"]
             if "paired" in str(Entrez.read(Entrez.esummary(db="sra", id=sra_id))).lower():
                 if config["collapse"]:
@@ -785,8 +771,7 @@ The haystack commands are:
             type=JsonType(),
         )
 
-    @staticmethod
-    def _run_snakemake(snakefile, args, config, target_list):
+    def _run_snakemake(self, snakefile, args, config, target_list):
         """
         Helper function for running the snakemake workflow
         """
@@ -817,7 +802,7 @@ The haystack commands are:
             config=config,
             targets=target_list,
             cores=int(args.cores),
-            resources={"entrez_api": MAX_ENTREZ_REQUESTS},
+            resources={"entrez_api": self.max_entrez_requests},
             # handle the rule-specific conda environments
             use_conda=config["use_conda"],
             conda_prefix=os.path.join(config["cache"], "conda") if config["use_conda"] else None,

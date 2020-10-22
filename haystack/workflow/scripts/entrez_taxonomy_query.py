@@ -18,6 +18,7 @@ from haystack.workflow.scripts.entrez_utils import (
     ENTREZ_DB_TAXA,
     ENTREZ_RETMODE_XML,
     ENTREZ_RETTYPE_FASTA,
+    ENTREZ_EMAIL,
 )
 
 
@@ -28,7 +29,7 @@ def entrez_taxonomy_query(config, nuccore_file, output_file):
 
     assert os.stat(nuccore_file).st_size, f"The nuccore_query count file is empty {nuccore_file}"
 
-    Entrez.email = config["email"]
+    Entrez.email = ENTREZ_EMAIL
     retmax = config["batchsize"]
 
     # load the unique list of taxa from the nuccore resultset

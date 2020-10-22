@@ -6,15 +6,16 @@ __copyright__ = "Copyright 2020, University of Oxford"
 __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
-
 from xml.etree import ElementTree
 
 import http.client
+import os
 import requests
 import socket
 import sys
 import time
 import urllib.error
+import yaml
 from Bio import Entrez
 from datetime import datetime
 from urllib.parse import quote_plus
@@ -22,8 +23,19 @@ from urllib.parse import quote_plus
 # base url of the Entrez web service
 ENTREZ_URL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/"
 
+# tool registration with NCBI, see https://www.ncbi.nlm.nih.gov/books/NBK25497/#chapter2.Frequency_Timing_and_Registrati
+ENTREZ_TOOL = "haystack"
+ENTREZ_EMAIL = "antonisdim41@gmail.com"
+
 # maximum 1 request per X seconds
-ENTREZ_RATE_LIMIT = 1
+ENTREZ_WAIT_TIME = 1
+
+# users that supply a valid API key can post 10 requests per second
+ENTREZ_REQUEST_RATE_LOW = 3
+ENTREZ_REQUEST_RATE_HIGH = 10
+
+# location of the user config file
+CONFIG_USER = os.path.abspath(os.path.expanduser("~/.haystack/config.yaml"))
 
 # the maximum number of attempts to make for a failed query
 MAX_RETRY_ATTEMPTS = 2
@@ -145,7 +157,7 @@ def guts_of_entrez(db, retmode, rettype, chunk, batch_size):
 def get_accession_ftp_path(accession, config, attempt=1):
     """Get a valid NCBI ftp path from an accession."""
 
-    Entrez.email = config["email"]
+    Entrez.email = ENTREZ_EMAIL
     try:
         handle = Entrez.esearch(db=ENTREZ_DB_ASSEMBLY, term=accession + ' AND "latest refseq"[filter]')
         # or handle = Entrez.esearch(db=ENTREZ_DB_ASSEMBLY,
@@ -188,13 +200,23 @@ def entrez_request(url):
     """
     Helper function to ensure that we never exceed the rate limit.
     """
-    # TODO if config['api_key'] is set then append it here...
-    r = requests.get(ENTREZ_URL + url)
+
+    # tell NCBI which application is making these requests
+    suffix = f"&tool={ENTREZ_TOOL}&email={ENTREZ_EMAIL}"
+
+    with open(CONFIG_USER) as fin:
+        config = yaml.safe_load(fin)
+
+    if config.get("api_key"):
+        # append the user specified api_key
+        suffix += f"&api_key={quote_plus(config['api_key'])}"
+
+    r = requests.get(ENTREZ_URL + url + suffix)
 
     if not r.ok:
         r.raise_for_status()
 
-    time.sleep(ENTREZ_RATE_LIMIT)
+    time.sleep(ENTREZ_WAIT_TIME)
 
     return r
 
