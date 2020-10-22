@@ -32,9 +32,6 @@ def entrez_nuccore_query(query, output_file):
 
 
 if __name__ == "__main__":
-    # redirect all output to the log
-    sys.stderr = open(snakemake.log[0], "w")
-
     entrez_nuccore_query(
         query=snakemake.config["query"], output_file=snakemake.output[0],
     )

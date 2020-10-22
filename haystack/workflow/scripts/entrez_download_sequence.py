@@ -85,7 +85,4 @@ def entrez_download_sequence(accession, output_file):
 
 
 if __name__ == "__main__":
-    # redirect all output to the log
-    sys.stderr = open(snakemake.log[0], "w")
-
     entrez_download_sequence(accession=snakemake.wildcards.accession, output_file=snakemake.output[0])

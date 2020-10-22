@@ -76,9 +76,6 @@ def entrez_taxonomy_query(nuccore_file, output_file):
 
 
 if __name__ == "__main__":
-    # redirect all output to the log
-    sys.stderr = open(snakemake.log[0], "w")
-
     entrez_taxonomy_query(
         nuccore_file=snakemake.input[0], output_file=snakemake.output[0],
     )

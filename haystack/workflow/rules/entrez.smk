@@ -14,8 +14,6 @@ from haystack.workflow.scripts.utilities import normalise_name
 rule entrez_nuccore_query:
     output:
         config["db_output"] + "/entrez/entrez-nuccore.tsv",
-    log:
-        config["db_output"] + "/entrez/entrez-nuccore.tsv.log",
     benchmark:
         repeat("benchmarks/entrez_nuccore_query.benchmark.txt", 1)
     message:
@@ -29,8 +27,6 @@ rule entrez_taxa_query:
         config["db_output"] + "/entrez/entrez-nuccore.tsv",
     output:
         config["db_output"] + "/entrez/entrez-taxa.tsv",
-    log:
-        config["db_output"] + "/entrez/entrez-taxa.log",
     benchmark:
         repeat("benchmarks/entrez_taxa_query_entrez.benchmark.txt", 1)
     message:
@@ -68,8 +64,6 @@ checkpoint entrez_pick_sequences:
 rule entrez_download_sequence:
     output:
         config["cache"] + "/ncbi/{orgname}/{accession}.fasta.gz",
-    log:
-        config["cache"] + "/ncbi/{orgname}/{accession}.fasta.gz.log",
     benchmark:
         repeat("benchmarks/entrez_download_sequence_{orgname}_{accession}.benchmark.txt", 1)
     message:
