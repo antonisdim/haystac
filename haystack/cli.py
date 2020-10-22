@@ -16,11 +16,14 @@ import os
 import snakemake
 import sys
 import yaml
-from Bio import Entrez
 from psutil import virtual_memory
 
-from haystack.workflow.scripts.entrez_utils import ENTREZ_EMAIL, ENTREZ_RATE_LOW, ENTREZ_RATE_HIGH
-
+from haystack.workflow.scripts.entrez_utils import (
+    ENTREZ_RATE_LOW,
+    ENTREZ_RATE_HIGH,
+    entrez_esearch,
+    entrez_efetch,
+)
 from haystack.workflow.scripts.utilities import (
     ValidationError,
     ArgumentCustomFormatter,
@@ -546,22 +549,26 @@ The haystack commands are:
             # use the SRA accession as the sample prefix
             config["sample_prefix"] = args.sra
 
-            # TODO refactor this out
-            # get paired/single status of the accession
-            Entrez.email = ENTREZ_EMAIL
-            sra_id = Entrez.read(Entrez.esearch(db="sra", term=config["sra"]))["IdList"]
-            if "paired" in str(Entrez.read(Entrez.esummary(db="sra", id=sra_id))).lower():
+            # query the SRA to see if this is a paired-end library or not
+            try:
+                _, _, id_list = entrez_esearch("sra", config["sra"])
+                etree = entrez_efetch("sra", id_list)
+                layout = etree.find(".//LIBRARY_LAYOUT/*").tag.lower()
+            except Exception:
+                raise RuntimeError(f"Unable to resolve the SRA accession {config['sra']}")
+
+            if layout == "paired":
                 if config["collapse"]:
                     config["PE_ANCIENT"] = True
                 else:
                     config["PE_MODERN"] = True
 
-                config["fastq_r1"] = f"sra_data/PE/{config['sra']}_R1.fastq.gz"
-                config["fastq_r2"] = f"sra_data/PE/{config['sra']}_R1.fastq.gz"
+                config["fastq_r1"] = config["sample_output_dir"] + f"/sra_data/PE/{config['sra']}_R1.fastq.gz"
+                config["fastq_r2"] = config["sample_output_dir"] + f"/sra_data/PE/{config['sra']}_R1.fastq.gz"
 
             else:
                 config["SE"] = True
-                config["fastq"] = f"sra_data/SE/{config['sra']}.fastq.gz"
+                config["fastq"] = config["sample_output_dir"] + f"/sra_data/SE/{config['sra']}.fastq.gz"
 
         target_list = list()
         target_list.append(f"fastq_inputs/meta/{config['sample_prefix']}.size")
