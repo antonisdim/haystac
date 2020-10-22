@@ -13,7 +13,7 @@ import time
 import urllib.error
 from Bio import Entrez
 
-from haystack.workflow.scripts.entrez_utils import ENTREZ_DB_ASSEMBLY, ENTREZ_EMAIL
+from haystack.workflow.scripts.entrez_utils import ENTREZ_EMAIL
 
 TOO_MANY_REQUESTS_WAIT = 10
 MAX_RETRY_ATTEMPTS = 5
@@ -35,9 +35,7 @@ def entrez_invalid_assemblies(config, assemblies, output, attempt=1):
 
             try:
                 # TODO refactor this out
-                handle = Entrez.esearch(
-                    db=ENTREZ_DB_ASSEMBLY, term=acc["AccessionVersion"] + ' AND "latest refseq"[filter]',
-                )
+                handle = Entrez.esearch(db="assembly", term=acc["AccessionVersion"] + ' AND "latest refseq"[filter]',)
                 assembly_record = Entrez.read(handle)
 
                 if not len(assembly_record["IdList"]) > 0:

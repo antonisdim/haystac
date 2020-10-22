@@ -19,7 +19,8 @@ import yaml
 from Bio import Entrez
 from psutil import virtual_memory
 
-from haystack.workflow.scripts.entrez_utils import ENTREZ_EMAIL, ENTREZ_REQUEST_RATE_LOW, ENTREZ_REQUEST_RATE_HIGH
+from haystack.workflow.scripts.entrez_utils import ENTREZ_EMAIL, ENTREZ_RATE_LOW, ENTREZ_RATE_HIGH
+
 from haystack.workflow.scripts.utilities import (
     ValidationError,
     ArgumentCustomFormatter,
@@ -131,9 +132,7 @@ The haystack commands are:
             self.config_user = dict()
 
         # maximum concurrent Entrez requests
-        self.max_entrez_requests = (
-            ENTREZ_REQUEST_RATE_HIGH if self.config_user.get("api_key") else ENTREZ_REQUEST_RATE_LOW
-        )
+        self.max_entrez_requests = ENTREZ_RATE_HIGH if self.config_user.get("api_key") else ENTREZ_RATE_LOW
 
         # merge the config dictionaries (giving precedence to the config_user)
         self.config_merged = {**self.config_default, **self.config_user}
@@ -166,8 +165,8 @@ The haystack commands are:
 
         optional.add_argument(
             "--api-key",
-            help=f"Personal NCBI API key (increases max concurrent requests from {ENTREZ_REQUEST_RATE_LOW} to "
-            f"{ENTREZ_REQUEST_RATE_HIGH}, https://www.ncbi.nlm.nih.gov/account/register/)",
+            help=f"Personal NCBI API key (increases max concurrent requests from {ENTREZ_RATE_LOW} to "
+            f"{ENTREZ_RATE_HIGH}, https://www.ncbi.nlm.nih.gov/account/register/)",
             metavar="<code>",
         )
 

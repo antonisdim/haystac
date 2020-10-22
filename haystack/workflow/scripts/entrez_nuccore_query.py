@@ -7,7 +7,6 @@ __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
 import csv
-import sys
 
 from haystack.workflow.scripts.entrez_utils import entrez_esearch, entrez_esummary_webenv, entrez_xml_to_dict
 

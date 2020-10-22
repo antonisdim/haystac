@@ -9,9 +9,8 @@ __license__ = "MIT"
 import csv
 import os
 import pandas as pd
-import sys
 
-from haystack.workflow.scripts.entrez_utils import entrez_esummary, entrez_xml_to_dict, entrez_efetch
+from haystack.workflow.scripts.entrez_utils import entrez_efetch
 
 
 def entrez_taxonomy_query(nuccore_file, output_file):

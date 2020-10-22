@@ -8,7 +8,6 @@ __license__ = "MIT"
 
 import argparse
 import pandas as pd
-import re
 
 
 class ValidationError(Exception):

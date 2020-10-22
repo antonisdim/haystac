@@ -8,16 +8,11 @@ __license__ = "MIT"
 
 from xml.etree import ElementTree
 
-import http.client
 import os
 import requests
-import socket
 import sys
 import time
-import urllib.error
 import yaml
-from Bio import Entrez
-from datetime import datetime
 from urllib.parse import quote_plus
 
 # base url of the Entrez web service
@@ -31,169 +26,11 @@ ENTREZ_EMAIL = "antonisdim41@gmail.com"
 ENTREZ_WAIT_TIME = 1
 
 # users that supply a valid API key can post 10 requests per second
-ENTREZ_REQUEST_RATE_LOW = 3
-ENTREZ_REQUEST_RATE_HIGH = 10
+ENTREZ_RATE_LOW = 3
+ENTREZ_RATE_HIGH = 10
 
 # location of the user config file
 CONFIG_USER = os.path.abspath(os.path.expanduser("~/.haystack/config.yaml"))
-
-# the maximum number of attempts to make for a failed query
-MAX_RETRY_ATTEMPTS = 2
-
-# time to wait in seconds before repeating a failed query
-RETRY_WAIT_TIME = 2
-
-TOO_MANY_REQUESTS_WAIT = 20
-
-ENTREZ_DB_NUCCORE = "nuccore"
-ENTREZ_DB_TAXA = "taxonomy"
-ENTREZ_DB_ASSEMBLY = "assembly"
-
-ENTREZ_RETMODE_XML = "xml"
-ENTREZ_RETMODE_TEXT = "text"
-
-ENTREZ_RETTYPE_FASTA = "fasta"
-ENTREZ_RETTYPE_GB = "gb"
-
-ENTREZ_RETMAX = 10 ** 9
-
-
-def chunker(seq, size):
-    return (seq[pos : pos + size] for pos in range(0, len(seq), size))
-
-
-# TODO refactor this out
-def entrez_efetch_old(db, retmode, rettype, webenv, query_key, attempt=1):
-    try:
-        return Entrez.efetch(
-            db=db, retmode=retmode, rettype=rettype, retmax=ENTREZ_RETMAX, webenv=webenv, query_key=query_key,
-        )
-
-    except http.client.HTTPException as error:
-        print(f"Network problem: {error}", file=sys.stderr)
-
-        attempt += 1
-
-        if attempt > MAX_RETRY_ATTEMPTS:
-            print(f"Exceeded maximum attempts {attempt}...", file=sys.stderr)
-            return None
-        else:
-            time.sleep(RETRY_WAIT_TIME)
-            print(f"Starting attempt {attempt}...", file=sys.stderr)
-            return entrez_efetch_old(db, retmode, rettype, webenv, query_key, attempt)
-
-    except (http.client.IncompleteRead, urllib.error.URLError) as error:
-        attempt += 1
-
-        if attempt > MAX_RETRY_ATTEMPTS:
-            print(f"Exceeded maximum attempts {attempt}...", file=sys.stderr)
-            return None
-        elif error.code == 429:
-            time.sleep(RETRY_WAIT_TIME)
-            print(f"Starting attempt {attempt}...", file=sys.stderr)
-            return entrez_efetch_old(db, retmode, rettype, webenv, query_key, attempt)
-        else:
-            print("Discarding that batch", file=sys.stderr)
-            print(error, file=sys.stderr)
-            return None
-
-
-# TODO refactor this out
-def guts_of_entrez(db, retmode, rettype, chunk, batch_size):
-    # print info about number of records
-    print(
-        f"Downloading {len(chunk)} entries from the NCBI {db} database in batches of {batch_size} entries...\n",
-        file=sys.stderr,
-    )
-    # post NCBI query
-    search_handle = Entrez.epost(db, id=",".join(map(str, chunk)))
-    search_results = Entrez.read(search_handle)
-
-    now = datetime.ctime(datetime.now())
-    print(f"\t{now} for a batch of {len(chunk)} records \n", file=sys.stderr)
-
-    handle = entrez_efetch_old(db, retmode, rettype, search_results["WebEnv"], search_results["QueryKey"])
-
-    # print("got the handle", file=sys.stderr)
-    if not handle:
-        raise RuntimeError(f"The records from the following accessions could not be fetched: {','.join(chunk)}")
-
-    try:
-        if retmode == ENTREZ_RETMODE_TEXT:
-            yield handle.read()
-        else:
-            records = Entrez.read(handle)
-            # print("got the records", file=sys.stderr)
-
-            for rec in records:
-                yield rec
-
-    except (
-        http.client.HTTPException,
-        urllib.error.HTTPError,
-        urllib.error.URLError,
-        RuntimeError,
-        Entrez.Parser.ValidationError,
-        socket.error,
-    ):
-
-        for accession in chunk:
-            try:
-                yield guts_of_entrez(db, retmode, rettype, accession, batch_size)
-            except (
-                http.client.HTTPException,
-                urllib.error.HTTPError,
-                urllib.error.URLError,
-                RuntimeError,
-                Entrez.Parser.ValidationError,
-                socket.error,
-            ):
-                print(
-                    f"Discarding this accession as it is a bad record {accession}.", file=sys.stderr,
-                )
-
-
-# TODO refactor this out
-def get_accession_ftp_path(accession, config, attempt=1):
-    """Get a valid NCBI ftp path from an accession."""
-
-    Entrez.email = ENTREZ_EMAIL
-    try:
-        handle = Entrez.esearch(db=ENTREZ_DB_ASSEMBLY, term=accession + ' AND "latest refseq"[filter]')
-        # or handle = Entrez.esearch(db=ENTREZ_DB_ASSEMBLY,
-        # term=accession + ' AND ((latest[filter] OR "latest refseq"[filter])')
-        assembly_record = Entrez.read(handle)
-        esummary_handle = Entrez.esummary(db=ENTREZ_DB_ASSEMBLY, id=assembly_record["IdList"], report="full")
-        try:
-            esummary_record = Entrez.read(esummary_handle, validate=False)
-        except RuntimeError:
-            return ""
-        refseq_ftp = esummary_record["DocumentSummarySet"]["DocumentSummary"][0]["FtpPath_RefSeq"]
-        genbank_ftp = esummary_record["DocumentSummarySet"]["DocumentSummary"][0]["FtpPath_GenBank"]
-
-        if refseq_ftp != "":
-            return refseq_ftp
-        else:
-            return genbank_ftp
-
-    except urllib.error.HTTPError as error:
-        if error.code == 429:
-
-            attempt += 1
-
-            if attempt > MAX_RETRY_ATTEMPTS:
-                print(f"Exceeded maximum attempts {attempt}...", file=sys.stderr)
-                return None
-            else:
-                time.sleep(TOO_MANY_REQUESTS_WAIT)
-                get_accession_ftp_path(accession, config, attempt)
-
-        else:
-            raise RuntimeError(f"There was a urllib.error.HTTPError with code {error}")
-
-    except IndexError:
-        time.sleep(TOO_MANY_REQUESTS_WAIT)
-        get_accession_ftp_path(accession, config, attempt)
 
 
 def entrez_request(url):
@@ -263,6 +100,33 @@ def entrez_efetch(database, id_list):
     r = entrez_request(f"efetch.fcgi?db={database}&id={','.join(id_list)}")
 
     return ElementTree.XML(r.text)
+
+
+def entrez_assembly_ftp(accession):
+    """
+    Get an NCBI ftp url from the assembly database.
+    """
+
+    # query the assembly database to see if there is an FTP url we can use
+    key, webenv, id_list = entrez_esearch("assembly", accession + ' AND "latest refseq"[filter]')
+
+    if len(id_list) == 0:
+        return ""
+
+    # fetch the assembly record
+    r = entrez_request(f"esummary.fcgi?db=assembly&id={id_list[0]}")
+
+    # parse the XML result
+    etree = ElementTree.XML(r.text)
+
+    # preference RefSeq URLs over GenBank URLs
+    ftp_stub = etree.find(".//FtpPath_RefSeq").text or etree.find(".//FtpPath_GenBank").text
+
+    if not ftp_stub:
+        return ""
+
+    # append the fasta filename
+    return os.path.join(ftp_stub, os.path.basename(ftp_stub) + "_genomic.fna.gz")
 
 
 def entrez_range_accessions(accession, first, last):

@@ -9,7 +9,7 @@ __license__ = "MIT"
 import pandas as pd
 import sys
 
-from haystack.workflow.scripts.entrez_utils import get_accession_ftp_path
+from haystack.workflow.scripts.entrez_utils import entrez_assembly_ftp
 
 
 def entrez_refseq_create_files(
@@ -149,7 +149,7 @@ def entrez_refseq_create_files(
         if key in genbank_plasmids_to_drop:
             continue
         accession = seq["Plasmid GenBank"]
-        url = get_accession_ftp_path(accession, config)
+        url = entrez_assembly_ftp(accession, config)
         if url != "":
             genbank_plasmids_to_drop.append(key)
     genbank_plasmids_filtered_exploded.drop(genbank_plasmids_to_drop, inplace=True)
@@ -159,7 +159,7 @@ def entrez_refseq_create_files(
         if key in nuccore_plasmids_to_drop:
             continue
         accession = seq["Plasmid RefSeq"]
-        url = get_accession_ftp_path(accession, config)
+        url = entrez_assembly_ftp(accession, config)
         if url != "":
             nuccore_plasmids_to_drop.append(key)
     nuccore_plasmids_exploded.drop(nuccore_plasmids_to_drop, inplace=True)

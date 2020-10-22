@@ -7,7 +7,6 @@ __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
 import pandas as pd
-import sys
 
 
 def entrez_pick_sequences(config, nuccore_file, taxa_file, output_file):
