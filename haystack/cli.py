@@ -432,7 +432,7 @@ The haystack commands are:
 
         recode = self._run_snakemake(snakefile, args, config, target_list)
 
-        if recode:
+        if recode == 0:
             print("Please run `haystack database --mode index` after this step.")
 
         return recode
