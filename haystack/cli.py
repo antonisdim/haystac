@@ -7,14 +7,12 @@ __copyright__ = "Copyright 2020, University of Oxford"
 __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
-import os.path
 from multiprocessing import cpu_count
 
 import argcomplete
 import argparse
 import datetime
 import os
-import pathlib
 import snakemake
 import sys
 import yaml
@@ -40,10 +38,10 @@ os.environ["OMP_NUM_THREADS"] = "1"
 MAX_CPU = cpu_count()
 MAX_MEM_MB = int(virtual_memory().total / 1024 ** 2)
 
-BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+CODE_DIR = os.path.abspath(os.path.dirname(__file__))
 
-CONFIG_DEFAULT = f"{BASE_DIR}/config/config.yaml"
-CONFIG_USER = pathlib.Path("~/.haystack/config.yaml").expanduser()
+CONFIG_DEFAULT = f"{CODE_DIR}/config/config.yaml"
+CONFIG_USER = os.path.abspath(os.path.expanduser("~/.haystack/config.yaml"))
 
 COMMANDS = ["config", "database", "sample", "analyse"]
 DATABASE_MODES = ["fetch", "index", "build"]
@@ -129,7 +127,7 @@ The haystack commands are:
             self.config_default = yaml.safe_load(fin)
 
             # resolve relative paths
-            self.config_default["cache"] = str(pathlib.Path(self.config_default["cache"]).absolute())
+            self.config_default["cache"] = os.path.abspath(os.path.expanduser(self.config_default["cache"]))
 
         try:
             # load the user config
@@ -234,7 +232,7 @@ The haystack commands are:
 
         # resolve relative paths
         if self.config_user.get("cache"):
-            self.config_user["cache"] = str(pathlib.Path(self.config_user["cache"]).absolute())
+            self.config_user["cache"] = os.path.abspath(os.path.expanduser(self.config_user["cache"]))
 
         # save the user config
         with open(CONFIG_USER, "w") as fout:
@@ -372,7 +370,7 @@ The haystack commands are:
                 raise ValidationError(f"The query file '{args.query_file}' is empty.")
 
         # resolve relative paths
-        args.db_output = os.path.abspath(args.db_output)
+        args.db_output = os.path.abspath(os.path.expanduser(args.db_output))
 
         # cast all `None` paths as "" or ele smk complains when parsing the rules
         args.query_file = args.query_file or ""
@@ -428,7 +426,7 @@ The haystack commands are:
         config["mtDNA"] = str(args.mtDNA).lower()
 
         target_list = [os.path.join(args.db_output, target) for target in target_list]
-        snakefile = os.path.join(BASE_DIR, "workflow/database.smk")
+        snakefile = os.path.join(CODE_DIR, "workflow/database.smk")
 
         recode = self._run_snakemake(snakefile, args, config, target_list)
 
@@ -530,7 +528,7 @@ The haystack commands are:
             raise ValidationError("Please provide a --sample-prefix name.")
 
         # resolve relative paths
-        args.sample_output_dir = os.path.abspath(args.sample_output_dir)
+        args.sample_output_dir = os.path.abspath(os.path.expanduser(args.sample_output_dir))
 
         # cast all `None` paths as "" or ele smk complains when parsing the rules
         args.fastq = args.fastq or ""
@@ -588,7 +586,7 @@ The haystack commands are:
             yaml.safe_dump(config, fout, default_flow_style=False)
 
         target_list = [os.path.join(args.sample_output_dir, target) for target in target_list]
-        snakefile = os.path.join(BASE_DIR, "workflow/sample.smk")
+        snakefile = os.path.join(CODE_DIR, "workflow/sample.smk")
 
         return self._run_snakemake(snakefile, args, config, target_list)
 
@@ -669,9 +667,9 @@ The haystack commands are:
         args = self._parse_args(parser, level=2)
 
         # resolve relative paths
-        args.db_output = os.path.abspath(args.db_output)
-        args.sample_output_dir = os.path.abspath(args.sample_output_dir)
-        args.analysis_output_dir = os.path.abspath(args.analysis_output_dir)
+        args.db_output = os.path.abspath(os.path.expanduser(args.db_output))
+        args.sample_output_dir = os.path.abspath(os.path.expanduser(args.sample_output_dir))
+        args.analysis_output_dir = os.path.abspath(os.path.expanduser(args.analysis_output_dir))
 
         config_fetch = os.path.join(args.db_output, "database_fetch_config.yaml")
         config_build = os.path.join(args.db_output, "database_build_config.yaml")
@@ -737,7 +735,7 @@ The haystack commands are:
             yaml.safe_dump(config, fout, default_flow_style=False)
 
         target_list = [os.path.join(args.analysis_output_dir, target) for target in target_list]
-        snakefile = os.path.join(BASE_DIR, "workflow/analyse.smk")
+        snakefile = os.path.join(CODE_DIR, "workflow/analyse.smk")
 
         return self._run_snakemake(snakefile, args, config, target_list)
 
@@ -789,7 +787,7 @@ The haystack commands are:
         print("HAYSTACK\n")
         print(f"Date: {datetime.datetime.now()}\n")
 
-        config["workflow_dir"] = os.path.join(BASE_DIR, "workflow")
+        config["workflow_dir"] = os.path.join(CODE_DIR, "workflow")
 
         print("Config parameters:\n")
         params = config if args.debug else vars(args)
@@ -817,7 +815,7 @@ The haystack commands are:
 
             # handle the rule-specific conda environments
             use_conda=config["use_conda"],
-            conda_prefix=config["cache"] if config["use_conda"] else None,
+            conda_prefix=os.path.join(config["cache"], "conda") if config["use_conda"] else None,
 
             # set all the debugging flags
             printreason=args.debug,
