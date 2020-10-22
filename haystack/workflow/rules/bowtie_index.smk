@@ -40,9 +40,7 @@ def get_total_fasta_paths(wildcards):
             seq["AccessionVersion"],
         )
 
-        inputs.append(
-            config["cache"] + "/ncbi/{orgname}/{accession}.fasta.gz".format(orgname=orgname, accession=accession,)
-        )
+        inputs.append(config["cache"] + f"/ncbi/{orgname}/{accession}.fasta.gz")
 
     return inputs
 

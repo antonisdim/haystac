@@ -18,10 +18,10 @@ def calculate_likelihoods(ts_tv_file, readlen_file, taxa_file_paths, config, out
     Calculate the parameters for the analytical framework of the method, then the likelihoods for each read/taxon pair
     and perform the dirichlet distribution assignment.
     """
-    assert os.stat(ts_tv_file).st_size, "The ts_tv count file is empty {}".format(ts_tv_file)
-    assert os.stat(readlen_file).st_size, "The read length is empty {}".format(readlen_file)
-    # assert os.stat(taxa_file_paths).st_size, "The taxa list is empty {}".format(taxa_file_paths)
-    assert len(taxa_file_paths) > 0, "The taxa list is empty {}".format(taxa_file_paths)
+    assert os.stat(ts_tv_file).st_size, f"The ts_tv count file is empty {ts_tv_file}"
+    assert os.stat(readlen_file).st_size, f"The read length is empty {readlen_file}"
+    # assert os.stat(taxa_file_paths).st_size, f"The taxa list is empty {taxa_file_paths}"
+    assert len(taxa_file_paths) > 0, f"The taxa list is empty {taxa_file_paths}"
 
     print("Reading the initial Ts/Tv matrix.", file=sys.stderr)
     init_ts_tv = pd.read_csv(ts_tv_file, names=["Taxon", "Read_ID", "Ts", "Tv"], sep=",")

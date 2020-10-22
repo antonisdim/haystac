@@ -17,7 +17,7 @@ def random_db_paths(input_list, output, seed):
 
     with open(output, "w") as fout:
         for path in input_list:
-            fout.write("{}\n".format(path))
+            fout.write(f"{path}\n")
 
 
 if __name__ == "__main__":

@@ -36,11 +36,11 @@ def entrez_custom_sequences(config, taxon, output_file):
     fasta_file = custom_fasta_paths.loc[custom_fasta_paths["species"] == taxon]["path"].values[0]
 
     if os.path.exists(fasta_file):
-        print("File for taxon {taxon} exists.".format(taxon=taxon), file=sys.stderr)
+        print(f"File for taxon {taxon} exists.", file=sys.stderr)
         filename, file_extension = os.path.splitext(fasta_file)
         if file_extension == ".gz":
             print(
-                "We're putting the fasta file for taxon {taxon} in the database.".format(taxon=taxon), file=sys.stderr,
+                f"We're putting the fasta file for taxon {taxon} in the database.", file=sys.stderr,
             )
 
             with bgzf.open(output_file, "wt") as fout:
@@ -52,7 +52,7 @@ def entrez_custom_sequences(config, taxon, output_file):
 
         else:
             print(
-                "We're putting the fasta file for taxon {taxon} in the database.".format(taxon=taxon), file=sys.stderr,
+                f"We're putting the fasta file for taxon {taxon} in the database.", file=sys.stderr,
             )
 
             with bgzf.open(output_file, "wt") as fout:
@@ -62,8 +62,8 @@ def entrez_custom_sequences(config, taxon, output_file):
 
     else:
         raise RuntimeError(
-            "The path for the fasta file input for taxon {taxon} isn't valid. "
-            "PLease provide a valid path in your input file.".format(taxon=taxon)
+            f"The path for the fasta file input for taxon {taxon} isn't valid. "
+            f"Please provide a valid path in your input file."
         )
 
 

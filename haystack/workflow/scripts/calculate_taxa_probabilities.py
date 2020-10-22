@@ -23,9 +23,9 @@ def calculate_taxa_probabilities(
     "If submatrices" subsample the ts_tv_matrix_file in a for loop way. Could we parallelise this step ?
     """
 
-    assert os.stat(ts_tv_matrix_file).st_size, "The ts_tv count file is empty {}".format(ts_tv_file)
+    assert os.stat(ts_tv_matrix_file).st_size, f"The ts_tv count file is empty {ts_tv_matrix_file}"
 
-    assert os.stat(params_file).st_size, "The probability model parameters file is empty {}".format(params_file)
+    assert os.stat(params_file).st_size, f"The probability model parameters file is empty {params_file}"
 
     print("all taxa", "\t", sample_name, file=sys.stderr)
 

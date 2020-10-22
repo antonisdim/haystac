@@ -99,9 +99,7 @@ def get_fasta_sequences(_):
         orgname = normalise_name(seq["species"])
         accession = seq["AccessionVersion"]
 
-        inputs.append(
-            config["cache"] + "/ncbi/{orgname}/{accession}.fasta.gz".format(orgname=orgname, accession=accession)
-        )
+        inputs.append(config["cache"] + f"/ncbi/{orgname}/{accession}.fasta.gz")
 
     return inputs
 

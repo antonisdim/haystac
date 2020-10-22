@@ -14,17 +14,11 @@ SUBSAMPLE_FIXED_READS = 200000
 def get_inputs_for_bowtie_r1(wildcards):
     if config["trim_adapters"]:
         if config["PE_MODERN"]:
-            return config["sample_output_dir"] + "/fastq_inputs/PE_mod/{sample}_R1_adRm.fastq.gz".format(
-                sample=wildcards.sample
-            )
+            return config["sample_output_dir"] + f"/fastq_inputs/PE_mod/{wildcards.sample}_R1_adRm.fastq.gz"
         elif config["PE_ANCIENT"]:
-            return config["sample_output_dir"] + "/fastq_inputs/PE_anc/{sample}_adRm.fastq.gz".format(
-                sample=wildcards.sample
-            )
+            return config["sample_output_dir"] + f"/fastq_inputs/PE_anc/{wildcards.sample}_adRm.fastq.gz"
         elif config["SE"]:
-            return config["sample_output_dir"] + "/fastq_inputs/SE/{sample}_adRm.fastq.gz".format(
-                sample=wildcards.sample
-            )
+            return config["sample_output_dir"] + f"/fastq_inputs/SE/{wildcards.sample}_adRm.fastq.gz"
 
     if config["PE_MODERN"]:
         return config["fastq_R1"]
@@ -35,9 +29,7 @@ def get_inputs_for_bowtie_r1(wildcards):
 def get_inputs_for_bowtie_r2(wildcards):
     if config["trim_adapters"]:
         if config["PE_MODERN"]:
-            return config["sample_output_dir"] + "/fastq_inputs/PE_mod/{sample}_R2_adRm.fastq.gz".format(
-                sample=wildcards.sample
-            )
+            return config["sample_output_dir"] + f"/fastq_inputs/PE_mod/{wildcards.sample}_R2_adRm.fastq.gz"
 
     if config["PE_MODERN"]:
         return config["fastq_R2"]

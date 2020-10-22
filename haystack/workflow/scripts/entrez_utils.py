@@ -57,32 +57,32 @@ def entrez_efetch(db, retmode, rettype, webenv, query_key, attempt=1):
             db=db, retmode=retmode, rettype=rettype, retmax=ENTREZ_RETMAX, webenv=webenv, query_key=query_key,
         )
 
-    except http.client.HTTPException as e:
-        print("Network problem: {}".format(e), file=sys.stderr)
+    except http.client.HTTPException as error:
+        print(f"Network problem: {error}", file=sys.stderr)
 
         attempt += 1
 
         if attempt > MAX_RETRY_ATTEMPTS:
-            print("Exceeded maximum attempts {}...".format(attempt), file=sys.stderr)
+            print(f"Exceeded maximum attempts {attempt}...", file=sys.stderr)
             return None
         else:
             time.sleep(RETRY_WAIT_TIME)
-            print("Starting attempt {}...".format(attempt), file=sys.stderr)
+            print(f"Starting attempt {attempt}...", file=sys.stderr)
             return entrez_efetch(db, retmode, rettype, webenv, query_key, attempt)
 
-    except (http.client.IncompleteRead, urllib.error.URLError) as e:
+    except (http.client.IncompleteRead, urllib.error.URLError) as error:
         attempt += 1
 
         if attempt > MAX_RETRY_ATTEMPTS:
-            print("Exceeded maximum attempts {}...".format(attempt), file=sys.stderr)
+            print(f"Exceeded maximum attempts {attempt}...", file=sys.stderr)
             return None
-        elif e.code == 429:
+        elif error.code == 429:
             time.sleep(RETRY_WAIT_TIME)
-            print("Starting attempt {}...".format(attempt), file=sys.stderr)
+            print(f"Starting attempt {attempt}...", file=sys.stderr)
             return entrez_efetch(db, retmode, rettype, webenv, query_key, attempt)
         else:
             print("Discarding that batch", file=sys.stderr)
-            print(e, file=sys.stderr)
+            print(error, file=sys.stderr)
             return None
 
 
@@ -90,9 +90,7 @@ def entrez_efetch(db, retmode, rettype, webenv, query_key, attempt=1):
 def guts_of_entrez(db, retmode, rettype, chunk, batch_size):
     # print info about number of records
     print(
-        "Downloading {} entries from the NCBI {} database in batches of {} entries...\n".format(
-            len(chunk), db, batch_size
-        ),
+        f"Downloading {len(chunk)} entries from the NCBI {db} database in batches of {batch_size} entries...\n",
         file=sys.stderr,
     )
     # post NCBI query
@@ -100,13 +98,13 @@ def guts_of_entrez(db, retmode, rettype, chunk, batch_size):
     search_results = Entrez.read(search_handle)
 
     now = datetime.ctime(datetime.now())
-    print("\t{} for a batch of {} records \n".format(now, len(chunk)), file=sys.stderr)
+    print(f"\t{now} for a batch of {len(chunk)} records \n", file=sys.stderr)
 
     handle = entrez_efetch(db, retmode, rettype, search_results["WebEnv"], search_results["QueryKey"])
 
     # print("got the handle", file=sys.stderr)
     if not handle:
-        raise RuntimeError("The records from the following accessions could not be fetched: {}".format(",".join(chunk)))
+        raise RuntimeError(f"The records from the following accessions could not be fetched: {','.join(chunk)}")
 
     try:
         if retmode == ENTREZ_RETMODE_TEXT:
@@ -139,7 +137,7 @@ def guts_of_entrez(db, retmode, rettype, chunk, batch_size):
                 socket.error,
             ):
                 print(
-                    "Discarding this accession as it is a bad record {}.".format(accession), file=sys.stderr,
+                    f"Discarding this accession as it is a bad record {accession}.", file=sys.stderr,
                 )
 
 
@@ -166,20 +164,20 @@ def get_accession_ftp_path(accession, config, attempt=1):
         else:
             return genbank_ftp
 
-    except urllib.error.HTTPError as e:
-        if e.code == 429:
+    except urllib.error.HTTPError as error:
+        if error.code == 429:
 
             attempt += 1
 
             if attempt > MAX_RETRY_ATTEMPTS:
-                print("Exceeded maximum attempts {}...".format(attempt), file=sys.stderr)
+                print(f"Exceeded maximum attempts {attempt}...", file=sys.stderr)
                 return None
             else:
                 time.sleep(TOO_MANY_REQUESTS_WAIT)
                 get_accession_ftp_path(accession, config, attempt)
 
         else:
-            raise RuntimeError("There was a urllib.error.HTTPError with code {}".format(e))
+            raise RuntimeError(f"There was a urllib.error.HTTPError with code {error}")
 
     except IndexError:
         time.sleep(TOO_MANY_REQUESTS_WAIT)

@@ -10,14 +10,11 @@ from haystack.workflow.scripts.utilities import get_total_paths, normalise_name
 
 
 def get_bams_for_ts_tv_count(wildcards):
+    sample, orgname, accession = wildcards.sample, wildcards.orgname, wildcards.accession
     if config["PE_MODERN"]:
-        return config["analysis_output_dir"] + "/alignments/{sample}/PE/{orgname}/{orgname}_{accession}.bam".format(
-            sample=wildcards.sample, orgname=wildcards.orgname, accession=wildcards.accession,
-        )
+        return config["analysis_output_dir"] + f"/alignments/{sample}/PE/{orgname}/{orgname}_{accession}.bam"
     elif config["PE_ANCIENT"] or config["SE"]:
-        return config["analysis_output_dir"] + "/alignments/{sample}/SE/{orgname}/{orgname}_{accession}.bam".format(
-            sample=wildcards.sample, orgname=wildcards.orgname, accession=wildcards.accession,
-        )
+        return config["analysis_output_dir"] + f"/alignments/{sample}/SE/{orgname}/{orgname}_{accession}.bam"
 
 
 rule count_accession_ts_tv:
@@ -62,10 +59,7 @@ def get_ts_tv_count_paths(wildcards):
         )
 
         inputs.append(
-            config["analysis_output_dir"]
-            + "/ts_tv_counts/{sample}/{orgname}_count_{accession}.csv".format(
-                sample=wildcards.sample, orgname=orgname, accession=accession,
-            )
+            config["analysis_output_dir"] + f"/ts_tv_counts/{wildcards.sample}/{orgname}_count_{accession}.csv"
         )
 
     return inputs
@@ -88,9 +82,9 @@ rule initial_ts_tv:
 
 def get_right_readlen(wildcards):
     if config["PE_MODERN"]:
-        return config["analysis_output_dir"] + "/fastq/PE/{sample}_mapq_pair.readlen".format(sample=wildcards.sample)
+        return config["analysis_output_dir"] + f"/fastq/PE/{wildcards.sample}_mapq_pair.readlen"
     else:
-        return config["analysis_output_dir"] + "/fastq/SE/{sample}_mapq.readlen".format(sample=wildcards.sample)
+        return config["analysis_output_dir"] + f"/fastq/SE/{wildcards.sample}_mapq.readlen"
 
 
 rule calculate_likelihoods:
@@ -181,9 +175,7 @@ def get_t_test_values_paths(wildcards):
 
         inputs.append(
             config["analysis_output_dir"]
-            + "/probabilities/{sample}/{orgname}_t_test_pvalue_{accession}_{reads}.txt".format(
-                sample=wildcards.sample, orgname=orgname, accession=accession, reads=reads,
-            )
+            + f"/probabilities/{wildcards.sample}/{orgname}_t_test_pvalue_{accession}_{reads}.txt"
         )
 
     return inputs

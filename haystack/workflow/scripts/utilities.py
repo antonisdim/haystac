@@ -44,9 +44,7 @@ class EmailType(object):
 
     def __init__(self, pattern):
         if pattern not in self.patterns:
-            raise KeyError(
-                "{} is not a supported email pattern, choose from:" " {}".format(pattern, ",".join(self.patterns))
-            )
+            raise KeyError(f"{pattern} is not a supported email pattern, choose from: {','.join(self.patterns)}")
         self._rules = pattern
         self._pattern = self.patterns[pattern]
 

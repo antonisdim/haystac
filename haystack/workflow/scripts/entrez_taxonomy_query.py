@@ -26,7 +26,7 @@ def entrez_taxonomy_query(config, nuccore_file, output_file):
     Query the NCBI taxonomy database to get a taxa details for all nuccore sequences.
     """
 
-    assert os.stat(nuccore_file).st_size, "The nuccore_query count file is empty {}".format(nuccore_file)
+    assert os.stat(nuccore_file).st_size, f"The nuccore_query count file is empty {nuccore_file}"
 
     Entrez.email = config["email"]
     retmax = config["batchsize"]
@@ -54,7 +54,7 @@ def entrez_taxonomy_query(config, nuccore_file, output_file):
 
         for chunk in chunker(accessions, retmax):
             print(
-                "Remaining sequences to have their taxids downloaded {}\n".format(resultset), file=sys.stderr,
+                f"Remaining sequences to have their taxids downloaded {resultset}\n", file=sys.stderr,
             )
             records = guts_of_entrez(ENTREZ_DB_TAXA, ENTREZ_RETMODE_XML, ENTREZ_RETTYPE_FASTA, chunk, retmax)
 

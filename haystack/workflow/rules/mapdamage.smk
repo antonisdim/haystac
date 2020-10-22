@@ -88,12 +88,7 @@ def get_mapdamage_out_dir_paths(wildcards):
             seq["AccessionVersion"],
         )
 
-        inputs.append(
-            config["analysis_output_dir"]
-            + "/mapdamage/{sample}/{reads}/{orgname}-{accession}".format(
-                sample=wildcards.sample, orgname=orgname, accession=accession, reads=reads,
-            )
-        )
+        inputs.append(config["analysis_output_dir"] + f"/mapdamage/{wildcards.sample}/{reads}/{orgname}-{accession}")
 
     if config["PE_ANCIENT"] or config["SE"]:
         return inputs

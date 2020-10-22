@@ -143,9 +143,7 @@ def get_dirichlet_bams(wildcards):
 
         inputs.append(
             config["analysis_output_dir"]
-            + "/dirichlet_reads/{sample}/{orgname}/{orgname}_{accession}_dirichlet_{reads}.bam".format(
-                sample=wildcards.sample, orgname=orgname, accession=accession, reads=reads,
-            )
+            + f"/dirichlet_reads/{wildcards.sample}/{orgname}/{orgname}_{accession}_dirichlet_{reads}.bam"
         )
 
     return inputs

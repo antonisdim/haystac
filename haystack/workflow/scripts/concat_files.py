@@ -21,7 +21,7 @@ def concat_files(list_of_files, output_file):
             with open(file, "r") as fin:
                 shutil.copyfileobj(fin, fout)
 
-    print("{output} file created".format(output=output_file), file=sys.stderr)
+    print(f"{output_file} file created", file=sys.stderr)
 
 
 if __name__ == "__main__":

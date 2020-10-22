@@ -71,10 +71,7 @@ def get_paths_for_custom_seqs():
             normalise_name(seq["species"]),
             seq["accession"],
         )
-        inputs.append(
-            config["cache"]
-            + "/ncbi/{orgname}/custom_seq-{accession}.fasta.gz".format(orgname=orgname, accession=accession)
-        )
+        inputs.append(config["cache"] + f"/ncbi/{orgname}/custom_seq-{accession}.fasta.gz")
 
     return inputs
 
@@ -133,9 +130,7 @@ def get_paths_for_custom_acc(wildcards):
             normalise_name(seq["species"]),
             seq["accession"],
         )
-        inputs.append(
-            config["cache"] + "/ncbi/{orgname}/{accession}.fasta.gz".format(orgname=orgname, accession=accession)
-        )
+        inputs.append(config["cache"] + f"/ncbi/{orgname}/{accession}.fasta.gz")
 
     return inputs
 

@@ -47,14 +47,14 @@ def entrez_invalid_assemblies(config, assemblies, output, attempt=1):
                     print(invalid_assemblies, file=sys.stderr)
                     w.writerow(invalid_assemblies)
 
-            except urllib.error.HTTPError as e:
-                if e.code == 429:
+            except urllib.error.HTTPError as error:
+                if error.code == 429:
 
                     attempt += 1
 
                     if attempt > MAX_RETRY_ATTEMPTS:
                         print(
-                            "Exceeded maximum attempts {}...".format(attempt), file=sys.stderr,
+                            f"Exceeded maximum attempts {attempt}...", file=sys.stderr,
                         )
                         return None
                     else:
@@ -62,7 +62,7 @@ def entrez_invalid_assemblies(config, assemblies, output, attempt=1):
                         entrez_invalid_assemblies(config, assemblies, output, attempt)
 
                 else:
-                    raise RuntimeError("There was a urllib.error.HTTPError with code {}".format(e))
+                    raise RuntimeError(f"There was a urllib.error.HTTPError with code {error}")
 
 
 if __name__ == "__main__":
