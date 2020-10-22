@@ -432,7 +432,7 @@ The haystack commands are:
 
         recode = self._run_snakemake(snakefile, args, config, target_list)
 
-        if recode == 0:
+        if recode == 0 and not args.unlock:
             print("Please run `haystack database --mode index` after this step.")
 
         return recode
@@ -808,7 +808,7 @@ The haystack commands are:
         # get any extra snakemake params
         smk_params = config.pop("snakemake") or {}
 
-        status = snakemake.snakemake(
+        success = snakemake.snakemake(
             snakefile,
             config=config,
             targets=target_list,
@@ -830,7 +830,7 @@ The haystack commands are:
         # TODO should we delete the `.snakemake` metadata directory?
 
         # translate "success" into shell exit code of 0
-        return 0 if status else 1
+        return 0 if success else 1
 
 
 if __name__ == "__main__":
