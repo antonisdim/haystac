@@ -9,6 +9,7 @@ __license__ = "MIT"
 import gzip
 from xml.etree import ElementTree
 
+import requests
 import sys
 from Bio import bgzf
 from urllib.request import urlretrieve
@@ -34,11 +35,15 @@ def entrez_download_sequence(accession, output_file):
                     print(line.strip().decode("utf-8"), file=bgzip_fout)
 
         else:
-            # fetch the fasta record from nuccore
-            r = entrez_request(f"efetch.fcgi?db=nuccore&id={accession}&rettype=fasta&retmode=text")
+            try:
+                # fetch the fasta record from nuccore
+                r = entrez_request(f"efetch.fcgi?db=nuccore&id={accession}&rettype=fasta&retmode=text")
+                fasta = r.text
+            except requests.exceptions.HTTPError:
+                fasta = ""
 
             # the fasta may be empty if this is a "master record" containing multiple other records (NZ_APLR00000000.1)
-            if len(r.text.strip()) == 0:
+            if len(fasta.strip()) == 0:
 
                 # get the full GenBank XML record
                 r = entrez_request(f"efetch.fcgi?db=nuccore&id={accession}&rettype=gb&retmode=xml")
@@ -59,9 +64,10 @@ def entrez_download_sequence(accession, output_file):
 
                 # fetch all the accessions at once
                 r = entrez_request(f"efetch.fcgi?db=nuccore&id={accessions}&rettype=fasta&retmode=text")
+                fasta = r.text
 
             # write the fasta data to our bgzip file
-            print(r.text, file=bgzip_fout)
+            print(fasta, file=bgzip_fout)
 
 
 if __name__ == "__main__":
