@@ -37,9 +37,7 @@ def calculate_dirichlet_abundances(ts_tv_file, p_values_file, total_fastq_reads,
 
     ts_tv_matrix = pd.read_csv(ts_tv_file, sep=",", usecols=["Taxon", "Read_ID", "Dirichlet_Assignment"])
 
-    # Sum the Dirichlet Assignments per taxon and calculate the Dark Matter reads
-    #     from the Dirichlet Assignment column
-
+    # Sum the Dirichlet Assignments per taxon and calculate the Dark Matter reads from the Dirichlet Assignment column
     ts_tv_group = ts_tv_matrix.groupby("Read_ID").sum().squeeze()
     grey_matter = ts_tv_group.where(ts_tv_group == 0).replace(0, 1).fillna(0)
 
@@ -50,7 +48,6 @@ def calculate_dirichlet_abundances(ts_tv_file, p_values_file, total_fastq_reads,
     a.loc["Grey_Matter"] = grey_matter.sum()
 
     # Add the non aligned filtered reads count in the Dark Matter category
-
     total_fastq_reads = float(open(total_fastq_reads, "r").read())
     reads_in_bams = len(ts_tv_matrix["Read_ID"].unique())
 
@@ -61,17 +58,13 @@ def calculate_dirichlet_abundances(ts_tv_file, p_values_file, total_fastq_reads,
     print(a, file=sys.stderr)
 
     # Perform Alberto's formulas
-
     b = a.sum()
 
     posterior_abundance_mean = a.add(1).divide(b + len(a)).sort_values(ascending=False)
 
     # Prepare the dataframe that is going to be outputted and calculate the rest of the output columns.
-
     posterior_abundance = posterior_abundance_mean.to_frame().reset_index()
-
     posterior_abundance.rename(columns={"Dirichlet_Assignment": "Mean_Posterior_Abundance"}, inplace=True)
-
     posterior_abundance["95_CI_lower"] = np.nan
     posterior_abundance["95_CI_upper"] = np.nan
     posterior_abundance["Minimum_Read_Num"] = np.nan

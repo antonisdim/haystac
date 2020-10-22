@@ -55,7 +55,7 @@ def get_paths_for_custom_seqs():
         )
 
     if custom_fasta_paths["species"].duplicated().any():
-        # TODO add a --force flag that allows for this to resolved by haystack
+        # TODO add a --force flag that allows for this to be resolved by haystack
         raise RuntimeError(
             "You have provided more than one sequence for a taxon. "
             "Only one sequence per taxon is allowed. "
@@ -114,7 +114,7 @@ def get_paths_for_custom_acc(wildcards):
             "and the correct number of required fields."
         )
 
-    # TODO add a --force flag that allows for this to resolved by haystack
+    # TODO add a --force flag that allows for this to be resolved by haystack
     if custom_accessions["species"].duplicated().any():
         raise RuntimeError(
             "You have provided more than one sequence for a taxon. "

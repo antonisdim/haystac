@@ -15,11 +15,6 @@ import sys
 from Bio import bgzf
 
 
-# script finds the input file
-
-# reads the file
-
-
 def entrez_custom_sequences(config, taxon, output_file):
     if os.path.exists(config["sequences"]):
 

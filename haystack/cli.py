@@ -368,7 +368,7 @@ The haystack commands are:
         # resolve relative paths
         args.db_output = os.path.abspath(os.path.expanduser(args.db_output))
 
-        # cast all `None` paths as "" or ele smk complains when parsing the rules
+        # cast all `None` paths as "" or else smk complains when parsing the rules
         args.query_file = args.query_file or ""
         args.accessions = args.accessions or ""
         args.sequences = args.sequences or ""
@@ -541,7 +541,7 @@ The haystack commands are:
         config["PE_ANCIENT"] = not config["SE"] and args.collapse
         config["PE_MODERN"] = not config["SE"] and not args.collapse
 
-        # TODO rethink this...
+        # TODO move this fetch logic into the SRA validator
         if args.sra:
             if args.sample_prefix:
                 raise ValidationError("--sample-prefix cannot be used with and SRA accession.")
