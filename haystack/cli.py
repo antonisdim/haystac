@@ -821,6 +821,7 @@ The haystack commands are:
             show_failed_logs=args.debug,
             resources={"entrez_api": MAX_ENTREZ_REQUESTS},
             use_conda=config["use_conda"],
+            conda_prefix=config["cache"] if config["use_conda"] else None,
             verbose=args.debug,
             keep_incomplete=args.debug,
             force_incomplete=(not args.debug),
