@@ -382,6 +382,7 @@ The haystack commands are:
         # add all command line options to the merged config
         config = {**self.config_merged, **vars(args)}
 
+        # TODO if build, confirm details match! do the same for sample and analyse
         config_fetch = os.path.join(args.db_output, "database_fetch_config.yaml")
         config_build = os.path.join(args.db_output, "database_build_config.yaml")
 
@@ -400,8 +401,6 @@ The haystack commands are:
 
             with open(config_fetch, "w") as fout:
                 yaml.safe_dump(config, fout, default_flow_style=False)
-
-            print("Please run `haystack database --mode index` after this step.")
 
         elif args.mode == "index":
             target_list.append("bowtie/bowtie_index.done")
@@ -431,7 +430,12 @@ The haystack commands are:
         target_list = [os.path.join(args.db_output, target) for target in target_list]
         snakefile = os.path.join(BASE_DIR, "workflow/database.smk")
 
-        return self._run_snakemake(snakefile, args, config, target_list)
+        recode = self._run_snakemake(snakefile, args, config, target_list)
+
+        if recode:
+            print("Please run `haystack database --mode index` after this step.")
+
+        return recode
 
     def sample(self):
         """
