@@ -8,7 +8,7 @@ __license__ = "MIT"
 
 import pandas as pd
 
-from haystack.workflow.scripts.utilities import normalise_name, check_unique_taxa_in_custom_input
+from haystack.workflow.scripts.utilities import normalise_name, check_unique_taxa_in_custom_input, valid_format
 
 
 rule entrez_custom_sequences:
@@ -71,6 +71,7 @@ def get_paths_for_custom_seqs():
             normalise_name(seq["species"]),
             seq["accession"],
         )
+        valid_format(accession, orgname)
         inputs.append(config["cache"] + f"/ncbi/{orgname}/custom_seq-{accession}.fasta.gz")
 
     return inputs
@@ -130,6 +131,7 @@ def get_paths_for_custom_acc(wildcards):
             normalise_name(seq["species"]),
             seq["accession"],
         )
+        valid_format(accession, orgname)
         inputs.append(config["cache"] + f"/ncbi/{orgname}/{accession}.fasta.gz")
 
     return inputs

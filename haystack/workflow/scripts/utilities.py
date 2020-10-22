@@ -226,3 +226,14 @@ def check_unique_taxa_in_custom_input(accessions, sequences):
                 "custom accessions file. Please pick and keep ONLY one entry from both of these files. "
                 "You can only have 1 sequence per chosen taxon in your database."
             )
+
+
+def valid_format(accession, orgname):
+    """Checks for illegal characters in user provided accessions"""
+
+    illegals = list(r'\/:*?"<>|')
+    valid_acc = next((True for illegal in illegals if accession in illegal), False)
+
+    if not valid_acc:
+        raise RuntimeError("The accession for {orgname} contains an illegal character. "
+                           "Please fix the accession.".format(orgname=orgname))
