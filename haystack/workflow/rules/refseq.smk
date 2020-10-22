@@ -52,8 +52,6 @@ checkpoint entrez_refseq_accessions:
 checkpoint entrez_invalid_assemblies:
     input:
         config["db_output"] + "/entrez/assemblies.tsv",
-    log:
-        config["db_output"] + "/entrez/invalid-assemblies.log",
     output:
         config["db_output"] + "/entrez/invalid-assemblies.tsv",
     benchmark:

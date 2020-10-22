@@ -8,65 +8,30 @@ __license__ = "MIT"
 
 import csv
 import pandas as pd
-import sys
-import time
-import urllib.error
-from Bio import Entrez
 
-from haystack.workflow.scripts.entrez_utils import ENTREZ_EMAIL
-
-TOO_MANY_REQUESTS_WAIT = 10
-MAX_RETRY_ATTEMPTS = 5
+from haystack.workflow.scripts.entrez_utils import entrez_esearch
 
 
-def entrez_invalid_assemblies(config, assemblies, output, attempt=1):
+def entrez_invalid_assemblies(assemblies, output):
     assemblies_file = pd.read_csv(assemblies, sep="\t")
-
-    Entrez.email = ENTREZ_EMAIL
 
     with open(output, "w") as fout:
         columns = ["species", "AccessionVersion"]
-        w = csv.DictWriter(fout, columns, delimiter="\t", extrasaction="ignore")
+        w = csv.DictWriter(fout, columns, delimiter="\t")
         w.writeheader()
 
         for key, acc in assemblies_file.iterrows():
+            # query the assembly database to confirm that this accession is still valid
+            _, _, id_list = entrez_esearch("assembly", acc["AccessionVersion"] + ' AND "latest refseq"[filter]')
 
-            invalid_assemblies = dict()
-
-            try:
-                # TODO refactor this out
-                handle = Entrez.esearch(db="assembly", term=acc["AccessionVersion"] + ' AND "latest refseq"[filter]',)
-                assembly_record = Entrez.read(handle)
-
-                if not len(assembly_record["IdList"]) > 0:
-                    invalid_assemblies["species"] = acc["species"]
-                    invalid_assemblies["AccessionVersion"] = acc["AccessionVersion"]
-
-                    print(invalid_assemblies, file=sys.stderr)
-                    w.writerow(invalid_assemblies)
-
-            except urllib.error.HTTPError as error:
-                if error.code == 429:
-
-                    attempt += 1
-
-                    if attempt > MAX_RETRY_ATTEMPTS:
-                        print(
-                            f"Exceeded maximum attempts {attempt}...", file=sys.stderr,
-                        )
-                        return None
-                    else:
-                        time.sleep(TOO_MANY_REQUESTS_WAIT)
-                        entrez_invalid_assemblies(config, assemblies, output, attempt)
-
-                else:
-                    raise RuntimeError(f"There was a urllib.error.HTTPError with code {error}")
+            if len(id_list) == 0:
+                row = dict()
+                row["species"] = acc["species"]
+                row["AccessionVersion"] = acc["AccessionVersion"]
+                w.writerow(row)
 
 
 if __name__ == "__main__":
-    # redirect all output to the log
-    sys.stderr = open(snakemake.log[0], "w")
-
     entrez_invalid_assemblies(
-        config=snakemake.config, assemblies=snakemake.input[0], output=snakemake.output[0],
+        assemblies=snakemake.input[0], output=snakemake.output[0],
     )
