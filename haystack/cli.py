@@ -812,6 +812,7 @@ The haystack commands are:
             snakefile,
             config=config,
             targets=target_list,
+            printreason=args.debug,
             printshellcmds=args.debug,
             cores=int(args.cores),
             keepgoing=(not args.debug),
@@ -822,6 +823,7 @@ The haystack commands are:
             use_conda=config["use_conda"],
             verbose=args.debug,
             keep_incomplete=args.debug,
+            force_incomplete=(not args.debug),
             **smk_params,
         )
 
