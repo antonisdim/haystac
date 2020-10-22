@@ -12,15 +12,19 @@ rule get_sra_fastq_se:
         temp(config["sample_output_dir"] + "/sra_data/SE/{accession}.fastq"),
     log:
         temp(config["sample_output_dir"] + "/sra_data/SE/{accession}.log"),
-    params:
-        extra="",
     threads: 6
     message:
         "Download SRA file for accession {wildcards.accession}."
     conda:
         "../envs/sra_tools.yaml"
+    params:
+        basename=config["sample_output_dir"] + "/sra_data/SE/",
     shell:
-        "fasterq-dump --split-files {wildcards.accession} --outdir {config[sample_output_dir]}/sra_data/SE/ &> {log}"
+        "fasterq-dump {wildcards.accession}"
+        " --split-files"
+        " --threads {threads}"
+        " --temp {params.basename}"
+        " --outdir {params.basename} &> {log}"
 
 
 rule get_sra_fastq_pe:
@@ -29,15 +33,19 @@ rule get_sra_fastq_pe:
         temp(config["sample_output_dir"] + "/sra_data/PE/{accession}_2.fastq"),
     log:
         temp(config["sample_output_dir"] + "/sra_data/PE/{accession}.log"),
-    params:
-        extra="",
     threads: 6
     message:
         "Download SRA files for accession {wildcards.accession}."
     conda:
         "../envs/sra_tools.yaml"
+    params:
+        basename=config["sample_output_dir"] + "/sra_data/PE/",
     shell:
-        "fasterq-dump --split-files {wildcards.accession} --outdir {config[sample_output_dir]}/sra_data/PE/ &> {log}"
+        "fasterq-dump {wildcards.accession}"
+        " --split-files"
+        " --threads {threads}"
+        " --temp {params.basename}"
+        " --outdir {params.basename} &> {log}"
 
 
 rule compress_sra_fastq_se:
