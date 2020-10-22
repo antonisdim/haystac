@@ -20,6 +20,7 @@ rule get_sra_fastq_se:
     params:
         basename=config["sample_output_dir"] + "/sra_data/SE/",
     shell:
+        # TODO this downloads a massive SRA file to `~/ncbi/public/sra/{accession}.sra.cache`
         "fasterq-dump {wildcards.accession}"
         " --split-files"
         " --threads {threads}"
@@ -41,6 +42,7 @@ rule get_sra_fastq_pe:
     params:
         basename=config["sample_output_dir"] + "/sra_data/PE/",
     shell:
+        # TODO this downloads a massive SRA file to `~/ncbi/public/sra/{accession}.sra.cache`
         "fasterq-dump {wildcards.accession}"
         " --split-files"
         " --threads {threads}"
