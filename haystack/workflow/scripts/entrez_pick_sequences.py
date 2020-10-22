@@ -15,8 +15,6 @@ def entrez_pick_sequences(config, nuccore_file, taxa_file, output_file):
     taxa = pd.read_csv(taxa_file, sep="\t")
     rank = config["rank"]
 
-    print("read the accessions and the taxa", file=sys.stderr)
-
     sequences = pd.merge(accessions, taxa, on="TaxId", how="outer")
 
     sequences = sequences[~sequences[rank].isnull()]
@@ -24,8 +22,6 @@ def entrez_pick_sequences(config, nuccore_file, taxa_file, output_file):
     selected_sequences = sequences.loc[
         sequences.groupby(rank)["Length"].idxmax(), ["species", "AccessionVersion"],
     ]
-
-    print(selected_sequences, file=sys.stderr)
 
     if config["refseq_rep"]:
         refseq_genomes = pd.read_csv(config["db_output"] + "/entrez/refseq-genomes.tsv", sep="\t")
@@ -52,10 +48,6 @@ def entrez_pick_sequences(config, nuccore_file, taxa_file, output_file):
             ~selected_sequences["species"].str.replace(" ", "_").isin(genbank_plasmids.species)
         ]
 
-    print(
-        "selected the longest sequence per species, writing it to a file", file=sys.stderr,
-    )
-
     selected_sequences["species"] = selected_sequences["species"].str.replace("'", "")
     selected_sequences["species"] = selected_sequences["species"].str.replace("(", "")
     selected_sequences["species"] = selected_sequences["species"].str.replace(")", "")
@@ -76,9 +68,6 @@ def entrez_pick_sequences(config, nuccore_file, taxa_file, output_file):
 
 
 if __name__ == "__main__":
-    # redirect all output to the log
-    sys.stderr = open(snakemake.log[0], "w")
-
     entrez_pick_sequences(
         config=snakemake.config,
         nuccore_file=snakemake.input[0],

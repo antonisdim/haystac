@@ -51,8 +51,6 @@ checkpoint entrez_pick_sequences:
         priority=pick_after_refseq_prok,
     output:
         config["db_output"] + "/entrez/entrez-selected-seqs.tsv",
-    log:
-        config["db_output"] + "/entrez/entrez-selected-seqs.log",
     benchmark:
         repeat("benchmarks/entrez_pick_sequences_entrez.benchmark.txt", 1)
     message:
