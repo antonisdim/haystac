@@ -44,11 +44,14 @@ CONFIG_DEFAULT = f"{CODE_DIR}/config/config.yaml"
 CONFIG_USER = os.path.abspath(os.path.expanduser("~/.haystack/config.yaml"))
 
 COMMANDS = ["config", "database", "sample", "analyse"]
+
 DATABASE_MODES = ["fetch", "index", "build"]
 ANALYSIS_MODES = ["filter", "align", "likelihoods", "probabilities", "abundances", "reads", "mapdamage"]
+
 TAXONOMIC_RANKS = ["genus", "species", "subspecies", "serotype"]
 
-RESTART_TIMES = 3
+# number to times to retry a rule that failed the first time
+RESTART_TIMES = 1
 
 
 class Haystack(object):

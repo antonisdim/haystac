@@ -17,7 +17,7 @@ def entrez_pick_sequences(config, nuccore_file, taxa_file, output_file):
 
     print("read the accessions and the taxa", file=sys.stderr)
 
-    sequences = pd.merge(accessions, taxa, left_on="TaxId", right_on="TSeq_taxid", how="outer")
+    sequences = pd.merge(accessions, taxa, on="TaxId", how="outer")
 
     sequences = sequences[~sequences[rank].isnull()]
 

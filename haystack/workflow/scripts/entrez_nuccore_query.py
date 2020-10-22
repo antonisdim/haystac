@@ -9,24 +9,7 @@ __license__ = "MIT"
 import csv
 import sys
 
-from haystack.workflow.scripts.entrez_utils import entrez_esearch, entrez_esummary
-
-
-def element_tree_to_dict(etree):
-    """
-    Convert an ElementTree object into a list of dicts.
-    """
-    data = []
-
-    for row_node in etree:
-        row = {}
-        for col_node in row_node:
-            col = col_node.attrib.get("Name", col_node.tag)
-            row[col] = col_node.text
-
-        data.append(row)
-
-    return data
+from haystack.workflow.scripts.entrez_utils import entrez_esearch, entrez_esummary_webenv, entrez_xml_to_dict
 
 
 def entrez_nuccore_query(query, output_file):
@@ -37,10 +20,10 @@ def entrez_nuccore_query(query, output_file):
     key, webenv, _ = entrez_esearch("nuccore", query)
 
     # fetch the results
-    etree = entrez_esummary("nuccore", key, webenv)
+    etree = entrez_esummary_webenv("nuccore", key, webenv)
 
     # convert the ElementTree into a a list of dicts
-    data = element_tree_to_dict(etree)
+    data = entrez_xml_to_dict(etree)
 
     with open(output_file, "w") as fout:
         w = csv.DictWriter(fout, data[0].keys(), delimiter="\t")

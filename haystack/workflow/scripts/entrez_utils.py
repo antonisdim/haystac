@@ -63,7 +63,7 @@ def chunker(seq, size):
 
 
 # TODO refactor this out
-def entrez_efetch(db, retmode, rettype, webenv, query_key, attempt=1):
+def entrez_efetch_old(db, retmode, rettype, webenv, query_key, attempt=1):
     try:
         return Entrez.efetch(
             db=db, retmode=retmode, rettype=rettype, retmax=ENTREZ_RETMAX, webenv=webenv, query_key=query_key,
@@ -80,7 +80,7 @@ def entrez_efetch(db, retmode, rettype, webenv, query_key, attempt=1):
         else:
             time.sleep(RETRY_WAIT_TIME)
             print(f"Starting attempt {attempt}...", file=sys.stderr)
-            return entrez_efetch(db, retmode, rettype, webenv, query_key, attempt)
+            return entrez_efetch_old(db, retmode, rettype, webenv, query_key, attempt)
 
     except (http.client.IncompleteRead, urllib.error.URLError) as error:
         attempt += 1
@@ -91,7 +91,7 @@ def entrez_efetch(db, retmode, rettype, webenv, query_key, attempt=1):
         elif error.code == 429:
             time.sleep(RETRY_WAIT_TIME)
             print(f"Starting attempt {attempt}...", file=sys.stderr)
-            return entrez_efetch(db, retmode, rettype, webenv, query_key, attempt)
+            return entrez_efetch_old(db, retmode, rettype, webenv, query_key, attempt)
         else:
             print("Discarding that batch", file=sys.stderr)
             print(error, file=sys.stderr)
@@ -112,7 +112,7 @@ def guts_of_entrez(db, retmode, rettype, chunk, batch_size):
     now = datetime.ctime(datetime.now())
     print(f"\t{now} for a batch of {len(chunk)} records \n", file=sys.stderr)
 
-    handle = entrez_efetch(db, retmode, rettype, search_results["WebEnv"], search_results["QueryKey"])
+    handle = entrez_efetch_old(db, retmode, rettype, search_results["WebEnv"], search_results["QueryKey"])
 
     # print("got the handle", file=sys.stderr)
     if not handle:
@@ -238,11 +238,29 @@ def entrez_esearch(database, query):
     return key, webenv, id_list
 
 
-def entrez_esummary(database, key, webenv):
+def entrez_esummary_webenv(database, query_key, webenv):
     """
     Fetch the Entrez esummary records for an esearch query.
     """
-    r = entrez_request(f"esummary.fcgi?db={database}&query_key={key}&WebEnv={webenv}")
+    r = entrez_request(f"esummary.fcgi?db={database}&query_key={query_key}&WebEnv={webenv}")
+
+    return ElementTree.XML(r.text)
+
+
+def entrez_esummary(database, id_list):
+    """
+    Fetch the Entrez esummary records for a list of IDs.
+    """
+    r = entrez_request(f"esummary.fcgi?db={database}&id={','.join(id_list)}")
+
+    return ElementTree.XML(r.text)
+
+
+def entrez_efetch(database, id_list):
+    """
+    Fetch the Entrez records for a list of IDs.
+    """
+    r = entrez_request(f"efetch.fcgi?db={database}&id={','.join(id_list)}")
 
     return ElementTree.XML(r.text)
 
@@ -266,3 +284,20 @@ def entrez_range_accessions(accession, first, last):
             file=sys.stderr,
         )
         exit(1)
+
+
+def entrez_xml_to_dict(etree):
+    """
+    Convert an ElementTree object into a list of dicts.
+    """
+    data = []
+
+    for row_node in etree:
+        row = {}
+        for col_node in row_node:
+            col = col_node.attrib.get("Name", col_node.tag)
+            row[col] = col_node.text
+
+        data.append(row)
+
+    return data
