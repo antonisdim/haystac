@@ -7,6 +7,7 @@ __copyright__ = "Copyright 2020, University of Oxford"
 __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
+import shutil
 from multiprocessing import cpu_count
 
 import argcomplete
@@ -43,15 +44,16 @@ MAX_CPU = cpu_count()
 MAX_MEM_MB = int(virtual_memory().total / 1024 ** 2)
 
 CODE_DIR = os.path.abspath(os.path.dirname(__file__))
+SNAKE_DIR = ".snakemake"
 
 CONFIG_DEFAULT = f"{CODE_DIR}/config/config.yaml"
 CONFIG_USER = os.path.abspath(os.path.expanduser("~/.haystack/config.yaml"))
+CONFIG_RUNTIME = f"{SNAKE_DIR}/config.yaml"
 
 COMMANDS = ["config", "database", "sample", "analyse"]
 
 DATABASE_MODES = ["fetch", "index", "build"]
 ANALYSIS_MODES = ["filter", "align", "likelihoods", "probabilities", "abundances", "reads", "mapdamage"]
-
 TAXONOMIC_RANKS = ["genus", "species", "subspecies", "serotype"]
 
 # number to times to retry a rule that failed the first time
@@ -814,6 +816,12 @@ The haystack commands are:
                 print(" " + target)
             print("\n")
 
+        os.makedirs(SNAKE_DIR, exist_ok=True)
+
+        # save the run-time config file
+        with open(CONFIG_RUNTIME, "w") as fout:
+            yaml.safe_dump(config, fout, default_flow_style=False)
+
         # get any extra snakemake params
         smk_params = config.pop("snakemake") or {}
 
@@ -840,7 +848,9 @@ The haystack commands are:
             **smk_params,
         )
 
-        # TODO should we delete the `.snakemake` metadata directory?
+        # tidy up all the snakemake metadata
+        if success:
+            shutil.rmtree(SNAKE_DIR)
 
         # translate "success" into shell exit code of 0
         return 0 if success else 1

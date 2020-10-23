@@ -29,8 +29,8 @@ ENTREZ_WAIT_TIME = 1
 ENTREZ_RATE_LOW = 3
 ENTREZ_RATE_HIGH = 10
 
-# location of the user config file
-CONFIG_USER = os.path.abspath(os.path.expanduser("~/.haystack/config.yaml"))
+# maximum number of IDs that can be requested in one operation
+ENTREZ_MAX_UID = 200
 
 
 def entrez_request(action, params=None):
@@ -43,7 +43,7 @@ def entrez_request(action, params=None):
     params["tool"] = ENTREZ_TOOL
     params["email"] = ENTREZ_EMAIL
 
-    with open(CONFIG_USER) as fin:
+    with open(".snakemake/config.yaml") as fin:
         config = yaml.safe_load(fin)
 
     if config.get("api_key"):
@@ -51,6 +51,10 @@ def entrez_request(action, params=None):
         params["api_key"] = config["api_key"]
 
     url = ENTREZ_URL + action
+
+    if len(params.get("id", [])) > ENTREZ_MAX_UID:
+        # TODO implement some chunking
+        raise RuntimeError(f"List of Entrez IDs exceeds the maximum: {ENTREZ_MAX_UID}")
 
     if config.get("debug"):
         # turn into a get request
