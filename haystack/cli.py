@@ -311,7 +311,7 @@ The haystack commands are:
 
         optional.add_argument(
             "--force-accessions",
-            help="Disable validation on accessions belonging to the latest RefSeq build",
+            help="Disable validation checks for 'anomalous' assembly flags in NCBI",
             action="store_true",
         )
 
