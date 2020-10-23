@@ -110,10 +110,13 @@ def entrez_assembly_ftp(accession, force_accession):
     # query the assembly database to see if there is an FTP url we can use
     key, webenv, id_list = entrez_esearch("assembly", accession + ' AND "latest refseq"[filter]')
 
-    if force_accession and len(id_list) == 0:
-
-        print(f"WARNING: Accession {accession} has been removed from RefSeq.", file=sys.stderr)
-        key, webenv, id_list = entrez_esearch("assembly", accession)
+    if force_accession:
+        if len(id_list) == 0:
+            print(f"WARNING: Accession {accession} is not in the RefSeq.", file=sys.stderr)
+            key, webenv, id_list = entrez_esearch("assembly", accession)
+    else:
+        if len(id_list) == 0:
+            raise RuntimeError(f"Accession {accession} is not in the RefSeq.")
 
     if len(id_list) == 0:
         return ""

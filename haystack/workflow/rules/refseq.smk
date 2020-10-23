@@ -60,6 +60,9 @@ checkpoint entrez_invalid_assemblies:
         "Finding if assemblies are not part of the RefSeq database."
     resources:
         entrez_api=1,
+    params:
+        force_accessions=config["force_accessions"]
+
     script:
         "../scripts/entrez_invalid_assemblies.py"
 
