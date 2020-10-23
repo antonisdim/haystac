@@ -52,15 +52,15 @@ def entrez_download_sequence(accession, output_file):
                 etree = ElementTree.XML(r.text)
 
                 # get the first and last accession codes for this master record
-                first = etree.find(".//GBAltSeqItem_first-accn").text
-                last = etree.find(".//GBAltSeqItem_last-accn").text
+                first = etree.find(".//GBAltSeqItem_first-accn")
+                last = etree.find(".//GBAltSeqItem_last-accn")
 
                 if first is None or last is None:
                     print(f"ERROR: Could not download the fasta file for {accession}", file=sys.stderr)
                     exit(1)
 
                 # get all the related accession codes
-                accessions = ",".join(entrez_range_accessions(accession, first, last))
+                accessions = ",".join(entrez_range_accessions(accession, first.text, last.text))
 
                 # fetch all the accessions at once
                 r = entrez_request(f"efetch.fcgi?db=nuccore&id={accessions}&rettype=fasta&retmode=text")
