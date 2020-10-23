@@ -296,11 +296,18 @@ The haystack commands are:
             type=FileType("r"),
         )
 
+        # TODO add extra options for all the other refseq curated lists (eukaryotes, plasmids, prok_reference_genomes,
+        #      prokaryotes, viruses) see https://ftp.ncbi.nlm.nih.gov/genomes/GENOME_REPORTS/
+
+        # TODO add option for specifying a build number (so users can rerun a specific analysis)
+        # TODO when build number is not specified, the latest should be used, but the user must be told the build number
         choice.add_argument(
             "--refseq-rep",
             help="Include all prokaryotic species (excluding strains) from the representative RefSeq DB",
             action="store_true",
         )
+
+        # TODO add `--force-accessions` setting which relaxes the 'AND "latest refseq"[filter]' filter
 
         optional = parser.add_argument_group("Optional arguments")
 

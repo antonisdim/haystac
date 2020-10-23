@@ -21,6 +21,9 @@ def entrez_invalid_assemblies(assemblies, output):
         w.writeheader()
 
         for key, acc in assemblies_file.iterrows():
+            # TODO add setting `--force-accessions` that relaxes the "latest refseq" filter,
+            #      but outputs a WARNING to the user for every bad accession
+            #      this flag should default to True if a specific ref-seq build number is given
             # query the assembly database to confirm that this accession is still valid
             _, _, id_list = entrez_esearch("assembly", acc["AccessionVersion"] + ' AND "latest refseq"[filter]')
 

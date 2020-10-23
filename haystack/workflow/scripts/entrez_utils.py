@@ -107,6 +107,8 @@ def entrez_assembly_ftp(accession):
     Get an NCBI ftp url from the assembly database.
     """
 
+    # TODO add setting `--force-accessions` that relaxes the "latest refseq" filter,
+    #      but outputs a WARNING to the user for every bad accession
     # query the assembly database to see if there is an FTP url we can use
     key, webenv, id_list = entrez_esearch("assembly", accession + ' AND "latest refseq"[filter]')
 
