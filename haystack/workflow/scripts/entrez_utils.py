@@ -13,7 +13,7 @@ import requests
 import sys
 import time
 import yaml
-from urllib.parse import quote_plus
+from urllib.parse import urlencode
 
 # base url of the Entrez web service
 ENTREZ_URL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/"
@@ -33,28 +33,32 @@ ENTREZ_RATE_HIGH = 10
 CONFIG_USER = os.path.abspath(os.path.expanduser("~/.haystack/config.yaml"))
 
 
-def entrez_request(url, verbose=False):
+def entrez_request(action, params=None):
     """
     Helper function to ensure that we never exceed the rate limit.
     """
+    params = params or dict()
 
     # tell NCBI which application is making these requests
-    suffix = f"&tool={ENTREZ_TOOL}&email={ENTREZ_EMAIL}"
+    params["tool"] = ENTREZ_TOOL
+    params["email"] = ENTREZ_EMAIL
 
     with open(CONFIG_USER) as fin:
         config = yaml.safe_load(fin)
 
     if config.get("api_key"):
         # append the user specified api_key
-        suffix += f"&api_key={quote_plus(config['api_key'])}"
+        params["api_key"] = config["api_key"]
 
-    url_full = ENTREZ_URL + url + suffix
+    url = ENTREZ_URL + action
 
-    if verbose:
-        print(url_full)
+    if config.get("debug"):
+        # turn into a get request
+        get = dict((key, (",".join(value) if isinstance(value, list) else value)) for key, value in params.items())
+        print(f"{url}?{urlencode(get)}")
 
     # make the request
-    r = requests.get(url_full)
+    r = requests.post(url, params)
 
     if not r.ok:
         r.raise_for_status()
@@ -68,7 +72,7 @@ def entrez_esearch(database, query):
     """
     Execute an Entrez esearch query and return the search keys
     """
-    r = entrez_request(f"esearch.fcgi?db={database}&term={quote_plus(query)}&usehistory=y")
+    r = entrez_request("esearch.fcgi", {"db": database, "term": query, "usehistory": "y"})
 
     # parse the XML result
     etree = ElementTree.XML(r.text)
@@ -85,7 +89,7 @@ def entrez_esummary_webenv(database, query_key, webenv):
     """
     Fetch the Entrez esummary records for an esearch query.
     """
-    r = entrez_request(f"esummary.fcgi?db={database}&query_key={query_key}&WebEnv={webenv}")
+    r = entrez_request("esummary.fcgi", {"db": database, "query_key": query_key, "WebEnv": webenv})
 
     return ElementTree.XML(r.text)
 
@@ -94,7 +98,7 @@ def entrez_esummary(database, id_list):
     """
     Fetch the Entrez esummary records for a list of IDs.
     """
-    r = entrez_request(f"esummary.fcgi?db={database}&id={','.join(id_list)}")
+    r = entrez_request("esummary.fcgi", {"db": database, "id": id_list})
 
     return ElementTree.XML(r.text)
 
@@ -103,7 +107,7 @@ def entrez_efetch(database, id_list):
     """
     Fetch the Entrez records for a list of IDs.
     """
-    r = entrez_request(f"efetch.fcgi?db={database}&id={','.join(id_list)}")
+    r = entrez_request("efetch.fcgi", {"db": database, "id": id_list})
 
     return ElementTree.XML(r.text)
 
@@ -116,12 +120,16 @@ def entrez_assembly_ftp(accession, force=False):
     # query the assembly database to get the latest assembly for this accession code
     key, webenv, id_list = entrez_esearch("assembly", accession + ' AND "latest"[filter]')
 
-    if len(id_list) == 0:
+    if len(id_list) > 1:
+        # should never happen, but...
+        raise RuntimeError(f"Multiple assembly accessions found for '{accession}': {id_list}")
+
+    elif len(id_list) == 0:
         # no entry in the assembly database for this accession code
         return ""
 
     # fetch the summary record for the assembly
-    r = entrez_request(f"esummary.fcgi?db=assembly&id={id_list[0]}")
+    r = entrez_request("esummary.fcgi", {"db": "assembly", "id": id_list})
 
     # parse the XML result
     etree = ElementTree.XML(r.text)

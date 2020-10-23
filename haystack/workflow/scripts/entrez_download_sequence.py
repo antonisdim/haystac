@@ -37,7 +37,9 @@ def entrez_download_sequence(accession, output_file, force=False):
         else:
             try:
                 # fetch the fasta record from nuccore
-                r = entrez_request(f"efetch.fcgi?db=nuccore&id={accession}&rettype=fasta&retmode=text")
+                r = entrez_request(
+                    "efetch.fcgi", {"db": "nuccore", "id": accession, "rettype": "fasta", "retmode": "text"}
+                )
                 fasta = r.text
             except requests.exceptions.HTTPError:
                 fasta = ""
@@ -46,7 +48,7 @@ def entrez_download_sequence(accession, output_file, force=False):
             if len(fasta.strip()) == 0:
 
                 # get the full GenBank XML record
-                r = entrez_request(f"efetch.fcgi?db=nuccore&id={accession}&rettype=gb&retmode=xml")
+                r = entrez_request("efetch.fcgi", {"db": "nuccore", "id": accession, "rettype": "gb", "retmode": "xml"})
 
                 # parse the XML result
                 etree = ElementTree.XML(r.text)
@@ -60,10 +62,12 @@ def entrez_download_sequence(accession, output_file, force=False):
                     exit(1)
 
                 # get all the related accession codes
-                accessions = ",".join(entrez_range_accessions(accession, first.text, last.text))
+                accessions = entrez_range_accessions(accession, first.text, last.text)
 
                 # fetch all the accessions at once
-                r = entrez_request(f"efetch.fcgi?db=nuccore&id={accessions}&rettype=fasta&retmode=text")
+                r = entrez_request(
+                    "efetch.fcgi", {"db": "nuccore", "id": accessions, "rettype": "fasta", "retmode": "text"}
+                )
                 fasta = r.text
 
             # write the fasta data to our bgzip file
