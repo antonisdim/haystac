@@ -33,7 +33,7 @@ ENTREZ_RATE_HIGH = 10
 CONFIG_USER = os.path.abspath(os.path.expanduser("~/.haystack/config.yaml"))
 
 
-def entrez_request(url):
+def entrez_request(url, verbose=False):
     """
     Helper function to ensure that we never exceed the rate limit.
     """
@@ -48,7 +48,13 @@ def entrez_request(url):
         # append the user specified api_key
         suffix += f"&api_key={quote_plus(config['api_key'])}"
 
-    r = requests.get(ENTREZ_URL + url + suffix)
+    url_full = ENTREZ_URL + url + suffix
+
+    if verbose:
+        print(url_full)
+
+    # make the request
+    r = requests.get(url_full)
 
     if not r.ok:
         r.raise_for_status()
@@ -102,39 +108,45 @@ def entrez_efetch(database, id_list):
     return ElementTree.XML(r.text)
 
 
-def entrez_assembly_ftp(accession, force_accession):
+def entrez_assembly_ftp(accession, force=False):
     """
     Get an NCBI ftp url from the assembly database.
     """
 
-    # query the assembly database to see if there is an FTP url we can use
-    key, webenv, id_list = entrez_esearch("assembly", accession + ' AND "latest refseq"[filter]')
-
-    if force_accession:
-        if len(id_list) == 0:
-            print(f"WARNING: Accession {accession} is not in the RefSeq.", file=sys.stderr)
-            key, webenv, id_list = entrez_esearch("assembly", accession)
-    else:
-        if len(id_list) == 0:
-            raise RuntimeError(f"Accession {accession} is not in the RefSeq.")
+    # query the assembly database to get the latest assembly for this accession code
+    key, webenv, id_list = entrez_esearch("assembly", accession + ' AND "latest"[filter]')
 
     if len(id_list) == 0:
+        # no entry in the assembly database for this accession code
         return ""
 
-    # fetch the assembly record
+    # fetch the summary record for the assembly
     r = entrez_request(f"esummary.fcgi?db=assembly&id={id_list[0]}")
 
     # parse the XML result
     etree = ElementTree.XML(r.text)
 
+    # check if the assembly is anomalous
+    anomalous = [reason.text for reason in etree.findall(".//Anomalous/Property")]
+
+    if anomalous:
+        message = f"Assembly '{accession}' has been marked as anomalous for reasons: '{'; '.join(anomalous)}'"
+
+        if force:
+            print(f"WARNING: {message}", file=sys.stderr)
+        else:
+            raise RuntimeError(message)
+
     # preference RefSeq URLs over GenBank URLs
     ftp_stub = etree.find(".//FtpPath_RefSeq") or etree.find(".//FtpPath_GenBank")
 
-    if not ftp_stub:
+    if ftp_stub is None:
         return ""
 
     # append the fasta filename
-    return os.path.join(ftp_stub.text, os.path.basename(ftp_stub.text) + "_genomic.fna.gz")
+    ftp_url = os.path.join(ftp_stub.text, os.path.basename(ftp_stub.text) + "_genomic.fna.gz")
+
+    return ftp_url
 
 
 def entrez_range_accessions(accession, first, last):

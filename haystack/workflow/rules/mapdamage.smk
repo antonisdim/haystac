@@ -63,7 +63,13 @@ def get_mapdamage_out_dir_paths(wildcards):
     """
 
     sequences = get_total_paths(
-        checkpoints, config["query"], config["refseq_rep"], config["sequences"], config["accessions"], config["genera"]
+        checkpoints,
+        config["query"],
+        config["refseq_rep"],
+        config["sequences"],
+        config["accessions"],
+        config["genera"],
+        config["force_accessions"],
     )
 
     inputs = []

@@ -60,9 +60,6 @@ checkpoint entrez_invalid_assemblies:
         "Finding if assemblies are not part of the RefSeq database."
     resources:
         entrez_api=1,
-    params:
-        force_accessions=config["force_accessions"]
-
     script:
         "../scripts/entrez_invalid_assemblies.py"
 
@@ -109,7 +106,7 @@ rule entrez_refseq_genbank_multifasta:
         "../scripts/bowtie2_multifasta.py"
 
 
-def get_assembly_genome_sequences(wildcards):
+def get_assembly_genome_sequences(_):
     """
     Get all the FASTA sequences for the multi-FASTA file.
     """
@@ -120,13 +117,14 @@ def get_assembly_genome_sequences(wildcards):
     if len(assembly_sequences) == 0:
         raise RuntimeError("The entrez pick sequences file is empty.")
 
-    # noinspection PyUnresolvedReferences
-    invalid_assemblies = checkpoints.entrez_invalid_assemblies.get()
-    invalid_assembly_sequences = pd.read_csv(invalid_assemblies.output[0], sep="\t")
+    if not config["force_accessions"]:
+        # noinspection PyUnresolvedReferences
+        invalid_assemblies = checkpoints.entrez_invalid_assemblies.get()
+        invalid_assembly_sequences = pd.read_csv(invalid_assemblies.output[0], sep="\t")
 
-    assembly_sequences = assembly_sequences[
-        ~assembly_sequences["AccessionVersion"].isin(invalid_assembly_sequences["AccessionVersion"])
-    ]
+        assembly_sequences = assembly_sequences[
+            ~assembly_sequences["AccessionVersion"].isin(invalid_assembly_sequences["AccessionVersion"])
+        ]
 
     inputs = []
 

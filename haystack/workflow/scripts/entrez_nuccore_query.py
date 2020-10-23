@@ -16,7 +16,11 @@ def entrez_nuccore_query(query, output_file):
     Query the NCBI nuccore database to get a list of sequence accessions and their metadata.
     """
     # execute the search
-    key, webenv, _ = entrez_esearch("nuccore", query)
+    key, webenv, id_list = entrez_esearch("nuccore", query)
+
+    # check that there was at least one record found
+    if len(id_list) == 0:
+        raise RuntimeError(f"The --query '{query}' returned no results")
 
     # fetch the results
     etree = entrez_esummary_webenv("nuccore", key, webenv)

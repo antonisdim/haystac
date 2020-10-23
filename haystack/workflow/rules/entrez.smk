@@ -70,8 +70,6 @@ rule entrez_download_sequence:
         accession="[^-]+",
     resources:
         entrez_api=1,
-    params:
-        force_accessions=config["force_accessions"]
     script:
         "../scripts/entrez_download_sequence.py"
 

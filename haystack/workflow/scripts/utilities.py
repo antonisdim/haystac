@@ -139,7 +139,9 @@ class JsonType(object):
             raise argparse.ArgumentTypeError(f"'{value}' is not a valid JSON string\n {error}")
 
 
-def get_total_paths(checkpoints, entrez_query, with_refseq_rep, sequences, accessions, specific_genera):
+def get_total_paths(
+    checkpoints, entrez_query, with_refseq_rep, sequences, accessions, specific_genera, force_accessions
+):
     """
     Get all the individual fasta file paths for the taxa in our database.
     """
@@ -161,10 +163,13 @@ def get_total_paths(checkpoints, entrez_query, with_refseq_rep, sequences, acces
         refseq_plasmids = pd.read_csv(refseq_rep_prok.output.refseq_plasmids, sep="\t")
         genbank_plasmids = pd.read_csv(refseq_rep_prok.output.genbank_plasmids, sep="\t")
 
-        invalid_assemblies = checkpoints.entrez_invalid_assemblies.get()
-        invalid_assembly_sequences = pd.read_csv(invalid_assemblies.output[0], sep="\t")
+        if not force_accessions:
+            invalid_assemblies = checkpoints.entrez_invalid_assemblies.get()
+            invalid_assembly_sequences = pd.read_csv(invalid_assemblies.output[0], sep="\t")
 
-        assemblies = assemblies[~assemblies["AccessionVersion"].isin(invalid_assembly_sequences["AccessionVersion"])]
+            assemblies = assemblies[
+                ~assemblies["AccessionVersion"].isin(invalid_assembly_sequences["AccessionVersion"])
+            ]
 
         sources = [
             refseq_genomes,
@@ -223,6 +228,7 @@ def check_unique_taxa_in_custom_input(accessions, sequences):
             )
 
 
+# TODO this should be a validator class applied to the input file in the CLI
 def valid_format(accession, orgname):
     """Checks for illegal characters in user provided accessions"""
 
@@ -230,6 +236,4 @@ def valid_format(accession, orgname):
     not_valid_acc = next((True for illegal in illegals if accession in illegal), False)
 
     if not_valid_acc:
-        raise RuntimeError(
-            f"The accession for {orgname} contains an illegal character. Please fix the accession."
-        )
+        raise RuntimeError(f"The accession for {orgname} contains an illegal character. Please fix the accession.")

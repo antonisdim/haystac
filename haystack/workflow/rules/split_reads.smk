@@ -116,7 +116,13 @@ def get_dirichlet_bams(wildcards):
     Get all the individual cav file paths for the taxa in our database.
     """
     sequences = get_total_paths(
-        checkpoints, config["query"], config["refseq_rep"], config["sequences"], config["accessions"], config["genera"]
+        checkpoints,
+        config["query"],
+        config["refseq_rep"],
+        config["sequences"],
+        config["accessions"],
+        config["genera"],
+        config["force_accessions"],
     )
 
     inputs = []

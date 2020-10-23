@@ -120,11 +120,12 @@ def get_idx_assembly(_):
 
     assemblies = pd.read_csv(refseq_rep_prok.output[2], sep="\t")
 
-    # noinspection PyUnresolvedReferences
-    invalid_assemblies = checkpoints.entrez_invalid_assemblies.get()
-    invalid_assembly_sequences = pd.read_csv(invalid_assemblies.output[0], sep="\t")
+    if not config["force_accessions"]:
+        # noinspection PyUnresolvedReferences
+        invalid_assemblies = checkpoints.entrez_invalid_assemblies.get()
+        invalid_assembly_sequences = pd.read_csv(invalid_assemblies.output[0], sep="\t")
 
-    assemblies = assemblies[~assemblies["AccessionVersion"].isin(invalid_assembly_sequences["AccessionVersion"])]
+        assemblies = assemblies[~assemblies["AccessionVersion"].isin(invalid_assembly_sequences["AccessionVersion"])]
 
     sequences = assemblies
 

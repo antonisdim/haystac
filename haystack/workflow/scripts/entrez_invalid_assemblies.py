@@ -12,7 +12,7 @@ import pandas as pd
 from haystack.workflow.scripts.entrez_utils import entrez_esearch
 
 
-def entrez_invalid_assemblies(assemblies, output, force_accession):
+def entrez_invalid_assemblies(assemblies, output):
     assemblies_file = pd.read_csv(assemblies, sep="\t")
 
     with open(output, "w") as fout:
@@ -20,17 +20,10 @@ def entrez_invalid_assemblies(assemblies, output, force_accession):
         w = csv.DictWriter(fout, columns, delimiter="\t")
         w.writeheader()
 
+        # TODO why do this in a loop? much quicker to post all the IDs at ounce
         for key, acc in assemblies_file.iterrows():
-            # TODO add setting `--force-accessions` that relaxes the "latest refseq" filter,
-            #      but outputs a WARNING to the user for every bad accession
-            #      this flag should default to True if a specific ref-seq build number is given
             # query the assembly database to confirm that this accession is still valid
             _, _, id_list = entrez_esearch("assembly", acc["AccessionVersion"] + ' AND "latest refseq"[filter]')
-
-            if force_accession:
-                if len(id_list) == 0:
-                    print(f"WARNING: Accession {accession} is not in the RefSeq.", file=sys.stderr)
-                    _, _, id_list = entrez_esearch("assembly", acc["AccessionVersion"])
 
             if len(id_list) == 0:
                 row = dict()
@@ -41,6 +34,4 @@ def entrez_invalid_assemblies(assemblies, output, force_accession):
 
 if __name__ == "__main__":
     # noinspection PyUnresolvedReferences
-    entrez_invalid_assemblies(
-        assemblies=snakemake.input[0], output=snakemake.output[0], force_accession=snakemake.params[0],
-    )
+    entrez_invalid_assemblies(assemblies=snakemake.input[0], output=snakemake.output[0])

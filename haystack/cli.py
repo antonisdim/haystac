@@ -307,16 +307,13 @@ The haystack commands are:
             action="store_true",
         )
 
-        # TODO add `--force-accessions` setting which relaxes the 'AND "latest refseq"[filter]' filter
+        optional = parser.add_argument_group("Optional arguments")
 
-        choice.add_argument(
+        optional.add_argument(
             "--force-accessions",
-            help="Force Haystack to use accessions of the representative RefSeq DB that might have been deprecated. "
-                 "Can be used both with the `--accessions` and `--refseq-rep` flags.",
+            help="Disable validation on accessions belonging to the latest RefSeq build",
             action="store_true",
         )
-
-        optional = parser.add_argument_group("Optional arguments")
 
         optional.add_argument(
             "--rank",

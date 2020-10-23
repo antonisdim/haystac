@@ -154,7 +154,7 @@ def entrez_refseq_create_files(
         if key in genbank_plasmids_to_drop:
             continue
         accession = seq["Plasmid GenBank"]
-        url = entrez_assembly_ftp(accession)
+        url = entrez_assembly_ftp(accession, config["force_accessions"])
         if url != "":
             genbank_plasmids_to_drop.append(key)
     genbank_plasmids_filtered_exploded.drop(genbank_plasmids_to_drop, inplace=True)
@@ -164,7 +164,7 @@ def entrez_refseq_create_files(
         if key in nuccore_plasmids_to_drop:
             continue
         accession = seq["Plasmid RefSeq"]
-        url = entrez_assembly_ftp(accession)
+        url = entrez_assembly_ftp(accession, config["force_accessions"])
         if url != "":
             nuccore_plasmids_to_drop.append(key)
     nuccore_plasmids_exploded.drop(nuccore_plasmids_to_drop, inplace=True)
