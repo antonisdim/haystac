@@ -831,6 +831,7 @@ The haystack commands are:
             targets=target_list,
             cores=int(args.cores),
             resources={"entrez_api": self.max_entrez_requests},
+            force_incomplete=True,
             # handle the rule-specific conda environments
             use_conda=config["use_conda"],
             conda_prefix=os.path.join(config["cache"], "conda") if config["use_conda"] else None,
@@ -842,7 +843,6 @@ The haystack commands are:
             keep_incomplete=args.debug,
             restart_times=0 if args.debug else RESTART_TIMES,
             keepgoing=(not args.debug),
-            force_incomplete=(not args.debug),
             unlock=args.unlock,
             # pass on any CLI arguments from the --snakemake flag
             **smk_params,
