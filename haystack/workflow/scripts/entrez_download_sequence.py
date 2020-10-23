@@ -17,7 +17,7 @@ from urllib.request import urlretrieve
 from haystack.workflow.scripts.entrez_utils import entrez_range_accessions, entrez_request, entrez_assembly_ftp
 
 
-def entrez_download_sequence(accession, output_file):
+def entrez_download_sequence(accession, output_file, force_accession):
     """
     Fetch the Entrez fasta record for a nuccore accession.
     """
@@ -26,7 +26,7 @@ def entrez_download_sequence(accession, output_file):
     with bgzf.open(output_file, "wt") as bgzip_fout:
 
         # query the assembly database to see if there is an FTP url we can use
-        ftp_url = entrez_assembly_ftp(accession)
+        ftp_url = entrez_assembly_ftp(accession, force_accession)
 
         if ftp_url:
             # read the FTP stream, unzip the contents and write them one line at a time to our bgzip file
@@ -72,4 +72,7 @@ def entrez_download_sequence(accession, output_file):
 
 if __name__ == "__main__":
     # noinspection PyUnresolvedReferences
-    entrez_download_sequence(accession=snakemake.wildcards.accession, output_file=snakemake.output[0])
+    entrez_download_sequence(accession=snakemake.wildcards.accession,
+        output_file=snakemake.output[0],
+        force_accession=snakemake.params[0],
+    )

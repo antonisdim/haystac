@@ -231,6 +231,5 @@ def valid_format(accession, orgname):
 
     if not_valid_acc:
         raise RuntimeError(
-            "The accession for {orgname} contains an illegal character. "
-            "Please fix the accession.".format(orgname=orgname)
+            f"The accession for {orgname} contains an illegal character. Please fix the accession."
         )

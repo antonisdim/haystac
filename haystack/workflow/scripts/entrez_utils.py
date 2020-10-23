@@ -102,15 +102,18 @@ def entrez_efetch(database, id_list):
     return ElementTree.XML(r.text)
 
 
-def entrez_assembly_ftp(accession):
+def entrez_assembly_ftp(accession, force_accession):
     """
     Get an NCBI ftp url from the assembly database.
     """
 
-    # TODO add setting `--force-accessions` that relaxes the "latest refseq" filter,
-    #      but outputs a WARNING to the user for every bad accession
     # query the assembly database to see if there is an FTP url we can use
     key, webenv, id_list = entrez_esearch("assembly", accession + ' AND "latest refseq"[filter]')
+
+    if force_accession and len(id_list) == 0:
+
+        print(f"WARNING: Accession {accession} has been removed from RefSeq.", file=sys.stderr)
+        key, webenv, id_list = entrez_esearch("assembly", accession)
 
     if len(id_list) == 0:
         return ""
