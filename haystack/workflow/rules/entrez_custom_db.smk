@@ -7,8 +7,9 @@ __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
 import pandas as pd
+import re
 
-from haystack.workflow.scripts.utilities import normalise_name, check_unique_taxa_in_custom_input, valid_format
+from haystack.workflow.scripts.utilities import normalise_name, check_unique_taxa_in_custom_input
 
 
 rule entrez_custom_sequences:
@@ -69,9 +70,13 @@ def get_paths_for_custom_seqs():
     for key, seq in custom_fasta_paths.iterrows():
         orgname, accession = (
             normalise_name(seq["species"]),
-            seq["accession"],
+            str(seq["accession"]).strip(),
         )
-        valid_format(accession, orgname)
+
+        # TODO make wildcard_constraints consistent with this
+        if not re.match("^[\w.]+$", accession):
+            raise RuntimeError(f"The accession '{accession}' for '{orgname}' contains an illegal character")
+
         inputs.append(config["cache"] + f"/ncbi/{orgname}/custom_seq-{accession}.fasta.gz")
 
     return inputs
@@ -129,9 +134,13 @@ def get_paths_for_custom_acc(wildcards):
     for key, seq in custom_accessions.iterrows():
         orgname, accession = (
             normalise_name(seq["species"]),
-            seq["accession"],
+            str(seq["accession"]).strip(),
         )
-        valid_format(accession, orgname)
+
+        # TODO make wildcard_constraints consistent with this
+        if not re.match("^[\w.]+$", accession):
+            raise RuntimeError(f"The accession '{accession}' for '{orgname}' contains an illegal character")
+
         inputs.append(config["cache"] + f"/ncbi/{orgname}/{accession}.fasta.gz")
 
     return inputs

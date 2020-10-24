@@ -228,16 +228,5 @@ def check_unique_taxa_in_custom_input(accessions, sequences):
             )
 
 
-# TODO this should be a validator class applied to the input file in the CLI
-def valid_format(accession, orgname):
-    """Checks for illegal characters in user provided accessions"""
-
-    illegals = list(r'\/:*?"<>|')
-    not_valid_acc = next((True for illegal in illegals if accession in illegal), False)
-
-    if not_valid_acc:
-        raise RuntimeError(f"The accession for {orgname} contains an illegal character. Please fix the accession.")
-
-
 def chunker(seq, size):
     return (seq[pos : pos + size] for pos in range(0, len(seq), size))
