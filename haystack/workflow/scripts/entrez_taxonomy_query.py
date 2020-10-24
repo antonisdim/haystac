@@ -10,7 +10,8 @@ import csv
 import os
 import pandas as pd
 
-from haystack.workflow.scripts.entrez_utils import entrez_efetch
+from haystack.workflow.scripts.entrez_utils import entrez_efetch, ENTREZ_MAX_UID
+from haystack.workflow.scripts.utilities import chunker
 
 
 def entrez_taxonomy_query(nuccore_file, output_file):
@@ -22,9 +23,6 @@ def entrez_taxonomy_query(nuccore_file, output_file):
 
     # load the unique list of taxa from the nuccore resultset
     accessions = [str(id) for id in pd.read_csv(nuccore_file, sep="\t", usecols=["TaxId"], squeeze=True).unique()]
-
-    # fetch the full results
-    etree = entrez_efetch("taxonomy", accessions)
 
     with open(output_file, "w") as fout:
         columns = [
@@ -42,36 +40,41 @@ def entrez_taxonomy_query(nuccore_file, output_file):
         w = csv.DictWriter(fout, columns, delimiter="\t", extrasaction="ignore")
         w.writeheader()
 
-        for taxon in etree:
-            row = dict()
-            row["TaxId"] = taxon.find("TaxId").text
+        for id_list in chunker(accessions, ENTREZ_MAX_UID):
 
-            # extract the taxonomic hierarchy
-            for lineage in taxon.find("LineageEx"):
-                lineage_rank = lineage.find("Rank").text
-                if lineage_rank in columns:
-                    row[lineage_rank] = lineage.find("ScientificName").text
-                elif lineage_rank == "no rank":
-                    row["serovar"] = lineage.find("ScientificName").text
+            # fetch the taxonomy metadata
+            etree = entrez_efetch("taxonomy", id_list)
 
-            # get the taxon rank and name
-            taxon_rank = taxon.find("Rank").text
-            taxon_name = taxon.find("ScientificName").text
+            for taxon in etree:
+                row = dict()
+                row["TaxId"] = taxon.find("TaxId").text
 
-            if taxon_rank in columns:
-                row[taxon_rank] = taxon_name
+                # extract the taxonomic hierarchy
+                for lineage in taxon.find("LineageEx"):
+                    lineage_rank = lineage.find("Rank").text
+                    if lineage_rank in columns:
+                        row[lineage_rank] = lineage.find("ScientificName").text
+                    elif lineage_rank == "no rank":
+                        row["serovar"] = lineage.find("ScientificName").text
 
-            if "serovar" not in row.keys():
-                if taxon_rank == "no rank":
-                    row["serovar"] = taxon_name
+                # get the taxon rank and name
+                taxon_rank = taxon.find("Rank").text
+                taxon_name = taxon.find("ScientificName").text
 
-            if row["species"] and not row.get("subspecies"):
-                row["subspecies"] = row["species"] + " ssp."
+                if taxon_rank in columns:
+                    row[taxon_rank] = taxon_name
 
-            if row["species"] and not row.get("serovar"):
-                row["serovar"] = ""
+                if "serovar" not in row.keys():
+                    if taxon_rank == "no rank":
+                        row["serovar"] = taxon_name
 
-            w.writerow(row)
+                if row["species"] and not row.get("subspecies"):
+                    row["subspecies"] = row["species"] + " ssp."
+
+                if row["species"] and not row.get("serovar"):
+                    row["serovar"] = ""
+
+                w.writerow(row)
 
 
 if __name__ == "__main__":

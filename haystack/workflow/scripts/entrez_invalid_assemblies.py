@@ -20,7 +20,9 @@ def entrez_invalid_assemblies(assemblies, output):
         w = csv.DictWriter(fout, columns, delimiter="\t")
         w.writeheader()
 
-        # TODO why do this in a loop? much quicker to post all the IDs at ounce
+        # TODO why do this in a loop? much quicker to do this in batches of ENTREZ_MAX_UID
+        #  for id_list in chunker(accessions, ENTREZ_MAX_UID)
+        #       etree = entrez_efetch("assembly", id_list)
         for key, acc in assemblies_file.iterrows():
             # query the assembly database to confirm that this accession is still valid
             _, _, id_list = entrez_esearch("assembly", acc["AccessionVersion"] + ' AND "latest refseq"[filter]')

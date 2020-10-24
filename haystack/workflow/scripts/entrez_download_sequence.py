@@ -14,7 +14,13 @@ import sys
 from Bio import bgzf
 from urllib.request import urlretrieve
 
-from haystack.workflow.scripts.entrez_utils import entrez_range_accessions, entrez_request, entrez_assembly_ftp
+from haystack.workflow.scripts.entrez_utils import (
+    entrez_range_accessions,
+    entrez_request,
+    entrez_assembly_ftp,
+    ENTREZ_MAX_UID,
+)
+from haystack.workflow.scripts.utilities import chunker
 
 
 def entrez_download_sequence(accession, output_file, force=False):
@@ -58,17 +64,24 @@ def entrez_download_sequence(accession, output_file, force=False):
                 last = etree.find(".//GBAltSeqItem_last-accn")
 
                 if first is None or last is None:
-                    print(f"ERROR: Could not download the fasta file for {accession}", file=sys.stderr)
-                    exit(1)
+                    raise RuntimeError(f"ERROR: Could not download the fasta file for {accession}")
 
                 # get all the related accession codes
                 accessions = entrez_range_accessions(accession, first.text, last.text)
 
-                # fetch all the accessions at once
-                r = entrez_request(
-                    "efetch.fcgi", {"db": "nuccore", "id": accessions, "rettype": "fasta", "retmode": "text"}
-                )
-                fasta = r.text
+                try:
+                    # fetch all the accessions in batches
+                    for id_list in chunker(accessions, ENTREZ_MAX_UID):
+                        r = entrez_request(
+                            "efetch.fcgi", {"db": "nuccore", "id": id_list, "rettype": "fasta", "retmode": "text"}
+                        )
+                        fasta += r.text
+
+                except requests.exceptions.HTTPError:
+                    raise RuntimeError(
+                        f"Could not download the accession range '{first.text}-{last.text}' "
+                        f"for master record '{accession}'"
+                    )
 
             # write the fasta data to our bgzip file
             print(fasta, file=bgzip_fout)

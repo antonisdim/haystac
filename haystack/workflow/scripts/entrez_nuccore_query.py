@@ -8,7 +8,7 @@ __license__ = "MIT"
 
 import csv
 
-from haystack.workflow.scripts.entrez_utils import entrez_esearch, entrez_esummary_webenv, entrez_xml_to_dict
+from haystack.workflow.scripts.entrez_utils import entrez_esearch, entrez_esummary, entrez_xml_to_dict
 
 
 def entrez_nuccore_query(query, output_file):
@@ -23,7 +23,7 @@ def entrez_nuccore_query(query, output_file):
         raise RuntimeError(f"The --query '{query}' returned no results")
 
     # fetch the results
-    etree = entrez_esummary_webenv("nuccore", key, webenv)
+    etree = entrez_esummary("nuccore", key, webenv)
 
     # convert the ElementTree into a a list of dicts
     data = entrez_xml_to_dict(etree)

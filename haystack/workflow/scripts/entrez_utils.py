@@ -53,7 +53,6 @@ def entrez_request(action, params=None):
     url = ENTREZ_URL + action
 
     if len(params.get("id", [])) > ENTREZ_MAX_UID:
-        # TODO implement some chunking
         raise RuntimeError(f"List of Entrez IDs exceeds the maximum: {ENTREZ_MAX_UID}")
 
     if config.get("debug"):
@@ -89,20 +88,11 @@ def entrez_esearch(database, query):
     return key, webenv, id_list
 
 
-def entrez_esummary_webenv(database, query_key, webenv):
+def entrez_esummary(database, query_key, webenv):
     """
     Fetch the Entrez esummary records for an esearch query.
     """
     r = entrez_request("esummary.fcgi", {"db": database, "query_key": query_key, "WebEnv": webenv})
-
-    return ElementTree.XML(r.text)
-
-
-def entrez_esummary(database, id_list):
-    """
-    Fetch the Entrez esummary records for a list of IDs.
-    """
-    r = entrez_request("esummary.fcgi", {"db": database, "id": id_list})
 
     return ElementTree.XML(r.text)
 
@@ -175,11 +165,7 @@ def entrez_range_accessions(accession, first, last):
         # return the range
         return [f"{first[:idx]}{item}" for item in range(int(first[idx:]), int(last[idx:]) + 1)]
     except ValueError:
-        print(
-            f"ERROR: Could not resolve the accession range {first}-{last} for master record {accession}",
-            file=sys.stderr,
-        )
-        exit(1)
+        raise RuntimeError(f"Could not resolve the accession range '{first}-{last}' for master record '{accession}'")
 
 
 def entrez_xml_to_dict(etree):

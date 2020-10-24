@@ -237,3 +237,7 @@ def valid_format(accession, orgname):
 
     if not_valid_acc:
         raise RuntimeError(f"The accession for {orgname} contains an illegal character. Please fix the accession.")
+
+
+def chunker(seq, size):
+    return (seq[pos : pos + size] for pos in range(0, len(seq), size))
