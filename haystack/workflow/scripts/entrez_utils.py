@@ -63,10 +63,11 @@ def entrez_request(action, params=None):
     # make the request
     r = requests.post(url, params)
 
+    # enforce the rate limit (even when the request failed)
+    time.sleep(ENTREZ_WAIT_TIME)
+
     if not r.ok:
         r.raise_for_status()
-
-    time.sleep(ENTREZ_WAIT_TIME)
 
     return r
 
