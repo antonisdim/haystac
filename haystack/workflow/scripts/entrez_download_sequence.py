@@ -53,8 +53,14 @@ def entrez_download_sequence(accession, output_file, force=False):
             # the fasta may be empty if this is a "master record" containing multiple other records (NZ_APLR00000000.1)
             if len(fasta.strip()) == 0:
 
-                # get the full GenBank XML record
-                r = entrez_request("efetch.fcgi", {"db": "nuccore", "id": accession, "rettype": "gb", "retmode": "xml"})
+                try:
+                    # get the full GenBank XML record
+                    r = entrez_request(
+                        "efetch.fcgi", {"db": "nuccore", "id": accession, "rettype": "gb", "retmode": "xml"}
+                    )
+
+                except requests.exceptions.HTTPError:
+                    raise RuntimeError(f"Could not download the GenBank record for '{accession}'")
 
                 # parse the XML result
                 etree = ElementTree.XML(r.text)
