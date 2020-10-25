@@ -68,7 +68,9 @@ def entrez_download_sequence(accession, output_file, force=False):
                         if updated_accession:
                             # if it exists repeat the function with it
                             entrez_download_sequence(updated_accession, output_file, force)
-
+                        else:
+                            raise RuntimeError(f"Could not download the GenBank record for '{accession}'")
+                        
                     except requests.exceptions.HTTPError:
                         raise RuntimeError(f"Could not download the GenBank record for '{accession}'")
 
