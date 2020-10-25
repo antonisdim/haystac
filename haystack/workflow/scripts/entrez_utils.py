@@ -184,3 +184,30 @@ def entrez_xml_to_dict(etree):
         data.append(row)
 
     return data
+
+
+def entrez_find_replacement_accession(accession):
+    """
+    If the updated version of an assembly accession if possible
+    """
+
+    # try getting a new accession for the master record
+    accession_new = accession[:-1] + '0000000'
+
+    # send a request and see if we get back an xml result
+    r = entrez_request(
+        "efetch.fcgi", {"db": "nuccore", "id": accession_new, "rettype": "gb", "retmode": "xml"}
+    )
+    etree = ElementTree.XML(r.text)
+    updated_accession_ver = etree.find(".//GBSeq_accession-version")
+
+    # check that in fact the new accession is a replacement for the old one
+
+    comment = etree.find(".//GBSeq_comment")
+    keywords = [keyword.text for keyword in etree.findall(".//GBKeyword")]
+
+    if "replaced" in comment.text.lower() and "wgs" in (key.lower() for key in keywords):
+        # return the updated accession
+        return updated_accession_ver
+    else:
+        return ""

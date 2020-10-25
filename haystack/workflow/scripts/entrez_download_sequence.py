@@ -18,6 +18,7 @@ from haystack.workflow.scripts.entrez_utils import (
     entrez_range_accessions,
     entrez_request,
     entrez_assembly_ftp,
+    entrez_find_replacement_accession,
     ENTREZ_MAX_UID,
 )
 from haystack.workflow.scripts.utilities import chunker
@@ -60,7 +61,16 @@ def entrez_download_sequence(accession, output_file, force=False):
                     )
 
                 except requests.exceptions.HTTPError:
-                    raise RuntimeError(f"Could not download the GenBank record for '{accession}'")
+
+                    try:
+                        # try to find updated accession
+                        updated_accession = entrez_find_replacement_accession(accession)
+                        if updated_accession:
+                            # if it exists repeat the function with it
+                            entrez_download_sequence(updated_accession, output_file, force)
+
+                    except requests.exceptions.HTTPError:
+                        raise RuntimeError(f"Could not download the GenBank record for '{accession}'")
 
                 # parse the XML result
                 etree = ElementTree.XML(r.text)
