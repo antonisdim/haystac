@@ -155,8 +155,8 @@ rule entrez_aggregate_custom_acc:
     log:
         config["db_output"] + "/bowtie/custom_acc.log",
     output:
-        config["db_output"] + "/bowtie/custom_acc.fasta.gz",
+        config["db_output"] + "/bowtie/custom_acc.done",
     message:
         "Concatenating all the sequences from user provided accessions."
-    script:
-        "../scripts/bowtie2_multifasta.py"
+    shell:
+        "touch {output}"

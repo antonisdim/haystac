@@ -406,7 +406,7 @@ The haystack commands are:
             if args.sequences:
                 target_list.append("bowtie/custom_seqs.fasta.gz")
             if args.accessions:
-                target_list.append("bowtie/custom_acc.fasta.gz")
+                target_list.append("bowtie/custom_acc.done")
 
             with open(config_fetch, "w") as fout:
                 yaml.safe_dump(config, fout, default_flow_style=False)
