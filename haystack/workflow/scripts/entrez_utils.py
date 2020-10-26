@@ -161,10 +161,11 @@ def entrez_range_accessions(accession, first, last):
 
     # find the index of the first difference
     idx = [i for i in range(len(first)) if first[i] != last[i]][0]
+    pad = len(first) - idx
 
     try:
         # return the range
-        return [f"{first[:idx]}{item}" for item in range(int(first[idx:]), int(last[idx:]) + 1)]
+        return [f"{first[:idx]}{str(item).zfill(pad)}" for item in range(int(first[idx:]), int(last[idx:]) + 1)]
     except ValueError:
         raise RuntimeError(f"Could not resolve the accession range '{first}-{last}' for master record '{accession}'")
 
