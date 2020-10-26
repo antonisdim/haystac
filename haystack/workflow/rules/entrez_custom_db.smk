@@ -148,6 +148,7 @@ def get_paths_for_custom_acc(wildcards):
     return inputs
 
 
+# TODO rewrite this rule so it makes a list file of the genomes, rather than a multifasta which is never used
 rule entrez_aggregate_custom_acc:
     input:
         get_paths_for_custom_acc,
