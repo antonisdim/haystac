@@ -153,17 +153,17 @@ rule entrez_assembly_multifasta:
         "../scripts/bowtie2_multifasta.py"
 
 
-rule entrez_refseq_prok_multifasta:
+rule entrez_refseq_prok_aggregator:
     input:
         assemblies=config["db_output"] + "/bowtie/assemblies.fasta.gz",
         refseq=config["db_output"] + "/bowtie/refseq_genbank.fasta.gz",
     log:
         config["db_output"] + "/bowtie/refseq_prok.log",
     output:
-        config["db_output"] + "/bowtie/refseq_prok.fasta.gz",
+        config["db_output"] + "/bowtie/refseq_prok.done",
     benchmark:
         repeat("benchmarks/entrez_refseq_prok_multifasta.benchmark.txt", 1)
     message:
         "Concatenating input files {input.assemblies} and {input.refseq}."
     shell:
-        "cat {input.assemblies} {input.refseq} > {output}"
+        "touch {output}"

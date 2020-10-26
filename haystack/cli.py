@@ -398,13 +398,12 @@ The haystack commands are:
         target_list = list()
 
         if args.mode == "fetch":
-            # TODO can this be replaced with a single target? and the conditional logic moved into an input function
             if args.query:
-                target_list.append("bowtie/entrez_query.fasta.gz")
+                target_list.append("bowtie/entrez_query.done")
             if args.refseq_rep:
-                target_list.append("bowtie/refseq_prok.fasta.gz")
+                target_list.append("bowtie/refseq_prok.done")
             if args.sequences:
-                target_list.append("bowtie/custom_seqs.fasta.gz")
+                target_list.append("bowtie/custom_seqs.done")
             if args.accessions:
                 target_list.append("bowtie/custom_acc.done")
 

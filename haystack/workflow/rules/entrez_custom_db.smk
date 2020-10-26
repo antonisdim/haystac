@@ -83,17 +83,17 @@ def get_paths_for_custom_seqs():
     return inputs
 
 
-rule entrez_aggregate_custom_seqs:
+rule entrez_sequence_file_aggregator:
     input:
         get_paths_for_custom_seqs(),
     log:
         config["db_output"] + "/bowtie/custom_seqs.log",
     output:
-        config["db_output"] + "/bowtie/custom_seqs.fasta.gz",
+        config["db_output"] + "/bowtie/custom_seqs.done",
     message:
         "Concatenating all the user provided sequences."
-    script:
-        "../scripts/bowtie2_multifasta.py"
+    shell:
+        "touch {output}"
 
 
 def get_paths_for_custom_acc(wildcards):
@@ -148,8 +148,7 @@ def get_paths_for_custom_acc(wildcards):
     return inputs
 
 
-# TODO rewrite this rule so it makes a list file of the genomes, rather than a multifasta which is never used
-rule entrez_aggregate_custom_acc:
+rule entrez_accessions_file_aggregator:
     input:
         get_paths_for_custom_acc,
     log:

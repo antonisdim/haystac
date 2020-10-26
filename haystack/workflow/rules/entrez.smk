@@ -96,16 +96,16 @@ def get_fasta_sequences(_):
     return inputs
 
 
-rule entrez_multifasta:
+rule entrez_query_aggregator:
     input:
         get_fasta_sequences,
     log:
         config["db_output"] + "/bowtie/entrez_query.log",
     output:
-        config["db_output"] + "/bowtie/entrez_query.fasta.gz",
+        config["db_output"] + "/bowtie/entrez_query.done",
     benchmark:
         repeat("benchmarks/entrez_multifasta_entrez_query.benchmark.txt", 1)
     message:
         "Concatenating all the fasta sequences for all the taxa of the entrez query."
-    script:
-        "../scripts/bowtie2_multifasta.py"
+    shell:
+        "touch {output}"
