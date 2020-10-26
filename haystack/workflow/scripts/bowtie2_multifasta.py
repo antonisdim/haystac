@@ -16,6 +16,8 @@ def bowtie_multifasta(fasta_files, output_file):
         "Creating the bowtie2 multifasta file for the filtering ...", file=sys.stderr,
     )
 
+    # TODO this is super slow.... it takes almost a long as downloading the sequences in the first place!
+    #      need to think of a better, perhaps multi-threaded way of doing this!
     with bgzf.open(output_file, "wt") as fout:
         for fasta_file in fasta_files:
             print(fasta_file, file=sys.stderr)
