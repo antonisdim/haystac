@@ -99,7 +99,13 @@ def get_bt2_idx_filter_chunk(wildcards):
         elif chunk > int(wildcards.chunk_num):
             break
 
-    return chunk_files
+    chunk_list_file = config["db_output"] + f"/bowtie/chunk{wildcards.chunk_num}.list"
+
+    # save the list of files in this chunk
+    with open(chunk_list_file, "w") as fout:
+        fout.write("\n".join(chunk_files))
+
+    return chunk_list_file
 
 
 rule create_bt2_idx_filter_chunk:
@@ -111,8 +117,8 @@ rule create_bt2_idx_filter_chunk:
         config["db_output"] + "/bowtie/chunk{chunk_num}.fasta.gz",
     message:
         "Creating chunk {wildcards.chunk_num} of the genome database index."
-    script:
-        "../scripts/bowtie2_multifasta.py"
+    shell:
+        "cat {input} | xargs cat > {output}"
 
 
 rule bowtie_index:
