@@ -192,22 +192,28 @@ def entrez_find_replacement_accession(accession):
     """
 
     # try getting a new accession for the master record
-    accession_new = accession[:-1] + '0000000'
+    accession_new = accession[:-1] + "0000000"
 
-    # send a request and see if we get back an xml result
-    r = entrez_request(
-        "efetch.fcgi", {"db": "nuccore", "id": accession_new, "rettype": "gb", "retmode": "xml"}
-    )
+    try:
+        # send a request and see if we get back an xml result
+        r = entrez_request("efetch.fcgi", {"db": "nuccore", "id": accession_new, "rettype": "gb", "retmode": "xml"})
+
+    except requests.exceptions.HTTPError:
+        raise RuntimeError(f"Could not find either the GenBank record for '{accession}' or an alternative accession")
+
     etree = ElementTree.XML(r.text)
-    updated_accession_ver = etree.find(".//GBSeq_accession-version")
+    replacement = etree.find(".//GBSeq_accession-version")
 
-    # check that in fact the new accession is a replacement for the old one
+    # check that the new accession is a WGS project
+    keywords = [keyword.text.lower() for keyword in etree.findall(".//GBKeyword")]
 
-    comment = etree.find(".//GBSeq_comment")
-    keywords = [keyword.text for keyword in etree.findall(".//GBKeyword")]
-
-    if "replaced" in comment.text.lower() and "wgs" in (key.lower() for key in keywords):
-        # return the updated accession
-        return updated_accession_ver
+    if replacement is not None and "wgs" in keywords:
+        print(
+            f"WARNING: Replacing the superseded WGS accession '{accession}' with '{replacement.text}'.",
+            file=sys.stderr,
+        )
+        return replacement.text
     else:
-        return ""
+        raise RuntimeError(
+            f"Could not find either the GenBank record for '{accession}' or a valid alternative accession"
+        )
