@@ -139,6 +139,88 @@ class JsonType(object):
             raise argparse.ArgumentTypeError(f"'{value}' is not a valid JSON string\n {error}")
 
 
+class SequenceFileType(argparse.FileType):
+    """
+    Is this a valid sequence input file.
+    """
+
+    def __call__(self, value):
+
+        custom_fasta_paths = pd.read_csv(
+            value, header=None, names=["species", "accession", "path"],
+            dtype={"species": str, "accession": str, "path": str},
+        )
+
+        if len(custom_fasta_paths) == 0:
+            raise RuntimeError("The custom sequences file is empty.")
+
+        if len(custom_fasta_paths.columns) == 1:
+            raise RuntimeError(
+                "The file you have provided is not TAB delimited. " "Please provide a file with the correct delimiters."
+            )
+
+        if 1 < len(custom_fasta_paths.columns) < 3:
+            raise RuntimeError(
+                "The file you have provided might be missing one of the required fields. "
+                "Please provide a file with the correct delimiters, "
+                "and the correct number of required fields."
+            )
+
+        if len(custom_fasta_paths.columns) > 3:
+            raise RuntimeError(
+                "The file you have provided might be having more fields than the ones required. "
+                "Please provide a file with the correct delimiters, "
+                "and the correct number of required fields."
+            )
+
+        if custom_fasta_path.isnull().values.any():
+            raise RuntimeError(
+                "The file you have provided might be missing one of the required fields. "
+                "Please provide a file with the correct delimiters, "
+                "and the correct number of required fields."
+            )
+
+        return super().__call__(value).name
+
+
+class AccessionFileType(argparse.FileType):
+    """
+    Is this a valid sequence input file.
+    """
+
+    def __call__(self, value):
+
+        custom_accessions = pd.read_csv(value, sep="\t", header=None, names=["species", "accession"],
+            dtype={"species": str, "accession": str})
+
+        if len(custom_accessions) == 0:
+            raise RuntimeError("The custom accessions file is empty.")
+
+        if len(custom_accessions.columns) == 1:
+            raise RuntimeError(
+                "The file you have provided is either not TAB delimited "
+                "or it is missing one of the required fields. "
+                "Please provide a file with the correct delimiters, "
+                "and the correct number of required fields."
+            )
+
+        if len(custom_accessions.columns) > 2:
+            raise RuntimeError(
+                "The file you have provided might be having more fields than the ones required. "
+                "Please provide a file with the correct delimiters, "
+                "and the correct number of required fields."
+            )
+
+        if custom_accessions.isnull().values.any():
+            raise RuntimeError(
+                "The file you have provided might be missing one of the required fields. "
+                "Please provide a file with the correct delimiters, "
+                "and the correct number of required fields."
+            )
+
+        return super().__call__(value).name
+
+
 def get_total_paths(
     checkpoints, entrez_query, with_refseq_rep, sequences, accessions, specific_genera, force_accessions
 ):

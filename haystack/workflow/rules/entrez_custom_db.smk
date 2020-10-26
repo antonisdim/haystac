@@ -33,28 +33,6 @@ def get_paths_for_custom_seqs():
         config["sequences"], sep="\t", header=None, names=["species", "accession", "path"],
     )
 
-    if len(custom_fasta_paths) == 0:
-        raise RuntimeError("The custom sequences file is empty.")
-
-    if len(custom_fasta_paths.columns) == 1:
-        raise RuntimeError(
-            "The file you have provided is not TAB delimited. " "Please provide a file with the correct delimiters."
-        )
-
-    if 1 < len(custom_fasta_paths.columns) < 3:
-        raise RuntimeError(
-            "The file you have provided might be missing one of the required fields. "
-            "Please provide a file with the correct delimiters, "
-            "and the correct number of required fields."
-        )
-
-    if len(custom_fasta_paths.columns) > 3:
-        raise RuntimeError(
-            "The file you have provided might be having more fields than the ones required. "
-            "Please provide a file with the correct delimiters, "
-            "and the correct number of required fields."
-        )
-
     if custom_fasta_paths["species"].duplicated().any():
         # TODO add a --force flag that allows for this to be resolved by haystack
         # TODO tell the user which taxa!
@@ -101,24 +79,6 @@ def get_paths_for_custom_acc(wildcards):
         return ""
 
     custom_accessions = pd.read_csv(config["accessions"], sep="\t", header=None, names=["species", "accession"])
-
-    if len(custom_accessions) == 0:
-        raise RuntimeError("The custom accessions file is empty.")
-
-    if len(custom_accessions.columns) == 1:
-        raise RuntimeError(
-            "The file you have provided is either not TAB delimited "
-            "or it is missing one of the required fields. "
-            "Please provide a file with the correct delimiters, "
-            "and the correct number of required fields."
-        )
-
-    if len(custom_accessions.columns) > 2:
-        raise RuntimeError(
-            "The file you have provided might be having more fields than the ones required. "
-            "Please provide a file with the correct delimiters, "
-            "and the correct number of required fields."
-        )
 
     # TODO add a --force flag that allows for this to be resolved by haystack
     # TODO tell the user which taxa!

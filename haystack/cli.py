@@ -35,6 +35,8 @@ from haystack.workflow.scripts.utilities import (
     IntRangeType,
     BoolType,
     JsonType,
+    SequenceFileType,
+    AccessionFileType,
 )
 
 os.environ["OPENBLAS_NUM_THREADS"] = "1"
@@ -287,7 +289,7 @@ The haystack commands are:
             help="Tab delimited file containing one record per row: the name of the taxon, "
             "and a valid NCBI accession code from the nucleotide, assembly or WGS databases.",
             metavar="<path>",
-            type=FileType("r"),
+            type=AccessionFileType("r"),
         )
 
         # TODO validate that this is 3-column and tab delimited
@@ -297,7 +299,7 @@ The haystack commands are:
             help="Tab delimited file containing one record per row: the name of the taxon, a user defined "
             "accession code, and the path to the fasta file (optionally compressed).",
             metavar="<path>",
-            type=FileType("r"),
+            type=SequenceFileType("r"),
         )
 
         # TODO add extra options for all the other refseq curated lists (eukaryotes, plasmids, prok_reference_genomes,
