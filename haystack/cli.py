@@ -282,7 +282,8 @@ The haystack commands are:
 
         # TODO validate that this is 2-column and tab delimited
         choice.add_argument(
-            "--accessions",
+            "--accessions-file",
+            dest="accessions",
             help="Tab delimited file containing one record per row: the name of the taxon, "
             "and a valid NCBI accession code from the nucleotide, assembly or WGS databases.",
             metavar="<path>",
@@ -291,7 +292,8 @@ The haystack commands are:
 
         # TODO validate that this is 3-column and tab delimited
         choice.add_argument(
-            "--sequences",
+            "--sequences-file",
+            dest="sequences",
             help="Tab delimited file containing one record per row: the name of the taxon, a user defined "
             "accession code, and the path to the fasta file (optionally compressed).",
             metavar="<path>",
