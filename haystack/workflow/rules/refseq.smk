@@ -91,19 +91,19 @@ def get_refseq_genome_sequences(wildcards):
     return inputs
 
 
-rule entrez_refseq_genbank_multifasta:
+rule entrez_refseq_genbank_aggregator:
     input:
         get_refseq_genome_sequences,
     log:
         config["db_output"] + "/bowtie/refseq_genbank.log",
     output:
-        config["db_output"] + "/bowtie/refseq_genbank.fasta.gz",
+        config["db_output"] + "/bowtie/refseq_genbank.done",
     benchmark:
         repeat("benchmarks/entrez_refseq_genbank_multifasta_.benchmark.txt", 1)
     message:
-        "Concatenating all the fasta sequences for all the taxa that can be found in RefSeq and Genbank."
-    script:
-        "../scripts/bowtie2_multifasta.py"
+        "Aggregating all the fasta sequences for all the taxa that can be found in RefSeq and Genbank."
+    shell:
+        "touch {output}"
 
 
 def get_assembly_genome_sequences(_):
@@ -138,25 +138,25 @@ def get_assembly_genome_sequences(_):
     return inputs
 
 
-rule entrez_assembly_multifasta:
+rule entrez_refseq_assembly_aggregator:
     input:
         get_assembly_genome_sequences,
     log:
         config["db_output"] + "/bowtie/assemblies.log",
     output:
-        config["db_output"] + "/bowtie/assemblies.fasta.gz",
+        config["db_output"] + "/bowtie/assemblies.done",
     benchmark:
         repeat("benchmarks/entrez_assembly_multifasta.benchmark.txt", 1)
     message:
-        "Concatenating all the fasta sequences for all the taxa that can be found in the Assembly database."
-    script:
-        "../scripts/bowtie2_multifasta.py"
+        "Aggregating all the fasta sequences for all the taxa that can be found in the assembly database."
+    shell:
+        "touch {output}"
 
 
 rule entrez_refseq_prok_aggregator:
     input:
-        assemblies=config["db_output"] + "/bowtie/assemblies.fasta.gz",
-        refseq=config["db_output"] + "/bowtie/refseq_genbank.fasta.gz",
+        assemblies=config["db_output"] + "/bowtie/assemblies.done",
+        refseq=config["db_output"] + "/bowtie/refseq_genbank.done",
     log:
         config["db_output"] + "/bowtie/refseq_prok.log",
     output:
@@ -164,6 +164,6 @@ rule entrez_refseq_prok_aggregator:
     benchmark:
         repeat("benchmarks/entrez_refseq_prok_multifasta.benchmark.txt", 1)
     message:
-        "Concatenating input files {input.assemblies} and {input.refseq}."
+        "Aggregating input files {input.assemblies} and {input.refseq}."
     shell:
         "touch {output}"

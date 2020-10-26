@@ -106,6 +106,6 @@ rule entrez_query_aggregator:
     benchmark:
         repeat("benchmarks/entrez_multifasta_entrez_query.benchmark.txt", 1)
     message:
-        "Concatenating all the fasta sequences for all the taxa of the entrez query."
+        "Aggregating all the fasta sequences for all the taxa of the entrez query."
     shell:
         "touch {output}"

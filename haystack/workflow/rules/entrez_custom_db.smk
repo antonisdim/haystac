@@ -69,7 +69,7 @@ rule entrez_sequence_file_aggregator:
     output:
         config["db_output"] + "/bowtie/custom_seqs.done",
     message:
-        "Concatenating all the user provided sequences."
+        "Aggregating all the user provided sequences."
     shell:
         "touch {output}"
 
@@ -116,6 +116,6 @@ rule entrez_accessions_file_aggregator:
     output:
         config["db_output"] + "/bowtie/custom_acc.done",
     message:
-        "Concatenating all the sequences from user provided accessions."
+        "Aggregating all the sequences from user provided accessions."
     shell:
         "touch {output}"

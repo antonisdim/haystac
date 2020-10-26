@@ -11,13 +11,12 @@ import sys
 from Bio import bgzf
 
 
-def bowtie_multifasta(fasta_files, output_file):
+def bowtie2_multifasta(fasta_files, output_file):
     print(
         "Creating the bowtie2 multifasta file for the filtering ...", file=sys.stderr,
     )
 
-    # TODO this is super slow.... it takes almost a long as downloading the sequences in the first place!
-    #      need to think of a better, perhaps multi-threaded way of doing this!
+    # TODO this is super slow, see https://sites.google.com/site/tfsidc/linux-tricks/processing-a-large-number-of-files
     with bgzf.open(output_file, "wt") as fout:
         for fasta_file in fasta_files:
             print(fasta_file, file=sys.stderr)
@@ -32,4 +31,4 @@ if __name__ == "__main__":
     sys.stderr = open(snakemake.log[0], "w")
 
     # noinspection PyUnresolvedReferences
-    bowtie_multifasta(fasta_files=snakemake.input, output_file=snakemake.output[0])
+    bowtie2_multifasta(fasta_files=snakemake.input, output_file=snakemake.output[0])
