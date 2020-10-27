@@ -203,6 +203,7 @@ class AccessionFileType(SpreadsheetFileType):
         if bad_accs:
             raise argparse.ArgumentTypeError(f"'{value}' these accession codes contain invalid characters:\n{bad_accs}")
 
+        return value
 
 class SequenceFileType(AccessionFileType):
     """
