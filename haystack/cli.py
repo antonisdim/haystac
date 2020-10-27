@@ -172,9 +172,7 @@ The haystack commands are:
         optional.add_argument(
             "--clear-cache",
             help="Clear the contents of the cache folder, and delete the folder itself",
-            type=BoolType(),
-            metavar="<bool>",
-            default=self.config_default["clear_cache"],
+            action="store_true",
         )
 
         optional.add_argument(
