@@ -10,6 +10,7 @@ __license__ = "MIT"
 rule get_sra_fastq_se:
     output:
         temp(config["sample_output_dir"] + "/sra_data/SE/{accession}.fastq"),
+        temp("~/ncbi/public/sra/{accession}.sra.cache"),
     log:
         temp(config["sample_output_dir"] + "/sra_data/SE/{accession}.log"),
     threads: 6
@@ -24,13 +25,14 @@ rule get_sra_fastq_se:
         " --split-files"
         " --threads {threads}"
         " --temp {params.basename}"
-        " --outdir {params.basename} &> {log}" # TODO this downloads a massive SRA file to `~/ncbi/public/sra/{accession}.sra.cache`
+        " --outdir {params.basename} &> {log}"
 
 
 rule get_sra_fastq_pe:
     output:
         temp(config["sample_output_dir"] + "/sra_data/PE/{accession}_1.fastq"),
         temp(config["sample_output_dir"] + "/sra_data/PE/{accession}_2.fastq"),
+        temp("~/ncbi/public/sra/{accession}.sra.cache"),
     log:
         temp(config["sample_output_dir"] + "/sra_data/PE/{accession}.log"),
     threads: 6
@@ -45,7 +47,7 @@ rule get_sra_fastq_pe:
         " --split-files"
         " --threads {threads}"
         " --temp {params.basename}"
-        " --outdir {params.basename} &> {log}" # TODO this downloads a massive SRA file to `~/ncbi/public/sra/{accession}.sra.cache`
+        " --outdir {params.basename} &> {log}"
 
 
 rule compress_sra_fastq_se:
