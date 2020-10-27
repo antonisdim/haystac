@@ -37,7 +37,7 @@ from haystack.workflow.scripts.utilities import (
     JsonType,
     SequenceFileType,
     AccessionFileType,
-    SraAccession,
+    SraAccessionType,
 )
 
 os.environ["OPENBLAS_NUM_THREADS"] = "1"
@@ -504,7 +504,7 @@ The haystack commands are:
         )
 
         choice.add_argument(
-            "--sra", help="Download fastq input from the SRA database", metavar="<accession>",
+            "--sra", help="Download fastq input from the SRA database", type=SraAccessionType(), metavar="<accession>",
         )
 
         optional = parser.add_argument_group("Optional arguments")
@@ -567,16 +567,16 @@ The haystack commands are:
         config["PE_MODERN"] = not config["SE"] and not args.collapse
 
         if args.sra:
+            config["sra"], config["layout"] = args.sra
+
             if args.sample_prefix:
                 raise ValidationError("--sample-prefix cannot be used with and SRA accession.")
 
             # use the SRA accession as the sample prefix
-            config["sample_prefix"] = args.sra
+            config["sample_prefix"] = config["sra"]
 
             # query the SRA to see if this is a paired-end library or not
-            layout = SraAccession(config["sample_prefix"])[1]
-
-            if layout == "paired":
+            if config["layout"] == "paired":
                 if config["collapse"]:
                     config["PE_ANCIENT"] = True
                 else:

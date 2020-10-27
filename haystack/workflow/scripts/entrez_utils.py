@@ -43,8 +43,11 @@ def entrez_request(action, params=None):
     params["tool"] = ENTREZ_TOOL
     params["email"] = ENTREZ_EMAIL
 
-    with open(".snakemake/config.yaml") as fin:
-        config = yaml.safe_load(fin)
+    try:
+        with open(".snakemake/config.yaml") as fin:
+            config = yaml.safe_load(fin)
+    except:
+        config = {}
 
     if config.get("api_key"):
         # append the user specified api_key

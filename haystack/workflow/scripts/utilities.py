@@ -235,24 +235,27 @@ class SequenceFileType(AccessionFileType):
         return value
 
 
-class SraAccession(object):
-    """Is this a valid SRA accession"""
+class SraAccessionType(object):
+    """
+    Is this a valid SRA accession
+    """
 
-    def __init__(self, accession):
-
-        # is it a valid sequencing run accession
-        if accession[:3] not in ["ERR", "SRR"]:
-            raise RuntimeError(f"Invalid SRA accession {config['sra']}.")
-
-        # query the SRA to see if this is a paired-end library or not
+    def __call__(self, value):
         try:
-            _, _, id_list = entrez_esearch("sra", config["sra"])
+            # query the SRA to see if this a valid accession
+            _, _, id_list = entrez_esearch("sra", value)
             etree = entrez_efetch("sra", id_list)
+        except Exception as e:
+            print(e)
+            raise argparse.ArgumentTypeError(f"Invalid SRA accession '{value}'")
+
+        try:
+            # now get the library layout
             layout = etree.find(".//LIBRARY_LAYOUT/*").tag.lower()
         except Exception:
-            raise RuntimeError(f"Unable to resolve the SRA accession {config['sra']}")
+            raise argparse.ArgumentTypeError(f"Unable to resolve the library layout for SRA accession '{value}'")
 
-        return (accession, layout)
+        return value, layout
 
 
 def get_total_paths(
