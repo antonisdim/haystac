@@ -29,8 +29,8 @@ rule adapterremoval_single_end:
         "   --gzip "
         "   --minlength 15 "
         "   --trimns && "
-        " cat {params.basename}.truncated.gz > {output}"
-        ") 2> {log}" # TODO why are you using `cat` instead of `mv`? do we need to keep the original?
+        " mv {params.basename}.truncated.gz {output}"
+        ") 2> {log}"
 
 
 rule adapterremoval_paired_end_ancient:
@@ -58,8 +58,10 @@ rule adapterremoval_paired_end_ancient:
         "   --collapse-deterministic "
         "   --minlength 15 "
         "   --trimns && "
-        " cat {params.basename}.collapsed.gz {params.basename}.collapsed.truncated.gz 1> {output}"
-        ") 2> {log}" # TODO do we need to keep the original? why not delete when we're done?
+        " cat {params.basename}.collapsed.gz {params.basename}.collapsed.truncated.gz 1> {output} && "
+        " unlink {params.basename}.collapsed.gz && "
+        " unlink {params.basename}.collapsed.truncated.gz "
+        ") 2> {log}"
 
 
 rule adapterremoval_paired_end_modern:
@@ -87,6 +89,6 @@ rule adapterremoval_paired_end_modern:
         "   --gzip "
         "   --minlength 15 "
         "   --trimns &&"
-        " cat {params.basename}.pair1.truncated.gz 1> {output.fastq_r1} && "
-        " cat {params.basename}.pair2.truncated.gz 1> {output.fastq_r2} "
-        ") 2> {log}" # TODO why are you using `cat` instead of `mv`? do we need to keep the original?
+        " mv {params.basename}.pair1.truncated.gz {output.fastq_r1} && "
+        " mv {params.basename}.pair2.truncated.gz {output.fastq_r2} "
+        ") 2> {log}"
