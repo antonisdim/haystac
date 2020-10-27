@@ -74,38 +74,43 @@ rule entrez_download_sequence:
         "../scripts/entrez_download_sequence.py"
 
 
-def get_fasta_sequences(_):
+def get_total_accessions(_):
     """
-    Get all the FASTA sequences for the multi-FASTA file.
+    Get all the individual bam file paths for the taxa in our database.
     """
-    # noinspection PyUnresolvedReferences
-    pick_sequences = checkpoints.entrez_pick_sequences.get()
-    sequences = pd.read_csv(pick_sequences.output[0], sep="\t")
+    sequences = get_total_paths(
+        checkpoints,
+        config["query"],
+        config["refseq_rep"],
+        config["sequences"],
+        config["accessions"],
+        config["genera"],
+        config["force_accessions"],
+    )
 
-    if len(sequences) == 0:
-        raise RuntimeError("The entrez pick sequences file is empty.")
-
-    inputs = []
+    db_pairs = []
 
     for key, seq in sequences.iterrows():
-        orgname = normalise_name(seq["species"])
-        accession = seq["AccessionVersion"]
+        orgname, accession = (
+            normalise_name(seq["species"]),
+            seq["AccessionVersion"],
+        )
 
-        inputs.append(config["cache"] + f"/ncbi/{orgname}/{accession}.fasta.gz")
+        db_pairs.append([orgname, accession])
 
-    return inputs
+    return db_pairs
 
 
-rule entrez_query_aggregator:
+rule entrez_db_list:
     input:
-        get_fasta_sequences,
+        get_total_accessions,
     log:
         config["db_output"] + "/bowtie/entrez_query.log",
     output:
-        config["db_output"] + "/bowtie/entrez_query.done",
+        config["db_output"] + "/db_taxa_accessions.tsv",
     benchmark:
         repeat("benchmarks/entrez_multifasta_entrez_query.benchmark.txt", 1)
     message:
-        "Aggregating all the fasta sequences for all the taxa of the entrez query."
-    shell:
-        "touch {output}"
+        "Aggregating all the species/accession pairs that exist in the database."
+    script:
+        "../scripts/entrez_db_list.py"

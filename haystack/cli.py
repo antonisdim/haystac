@@ -413,11 +413,7 @@ The haystack commands are:
             if args.query:
                 target_list.append("bowtie/entrez_query.done")
             if args.refseq_rep:
-                target_list.append("bowtie/refseq_prok.done")
-            if args.sequences:
-                target_list.append("bowtie/custom_seqs.done")
-            if args.accessions:
-                target_list.append("bowtie/custom_acc.done")
+                target_list.append("db_taxa_accessions.tsv")
 
             with open(config_fetch, "w") as fout:
                 yaml.safe_dump(config, fout, default_flow_style=False)
@@ -436,6 +432,7 @@ The haystack commands are:
         elif args.mode == "build":
             target_list.append("idx_database.done")
             target_list.append("bowtie/bowtie_index.done")
+            target_list.append("db_taxa_accessions.tsv")
 
             if os.path.exists(config_fetch):
                 raise ValidationError(
