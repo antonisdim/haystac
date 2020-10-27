@@ -7,9 +7,10 @@ __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
 import argparse
-import pandas as pd
-import re
 import os
+import re
+
+import pandas as pd
 
 from haystack.workflow.scripts.entrez_utils import (
     entrez_esearch,
@@ -146,81 +147,88 @@ class JsonType(object):
             raise argparse.ArgumentTypeError(f"'{value}' is not a valid JSON string\n {error}")
 
 
-class SpreadsheetFileType(FileType):
+class SpreadsheetFileType(object):
     """
     Is it a valid user input file
     """
 
-    def __call__(self, string, ncol):
-        super().__call__(string)
+    cols = None
+    data = None
 
-        file_name = super().__call__(string).name
+    def __call__(self, value):
 
-        # check if the user provided file is empty
-        if os.stat(file_name).st_size == 0:
-            raise argparse.ArgumentTypeError(f"The file '{file_name}' you have provided is empty")
+        if not os.path.exists(value):
+            raise argparse.ArgumentTypeError(f"'{value}' does not exit")
 
-        # check if the provided data are valid
-        with open(file_name, "r") as user_input:
-            i = 0
-            for line in user_input:
-                # line number
-                i = i + 1
-                # split the line
-                input_fields = line.split("\t")
-                # calculate field number
-                input_fields_len = len(input_fields)
+        if os.stat(value).st_size == 0:
+            raise argparse.ArgumentTypeError(f"'{value}' is empty")
 
-                if input_fields_len == 1:
-                    raise argparse.ArgumentTypeError(
-                        f"The data you have provided in line {i} are not TAB delimited. "
-                        f"Please fix the delimiters on that line."
-                    )
+        try:
+            self.data = pd.read_table(value, sep="\t", header=None, index_col=False,)
+        except Exception:
+            raise argparse.ArgumentTypeError(f"'{value}' unknown error parsing file")
 
-                if input_fields_len > ncol:
-                    raise argparse.ArgumentTypeError(
-                        f"The data you have provided in line {i} have more fields than "
-                        f"it is required. Please fix that line."
-                    )
+        if len(self.data.columns) != len(self.cols):
+            raise argparse.ArgumentTypeError(
+                f"'{value}' must have {len(self.cols)} columns and be tab delimited (cols={len(self.data.columns)})"
+            )
 
-                if input_fields_len < ncol:
-                    raise argparse.ArgumentTypeError(
-                        f"Line {i} has less fields than required. Please check the "
-                        f"delimiters or if there are missing data."
-                    )
+        # find the row number of any empty cells
+        bad_rows = ", ".join([str(i + 1) for i in self.data.index[self.data.isnull().any(axis=1)].tolist()])
 
-                if input_fields_len == 3 and ncol == 3:
-                    if not os.path.isfile(input_fields[2]):
-                        raise argparse.ArgumentTypeError(
-                            f"The path {input_fields[2]} for the custom fasta "
-                            f"sequence in line {i} is not valid. Please provide "
-                            f"a valid file."
-                        )
+        if bad_rows:
+            raise argparse.ArgumentTypeError(f"'{value}' contains missing data in row(s): {bad_rows}")
 
-                if not re.match("^[\w.]+$", input_fields[1]):
-                    raise argparse.ArgumentTypeError(
-                        f"The accession '{input_fields[1]}' in line '{i}' " f"contains an illegal character"
-                    )
-
-        return super().__call__(string).name
-
-
-class SequenceFileType(SpreadsheetFileType):
-    """
-    Is this a valid sequence input file.
-    """
-
-    def __call__(self, string, ncol):
-        return super().__call__(string, ncol).name
+        return value
 
 
 class AccessionFileType(SpreadsheetFileType):
     """
+    Is this a valid accession input file.
+    """
+
+    cols = ["species", "accession"]
+
+    def __call__(self, value):
+        super().__call__(value)
+
+        # check all accessions pass the regex pattern
+        idx = self.cols.index("accession")
+
+        # TODO check regex for consistency with other parts of the code
+        bad_accs = "\n".join(
+            [f"line {i+1}: '{acc}'" for i, acc in enumerate(self.data[idx].tolist()) if not re.match(r"^[\w.]+$", acc)]
+        )
+
+        if bad_accs:
+            raise argparse.ArgumentTypeError(f"'{value}' these accession codes contain invalid characters:\n{bad_accs}")
+
+
+class SequenceFileType(AccessionFileType):
+    """
     Is this a valid sequence input file.
     """
 
-    def __call__(self, string, ncol):
-        return super().__call__(string, ncol).name
+    cols = ["species", "accession", "path"]
+
+    def __call__(self, value):
+        super().__call__(value)
+
+        # find any files that don't exist or are empty
+        idx = self.cols.index("path")
+
+        bad_files = "\n".join(
+            [
+                f"line {i+1}: '{file}'"
+                for i, file in enumerate(self.data[idx].tolist())
+                if not os.path.exists(file) or os.stat(file).st_size == 0
+            ]
+        )
+
+        if bad_files:
+            raise argparse.ArgumentTypeError(f"'{value}' these sequence files do not exist or are empty:\n{bad_files}")
+
+        return value
 
 
 class SraAccession(object):
