@@ -161,13 +161,20 @@ The haystack commands are:
         # add the help option manually so we can control where it is shown in the menu
         optional.add_argument("-h", "--help", action="help", help="Show this help message and exit")
 
-        # TODO add a --clear-cache option
         optional.add_argument(
             "--cache",
             help="Cache folder for storing genomes downloaded from NCBI and other shared data",
             metavar="<path>",
             type=WritablePathType(),
             default=self.config_default["cache"],
+        )
+
+        optional.add_argument(
+            "--clear-cache",
+            help="Clear the contents of the cache folder, and delete the folder itself",
+            type=BoolType(),
+            metavar="<bool>",
+            default=self.config_default["clear_cache"],
         )
 
         optional.add_argument(
@@ -229,6 +236,12 @@ The haystack commands are:
         # resolve relative paths
         if self.config_user.get("cache"):
             self.config_user["cache"] = os.path.abspath(os.path.expanduser(self.config_user["cache"]))
+
+        # clear the cache directory if specified
+        if self.config_user.get("clear_cache"):
+            shutil.rmtree(self.config_user["cache"])
+            # delete the clear_cache key, so that the cache is not cleared every time unless the user specifies it
+            del self.config_user["clear_cache"]
 
         # save the user config
         with open(CONFIG_USER, "w") as fout:

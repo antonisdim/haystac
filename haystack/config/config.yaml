@@ -1,6 +1,8 @@
 # `haystack config` defaults
 cache:
   ~/haystack/cache/
+clear_cache:
+  False
 batchsize:
   5
 mismatch_probability:

@@ -173,7 +173,7 @@ class SequenceFileType(argparse.FileType):
                 "and the correct number of required fields."
             )
 
-        if custom_fasta_path.isnull().values.any():
+        if custom_fasta_paths.isnull().values.any():
             raise RuntimeError(
                 "The file you have provided might be missing one of the required fields. "
                 "Please provide a file with the correct delimiters, "
