@@ -26,7 +26,5 @@ if __name__ == "__main__":
 
     # noinspection PyUnresolvedReferences
     random_db_paths(
-        input_list=snakemake.input,
-        output=snakemake.output[0],
-        seed=snakemake.params[0],
+        input_list=snakemake.input, output=snakemake.output[0], seed=snakemake.params[0],
     )

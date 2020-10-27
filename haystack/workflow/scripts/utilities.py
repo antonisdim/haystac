@@ -71,9 +71,7 @@ class PositiveIntType(object):
             if not int(value) > 0:
                 raise ValueError()
         except ValueError:
-            raise argparse.ArgumentTypeError(
-                f"'{value}' is not a valid positive integer"
-            )
+            raise argparse.ArgumentTypeError(f"'{value}' is not a valid positive integer")
 
         return int(value)
 
@@ -94,8 +92,7 @@ class RangeType(object):
                 raise ValueError()
         except ValueError:
             raise argparse.ArgumentTypeError(
-                f"'{value}' is not a valid {self.type.__name__} in the range "
-                f"({self.lower}, {self.upper})"
+                f"'{value}' is not a valid {self.type.__name__} in the range " f"({self.lower}, {self.upper})"
             )
 
         return self.type(value)
@@ -146,9 +143,7 @@ class JsonType(object):
         try:
             return json.loads(value)
         except json.decoder.JSONDecodeError as error:
-            raise argparse.ArgumentTypeError(
-                f"'{value}' is not a valid JSON string\n {error}"
-            )
+            raise argparse.ArgumentTypeError(f"'{value}' is not a valid JSON string\n {error}")
 
 
 class SpreadsheetFileType(FileType):
@@ -163,9 +158,7 @@ class SpreadsheetFileType(FileType):
 
         # check if the user provided file is empty
         if os.stat(file_name).st_size == 0:
-            raise argparse.ArgumentTypeError(
-                f"The file '{file_name}' you have provided is empty"
-            )
+            raise argparse.ArgumentTypeError(f"The file '{file_name}' you have provided is empty")
 
         # check if the provided data are valid
         with open(file_name, "r") as user_input:
@@ -206,8 +199,7 @@ class SpreadsheetFileType(FileType):
 
                 if not re.match("^[\w.]+$", input_fields[1]):
                     raise argparse.ArgumentTypeError(
-                        f"The accession '{input_fields[1]}' in line '{i}' "
-                        f"contains an illegal character"
+                        f"The accession '{input_fields[1]}' in line '{i}' " f"contains an illegal character"
                     )
 
         return super().__call__(string).name
@@ -252,13 +244,7 @@ class SraAccession(object):
 
 
 def get_total_paths(
-    checkpoints,
-    entrez_query,
-    with_refseq_rep,
-    sequences,
-    accessions,
-    specific_genera,
-    force_accessions,
+    checkpoints, entrez_query, with_refseq_rep, sequences, accessions, specific_genera, force_accessions,
 ):
     """
     Get all the individual fasta file paths for the taxa in our database.
@@ -279,20 +265,14 @@ def get_total_paths(
         genbank_genomes = pd.read_csv(refseq_rep_prok.output.genbank_genomes, sep="\t")
         assemblies = pd.read_csv(refseq_rep_prok.output.assemblies, sep="\t")
         refseq_plasmids = pd.read_csv(refseq_rep_prok.output.refseq_plasmids, sep="\t")
-        genbank_plasmids = pd.read_csv(
-            refseq_rep_prok.output.genbank_plasmids, sep="\t"
-        )
+        genbank_plasmids = pd.read_csv(refseq_rep_prok.output.genbank_plasmids, sep="\t")
 
         if not force_accessions:
             invalid_assemblies = checkpoints.entrez_invalid_assemblies.get()
-            invalid_assembly_sequences = pd.read_csv(
-                invalid_assemblies.output[0], sep="\t"
-            )
+            invalid_assembly_sequences = pd.read_csv(invalid_assemblies.output[0], sep="\t")
 
             assemblies = assemblies[
-                ~assemblies["AccessionVersion"].isin(
-                    invalid_assembly_sequences["AccessionVersion"]
-                )
+                ~assemblies["AccessionVersion"].isin(invalid_assembly_sequences["AccessionVersion"])
             ]
 
         sources = [
@@ -310,30 +290,21 @@ def get_total_paths(
 
     if sequences:
         custom_fasta_paths = pd.read_csv(
-            sequences,
-            sep="\t",
-            header=None,
-            names=["species", "AccessionVersion", "path"],
+            sequences, sep="\t", header=None, names=["species", "AccessionVersion", "path"],
         )
 
         custom_seqs = custom_fasta_paths[["species", "AccessionVersion"]]
-        custom_seqs["AccessionVersion"] = "custom_seq-" + custom_seqs[
-            "AccessionVersion"
-        ].astype(str)
+        custom_seqs["AccessionVersion"] = "custom_seq-" + custom_seqs["AccessionVersion"].astype(str)
 
         sequences_df = sequences_df.append(custom_seqs)
 
     if accessions:
-        custom_accessions = pd.read_csv(
-            accessions, sep="\t", header=None, names=["species", "AccessionVersion"],
-        )
+        custom_accessions = pd.read_csv(accessions, sep="\t", header=None, names=["species", "AccessionVersion"],)
 
         sequences_df = sequences_df.append(custom_accessions)
 
     if specific_genera:
-        sequences_df = sequences_df[
-            sequences_df["species"].str.contains("|".join(specific_genera))
-        ]
+        sequences_df = sequences_df[sequences_df["species"].str.contains("|".join(specific_genera))]
 
     return sequences_df
 
@@ -347,12 +318,8 @@ def check_unique_taxa_in_custom_input(accessions, sequences):
     """Checks that custom input files have only one entry per taxon"""
 
     if accessions != "" and sequences != "":
-        custom_fasta_paths = pd.read_csv(
-            sequences, sep="\t", header=None, names=["species", "accession", "path"]
-        )
-        custom_accessions = pd.read_csv(
-            accessions, sep="\t", header=None, names=["species", "accession"]
-        )
+        custom_fasta_paths = pd.read_csv(sequences, sep="\t", header=None, names=["species", "accession", "path"])
+        custom_accessions = pd.read_csv(accessions, sep="\t", header=None, names=["species", "accession"])
 
         taxon_acc = custom_accessions["species"].tolist()
         taxon_seq = custom_fasta_paths["species"].tolist()

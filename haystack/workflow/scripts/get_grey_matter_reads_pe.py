@@ -13,18 +13,14 @@ import sys
 from Bio import SeqIO
 
 
-def get_grey_matter_reads(
-    input_fastq_r1, input_fastq_r2, matrix_file, output_fastq_r1, output_fastq_r2
-):
+def get_grey_matter_reads(input_fastq_r1, input_fastq_r2, matrix_file, output_fastq_r1, output_fastq_r2):
     """Function to extract all the grey matter reads into 2 fastq files."""
 
     dirichlet_matrix = pd.read_csv(matrix_file, sep=",")
 
     ts_tv_group = dirichlet_matrix.groupby("Read_ID").sum().squeeze()
     grey_matter_df = ts_tv_group.where(ts_tv_group == 0)
-    grey_matter_reads = grey_matter_df[
-        grey_matter_df["Dirichlet_Assignment"].notna()
-    ].index.tolist()
+    grey_matter_reads = grey_matter_df[grey_matter_df["Dirichlet_Assignment"].notna()].index.tolist()
 
     with gzip.open(input_fastq_r1, "rt") as input_handle_r1:
         with gzip.open(output_fastq_r1, "wt") as output_handle_r1:

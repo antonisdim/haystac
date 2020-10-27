@@ -25,9 +25,7 @@ def entrez_invalid_assemblies(assemblies, output):
         #       etree = entrez_efetch("assembly", id_list)
         for key, acc in assemblies_file.iterrows():
             # query the assembly database to confirm that this accession is still valid
-            _, _, id_list = entrez_esearch(
-                "assembly", acc["AccessionVersion"] + ' AND "latest refseq"[filter]'
-            )
+            _, _, id_list = entrez_esearch("assembly", acc["AccessionVersion"] + ' AND "latest refseq"[filter]')
 
             if len(id_list) == 0:
                 row = dict()

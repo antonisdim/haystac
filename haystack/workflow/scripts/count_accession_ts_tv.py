@@ -77,10 +77,7 @@ def count_ts_tv_init(bam_file, output_file, taxon, pairs=False):
                 ts, tv = 0, 0
 
                 for base_call1, base_ref1, base_call2, base_ref2 in zip(
-                    read1.seq,
-                    read1.get_reference_sequence(),
-                    read2.seq,
-                    read2.get_reference_sequence(),
+                    read1.seq, read1.get_reference_sequence(), read2.seq, read2.get_reference_sequence(),
                 ):
 
                     if (

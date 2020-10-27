@@ -34,9 +34,7 @@ def entrez_download_sequence(accession, output_file, force=False):
 
     if ftp_url:
         # read the FTP stream, unzip the contents and write them one line at a time to our bgzip file
-        with gzip.open(urlretrieve(ftp_url)[0]) as fin, bgzf.open(
-            output_file, "w"
-        ) as fout:
+        with gzip.open(urlretrieve(ftp_url)[0]) as fin, bgzf.open(output_file, "w") as fout:
             for line in fin:
                 print(line.strip().decode("utf-8"), file=fout)
 
@@ -44,10 +42,7 @@ def entrez_download_sequence(accession, output_file, force=False):
 
     try:
         # fetch the fasta record from nuccore
-        r = entrez_request(
-            "efetch.fcgi",
-            {"db": "nuccore", "id": accession, "rettype": "fasta", "retmode": "text"},
-        )
+        r = entrez_request("efetch.fcgi", {"db": "nuccore", "id": accession, "rettype": "fasta", "retmode": "text"},)
 
         # the fasta may be empty if this is a "master record" containing multiple other records (NZ_APLR00000000.1)
         if len(r.text.strip()) > 1:
@@ -61,10 +56,7 @@ def entrez_download_sequence(accession, output_file, force=False):
 
     try:
         # get the full GenBank XML record
-        r = entrez_request(
-            "efetch.fcgi",
-            {"db": "nuccore", "id": accession, "rettype": "gb", "retmode": "xml"},
-        )
+        r = entrez_request("efetch.fcgi", {"db": "nuccore", "id": accession, "rettype": "gb", "retmode": "xml"},)
 
     except requests.exceptions.HTTPError:
         # check for a replacement accession (there may be a newer version if this a WGS project)
@@ -93,13 +85,7 @@ def entrez_download_sequence(accession, output_file, force=False):
             # fetch all the accessions in batches
             for id_list in chunker(accessions, ENTREZ_MAX_UID):
                 r = entrez_request(
-                    "efetch.fcgi",
-                    {
-                        "db": "nuccore",
-                        "id": id_list,
-                        "rettype": "fasta",
-                        "retmode": "text",
-                    },
+                    "efetch.fcgi", {"db": "nuccore", "id": id_list, "rettype": "fasta", "retmode": "text",},
                 )
 
                 # write the fasta data to our bgzip file
@@ -107,8 +93,7 @@ def entrez_download_sequence(accession, output_file, force=False):
 
     except requests.exceptions.HTTPError:
         raise RuntimeError(
-            f"Could not download the accession range '{first.text}-{last.text}' "
-            f"for master record '{accession}'"
+            f"Could not download the accession range '{first.text}-{last.text}' " f"for master record '{accession}'"
         )
 
 

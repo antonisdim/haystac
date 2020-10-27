@@ -12,67 +12,41 @@ import pandas as pd
 import sys
 
 
-def calculate_taxa_probabilities(
-    ts_tv_matrix_file, params_file, sample_name, total_fastq_reads, output_file
-):
+def calculate_taxa_probabilities(ts_tv_matrix_file, params_file, sample_name, total_fastq_reads, output_file):
     """
     Function that calculates the species identification posterior probabilities.
     This function acts as a wrapper around the calculate_probabilities function.
     Function calculate_probabilities actually calculates the probabilities.
     Function calculate_taxa_probabilities acts as a wrapper by providing the right dataset each time.
     """
-    assert os.stat(
-        ts_tv_matrix_file
-    ).st_size, f"The ts_tv count file is empty {ts_tv_matrix_file}"
-    assert os.stat(
-        params_file
-    ).st_size, f"The probability model parameters file is empty {params_file}"
+    assert os.stat(ts_tv_matrix_file).st_size, f"The ts_tv count file is empty {ts_tv_matrix_file}"
+    assert os.stat(params_file).st_size, f"The probability model parameters file is empty {params_file}"
 
     print("all taxa", "\t", sample_name, file=sys.stderr)
 
     calculate_probabilities(
-        ts_tv_matrix_file,
-        params_file,
-        sample_name,
-        total_fastq_reads,
-        output_file,
-        submatrix="all taxa",
+        ts_tv_matrix_file, params_file, sample_name, total_fastq_reads, output_file, submatrix="all taxa",
     )
 
 
 def calculate_probabilities(
-    ts_tv_matrix_file,
-    params_file,
-    sample_name,
-    total_fastq_reads,
-    output_file,
-    submatrix,
+    ts_tv_matrix_file, params_file, sample_name, total_fastq_reads, output_file, submatrix,
 ):
     total_fastq_reads = float(open(total_fastq_reads, "r").read())
 
-    read_count = len(
-        pd.read_csv(ts_tv_matrix_file, sep=",", usecols=["Read_ID"])["Read_ID"].unique()
-    )
+    read_count = len(pd.read_csv(ts_tv_matrix_file, sep=",", usecols=["Read_ID"])["Read_ID"].unique())
 
     if not read_count:
         print("File is empty, moving on.")
 
-    ts_tv_matrix = pd.read_csv(
-        ts_tv_matrix_file, sep=",", usecols=["Taxon", "Ts", "Tv"]
-    )
+    ts_tv_matrix = pd.read_csv(ts_tv_matrix_file, sep=",", usecols=["Taxon", "Ts", "Tv"])
 
     model_params = pd.read_json(params_file, orient="index").squeeze()
 
     mismatch_df = ts_tv_matrix.groupby("Taxon").agg(
         {
-            "Ts": lambda num: (
-                sum(num)
-                + ((read_count - num.count()) * (model_params["ts_missing_val"] + 1))
-            ),
-            "Tv": lambda num: (
-                sum(num)
-                + ((read_count - num.count()) * (model_params["tv_missing_val"] + 1))
-            ),
+            "Ts": lambda num: (sum(num) + ((read_count - num.count()) * (model_params["ts_missing_val"] + 1))),
+            "Tv": lambda num: (sum(num) + ((read_count - num.count()) * (model_params["tv_missing_val"] + 1))),
         }
     )
 
@@ -85,12 +59,8 @@ def calculate_probabilities(
     mismatch_df["Sample"] = sample_name
 
     for index, row in mismatch_df.iterrows():
-        mismatch_t_vec = (
-            mismatch_df["Ts"].subtract(row["Ts"]).rpow(model_params["delta_t"])
-        )
-        mismatch_v_vec = (
-            mismatch_df["Tv"].subtract(row["Tv"]).rpow(model_params["delta_v"])
-        )
+        mismatch_t_vec = mismatch_df["Ts"].subtract(row["Ts"]).rpow(model_params["delta_t"])
+        mismatch_v_vec = mismatch_df["Tv"].subtract(row["Tv"]).rpow(model_params["delta_v"])
         products = mismatch_t_vec * mismatch_v_vec
         denominator_summation = products.sum()
         posterior_row = float(1) / denominator_summation

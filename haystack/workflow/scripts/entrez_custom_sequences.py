@@ -19,10 +19,7 @@ def entrez_custom_sequences(config, taxon, output_file):
     if os.path.exists(config["sequences"]):
 
         custom_fasta_paths = pd.read_csv(
-            config["sequences"],
-            sep="\t",
-            header=None,
-            names=["species", "accession", "path"],
+            config["sequences"], sep="\t", header=None, names=["species", "accession", "path"],
         )
 
     else:
@@ -31,17 +28,14 @@ def entrez_custom_sequences(config, taxon, output_file):
             "Please provide a valid path for the tab delimited input file."
         )
 
-    fasta_file = custom_fasta_paths.loc[custom_fasta_paths["species"] == taxon][
-        "path"
-    ].values[0]
+    fasta_file = custom_fasta_paths.loc[custom_fasta_paths["species"] == taxon]["path"].values[0]
 
     if os.path.exists(fasta_file):
         print(f"File for taxon {taxon} exists.", file=sys.stderr)
         filename, file_extension = os.path.splitext(fasta_file)
         if file_extension == ".gz":
             print(
-                f"We're putting the fasta file for taxon {taxon} in the database.",
-                file=sys.stderr,
+                f"We're putting the fasta file for taxon {taxon} in the database.", file=sys.stderr,
             )
 
             with bgzf.open(output_file, "wt") as fout:
@@ -53,8 +47,7 @@ def entrez_custom_sequences(config, taxon, output_file):
 
         else:
             print(
-                f"We're putting the fasta file for taxon {taxon} in the database.",
-                file=sys.stderr,
+                f"We're putting the fasta file for taxon {taxon} in the database.", file=sys.stderr,
             )
 
             with bgzf.open(output_file, "wt") as fout:
@@ -75,7 +68,5 @@ if __name__ == "__main__":
 
     # noinspection PyUnresolvedReferences
     entrez_custom_sequences(
-        config=snakemake.config,
-        taxon=snakemake.wildcards.orgname,
-        output_file=snakemake.output[0],
+        config=snakemake.config, taxon=snakemake.wildcards.orgname, output_file=snakemake.output[0],
     )
