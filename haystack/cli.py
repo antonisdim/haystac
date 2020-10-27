@@ -300,7 +300,7 @@ The haystack commands are:
             help="Tab delimited file containing one record per row: the name of the taxon, "
             "and a valid NCBI accession code from the nucleotide, assembly or WGS databases.",
             metavar="<path>",
-            type=AccessionFileType("r"),
+            type=AccessionFileType("r", 2),
         )
 
         # TODO validate that this is 3-column and tab delimited
@@ -310,7 +310,7 @@ The haystack commands are:
             help="Tab delimited file containing one record per row: the name of the taxon, a user defined "
             "accession code, and the path to the fasta file (optionally compressed).",
             metavar="<path>",
-            type=SequenceFileType("r"),
+            type=SequenceFileType("r", 3),
         )
 
         # TODO add extra options for all the other refseq curated lists (eukaryotes, plasmids, prok_reference_genomes,

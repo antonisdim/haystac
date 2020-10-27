@@ -8,7 +8,8 @@ __license__ = "MIT"
 
 import argparse
 import pandas as pd
-
+import re
+import os 
 
 class ValidationError(Exception):
     pass
@@ -139,86 +140,74 @@ class JsonType(object):
             raise argparse.ArgumentTypeError(f"'{value}' is not a valid JSON string\n {error}")
 
 
-class SequenceFileType(argparse.FileType):
+class SpreadsheetFileType(FileType):
+    """
+    Is it a valid user input file
+    """
+
+    def __call__(self, string, ncol):
+        super().__call__(string)
+
+        file_name = super().__call__(string).name
+
+        # check if the user provided file is empty
+        if os.stat(file_name).st_size == 0:
+            raise argparse.ArgumentTypeError(f"The file '{file_name}' you have provided is empty")
+
+        # check if the provided data are valid
+        with open(file_name, "r") as user_input:
+            i = 0
+            for line in user_input:
+                # line number
+                i = i + 1
+                # split the line
+                input_fields = line.split('\t')
+                # calculate field number
+                input_fields_len = len(input_fields)
+
+                if input_fields_len == 1:
+                    raise argparse.ArgumentTypeError(f"The data you have provided in line {i} are not TAB delimited. "
+                                                     f"Please fix the delimiters on that line.")
+
+                if input_fields_len > ncol:
+                    raise argparse.ArgumentTypeError(f"The data you have provided in line {i} have more fields than "
+                                                     f"it is required. Please fix that line."
+                                                    )
+
+                if input_fields_len < ncol:
+                    raise argparse.ArgumentTypeError(f"Line {i} has less fields than required. Please check the "
+                                                     f"delimiters or if there are missing data."
+                                                    )
+
+                if input_fields_len == 3 and ncol == 3:
+                    if not os.path.isfile(input_fields[2]):
+                        raise argparse.ArgumentTypeError(f"The path {input_fields[2]} for the custom fasta "
+                                                         f"sequence in line {i} is not valid. Please provide "
+                                                         f"a valid file.")
+
+                if not re.match("^[\w.]+$", input_fields[1]):
+                    raise argparse.ArgumentTypeError(f"The accession '{input_fields[1]}' in line '{i}' "
+                                       f"contains an illegal character")
+
+        return super().__call__(string).name
+
+
+class SequenceFileType(SpreadsheetFileType):
     """
     Is this a valid sequence input file.
     """
 
-    def __call__(self, value):
-
-        custom_fasta_paths = pd.read_csv(
-            value, header=None, names=["species", "accession", "path"],
-            dtype={"species": str, "accession": str, "path": str},
-        )
-
-        if len(custom_fasta_paths) == 0:
-            raise RuntimeError("The custom sequences file is empty.")
-
-        if len(custom_fasta_paths.columns) == 1:
-            raise RuntimeError(
-                "The file you have provided is not TAB delimited. " "Please provide a file with the correct delimiters."
-            )
-
-        if 1 < len(custom_fasta_paths.columns) < 3:
-            raise RuntimeError(
-                "The file you have provided might be missing one of the required fields. "
-                "Please provide a file with the correct delimiters, "
-                "and the correct number of required fields."
-            )
-
-        if len(custom_fasta_paths.columns) > 3:
-            raise RuntimeError(
-                "The file you have provided might be having more fields than the ones required. "
-                "Please provide a file with the correct delimiters, "
-                "and the correct number of required fields."
-            )
-
-        if custom_fasta_paths.isnull().values.any():
-            raise RuntimeError(
-                "The file you have provided might be missing one of the required fields. "
-                "Please provide a file with the correct delimiters, "
-                "and the correct number of required fields."
-            )
-
-        return super().__call__(value).name
+    def __call__(self, string, ncol):
+        return super().__call__(string, ncol).name
 
 
-class AccessionFileType(argparse.FileType):
+class AccessionFileType(SpreadsheetFileType):
     """
     Is this a valid sequence input file.
     """
 
-    def __call__(self, value):
-
-        custom_accessions = pd.read_csv(value, sep="\t", header=None, names=["species", "accession"],
-            dtype={"species": str, "accession": str})
-
-        if len(custom_accessions) == 0:
-            raise RuntimeError("The custom accessions file is empty.")
-
-        if len(custom_accessions.columns) == 1:
-            raise RuntimeError(
-                "The file you have provided is either not TAB delimited "
-                "or it is missing one of the required fields. "
-                "Please provide a file with the correct delimiters, "
-                "and the correct number of required fields."
-            )
-
-        if len(custom_accessions.columns) > 2:
-            raise RuntimeError(
-                "The file you have provided might be having more fields than the ones required. "
-                "Please provide a file with the correct delimiters, "
-                "and the correct number of required fields."
-            )
-
-        if custom_accessions.isnull().values.any():
-            raise RuntimeError(
-                "The file you have provided might be missing one of the required fields. "
-                "Please provide a file with the correct delimiters, "
-                "and the correct number of required fields."
-            )
-
-        return super().__call__(value).name
+    def __call__(self, string, ncol):
+        return super().__call__(string, ncol).name
 
 
 def get_total_paths(
