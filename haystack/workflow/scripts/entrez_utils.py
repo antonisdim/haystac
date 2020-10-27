@@ -46,7 +46,7 @@ def entrez_request(action, params=None):
     try:
         with open(".snakemake/config.yaml") as fin:
             config = yaml.safe_load(fin)
-    except:
+    except FileNotFoundError:
         config = {}
 
     if config.get("api_key"):
