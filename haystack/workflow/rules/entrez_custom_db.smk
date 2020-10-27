@@ -34,13 +34,15 @@ def get_paths_for_custom_seqs():
     )
 
     if custom_fasta_paths["species"].duplicated().any():
-        # TODO add a --force flag that allows for this to be resolved by haystack
-        # TODO tell the user which taxa!
-        raise RuntimeError(
-            "You have provided more than one sequence for a taxon. "
-            "Only one sequence per taxon is allowed. "
-            "Please only provide your favourite sequence for each taxon."
-        )
+        if not config["resolve_accessions"]:
+            dup_taxa = ", ".join([i for i in custom_fasta_paths[custom_fasta_paths["species"].duplicated()]['species'].to_list()])
+            raise RuntimeError(
+                f"You have provided more than one sequence for {dup_taxa}. "
+                f"Only one sequence per taxon is allowed. "
+                f"Please only provide your favourite sequence for each taxon."
+            )
+        else:
+            custom_fasta_paths = custom_fasta_paths[~custom_fasta_paths["species"].duplicated()]
 
     check_unique_taxa_in_custom_input(config["accessions"], config["sequences"])
 
@@ -80,14 +82,16 @@ def get_paths_for_custom_acc(wildcards):
 
     custom_accessions = pd.read_csv(config["accessions"], sep="\t", header=None, names=["species", "accession"])
 
-    # TODO add a --force flag that allows for this to be resolved by haystack
-    # TODO tell the user which taxa!
     if custom_accessions["species"].duplicated().any():
-        raise RuntimeError(
-            "You have provided more than one sequence for a taxon. "
-            "Only one sequence per taxon is allowed. "
-            "Please only provide your favourite sequence for each taxon."
-        )
+        if not config["resolve_accessions"]:
+            dup_taxa = ", ".join([i for i in custom_accessions[custom_accessions["species"].duplicated()]['species'].to_list()])
+            raise RuntimeError(
+                f"You have provided more than one sequence for {dup_taxa}. "
+                f"Only one sequence per taxon is allowed. "
+                f"Please only provide your favourite sequence for each taxon."
+            )
+        else:
+            custom_accessions = custom_accessions[~custom_accessions["species"].duplicated()]
 
     check_unique_taxa_in_custom_input(config["accessions"], config["sequences"])
 

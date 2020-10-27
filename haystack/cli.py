@@ -320,6 +320,12 @@ The haystack commands are:
         )
 
         optional.add_argument(
+            "--resolve-accessions",
+            help="Pick an accession randomly when two accessions for a taxon can be found in user provided input files",
+            action="store_true",
+        )
+
+        optional.add_argument(
             "--rank",
             help="Taxonomic rank to perform the identifications on [%(choices)s]",
             metavar="<rank>",
