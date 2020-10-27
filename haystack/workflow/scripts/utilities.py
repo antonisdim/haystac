@@ -177,7 +177,7 @@ class SpreadsheetFileType(object):
         bad_rows = ", ".join([str(i + 1) for i in self.data.index[self.data.isnull().any(axis=1)].tolist()])
 
         if bad_rows:
-            raise argparse.ArgumentTypeError(f"'{value}' contains missing data in row(s): {bad_rows}")
+            raise argparse.ArgumentTypeError(f"'{value}' contains missing data in line(s): {bad_rows}")
 
         return value
 
@@ -195,6 +195,8 @@ class AccessionFileType(SpreadsheetFileType):
         # check all accessions pass the regex pattern
         idx = self.cols.index("accession")
 
+        # TODO do we need to check `species` is valid also?
+
         # TODO check regex for consistency with other parts of the code
         bad_accs = "\n".join(
             [f"line {i+1}: '{acc}'" for i, acc in enumerate(self.data[idx].tolist()) if not re.match(r"^[\w.]+$", acc)]
@@ -204,6 +206,7 @@ class AccessionFileType(SpreadsheetFileType):
             raise argparse.ArgumentTypeError(f"'{value}' these accession codes contain invalid characters:\n{bad_accs}")
 
         return value
+
 
 class SequenceFileType(AccessionFileType):
     """
@@ -320,6 +323,7 @@ def get_total_paths(
 
 def normalise_name(taxon):
     """remove unnecessary characters from a taxon name string."""
+    # TODO replace with a regex pattern (e.g [^\w]) so we don't have to blacklist specific chrs (see also AccessionFileType)
     return taxon.replace(" ", "_").replace("[", "").replace("]", "").replace("/", "_")
 
 
