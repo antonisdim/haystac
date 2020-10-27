@@ -243,7 +243,7 @@ class SraAccessionType(object):
     def __call__(self, value):
         try:
             # query the SRA to see if this a valid accession
-            _, _, id_list = entrez_esearch("sra", value)
+            _, _, id_list = entrez_esearch("sra", f"{value}[Accession]")
             etree = entrez_efetch("sra", id_list)
         except Exception as e:
             print(e)
