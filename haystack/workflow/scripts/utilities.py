@@ -9,7 +9,13 @@ __license__ = "MIT"
 import argparse
 import pandas as pd
 import re
-import os 
+import os
+
+from haystack.workflow.scripts.entrez_utils import (
+    entrez_esearch,
+    entrez_efetch,
+)
+
 
 class ValidationError(Exception):
     pass
@@ -65,7 +71,9 @@ class PositiveIntType(object):
             if not int(value) > 0:
                 raise ValueError()
         except ValueError:
-            raise argparse.ArgumentTypeError(f"'{value}' is not a valid positive integer")
+            raise argparse.ArgumentTypeError(
+                f"'{value}' is not a valid positive integer"
+            )
 
         return int(value)
 
@@ -86,7 +94,8 @@ class RangeType(object):
                 raise ValueError()
         except ValueError:
             raise argparse.ArgumentTypeError(
-                f"'{value}' is not a valid {self.type.__name__} in the range " f"({self.lower}, {self.upper})"
+                f"'{value}' is not a valid {self.type.__name__} in the range "
+                f"({self.lower}, {self.upper})"
             )
 
         return self.type(value)
@@ -137,7 +146,9 @@ class JsonType(object):
         try:
             return json.loads(value)
         except json.decoder.JSONDecodeError as error:
-            raise argparse.ArgumentTypeError(f"'{value}' is not a valid JSON string\n {error}")
+            raise argparse.ArgumentTypeError(
+                f"'{value}' is not a valid JSON string\n {error}"
+            )
 
 
 class SpreadsheetFileType(FileType):
@@ -152,7 +163,9 @@ class SpreadsheetFileType(FileType):
 
         # check if the user provided file is empty
         if os.stat(file_name).st_size == 0:
-            raise argparse.ArgumentTypeError(f"The file '{file_name}' you have provided is empty")
+            raise argparse.ArgumentTypeError(
+                f"The file '{file_name}' you have provided is empty"
+            )
 
         # check if the provided data are valid
         with open(file_name, "r") as user_input:
@@ -161,33 +174,41 @@ class SpreadsheetFileType(FileType):
                 # line number
                 i = i + 1
                 # split the line
-                input_fields = line.split('\t')
+                input_fields = line.split("\t")
                 # calculate field number
                 input_fields_len = len(input_fields)
 
                 if input_fields_len == 1:
-                    raise argparse.ArgumentTypeError(f"The data you have provided in line {i} are not TAB delimited. "
-                                                     f"Please fix the delimiters on that line.")
+                    raise argparse.ArgumentTypeError(
+                        f"The data you have provided in line {i} are not TAB delimited. "
+                        f"Please fix the delimiters on that line."
+                    )
 
                 if input_fields_len > ncol:
-                    raise argparse.ArgumentTypeError(f"The data you have provided in line {i} have more fields than "
-                                                     f"it is required. Please fix that line."
-                                                    )
+                    raise argparse.ArgumentTypeError(
+                        f"The data you have provided in line {i} have more fields than "
+                        f"it is required. Please fix that line."
+                    )
 
                 if input_fields_len < ncol:
-                    raise argparse.ArgumentTypeError(f"Line {i} has less fields than required. Please check the "
-                                                     f"delimiters or if there are missing data."
-                                                    )
+                    raise argparse.ArgumentTypeError(
+                        f"Line {i} has less fields than required. Please check the "
+                        f"delimiters or if there are missing data."
+                    )
 
                 if input_fields_len == 3 and ncol == 3:
                     if not os.path.isfile(input_fields[2]):
-                        raise argparse.ArgumentTypeError(f"The path {input_fields[2]} for the custom fasta "
-                                                         f"sequence in line {i} is not valid. Please provide "
-                                                         f"a valid file.")
+                        raise argparse.ArgumentTypeError(
+                            f"The path {input_fields[2]} for the custom fasta "
+                            f"sequence in line {i} is not valid. Please provide "
+                            f"a valid file."
+                        )
 
                 if not re.match("^[\w.]+$", input_fields[1]):
-                    raise argparse.ArgumentTypeError(f"The accession '{input_fields[1]}' in line '{i}' "
-                                       f"contains an illegal character")
+                    raise argparse.ArgumentTypeError(
+                        f"The accession '{input_fields[1]}' in line '{i}' "
+                        f"contains an illegal character"
+                    )
 
         return super().__call__(string).name
 
@@ -210,8 +231,34 @@ class AccessionFileType(SpreadsheetFileType):
         return super().__call__(string, ncol).name
 
 
+class SraAccession(object):
+    """Is this a valid SRA accession"""
+
+    def __init__(self, accession):
+
+        # is it a valid sequencing run accession
+        if accession[:3] not in ["ERR", "SRR"]:
+            raise RuntimeError(f"Invalid SRA accession {config['sra']}.")
+
+        # query the SRA to see if this is a paired-end library or not
+        try:
+            _, _, id_list = entrez_esearch("sra", config["sra"])
+            etree = entrez_efetch("sra", id_list)
+            layout = etree.find(".//LIBRARY_LAYOUT/*").tag.lower()
+        except Exception:
+            raise RuntimeError(f"Unable to resolve the SRA accession {config['sra']}")
+
+        return (accession, layout)
+
+
 def get_total_paths(
-    checkpoints, entrez_query, with_refseq_rep, sequences, accessions, specific_genera, force_accessions
+    checkpoints,
+    entrez_query,
+    with_refseq_rep,
+    sequences,
+    accessions,
+    specific_genera,
+    force_accessions,
 ):
     """
     Get all the individual fasta file paths for the taxa in our database.
@@ -232,14 +279,20 @@ def get_total_paths(
         genbank_genomes = pd.read_csv(refseq_rep_prok.output.genbank_genomes, sep="\t")
         assemblies = pd.read_csv(refseq_rep_prok.output.assemblies, sep="\t")
         refseq_plasmids = pd.read_csv(refseq_rep_prok.output.refseq_plasmids, sep="\t")
-        genbank_plasmids = pd.read_csv(refseq_rep_prok.output.genbank_plasmids, sep="\t")
+        genbank_plasmids = pd.read_csv(
+            refseq_rep_prok.output.genbank_plasmids, sep="\t"
+        )
 
         if not force_accessions:
             invalid_assemblies = checkpoints.entrez_invalid_assemblies.get()
-            invalid_assembly_sequences = pd.read_csv(invalid_assemblies.output[0], sep="\t")
+            invalid_assembly_sequences = pd.read_csv(
+                invalid_assemblies.output[0], sep="\t"
+            )
 
             assemblies = assemblies[
-                ~assemblies["AccessionVersion"].isin(invalid_assembly_sequences["AccessionVersion"])
+                ~assemblies["AccessionVersion"].isin(
+                    invalid_assembly_sequences["AccessionVersion"]
+                )
             ]
 
         sources = [
@@ -257,21 +310,30 @@ def get_total_paths(
 
     if sequences:
         custom_fasta_paths = pd.read_csv(
-            sequences, sep="\t", header=None, names=["species", "AccessionVersion", "path"],
+            sequences,
+            sep="\t",
+            header=None,
+            names=["species", "AccessionVersion", "path"],
         )
 
         custom_seqs = custom_fasta_paths[["species", "AccessionVersion"]]
-        custom_seqs["AccessionVersion"] = "custom_seq-" + custom_seqs["AccessionVersion"].astype(str)
+        custom_seqs["AccessionVersion"] = "custom_seq-" + custom_seqs[
+            "AccessionVersion"
+        ].astype(str)
 
         sequences_df = sequences_df.append(custom_seqs)
 
     if accessions:
-        custom_accessions = pd.read_csv(accessions, sep="\t", header=None, names=["species", "AccessionVersion"],)
+        custom_accessions = pd.read_csv(
+            accessions, sep="\t", header=None, names=["species", "AccessionVersion"],
+        )
 
         sequences_df = sequences_df.append(custom_accessions)
 
     if specific_genera:
-        sequences_df = sequences_df[sequences_df["species"].str.contains("|".join(specific_genera))]
+        sequences_df = sequences_df[
+            sequences_df["species"].str.contains("|".join(specific_genera))
+        ]
 
     return sequences_df
 
@@ -285,8 +347,12 @@ def check_unique_taxa_in_custom_input(accessions, sequences):
     """Checks that custom input files have only one entry per taxon"""
 
     if accessions != "" and sequences != "":
-        custom_fasta_paths = pd.read_csv(sequences, sep="\t", header=None, names=["species", "accession", "path"])
-        custom_accessions = pd.read_csv(accessions, sep="\t", header=None, names=["species", "accession"])
+        custom_fasta_paths = pd.read_csv(
+            sequences, sep="\t", header=None, names=["species", "accession", "path"]
+        )
+        custom_accessions = pd.read_csv(
+            accessions, sep="\t", header=None, names=["species", "accession"]
+        )
 
         taxon_acc = custom_accessions["species"].tolist()
         taxon_seq = custom_fasta_paths["species"].tolist()

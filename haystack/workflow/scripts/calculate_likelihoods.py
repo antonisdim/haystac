@@ -13,7 +13,9 @@ import pandas as pd
 import sys
 
 
-def calculate_likelihoods(ts_tv_file, readlen_file, taxa_file_paths, config, output_matrix, output_params):
+def calculate_likelihoods(
+    ts_tv_file, readlen_file, taxa_file_paths, config, output_matrix, output_params
+):
     """
     Calculate the parameters for the analytical framework of the method, then the likelihoods for each read/taxon pair
     and perform the dirichlet distribution assignment.
@@ -23,7 +25,9 @@ def calculate_likelihoods(ts_tv_file, readlen_file, taxa_file_paths, config, out
     assert len(taxa_file_paths) > 0, f"The taxa list is empty {taxa_file_paths}"
 
     print("Reading the initial Ts/Tv matrix.", file=sys.stderr)
-    init_ts_tv = pd.read_csv(ts_tv_file, names=["Taxon", "Read_ID", "Ts", "Tv"], sep=",")
+    init_ts_tv = pd.read_csv(
+        ts_tv_file, names=["Taxon", "Read_ID", "Ts", "Tv"], sep=","
+    )
 
     print("Calculating the sum of the transitions.", file=sys.stderr)
     ts_sum = int(init_ts_tv["Ts"].sum())
@@ -100,7 +104,9 @@ def calculate_likelihoods(ts_tv_file, readlen_file, taxa_file_paths, config, out
         data_tv_missing = 2 * data_tv_missing
 
     print("calculating the likelihood nominator", file=sys.stderr)
-    init_ts_tv["ll_nom"] = init_ts_tv["Ts"].rpow(delta_t) * init_ts_tv["Tv"].rpow(delta_v)
+    init_ts_tv["ll_nom"] = init_ts_tv["Ts"].rpow(delta_t) * init_ts_tv["Tv"].rpow(
+        delta_v
+    )
 
     total_taxa_count = len(taxa_file_paths)
 
@@ -108,7 +114,11 @@ def calculate_likelihoods(ts_tv_file, readlen_file, taxa_file_paths, config, out
     init_ts_tv["Likelihood"] = np.nan
 
     init_ts_tv["Likelihood"] = init_ts_tv.groupby("Read_ID")["ll_nom"].transform(
-        lambda nom: nom / (sum(nom) + ((total_taxa_count - nom.count()) * data_ts_missing * data_tv_missing))
+        lambda nom: nom
+        / (
+            sum(nom)
+            + ((total_taxa_count - nom.count()) * data_ts_missing * data_tv_missing)
+        )
     )
 
     print(init_ts_tv, file=sys.stderr)

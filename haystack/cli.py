@@ -37,6 +37,7 @@ from haystack.workflow.scripts.utilities import (
     JsonType,
     SequenceFileType,
     AccessionFileType,
+    SraAccession,
 )
 
 os.environ["OPENBLAS_NUM_THREADS"] = "1"
@@ -504,7 +505,6 @@ The haystack commands are:
             "--fastq-r2", help="Paired-end reverse strand (R2) fastq input file.", metavar="<path>", type=FileType("r"),
         )
 
-        # TODO make an SraType that validates the code and returns the tuple (accession, paired|single)
         choice.add_argument(
             "--sra", help="Download fastq input from the SRA database", metavar="<accession>",
         )
@@ -568,7 +568,6 @@ The haystack commands are:
         config["PE_ANCIENT"] = not config["SE"] and args.collapse
         config["PE_MODERN"] = not config["SE"] and not args.collapse
 
-        # TODO move this fetch logic into the SRA validator
         if args.sra:
             if args.sample_prefix:
                 raise ValidationError("--sample-prefix cannot be used with and SRA accession.")
@@ -577,12 +576,7 @@ The haystack commands are:
             config["sample_prefix"] = args.sra
 
             # query the SRA to see if this is a paired-end library or not
-            try:
-                _, _, id_list = entrez_esearch("sra", config["sra"])
-                etree = entrez_efetch("sra", id_list)
-                layout = etree.find(".//LIBRARY_LAYOUT/*").tag.lower()
-            except Exception:
-                raise RuntimeError(f"Unable to resolve the SRA accession {config['sra']}")
+            layout = SraAccession(config["sample_prefix"])[1]
 
             if layout == "paired":
                 if config["collapse"]:

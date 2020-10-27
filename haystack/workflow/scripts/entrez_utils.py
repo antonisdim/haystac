@@ -57,7 +57,10 @@ def entrez_request(action, params=None):
 
     if config.get("debug"):
         # turn into a get request
-        get = dict((key, value if isinstance(value, (str, int)) else ",".join(value)) for key, value in params.items())
+        get = dict(
+            (key, value if isinstance(value, (str, int)) else ",".join(value))
+            for key, value in params.items()
+        )
         print(f"{url}?{urlencode(get)}")
 
     # make the request
@@ -76,7 +79,9 @@ def entrez_esearch(database, query):
     """
     Execute an Entrez esearch query and return the search keys
     """
-    r = entrez_request("esearch.fcgi", {"db": database, "term": query, "usehistory": "y"})
+    r = entrez_request(
+        "esearch.fcgi", {"db": database, "term": query, "usehistory": "y"}
+    )
 
     # parse the XML result
     etree = ElementTree.XML(r.text)
@@ -93,7 +98,9 @@ def entrez_esummary(database, query_key, webenv):
     """
     Fetch the Entrez esummary records for an esearch query.
     """
-    r = entrez_request("esummary.fcgi", {"db": database, "query_key": query_key, "WebEnv": webenv})
+    r = entrez_request(
+        "esummary.fcgi", {"db": database, "query_key": query_key, "WebEnv": webenv}
+    )
 
     return ElementTree.XML(r.text)
 
@@ -113,11 +120,15 @@ def entrez_assembly_ftp(accession, force=False):
     """
 
     # query the assembly database to get the latest assembly for this accession code
-    key, webenv, id_list = entrez_esearch("assembly", accession + ' AND "latest"[filter]')
+    key, webenv, id_list = entrez_esearch(
+        "assembly", accession + ' AND "latest"[filter]'
+    )
 
     if len(id_list) > 1:
         # should never happen, but...
-        raise RuntimeError(f"Multiple assembly accessions found for '{accession}': {id_list}")
+        raise RuntimeError(
+            f"Multiple assembly accessions found for '{accession}': {id_list}"
+        )
 
     elif len(id_list) == 0:
         # no entry in the assembly database for this accession code
@@ -147,7 +158,9 @@ def entrez_assembly_ftp(accession, force=False):
         return ""
 
     # append the fasta filename
-    ftp_url = os.path.join(ftp_stub.text, os.path.basename(ftp_stub.text) + "_genomic.fna.gz")
+    ftp_url = os.path.join(
+        ftp_stub.text, os.path.basename(ftp_stub.text) + "_genomic.fna.gz"
+    )
 
     return ftp_url
 
@@ -165,9 +178,14 @@ def entrez_range_accessions(accession, first, last):
 
     try:
         # return the range
-        return [f"{first[:idx]}{str(item).zfill(pad)}" for item in range(int(first[idx:]), int(last[idx:]) + 1)]
+        return [
+            f"{first[:idx]}{str(item).zfill(pad)}"
+            for item in range(int(first[idx:]), int(last[idx:]) + 1)
+        ]
     except ValueError:
-        raise RuntimeError(f"Could not resolve the accession range '{first}-{last}' for master record '{accession}'")
+        raise RuntimeError(
+            f"Could not resolve the accession range '{first}-{last}' for master record '{accession}'"
+        )
 
 
 def entrez_xml_to_dict(etree):
@@ -197,10 +215,15 @@ def entrez_find_replacement_accession(accession):
 
     try:
         # send a request and see if we get back an xml result
-        r = entrez_request("efetch.fcgi", {"db": "nuccore", "id": accession_new, "rettype": "gb", "retmode": "xml"})
+        r = entrez_request(
+            "efetch.fcgi",
+            {"db": "nuccore", "id": accession_new, "rettype": "gb", "retmode": "xml"},
+        )
 
     except requests.exceptions.HTTPError:
-        raise RuntimeError(f"Could not find either the GenBank record for '{accession}' or an alternative accession")
+        raise RuntimeError(
+            f"Could not find either the GenBank record for '{accession}' or an alternative accession"
+        )
 
     etree = ElementTree.XML(r.text)
     replacement = etree.find(".//GBSeq_accession-version")
