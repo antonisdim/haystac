@@ -183,15 +183,6 @@ The haystack commands are:
             metavar="<code>",
         )
 
-        # TODO refactor this out
-        optional.add_argument(
-            "--batchsize",
-            help="Batch size for fetching records from NCBI",
-            type=PositiveIntType(),
-            metavar="<int>",
-            default=self.config_default["batchsize"],
-        )
-
         optional.add_argument(
             "--mismatch-probability",
             help="Base mismatch probability",
@@ -314,9 +305,6 @@ The haystack commands are:
 
         # TODO add extra options for all the other refseq curated lists (eukaryotes, plasmids, prok_reference_genomes,
         #      prokaryotes, viruses) see https://ftp.ncbi.nlm.nih.gov/genomes/GENOME_REPORTS/
-
-        # TODO add option for specifying a build number (so users can rerun a specific analysis)
-        # TODO when build number is not specified, the latest should be used, but the user must be told the build number
         choice.add_argument(
             "--refseq-rep",
             help="Include all prokaryotic species (excluding strains) from the representative RefSeq DB",

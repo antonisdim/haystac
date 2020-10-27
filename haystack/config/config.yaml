@@ -1,8 +1,6 @@
 # `haystack config` defaults
 cache:
   ~/haystack/cache/
-batchsize:
-  5
 mismatch_probability:
   0.05
 bowtie2_threads:
