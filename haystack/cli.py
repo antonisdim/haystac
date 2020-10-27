@@ -671,16 +671,13 @@ The haystack commands are:
             default=[],
         )
 
-        # TODO shorten this name! (e.g. --min-prob)
         optional.add_argument(
-            "--read-probability-threshold",
+            "--min-prob",
             help="Minimum posterior probability to assign an aligned read to a given species",
             type=FloatRangeType(0, 100),
             metavar="<float>",
             default=self.config_default["read_probability_threshold"],
         )
-
-        # TODO do we also need an option for the mean posterior abundance?
 
         # add the common arguments
         self._common_arguments(parser)

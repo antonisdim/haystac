@@ -27,5 +27,5 @@ collapse:
   False
 trim_adapters:
   True
-read_probability_threshold:
+min_prob:
   0.75

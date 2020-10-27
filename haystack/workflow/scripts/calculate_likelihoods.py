@@ -126,8 +126,8 @@ def calculate_likelihoods(
     # every likelihood equal or above 0.95 gets assigned as 1, everything below as 0
     init_ts_tv["Dirichlet_Assignment"] = (
         init_ts_tv["Likelihood"]
-        .where(init_ts_tv["Likelihood"] >= config["read_probability_threshold"], 0.0)
-        .where(init_ts_tv["Likelihood"] < config["read_probability_threshold"], 1.0)
+        .where(init_ts_tv["Likelihood"] >= config["min_prob"], 0.0)
+        .where(init_ts_tv["Likelihood"] < config["min_prob"], 1.0)
     )
 
     init_ts_tv.to_csv(output_matrix, sep=",", index=False)
