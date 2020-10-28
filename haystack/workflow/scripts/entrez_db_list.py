@@ -30,6 +30,6 @@ if __name__ == "__main__":
     sys.stderr = open(snakemake.log[0], "w")
 
     # noinspection PyUnresolvedReferences
-    entrez_refseq_create_files(
+    entrez_db_list(
         input_list=snakemake.input[0], output=snakemake.output[0],
     )

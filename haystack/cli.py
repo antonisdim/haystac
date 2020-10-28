@@ -60,7 +60,7 @@ ANALYSIS_MODES = ["filter", "align", "likelihoods", "probabilities", "abundances
 TAXONOMIC_RANKS = ["genus", "species", "subspecies", "serotype"]
 
 # number to times to retry a rule that failed the first time
-RESTART_TIMES = 1
+RESTART_TIMES = 2
 
 
 class Haystack(object):
