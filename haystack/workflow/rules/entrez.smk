@@ -97,7 +97,7 @@ def get_total_accessions(_):
             seq["AccessionVersion"],
         )
 
-        db_pairs.append(accession)
+        accessions.append(accession)
 
     return accessions
 
@@ -125,7 +125,7 @@ def get_total_taxa(_):
             seq["AccessionVersion"],
         )
 
-        db_pairs.append(orgname)
+        taxa.append(orgname)
 
     return taxa
 
