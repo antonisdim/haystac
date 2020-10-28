@@ -99,7 +99,7 @@ def get_total_taxa(_):
 
         inputs.append(config["cache"] + f"/ncbi/{orgname}/{accession}.fasta.gz")
 
-    return taxa
+    return inputs
 
 
 rule entrez_db_list:

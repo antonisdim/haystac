@@ -20,7 +20,7 @@ def entrez_db_list(input_list, output):
         taxon = path_list[-2]
         accession = path_list[-1].replace('.fasta.gz', '')
         db_list.append([taxon, accession])
-        
+
     db_list_df = pd.DataFrame(db_list)
     db_list_df.to_csv(output, sep="\t", header=False, index=False)
 
