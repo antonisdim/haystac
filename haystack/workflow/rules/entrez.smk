@@ -89,7 +89,7 @@ def get_total_accessions(_):
         config["exclude_accessions"],
     )
 
-    db_pairs = []
+    accessions = []
 
     for key, seq in sequences.iterrows():
         orgname, accession = (
@@ -97,14 +97,43 @@ def get_total_accessions(_):
             seq["AccessionVersion"],
         )
 
-        db_pairs.append([orgname, accession])
+        db_pairs.append(accession)
 
-    return db_pairs
+    return accessions
+
+
+def get_total_taxa(_):
+    """
+    Get all the individual bam file paths for the taxa in our database.
+    """
+    sequences = get_total_paths(
+        checkpoints,
+        config["query"],
+        config["refseq_rep"],
+        config["sequences"],
+        config["accessions"],
+        config["genera"],
+        config["force_accessions"],
+        config["exclude_accessions"],
+    )
+
+    taxa = []
+
+    for key, seq in sequences.iterrows():
+        orgname, accession = (
+            normalise_name(seq["species"]),
+            seq["AccessionVersion"],
+        )
+
+        db_pairs.append(orgname)
+
+    return taxa
 
 
 rule entrez_db_list:
     input:
-        get_total_accessions,
+        accessions = get_total_accessions,
+        taxa = get_total_taxa,
     log:
         config["db_output"] + "/db_taxa_accessions.log",
     output:
