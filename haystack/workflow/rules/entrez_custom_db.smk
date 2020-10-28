@@ -63,19 +63,6 @@ def get_paths_for_custom_seqs():
     return inputs
 
 
-rule entrez_sequence_file_aggregator:
-    input:
-        get_paths_for_custom_seqs(),
-    log:
-        config["db_output"] + "/bowtie/custom_seqs.log",
-    output:
-        config["db_output"] + "/bowtie/custom_seqs.done",
-    message:
-        "Aggregating all the user provided sequences."
-    shell:
-        "touch {output}"
-
-
 def get_paths_for_custom_acc(wildcards):
     if config["accessions"] == "":
         return ""
@@ -111,15 +98,3 @@ def get_paths_for_custom_acc(wildcards):
 
     return inputs
 
-
-rule entrez_accessions_file_aggregator:
-    input:
-        get_paths_for_custom_acc,
-    log:
-        config["db_output"] + "/bowtie/custom_acc.log",
-    output:
-        config["db_output"] + "/bowtie/custom_acc.done",
-    message:
-        "Aggregating all the sequences from user provided accessions."
-    shell:
-        "touch {output}"
