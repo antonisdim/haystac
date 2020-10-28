@@ -10,11 +10,18 @@ import pandas as pd
 import sys
 
 
-def entrez_db_list(acc_input_list, taxa_input_list, output):
+def entrez_db_list(input_list, output):
     """Function that stores all the taxa and accession is our database in a file"""
 
-    input_list = [[tax, acc] for tax, acc in zip(acc_input_list, taxa_input_list)]
-    db_list_df = pd.DataFrame(input_list)
+    db_list = []
+
+    for fasta_file in input_list:
+        path_list = fasta_file.split('/')
+        taxon = path_list[-2]
+        accession = path_list[-1].replace('.fasta.gz', '')
+        db_list.append([taxon, accession])
+        
+    db_list_df = pd.DataFrame(db_list)
     db_list_df.to_csv(output, sep="\t", header=False, index=False)
 
 
@@ -24,5 +31,5 @@ if __name__ == "__main__":
 
     # noinspection PyUnresolvedReferences
     entrez_refseq_create_files(
-        acc_input_list=snakemake.input[0], taxa_input_list=snakemake.input[1], output=snakemake.output[0],
+        input_list=snakemake.input[0], output=snakemake.output[0],
     )
