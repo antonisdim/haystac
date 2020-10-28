@@ -31,5 +31,5 @@ if __name__ == "__main__":
 
     # noinspection PyUnresolvedReferences
     entrez_db_list(
-        input_list=snakemake.input[0], output=snakemake.output[0],
+        input_list=snakemake.input, output=snakemake.output[0],
     )
