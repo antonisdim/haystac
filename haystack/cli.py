@@ -416,9 +416,7 @@ The haystack commands are:
         target_list = list()
 
         if args.mode == "fetch":
-            if args.query or args.accessions or args.sequences:
-                target_list.append("bowtie/db_query.done")
-            if args.refseq_rep:
+            if args.query or args.accessions or args.sequences or args.refseq_rep:
                 target_list.append("db_taxa_accessions.tsv")
 
             with open(config_fetch, "w") as fout:
@@ -426,6 +424,7 @@ The haystack commands are:
 
         elif args.mode == "index":
             target_list.append("bowtie/bowtie_index.done")
+            target_list.append("idx_database.done")
 
             try:
                 with open(config_fetch, "r") as fin:

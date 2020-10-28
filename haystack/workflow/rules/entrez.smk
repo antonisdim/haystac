@@ -106,7 +106,7 @@ rule entrez_db_list:
     input:
         get_total_accessions,
     log:
-        config["db_output"] + "/bowtie/entrez_query.log",
+        config["db_output"] + "/db_taxa_accessions.log",
     output:
         config["db_output"] + "/db_taxa_accessions.tsv",
     benchmark:
