@@ -409,15 +409,15 @@ The haystack commands are:
         config_fetch = os.path.join(args.db_output, "database_fetch_config.yaml")
         config_build = os.path.join(args.db_output, "database_build_config.yaml")
 
-        target_list = list()
-
         # if refseq_rep we set force_accessions to true
         if args.refseq_rep:
             config["force_accessions"] = True
 
+        target_list = list()
+
         if args.mode == "fetch":
-            if args.query:
-                target_list.append("bowtie/entrez_query.done")
+            if args.query or args.accessions or args.sequences:
+                target_list.append("bowtie/db_query.done")
             if args.refseq_rep:
                 target_list.append("db_taxa_accessions.tsv")
 
