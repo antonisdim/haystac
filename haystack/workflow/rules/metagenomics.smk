@@ -48,6 +48,7 @@ def get_ts_tv_count_paths(wildcards):
         config["accessions"],
         config["genera"],
         config["force_accessions"],
+        config["exclude_accessions"],
     )
 
     inputs = []
@@ -155,6 +156,7 @@ def get_t_test_values_paths(wildcards):
         config["accessions"],
         config["genera"],
         config["force_accessions"],
+        config["exclude_accessions"],
     )
 
     inputs = []

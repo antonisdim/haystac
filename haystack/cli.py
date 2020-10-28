@@ -320,6 +320,14 @@ The haystack commands are:
         )
 
         optional.add_argument(
+            "--exclude-accessions",
+            help="List of NCBI accessions to exclude.",
+            metavar="<accession>",
+            nargs="+",
+            default=[],
+        )
+
+        optional.add_argument(
             "--resolve-accessions",
             help="Pick an accession randomly when two accessions for a taxon can be found in user provided input files",
             action="store_true",
@@ -402,6 +410,10 @@ The haystack commands are:
         config_build = os.path.join(args.db_output, "database_build_config.yaml")
 
         target_list = list()
+
+        # if refseq_rep we set force_accessions to true
+        if args.refseq_rep:
+            config["force_accessions"] = True
 
         if args.mode == "fetch":
             if args.query:

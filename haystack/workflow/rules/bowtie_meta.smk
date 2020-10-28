@@ -90,6 +90,7 @@ def get_bamfile_paths(wildcards):
         config["accessions"],
         config["genera"],
         config["force_accessions"],
+        config["exclude_accessions"],
     )
 
     inputs = []

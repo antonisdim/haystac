@@ -86,6 +86,7 @@ def get_total_accessions(_):
         config["accessions"],
         config["genera"],
         config["force_accessions"],
+        config["exclude_accessions"],
     )
 
     db_pairs = []

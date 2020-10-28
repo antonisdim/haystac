@@ -123,6 +123,7 @@ def get_dirichlet_bams(wildcards):
         config["accessions"],
         config["genera"],
         config["force_accessions"],
+        config["exclude_accessions"],
     )
 
     inputs = []

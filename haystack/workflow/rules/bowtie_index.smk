@@ -30,6 +30,7 @@ def get_total_fasta_paths(_):
         config["accessions"],
         config["genera"],
         config["force_accessions"],
+        config["exclude_accessions"],
     )
 
     inputs = []

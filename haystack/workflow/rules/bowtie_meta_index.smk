@@ -65,6 +65,9 @@ def get_idx_entrez(_):
     if len(sequences) == 0:
         raise RuntimeError("The entrez pick sequences file is empty.")
 
+    if excluded:
+        sequences = sequences[~sequences["AccessionVersion"].isin(excluded)]
+
     inputs = []
 
     for key, seq in sequences.iterrows():
@@ -94,6 +97,9 @@ def get_idx_ref_gen(_):
     genbank_plasmids = pd.read_csv(refseq_rep_prok.output[4], sep="\t")
 
     sequences = pd.concat([refseq_genomes, genbank_genomes, refseq_plasmids, genbank_plasmids])
+
+    if excluded:
+        sequences = sequences[~sequences["AccessionVersion"].isin(excluded)]
 
     inputs = []
 
@@ -129,6 +135,9 @@ def get_idx_assembly(_):
 
     sequences = assemblies
 
+    if excluded:
+        sequences = sequences[~sequences["AccessionVersion"].isin(excluded)]
+
     inputs = []
 
     for key, seq in sequences.iterrows():
@@ -155,6 +164,9 @@ def get_idx_custom_seqs():
 
     sequences = custom_fasta_paths
 
+    if excluded:
+        sequences = sequences[~sequences["AccessionVersion"].isin(excluded)]
+
     inputs = []
 
     for key, seq in sequences.iterrows():
@@ -178,6 +190,9 @@ def get_idx_custom_acc():
     custom_accessions = pd.read_csv(config["accessions"], sep="\t", header=None, names=["species", "accession"])
 
     sequences = custom_accessions
+
+    if excluded:
+        sequences = sequences[~sequences["AccessionVersion"].isin(excluded)]
 
     inputs = []
 

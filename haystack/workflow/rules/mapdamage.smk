@@ -70,6 +70,7 @@ def get_mapdamage_out_dir_paths(wildcards):
         config["accessions"],
         config["genera"],
         config["force_accessions"],
+        config["exclude_accessions"],
     )
 
     inputs = []

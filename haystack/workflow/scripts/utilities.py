@@ -259,7 +259,7 @@ class SraAccessionType(object):
 
 
 def get_total_paths(
-    checkpoints, entrez_query, with_refseq_rep, sequences, accessions, specific_genera, force_accessions,
+    checkpoints, entrez_query, with_refseq_rep, sequences, accessions, specific_genera, force_accessions, excluded
 ):
     """
     Get all the individual fasta file paths for the taxa in our database.
@@ -320,6 +320,9 @@ def get_total_paths(
 
     if specific_genera:
         sequences_df = sequences_df[sequences_df["species"].str.contains("|".join(specific_genera))]
+
+    if excluded:
+        sequences_df = sequences_df[~sequences_df["AccessionVersion"].isin(excluded)]
 
     return sequences_df
 

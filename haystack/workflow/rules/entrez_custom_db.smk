@@ -35,7 +35,9 @@ def get_paths_for_custom_seqs():
 
     if custom_fasta_paths["species"].duplicated().any():
         if not config["resolve_accessions"]:
-            dup_taxa = ", ".join([i for i in custom_fasta_paths[custom_fasta_paths["species"].duplicated()]['species'].to_list()])
+            dup_taxa = ", ".join(
+                [i for i in custom_fasta_paths[custom_fasta_paths["species"].duplicated()]["species"].to_list()]
+            )
             raise RuntimeError(
                 f"You have provided more than one sequence for {dup_taxa}. "
                 f"Only one sequence per taxon is allowed. "
@@ -45,6 +47,9 @@ def get_paths_for_custom_seqs():
             custom_fasta_paths = custom_fasta_paths[~custom_fasta_paths["species"].duplicated()]
 
     check_unique_taxa_in_custom_input(config["accessions"], config["sequences"])
+
+    if excluded:
+        custom_fasta_paths = custom_fasta_paths[~custom_fasta_paths["accession"].isin(excluded)]
 
     inputs = []
 
@@ -71,7 +76,9 @@ def get_paths_for_custom_acc(wildcards):
 
     if custom_accessions["species"].duplicated().any():
         if not config["resolve_accessions"]:
-            dup_taxa = ", ".join([i for i in custom_accessions[custom_accessions["species"].duplicated()]['species'].to_list()])
+            dup_taxa = ", ".join(
+                [i for i in custom_accessions[custom_accessions["species"].duplicated()]["species"].to_list()]
+            )
             raise RuntimeError(
                 f"You have provided more than one sequence for {dup_taxa}. "
                 f"Only one sequence per taxon is allowed. "
@@ -81,6 +88,9 @@ def get_paths_for_custom_acc(wildcards):
             custom_accessions = custom_accessions[~custom_accessions["species"].duplicated()]
 
     check_unique_taxa_in_custom_input(config["accessions"], config["sequences"])
+
+    if excluded:
+        custom_accessions = custom_accessions[~custom_accessions["accession"].isin(excluded)]
 
     inputs = []
 
@@ -97,4 +107,3 @@ def get_paths_for_custom_acc(wildcards):
         inputs.append(config["cache"] + f"/ncbi/{orgname}/{accession}.fasta.gz")
 
     return inputs
-
