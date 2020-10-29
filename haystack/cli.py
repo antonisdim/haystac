@@ -416,7 +416,7 @@ The haystack commands are:
         target_list = list()
 
         if args.mode == "fetch":
-            if args.query or args.accessions or args.sequences or args.refseq_rep:
+            if args.query or args.accessions or args.sequences or args.refseq_rep or args.query_file:
                 target_list.append("db_taxa_accessions.tsv")
 
             with open(config_fetch, "w") as fout:
@@ -676,7 +676,7 @@ The haystack commands are:
             help="Minimum posterior probability to assign an aligned read to a given species",
             type=FloatRangeType(0, 100),
             metavar="<float>",
-            default=self.config_default["read_probability_threshold"],
+            default=self.config_default["min_prob"],
         )
 
         # add the common arguments
