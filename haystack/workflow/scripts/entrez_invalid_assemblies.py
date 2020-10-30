@@ -7,6 +7,7 @@ __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
 import csv
+
 import pandas as pd
 
 from haystack.workflow.scripts.entrez_utils import entrez_esearch

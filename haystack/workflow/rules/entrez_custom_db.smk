@@ -6,8 +6,9 @@ __copyright__ = "Copyright 2020, University of Oxford"
 __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
-import pandas as pd
 import re
+
+import pandas as pd
 
 from haystack.workflow.scripts.utilities import normalise_name, check_unique_taxa_in_custom_input
 
@@ -48,7 +49,7 @@ def get_paths_for_custom_seqs():
 
     check_unique_taxa_in_custom_input(config["accessions"], config["sequences"])
 
-    if config['exclude_accessions']:
+    if config["exclude_accessions"]:
         custom_fasta_paths = custom_fasta_paths[~custom_fasta_paths["accession"].isin(excluded)]
 
     inputs = []

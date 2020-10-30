@@ -7,12 +7,11 @@ __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
 import gzip
+from urllib.request import urlretrieve
 from xml.etree import ElementTree
 
 import requests
-import sys
 from Bio import bgzf
-from urllib.request import urlretrieve
 
 from haystack.workflow.scripts.entrez_utils import (
     entrez_range_accessions,

@@ -6,9 +6,10 @@ __copyright__ = "Copyright 2020, University of Oxford"
 __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
+import sys
+
 import pandas as pd
 import pysam
-import sys
 from scipy.stats import fisher_exact
 
 

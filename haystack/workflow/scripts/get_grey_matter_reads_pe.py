@@ -7,9 +7,9 @@ __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
 import gzip
+import sys
 
 import pandas as pd
-import sys
 from Bio import SeqIO
 
 

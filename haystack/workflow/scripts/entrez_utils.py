@@ -6,14 +6,14 @@ __copyright__ = "Copyright 2020, University of Oxford"
 __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
-from xml.etree import ElementTree
-
 import os
-import requests
 import sys
 import time
-import yaml
 from urllib.parse import urlencode
+from xml.etree import ElementTree
+
+import requests
+import yaml
 
 # base url of the Entrez web service
 ENTREZ_URL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/"

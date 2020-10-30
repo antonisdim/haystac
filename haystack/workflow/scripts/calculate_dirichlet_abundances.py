@@ -6,10 +6,11 @@ __copyright__ = "Copyright 2020, University of Oxford"
 __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
-import numpy as np
 import os
-import pandas as pd
 import sys
+
+import numpy as np
+import pandas as pd
 from scipy.stats import beta, hmean
 
 

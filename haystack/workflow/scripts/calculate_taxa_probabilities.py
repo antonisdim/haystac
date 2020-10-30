@@ -6,10 +6,11 @@ __copyright__ = "Copyright 2020, University of Oxford"
 __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
-import numpy as np
 import os
-import pandas as pd
 import sys
+
+import numpy as np
+import pandas as pd
 
 
 def calculate_taxa_probabilities(ts_tv_matrix_file, params_file, sample_name, total_fastq_reads, output_file):

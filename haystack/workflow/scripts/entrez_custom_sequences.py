@@ -7,11 +7,11 @@ __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
 import gzip
-
 import os
-import pandas as pd
 import shutil
 import sys
+
+import pandas as pd
 from Bio import bgzf
 
 

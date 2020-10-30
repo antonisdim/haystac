@@ -7,30 +7,27 @@ __copyright__ = "Copyright 2020, University of Oxford"
 __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
-import shutil
-from multiprocessing import cpu_count
-
-import argcomplete
 import argparse
 import datetime
 import os
-import snakemake
+import shutil
 import sys
+from multiprocessing import cpu_count
+
+import argcomplete
+import snakemake
 import yaml
 from psutil import virtual_memory
 
 from haystack.workflow.scripts.entrez_utils import (
     ENTREZ_RATE_LOW,
     ENTREZ_RATE_HIGH,
-    entrez_esearch,
-    entrez_efetch,
 )
 from haystack.workflow.scripts.utilities import (
     ValidationError,
     ArgumentCustomFormatter,
     FileType,
     WritablePathType,
-    PositiveIntType,
     FloatRangeType,
     IntRangeType,
     BoolType,

@@ -6,8 +6,6 @@ __copyright__ = "Copyright 2020, University of Oxford"
 __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
-import pandas as pd
-
 from haystack.workflow.scripts.utilities import normalise_name
 
 
@@ -104,7 +102,7 @@ def get_total_taxa(_):
 
 rule entrez_db_list:
     input:
-        get_total_taxa
+        get_total_taxa,
     log:
         config["db_output"] + "/db_taxa_accessions.log",
     output:

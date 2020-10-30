@@ -8,6 +8,7 @@ __license__ = "MIT"
 
 import csv
 import os
+
 import pandas as pd
 
 from haystack.workflow.scripts.entrez_utils import entrez_efetch, ENTREZ_MAX_UID

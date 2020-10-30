@@ -6,8 +6,9 @@ __copyright__ = "Copyright 2020, University of Oxford"
 __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
-import pandas as pd
 import sys
+
+import pandas as pd
 
 
 def entrez_db_list(input_list, output):
@@ -16,9 +17,9 @@ def entrez_db_list(input_list, output):
     db_list = []
 
     for fasta_file in input_list:
-        path_list = fasta_file.split('/')
+        path_list = fasta_file.split("/")
         taxon = path_list[-2]
-        accession = path_list[-1].replace('.fasta.gz', '')
+        accession = path_list[-1].replace(".fasta.gz", "")
         db_list.append([taxon, accession])
 
     db_list_df = pd.DataFrame(db_list)
