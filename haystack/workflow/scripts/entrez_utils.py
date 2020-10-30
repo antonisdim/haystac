@@ -23,7 +23,7 @@ ENTREZ_TOOL = "haystack"
 ENTREZ_EMAIL = "antonisdim41@gmail.com"
 
 # maximum 1 request per X seconds
-ENTREZ_WAIT_TIME = 1
+ENTREZ_WAIT_TIME = 1.1
 
 # users that supply a valid API key can post 10 requests per second
 ENTREZ_RATE_LOW = 3
