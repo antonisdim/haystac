@@ -799,7 +799,7 @@ The haystack commands are:
         """
         Helper function for running the snakemake workflow
         """
-        print("HAYSTACK\n")
+        print("HAYSTACK\n")  # TODO include version number
         print(f"Date: {datetime.datetime.now()}\n")
 
         config["workflow_dir"] = os.path.join(CODE_DIR, "workflow")
