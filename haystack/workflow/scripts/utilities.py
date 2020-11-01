@@ -9,6 +9,7 @@ __license__ = "MIT"
 import argparse
 import os
 import re
+import sys
 
 import pandas as pd
 
@@ -362,9 +363,7 @@ def check_unique_taxa_in_custom_input(accessions, sequences):
         taxon_seq = custom_fasta_paths["species"].tolist()
 
         if bool(set(taxon_acc) & set(taxon_seq)):
-            err_message = "You have provided the same taxon both in your custom sequences file and your custom " \
-                          "accessions file. Please pick and keep ONLY one entry from both of these files. You can " \
-                          "only have 1 sequence per chosen taxon in your database. "
+            err_message = "You have provided the same taxon both in your custom sequences file and your custom accessions file. Please pick and keep ONLY one entry from both of these files. You can only have 1 sequence per chosen taxon in your database."
             raise RuntimeError(f"{FAIL}{err_message}{END}" if is_tty else f"{err_message}")
 
 
