@@ -50,7 +50,7 @@ def get_paths_for_custom_seqs():
     check_unique_taxa_in_custom_input(config["accessions"], config["sequences"])
 
     if config["exclude_accessions"]:
-        custom_fasta_paths = custom_fasta_paths[~custom_fasta_paths["accession"].isin(excluded)]
+        custom_fasta_paths = custom_fasta_paths[~custom_fasta_paths["accession"].isin(config["exclude_accessions"])]
 
     inputs = []
 
@@ -90,8 +90,8 @@ def get_paths_for_custom_acc(wildcards):
 
     check_unique_taxa_in_custom_input(config["accessions"], config["sequences"])
 
-    if excluded:
-        custom_accessions = custom_accessions[~custom_accessions["accession"].isin(excluded)]
+    if config["exclude_accessions"]:
+        custom_accessions = custom_accessions[~custom_accessions["accession"].isin(config["exclude_accessions"])]
 
     inputs = []
 
