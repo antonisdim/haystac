@@ -10,7 +10,13 @@ import re
 
 import pandas as pd
 
-from haystack.workflow.scripts.utilities import normalise_name, check_unique_taxa_in_custom_input
+from haystack.workflow.scripts.utilities import (
+    normalise_name,
+    check_unique_taxa_in_custom_input,
+    FAIL,
+    END,
+    is_tty,
+)
 
 
 rule entrez_custom_sequences:
@@ -39,11 +45,10 @@ def get_paths_for_custom_seqs():
             dup_taxa = ", ".join(
                 [i for i in custom_fasta_paths[custom_fasta_paths["species"].duplicated()]["species"].to_list()]
             )
-            raise RuntimeError(
-                f"You have provided more than one sequence for {dup_taxa}. "
-                f"Only one sequence per taxon is allowed. "
-                f"Please only provide your favourite sequence for each taxon."
-            )
+            err_message = f"You have provided more than one sequence for {dup_taxa}. " \
+                          f"Only one sequence per taxon is allowed. " \
+                          f"Please only provide your favourite sequence for each taxon."
+            raise RuntimeError(f"{FAIL}{err_message}{END}" if is_tty else f"{err_message}")
         else:
             custom_fasta_paths = custom_fasta_paths[~custom_fasta_paths["species"].duplicated()]
 
@@ -62,7 +67,8 @@ def get_paths_for_custom_seqs():
 
         # TODO make wildcard_constraints consistent with this
         if not re.match("^[\w.]+$", accession):
-            raise RuntimeError(f"The accession '{accession}' for '{orgname}' contains an illegal character")
+            err_message = f"The accession '{accession}' for '{orgname}' contains an illegal character"
+            raise RuntimeError(f"{FAIL}{err_message}{END}" if is_tty else f"{err_message}")
 
         inputs.append(config["cache"] + f"/ncbi/{orgname}/custom_seq-{accession}.fasta.gz")
 
@@ -80,11 +86,10 @@ def get_paths_for_custom_acc(wildcards):
             dup_taxa = ", ".join(
                 [i for i in custom_accessions[custom_accessions["species"].duplicated()]["species"].to_list()]
             )
-            raise RuntimeError(
-                f"You have provided more than one sequence for {dup_taxa}. "
-                f"Only one sequence per taxon is allowed. "
-                f"Please only provide your favourite sequence for each taxon."
-            )
+            err_message = f"You have provided more than one sequence for {dup_taxa}. " \
+                          f"Only one sequence per taxon is allowed. " \
+                          f"Please only provide your favourite sequence for each taxon."
+            raise RuntimeError(f"{FAIL}{err_message}{END}" if is_tty else f"{err_message}")
         else:
             custom_accessions = custom_accessions[~custom_accessions["species"].duplicated()]
 
@@ -103,7 +108,8 @@ def get_paths_for_custom_acc(wildcards):
 
         # TODO make wildcard_constraints consistent with this
         if not re.match("^[\w.]+$", accession):
-            raise RuntimeError(f"The accession '{accession}' for '{orgname}' contains an illegal character")
+            err_message = f"The accession '{accession}' for '{orgname}' contains an illegal character"
+            raise RuntimeError(f"{FAIL}{err_message}{END}" if is_tty else f"{err_message}")
 
         inputs.append(config["cache"] + f"/ncbi/{orgname}/{accession}.fasta.gz")
 

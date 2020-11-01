@@ -35,6 +35,9 @@ from haystack.workflow.scripts.utilities import (
     SequenceFileType,
     AccessionFileType,
     SraAccessionType,
+    FAIL,
+    END,
+    is_tty,
 )
 
 os.environ["OPENBLAS_NUM_THREADS"] = "1"
@@ -91,8 +94,8 @@ The haystack commands are:
             exit(reval)
 
         except ValidationError as error:
-            # TODO how does snakemake colour it's output? make these messages print red for consistency
-            print(f"haystack: error: {error}")
+            err_message = f"haystack: error: {error}"
+            print(f"{FAIL}{err_message}{END}" if is_tty else f"{err_message}")
             exit(1)
 
     @staticmethod
@@ -371,15 +374,18 @@ The haystack commands are:
         if args.mode != "index" and not (
             args.refseq_rep or args.query or args.query_file or args.accessions or args.sequences
         ):
-            raise ValidationError(
+            err_message = (
                 "Please specify at least one of --refseq-rep, --query, --query-file, --accessions or --sequences"
             )
+            raise ValidationError(f"{FAIL}{err_message}{END}" if is_tty else f"{err_message}")
 
         if args.mtDNA and args.refseq_rep:
-            raise ValidationError("Please specify either `--mtDNA` or `--refseq-rep` but not both.")
+            err_message = "Please specify either `--mtDNA` or `--refseq-rep` but not both."
+            raise ValidationError(f"{FAIL}{err_message}{END}" if is_tty else f"{err_message}")
 
         if args.query and args.query_file:
-            raise ValidationError("Please specify either `--query <query>` or `--query-file <path>` but not both.")
+            err_message = "Please specify either `--query <query>` or `--query-file <path>` but not both."
+            raise ValidationError(f"{FAIL}{err_message}{END}" if is_tty else f"{err_message}")
 
         if args.query_file:
             # load the query file
@@ -387,7 +393,8 @@ The haystack commands are:
                 args.query = fin.read().strip()
 
             if not args.query:
-                raise ValidationError(f"The query file '{args.query_file}' is empty.")
+                err_message = f"The query file '{args.query_file}' is empty."
+                raise ValidationError(f"{FAIL}{err_message}{END}" if is_tty else f"{err_message}")
 
         db_original = args.db_output
 
@@ -427,9 +434,8 @@ The haystack commands are:
                 with open(config_fetch, "r") as fin:
                     config = yaml.safe_load(fin)
             except FileNotFoundError:
-                raise ValidationError(
-                    "Please run haystack `database --mode fetch` before attempting to index the database."
-                )
+                err_message = "Please run haystack `database --mode fetch` before attempting to index the database."
+                raise ValidationError(f"{FAIL}{err_message}{END}" if is_tty else f"{err_message}")
 
         elif args.mode == "build":
             target_list.append("idx_database.done")
@@ -437,9 +443,8 @@ The haystack commands are:
             target_list.append("db_taxa_accessions.tsv")
 
             if os.path.exists(config_fetch):
-                raise ValidationError(
-                    "Please run haystack `database --mode index` as the database has already been fetched."
-                )
+                err_message = "Please run haystack `database --mode index` as the database has already been fetched."
+                raise ValidationError(f"{FAIL}{err_message}{END}" if is_tty else f"{err_message}")
 
             with open(config_build, "w") as fout:
                 yaml.safe_dump(config, fout, default_flow_style=False)
@@ -540,13 +545,16 @@ The haystack commands are:
 
         # must specify exactly one source for the sample
         if bool(args.fastq) + (bool(args.fastq_r1) and bool(args.fastq_r2)) + bool(args.sra) != 1:
-            raise ValidationError("Please specify either --sra or --fastq, or both --fastq-r1 and --fastq-r2.")
+            err_message = "Please specify either --sra or --fastq, or both --fastq-r1 and --fastq-r2."
+            raise ValidationError(f"{FAIL}{err_message}{END}" if is_tty else f"{err_message}")
 
         if args.collapse and not (args.fastq_r1 and args.fastq_r2):
-            raise ValidationError("Collapse can only be used with --fastq-r1 and --fastq-r2.")
+            err_message = "Collapse can only be used with --fastq-r1 and --fastq-r2."
+            raise ValidationError(f"{FAIL}{err_message}{END}" if is_tty else f"{err_message}")
 
         if not args.sample_prefix and not args.sra:
-            raise ValidationError("Please provide a --sample-prefix name.")
+            err_message = "Please provide a --sample-prefix name."
+            raise ValidationError(f"{FAIL}{err_message}{END}" if is_tty else f"{err_message}")
 
         # resolve relative paths
         args.sample_output_dir = os.path.abspath(os.path.expanduser(args.sample_output_dir))
@@ -569,7 +577,8 @@ The haystack commands are:
             config["sra"], config["layout"] = args.sra
 
             if args.sample_prefix:
-                raise ValidationError("--sample-prefix cannot be used with and SRA accession.")
+                err_message = "--sample-prefix cannot be used with and SRA accession."
+                raise ValidationError(f"{FAIL}{err_message}{END}" if is_tty else f"{err_message}")
 
             # use the SRA accession as the sample prefix
             config["sample_prefix"] = config["sra"]
@@ -697,18 +706,20 @@ The haystack commands are:
             with open(database_config_file, "r") as fin:
                 database_config = yaml.safe_load(fin)
         except FileNotFoundError:
-            raise ValidationError(
+            err_message = (
                 "The database has not been built correctly. Please rebuild the database using `haystack database`"
             )
+            raise ValidationError(f"{FAIL}{err_message}{END}" if is_tty else f"{err_message}")
 
         try:
             # load the sample config
             with open(config_sample, "r") as fin:
                 sample_config = yaml.safe_load(fin)
         except FileNotFoundError:
-            raise ValidationError(
+            err_message = (
                 "The sample has not been prepared correctly. Please pre-process the samples using `haystack sample`"
             )
+            raise ValidationError(f"{FAIL}{err_message}{END}" if is_tty else f"{err_message}")
 
         # add all command line options to the merged config
         config = {**self.config_merged, **database_config, **sample_config, **vars(args)}

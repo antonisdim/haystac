@@ -13,6 +13,11 @@ from haystack.workflow.scripts.entrez_utils import (
     entrez_esummary,
     entrez_xml_to_dict,
 )
+from haystack.workflow.scripts.utilities import (
+    FAIL,
+    END,
+    is_tty,
+)
 
 
 def entrez_nuccore_query(query, output_file):
@@ -24,7 +29,8 @@ def entrez_nuccore_query(query, output_file):
 
     # check that there was at least one record found
     if len(id_list) == 0:
-        raise RuntimeError(f"The --query '{query}' returned no results")
+        err_message = f"The --query '{query}' returned no results"
+        raise RuntimeError(f"{FAIL}{err_message}{END}" if is_tty else f"{err_message}")
 
     # fetch the results
     etree = entrez_esummary("nuccore", key, webenv)

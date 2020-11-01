@@ -8,7 +8,12 @@ __license__ = "MIT"
 
 import pandas as pd
 
-from haystack.workflow.scripts.utilities import normalise_name
+from haystack.workflow.scripts.utilities import (
+    normalise_name,
+    FAIL,
+    END,
+    is_tty,
+)
 
 
 rule fasta_idx:
@@ -63,7 +68,8 @@ def get_idx_entrez(_):
     sequences = pd.read_csv(pick_sequences.output[0], sep="\t")
 
     if len(sequences) == 0:
-        raise RuntimeError("The entrez pick sequences file is empty.")
+        err_message = "The entrez pick sequences file is empty."
+        raise RuntimeError(f"{FAIL}{err_message}{END}" if is_tty else f"{err_message}")
 
     if config["exclude_accessions"]:
         sequences = sequences[~sequences["AccessionVersion"].isin(config["exclude_accessions"])]

@@ -20,7 +20,12 @@ from haystack.workflow.scripts.entrez_utils import (
     entrez_find_replacement_accession,
     ENTREZ_MAX_UID,
 )
-from haystack.workflow.scripts.utilities import chunker
+from haystack.workflow.scripts.utilities import (
+    chunker,
+    FAIL,
+    END,
+    is_tty,
+)
 
 
 def entrez_download_sequence(accession, output_file, force=False):
@@ -74,7 +79,8 @@ def entrez_download_sequence(accession, output_file, force=False):
     last = etree.find(".//GBAltSeqItem_last-accn")
 
     if first is None or last is None:
-        raise RuntimeError(f"ERROR: Could not download the fasta file for {accession}")
+        err_message = f"ERROR: Could not download the fasta file for {accession}"
+        raise RuntimeError(f"{FAIL}{err_message}{END}" if is_tty else f"{err_message}")
 
     # get all the related accession codes
     accessions = entrez_range_accessions(accession, first.text, last.text)
@@ -91,9 +97,10 @@ def entrez_download_sequence(accession, output_file, force=False):
                 print(r.text, file=fout)
 
     except requests.exceptions.HTTPError:
-        raise RuntimeError(
+        err_message = (
             f"Could not download the accession range '{first.text}-{last.text}' " f"for master record '{accession}'"
         )
+        raise RuntimeError(f"{FAIL}{err_message}{END}" if is_tty else f"{err_message}")
 
 
 if __name__ == "__main__":

@@ -15,6 +15,12 @@ from xml.etree import ElementTree
 import requests
 import yaml
 
+from haystack.workflow.scripts.utilities import (
+    FAIL,
+    END,
+    is_tty,
+)
+
 # base url of the Entrez web service
 ENTREZ_URL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/"
 
@@ -56,7 +62,8 @@ def entrez_request(action, params=None):
     url = ENTREZ_URL + action
 
     if len(params.get("id", [])) > ENTREZ_MAX_UID:
-        raise RuntimeError(f"List of Entrez IDs exceeds the maximum: {ENTREZ_MAX_UID}")
+        err_message = f"List of Entrez IDs exceeds the maximum: {ENTREZ_MAX_UID}"
+        raise RuntimeError(f"{FAIL}{err_message}{END}" if is_tty else f"{err_message}")
 
     if config.get("debug"):
         # turn into a get request
@@ -120,7 +127,8 @@ def entrez_assembly_ftp(accession, force=False):
 
     if len(id_list) > 1:
         # should never happen, but...
-        raise RuntimeError(f"Multiple assembly accessions found for '{accession}': {id_list}")
+        err_message = f"Multiple assembly accessions found for '{accession}': {id_list}"
+        raise RuntimeError(f"{FAIL}{err_message}{END}" if is_tty else f"{err_message}")
 
     elif len(id_list) == 0:
         # no entry in the assembly database for this accession code
@@ -141,7 +149,7 @@ def entrez_assembly_ftp(accession, force=False):
         if force:
             print(f"WARNING: {message}", file=sys.stderr)
         else:
-            raise RuntimeError(message)
+            raise RuntimeError(f"{FAIL}{message}{END}" if is_tty else f"{message}")
 
     # preference RefSeq URLs over GenBank URLs
     ftp_stub = etree.find(".//FtpPath_RefSeq") or etree.find(".//FtpPath_GenBank")
@@ -170,7 +178,8 @@ def entrez_range_accessions(accession, first, last):
         # return the range
         return [f"{first[:idx]}{str(item).zfill(pad)}" for item in range(int(first[idx:]), int(last[idx:]) + 1)]
     except ValueError:
-        raise RuntimeError(f"Could not resolve the accession range '{first}-{last}' for master record '{accession}'")
+        err_message = f"Could not resolve the accession range '{first}-{last}' for master record '{accession}'"
+        raise RuntimeError(f"{FAIL}{err_message}{END}" if is_tty else f"{err_message}")
 
 
 def entrez_xml_to_dict(etree):
