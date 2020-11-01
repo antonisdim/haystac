@@ -66,7 +66,7 @@ def get_idx_entrez(_):
         raise RuntimeError("The entrez pick sequences file is empty.")
 
     if config["exclude_accessions"]:
-        sequences = sequences[~sequences["AccessionVersion"].isin(excluded)]
+        sequences = sequences[~sequences["AccessionVersion"].isin(config["exclude_accessions"])]
 
     inputs = []
 
@@ -99,7 +99,7 @@ def get_idx_ref_gen(_):
     sequences = pd.concat([refseq_genomes, genbank_genomes, refseq_plasmids, genbank_plasmids])
 
     if config["exclude_accessions"]:
-        sequences = sequences[~sequences["AccessionVersion"].isin(excluded)]
+        sequences = sequences[~sequences["AccessionVersion"].isin(config["exclude_accessions"])]
 
     inputs = []
 
@@ -136,7 +136,7 @@ def get_idx_assembly(_):
     sequences = assemblies
 
     if config["exclude_accessions"]:
-        sequences = sequences[~sequences["AccessionVersion"].isin(excluded)]
+        sequences = sequences[~sequences["AccessionVersion"].isin(config["exclude_accessions"])]
 
     inputs = []
 
@@ -165,7 +165,7 @@ def get_idx_custom_seqs():
     sequences = custom_fasta_paths
 
     if config["exclude_accessions"]:
-        sequences = sequences[~sequences["AccessionVersion"].isin(excluded)]
+        sequences = sequences[~sequences["AccessionVersion"].isin(config["exclude_accessions"])]
 
     inputs = []
 
@@ -192,7 +192,7 @@ def get_idx_custom_acc():
     sequences = custom_accessions
 
     if config["exclude_accessions"]:
-        sequences = sequences[~sequences["AccessionVersion"].isin(excluded)]
+        sequences = sequences[~sequences["AccessionVersion"].isin(config["exclude_accessions"])]
 
     inputs = []
 
