@@ -452,8 +452,6 @@ The haystack commands are:
             with open(config_build, "w") as fout:
                 yaml.safe_dump(config, fout, default_flow_style=False)
 
-        config["mtDNA"] = str(args.mtDNA).lower()
-
         target_list = [os.path.join(args.db_output, target) for target in target_list]
         snakefile = os.path.join(CODE_DIR, "workflow/database.smk")
 
