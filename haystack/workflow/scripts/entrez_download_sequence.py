@@ -34,9 +34,9 @@ def entrez_download_sequence(accession, output_file, force=False, mtdna=False):
     """
 
     # query the assembly database to see if there is an FTP url we can use
-    ftp_url = entrez_assembly_ftp(accession, force)
+    ftp_url = entrez_assembly_ftp(accession, force) if not mtdna else ''
 
-    if ftp_url and not mtdna:
+    if ftp_url:
         # read the FTP stream, unzip the contents and write them one line at a time to our bgzip file
         with gzip.open(urlretrieve(ftp_url)[0]) as fin, bgzf.open(output_file, "w") as fout:
             for line in fin:
