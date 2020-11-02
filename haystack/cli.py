@@ -221,10 +221,9 @@ The haystack commands are:
         # get the CLI arguments
         args = self._parse_args(parser, level=2)
 
-        # get the user choices that differ from the defaults
+        # get the user choices
         for key, value in vars(args).items():
-            if value != self.config_default.get(key) or (value is not None and self.config_user.get(key) is not None):
-                self.config_user[key] = value
+            self.config_user[key] = value
 
         # resolve relative paths
         if self.config_user.get("cache"):
@@ -237,8 +236,15 @@ The haystack commands are:
             del self.config_user["clear_cache"]
 
         # save the user config
-        with open(CONFIG_USER, "w") as fout:
-            yaml.safe_dump(self.config_user, fout, default_flow_style=False)
+        if os.path.exists(CONFIG_USER):
+            with open(CONFIG_USER, "r") as fin:
+                user_yaml = yaml.safe_load(fin)
+                user_yaml.update((k, v) for k, v in self.config_user.items() if v is not None)
+            with open(CONFIG_USER, "w") as fout:
+                yaml.safe_dump(user_yaml, fout, default_flow_style=False)
+        else:
+            with open(CONFIG_USER, "w") as fout:
+                yaml.safe_dump(self.config_user, fout, default_flow_style=False)
 
     def database(self):
         """
