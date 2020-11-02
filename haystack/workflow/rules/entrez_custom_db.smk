@@ -45,9 +45,11 @@ def get_paths_for_custom_seqs():
             dup_taxa = ", ".join(
                 [i for i in custom_fasta_paths[custom_fasta_paths["species"].duplicated()]["species"].to_list()]
             )
-            err_message = f"You have provided more than one sequence for {dup_taxa}. " \
-                          f"Only one sequence per taxon is allowed. " \
-                          f"Please only provide your favourite sequence for each taxon."
+            err_message = (
+                f"You have provided more than one sequence for {dup_taxa}. "
+                f"Only one sequence per taxon is allowed. "
+                f"Please only provide your favourite sequence for each taxon."
+            )
             raise RuntimeError(f"{FAIL}{err_message}{END}" if is_tty else f"{err_message}")
         else:
             custom_fasta_paths = custom_fasta_paths[~custom_fasta_paths["species"].duplicated()]
@@ -86,9 +88,11 @@ def get_paths_for_custom_acc(wildcards):
             dup_taxa = ", ".join(
                 [i for i in custom_accessions[custom_accessions["species"].duplicated()]["species"].to_list()]
             )
-            err_message = f"You have provided more than one sequence for {dup_taxa}. " \
-                          f"Only one sequence per taxon is allowed. " \
-                          f"Please only provide your favourite sequence for each taxon."
+            err_message = (
+                f"You have provided more than one sequence for {dup_taxa}. "
+                f"Only one sequence per taxon is allowed. "
+                f"Please only provide your favourite sequence for each taxon."
+            )
             raise RuntimeError(f"{FAIL}{err_message}{END}" if is_tty else f"{err_message}")
         else:
             custom_accessions = custom_accessions[~custom_accessions["species"].duplicated()]

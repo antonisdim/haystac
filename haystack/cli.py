@@ -143,9 +143,7 @@ The haystack commands are:
         self.max_entrez_requests = ENTREZ_RATE_HIGH if self.config_user.get("api_key") else ENTREZ_RATE_LOW
 
         # merge the config dictionaries (giving precedence to the config_user)
-        # self.config_merged = {**self.config_default, **self.config_user}
-        self.config_merged = {**self.config_default}
-        self.config_merged.update((k, v) for k, v in self.config_user.items() if v is not None)
+        self.config_merged = {**self.config_default, **self.config_user}
 
     def config(self):
         """
@@ -166,10 +164,11 @@ The haystack commands are:
 
         optional.add_argument(
             "--cache",
-            help="Cache folder for storing genomes downloaded from NCBI and other shared data",
+            help=f"Cache folder for storing genomes downloaded from NCBI and other shared data "
+            f"(default: {self.config_default['cache']})",
             metavar="<path>",
             type=WritablePathType(),
-            # default=self.config_default["cache"],
+            default=argparse.SUPPRESS,
         )
 
         optional.add_argument(
@@ -187,34 +186,36 @@ The haystack commands are:
 
         optional.add_argument(
             "--mismatch-probability",
-            help="Base mismatch probability",
+            help=f"Base mismatch probability (default: {self.config_default['mismatch_probability']})",
             type=FloatRangeType(0.01, 0.10),
             metavar="<float>",
-            # default=self.config_default["mismatch_probability"],
+            default=argparse.SUPPRESS,
         )
 
         optional.add_argument(
             "--bowtie2-threads",
-            help="Number of threads to use for each bowtie2 alignment",
+            help=f"Number of threads to use for each bowtie2 alignment "
+            f"(default: {self.config_default['bowtie2_threads']})",
             type=IntRangeType(1, MAX_CPU),
             metavar="<int>",
-            # default=self.config_default["bowtie2_threads"],
+            default=argparse.SUPPRESS,
         )
 
         optional.add_argument(
             "--bowtie2-scaling",
-            help="Rescaling factor to keep the bowtie2 mutlifasta index below the maximum memory limit",
+            help=f"Rescaling factor to keep the bowtie2 mutlifasta index below the maximum memory limit "
+            f"(default: {self.config_default['bowtie2_scaling']})",
             type=FloatRangeType(0, 100),
             metavar="<float>",
-            # default=self.config_default["bowtie2_scaling"],
+            default=argparse.SUPPRESS,
         )
 
         optional.add_argument(
             "--use-conda",
-            help="Use conda as a package manger",
+            help=f"Use conda as a package manger (default: {self.config_default['use_conda']})",
             type=BoolType(),
             metavar="<bool>",
-            # default=self.config_default["use_conda"],
+            default=argparse.SUPPRESS,
         )
 
         # get the CLI arguments
@@ -222,9 +223,7 @@ The haystack commands are:
 
         # get the user choices that differ from the defaults
         for key, value in vars(args).items():
-            if value is not None and self.config_user.get(key) is not None:
-                self.config_user[key] = value
-            elif value is not None and value != self.config_default.get(key):
+            if value != self.config_default.get(key) or (value is not None and self.config_user.get(key) is not None):
                 self.config_user[key] = value
 
         # resolve relative paths
