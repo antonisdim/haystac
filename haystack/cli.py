@@ -182,6 +182,7 @@ The haystack commands are:
             help=f"Personal NCBI API key (increases max concurrent requests from {ENTREZ_RATE_LOW} to "
             f"{ENTREZ_RATE_HIGH}, https://www.ncbi.nlm.nih.gov/account/register/)",
             metavar="<code>",
+            default=argparse.SUPPRESS,
         )
 
         optional.add_argument(
@@ -236,15 +237,8 @@ The haystack commands are:
             del self.config_user["clear_cache"]
 
         # save the user config
-        if os.path.exists(CONFIG_USER):
-            with open(CONFIG_USER, "r") as fin:
-                user_yaml = yaml.safe_load(fin)
-                user_yaml.update((k, v) for k, v in self.config_user.items() if v is not None)
-            with open(CONFIG_USER, "w") as fout:
-                yaml.safe_dump(user_yaml, fout, default_flow_style=False)
-        else:
-            with open(CONFIG_USER, "w") as fout:
-                yaml.safe_dump(self.config_user, fout, default_flow_style=False)
+        with open(CONFIG_USER, "w") as fout:
+            yaml.safe_dump(self.config_user, fout, default_flow_style=False)
 
     def database(self):
         """
