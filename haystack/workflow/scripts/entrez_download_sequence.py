@@ -28,7 +28,7 @@ from haystack.workflow.scripts.utilities import (
 )
 
 
-def entrez_download_sequence(accession, output_file, force=False):
+def entrez_download_sequence(accession, output_file, force=False, mtdna=False):
     """
     Fetch the Entrez fasta record for a nuccore accession.
     """
@@ -36,7 +36,7 @@ def entrez_download_sequence(accession, output_file, force=False):
     # query the assembly database to see if there is an FTP url we can use
     ftp_url = entrez_assembly_ftp(accession, force)
 
-    if ftp_url:
+    if ftp_url and not mtdna:
         # read the FTP stream, unzip the contents and write them one line at a time to our bgzip file
         with gzip.open(urlretrieve(ftp_url)[0]) as fin, bgzf.open(output_file, "w") as fout:
             for line in fin:
@@ -109,4 +109,5 @@ if __name__ == "__main__":
         accession=snakemake.wildcards.accession,
         output_file=snakemake.output[0],
         force=snakemake.config["force_accessions"],
+        mtdna=snakemake.params[0],
     )
