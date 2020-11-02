@@ -143,7 +143,9 @@ The haystack commands are:
         self.max_entrez_requests = ENTREZ_RATE_HIGH if self.config_user.get("api_key") else ENTREZ_RATE_LOW
 
         # merge the config dictionaries (giving precedence to the config_user)
-        self.config_merged = {**self.config_default, **self.config_user}
+        # self.config_merged = {**self.config_default, **self.config_user}
+        self.config_merged = {**self.config_default}
+        self.config_merged.update((k, v) for k, v in self.config_user.items() if v is not None)
 
     def config(self):
         """
@@ -167,7 +169,7 @@ The haystack commands are:
             help="Cache folder for storing genomes downloaded from NCBI and other shared data",
             metavar="<path>",
             type=WritablePathType(),
-            default=self.config_default["cache"],
+            # default=self.config_default["cache"],
         )
 
         optional.add_argument(
@@ -188,7 +190,7 @@ The haystack commands are:
             help="Base mismatch probability",
             type=FloatRangeType(0.01, 0.10),
             metavar="<float>",
-            default=self.config_default["mismatch_probability"],
+            # default=self.config_default["mismatch_probability"],
         )
 
         optional.add_argument(
@@ -196,7 +198,7 @@ The haystack commands are:
             help="Number of threads to use for each bowtie2 alignment",
             type=IntRangeType(1, MAX_CPU),
             metavar="<int>",
-            default=self.config_default["bowtie2_threads"],
+            # default=self.config_default["bowtie2_threads"],
         )
 
         optional.add_argument(
@@ -204,7 +206,7 @@ The haystack commands are:
             help="Rescaling factor to keep the bowtie2 mutlifasta index below the maximum memory limit",
             type=FloatRangeType(0, 100),
             metavar="<float>",
-            default=self.config_default["bowtie2_scaling"],
+            # default=self.config_default["bowtie2_scaling"],
         )
 
         optional.add_argument(
@@ -212,7 +214,7 @@ The haystack commands are:
             help="Use conda as a package manger",
             type=BoolType(),
             metavar="<bool>",
-            default=self.config_default["use_conda"],
+            # default=self.config_default["use_conda"],
         )
 
         # get the CLI arguments
@@ -220,7 +222,9 @@ The haystack commands are:
 
         # get the user choices that differ from the defaults
         for key, value in vars(args).items():
-            if value != self.config_default.get(key) or (value is not None and self.config_user.get(key) is not None):
+            if value is not None and self.config_user.get(key) is not None:
+                self.config_user[key] = value
+            elif value is not None and value != self.config_default.get(key):
                 self.config_user[key] = value
 
         # resolve relative paths

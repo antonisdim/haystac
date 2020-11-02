@@ -15,11 +15,10 @@ from xml.etree import ElementTree
 import requests
 import yaml
 
-from haystack.workflow.scripts.utilities import (
-    FAIL,
-    END,
-    is_tty,
-)
+FAIL = "\x1b[31m"
+END = "\033[0m"
+
+is_tty = sys.stdout.isatty()
 
 # base url of the Entrez web service
 ENTREZ_URL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/"
