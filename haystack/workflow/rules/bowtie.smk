@@ -20,7 +20,7 @@ SUBSAMPLE_FIXED_READS = 200000
 rule bowtie_alignment_single_end:
     input:
         fastq=(
-            config["sample_output_dir"] + "/fastq_inputs/SE/{sample}_adRm.fastq.gz"
+            config["sample_output_dir"] + "/fastq_inputs/" + config["read_mode"] + "/{sample}_adRm.fastq.gz"
             if config["trim_adapters"]
             else config["fastq"]
         ),
@@ -47,12 +47,12 @@ rule bowtie_alignment_single_end:
 rule bowtie_alignment_paired_end:
     input:
         fastq_r1=(
-            config["sample_output_dir"] + "/fastq_inputs/" + config["read_mode"] + "/{sample}_adRm.fastq.gz"
+            config["sample_output_dir"] + "/fastq_inputs/" + config["read_mode"] + "/{sample}_R1_adRm.fastq.gz"
             if config["trim_adapters"]
             else config["fastq_r1"]
         ),
         fastq_r2=(
-            config["sample_output_dir"] + "/fastq_inputs/" + config["read_mode"] + "/{sample}_adRm.fastq.gz"
+            config["sample_output_dir"] + "/fastq_inputs/" + config["read_mode"] + "/{sample}_R2_adRm.fastq.gz"
             if config["trim_adapters"]
             else config["fastq_r2"]
         ),

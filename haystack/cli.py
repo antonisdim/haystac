@@ -552,7 +552,7 @@ The haystack commands are:
             err_message = "Please specify either --sra or --fastq, or both --fastq-r1 and --fastq-r2."
             raise ValidationError(f"{FAIL}{err_message}{END}" if is_tty else f"{err_message}")
 
-        if args.collapse and not (args.fastq_r1 and args.fastq_r2):
+        if args.collapse and not (args.fastq_r1 and args.fastq_r2) and args.sra[1] != "paired":
             err_message = "Collapse can only be used with --fastq-r1 and --fastq-r2."
             raise ValidationError(f"{FAIL}{err_message}{END}" if is_tty else f"{err_message}")
 
@@ -607,11 +607,11 @@ The haystack commands are:
 
         if config["trim_adapters"]:
             if config["read_mode"] == PE_MODERN:
-                target_list.append(f"fastq_inputs/PE_mod/{config['sample_prefix']}_R1_adRm.fastq.gz")
+                target_list.append(f"fastq_inputs/{config['read_mode']}/{config['sample_prefix']}_R1_adRm.fastq.gz")
             elif config["read_mode"] == PE_ANCIENT:
-                target_list.append(f"fastq_inputs/PE_anc/{config['sample_prefix']}_adRm.fastq.gz")
+                target_list.append(f"fastq_inputs/{config['read_mode']}/{config['sample_prefix']}_adRm.fastq.gz")
             elif config["read_mode"] == SE:
-                target_list.append(f"fastq_inputs/SE/{config['sample_prefix']}_adRm.fastq.gz")
+                target_list.append(f"fastq_inputs/{config['read_mode']}/{config['sample_prefix']}_adRm.fastq.gz")
 
         config_sample = os.path.join(args.sample_output_dir, "sample_config.yaml")
 

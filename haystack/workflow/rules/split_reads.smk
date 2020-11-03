@@ -8,6 +8,7 @@ __license__ = "MIT"
 
 from haystack.workflow.scripts.utilities import get_total_paths, normalise_name, PE_MODERN, PE_ANCIENT, SE
 
+READS = 'PE' if config['read_mode'] == PE_MODERN else 'SE'
 
 rule get_dirichlet_reads:
     input:
@@ -115,9 +116,7 @@ rule all_dirichlet:
         [
             config["analysis_output_dir"]
             + "/dirichlet_reads/{sample}/"
-            + f"{orgname}/{orgname}_{accession}_dirichlet_"
-            + config["read_mode"]
-            + ".bam"
+            + f"{orgname}/{orgname}_{accession}_dirichlet_{READS}.bam"
             for orgname, accession in get_total_paths(checkpoints, config)
         ],
         [
