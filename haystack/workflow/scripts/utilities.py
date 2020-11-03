@@ -217,7 +217,11 @@ class AccessionFileType(SpreadsheetFileType):
 
         # TODO check regex for consistency with other parts of the code
         bad_accs = "\n".join(
-            [f"line {i+1}: '{acc}'" for i, acc in enumerate(self.data[idx].tolist()) if not re.match(r"^[\w.]+$", acc)]
+            [
+                f"line {i + 1}: '{acc}'"
+                for i, acc in enumerate(self.data[idx].tolist())
+                if not re.match(r"^[\w.]+$", acc)
+            ]
         )
 
         if bad_accs:
@@ -242,7 +246,7 @@ class SequenceFileType(AccessionFileType):
 
         bad_files = "\n".join(
             [
-                f"line {i+1}: '{file}'"
+                f"line {i + 1}: '{file}'"
                 for i, file in enumerate(self.data[idx].tolist())
                 if not os.path.exists(file) or os.stat(file).st_size == 0
             ]
@@ -384,3 +388,7 @@ def check_unique_taxa_in_custom_input(accessions, sequences):
 
 def chunker(seq, size):
     return (seq[pos : pos + size] for pos in range(0, len(seq), size))
+
+
+def reads(config):
+    return "PE" if config["read_mode"] == PE_MODERN else "SE"

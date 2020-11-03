@@ -10,9 +10,8 @@ MIN_FRAG_LEN = 0
 MAX_FRAG_LEN = 1000
 META_ALN_MIN_SCORE_CONSTANT = -6
 
-from haystack.workflow.scripts.utilities import get_total_paths, normalise_name, PE_MODERN, PE_ANCIENT, SE
+from haystack.workflow.scripts.utilities import get_total_paths, normalise_name, PE_MODERN, PE_ANCIENT, SE, reads
 
-READS = 'PE' if config['read_mode'] == PE_MODERN else 'SE'
 
 def get_min_score(wildcards, input):
     """Get the min score dor the edit distance of the alignment."""
@@ -83,7 +82,8 @@ rule all_alignments:
         [
             config["analysis_output_dir"]
             + "/alignments/{sample}/"
-            + f"{READS}/{orgname}/{orgname}_{accession}.bam"
+            + reads(config)
+            + f"/{orgname}/{orgname}_{accession}.bam"
             for orgname, accession in get_total_paths(checkpoints, config)
         ],
     output:

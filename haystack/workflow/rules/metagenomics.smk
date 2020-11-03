@@ -6,9 +6,8 @@ __copyright__ = "Copyright 2020, University of Oxford"
 __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
-from haystack.workflow.scripts.utilities import get_total_paths, normalise_name, PE_MODERN, PE_ANCIENT, SE
+from haystack.workflow.scripts.utilities import get_total_paths, normalise_name, PE_MODERN, PE_ANCIENT, SE, reads
 
-READS = 'PE' if config['read_mode'] == PE_MODERN else 'SE'
 
 def get_bams_for_ts_tv_count(wildcards):
     sample, orgname, accession = wildcards.sample, wildcards.orgname, wildcards.accession
@@ -125,7 +124,9 @@ rule cat_pvalues:
         [
             config["analysis_output_dir"]
             + "/probabilities/{sample}/"
-            + f"{orgname}_t_test_pvalue_{accession}_{READS}.txt"
+            + f"{orgname}_t_test_pvalue_{accession}_"
+            + reads(config)
+            + ".txt"
             for orgname, accession in get_total_paths(checkpoints, config)
         ],
     output:

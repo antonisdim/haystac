@@ -6,9 +6,8 @@ __copyright__ = "Copyright 2020, University of Oxford"
 __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
-from haystack.workflow.scripts.utilities import get_total_paths, normalise_name, PE_MODERN, PE_ANCIENT, SE
+from haystack.workflow.scripts.utilities import get_total_paths, normalise_name, PE_MODERN, PE_ANCIENT, SE, reads
 
-READS = 'PE' if config['read_mode'] == PE_MODERN else 'SE'
 
 rule get_dirichlet_reads:
     input:
@@ -116,7 +115,9 @@ rule all_dirichlet:
         [
             config["analysis_output_dir"]
             + "/dirichlet_reads/{sample}/"
-            + f"{orgname}/{orgname}_{accession}_dirichlet_{READS}.bam"
+            + f"{orgname}/{orgname}_{accession}_dirichlet_"
+            + reads(config)
+            + ".bam"
             for orgname, accession in get_total_paths(checkpoints, config)
         ],
         [
