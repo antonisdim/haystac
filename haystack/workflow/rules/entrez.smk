@@ -68,8 +68,6 @@ rule entrez_download_sequence:
         accession="[^-]+",
     resources:
         entrez_api=1,
-    params:
-        mtDNA=config["mtDNA"],
     script:
         "../scripts/entrez_download_sequence.py"
 

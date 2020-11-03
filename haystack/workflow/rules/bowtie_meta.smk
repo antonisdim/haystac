@@ -10,7 +10,7 @@ MIN_FRAG_LEN = 0
 MAX_FRAG_LEN = 1000
 META_ALN_MIN_SCORE_CONSTANT = -6
 
-from haystack.workflow.scripts.utilities import get_total_paths, normalise_name
+from haystack.workflow.scripts.utilities import get_total_paths, normalise_name, PE_MODERN, PE_ANCIENT, SE
 
 
 def get_min_score(wildcards, input):
@@ -101,11 +101,11 @@ def get_bamfile_paths(wildcards):
             seq["AccessionVersion"],
         )
 
-        if config["read_mode"] == "SE" or config["read_mode"] == "PE_ANCIENT":
+        if config["read_mode"] == SE or config["read_mode"] == PE_ANCIENT:
             inputs.append(
                 config["analysis_output_dir"] + f"/alignments/{wildcards.sample}/SE/{orgname}/{orgname}_{accession}.bam"
             )
-        elif config["read_mode"] == "PE_MODERN":
+        elif config["read_mode"] == PE_MODERN:
             inputs.append(
                 config["analysis_output_dir"] + f"/alignments/{wildcards.sample}/PE/{orgname}/{orgname}_{accession}.bam"
             )

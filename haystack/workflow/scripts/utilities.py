@@ -13,6 +13,10 @@ import sys
 
 import pandas as pd
 
+PE_MODERN = "PE_MODERN"
+PE_ANCIENT = "PE_ANCIENT"
+SE = "SE"
+
 FAIL = "\x1b[31m"
 END = "\033[0m"
 

@@ -6,22 +6,24 @@ __copyright__ = "Copyright 2020, University of Oxford"
 __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
+from haystack.workflow.scripts.utilities import PE_MODERN, PE_ANCIENT, SE
+
 
 def get_inputs_for_count_fastq_len(wildcards):
     if config["trim_adapters"]:
-        if config["read_mode"] == "PE_MODERN":
+        if config["read_mode"] == PE_MODERN:
             return config["sample_output_dir"] + f"/fastq_inputs/PE_mod/{wildcards.sample}_R1_adRm.fastq.gz"
-        elif config["read_mode"] == "PE_ANCIENT":
+        elif config["read_mode"] == PE_ANCIENT:
             return config["sample_output_dir"] + f"/fastq_inputs/PE_anc/{wildcards.sample}_adRm.fastq.gz"
-        elif config["read_mode"] == "SE":
+        elif config["read_mode"] == SE:
             return config["sample_output_dir"] + f"/fastq_inputs/SE/{wildcards.sample}_adRm.fastq.gz"
 
     else:
-        if config["read_mode"] == "PE_MODERN":
+        if config["read_mode"] == PE_MODERN:
             return config["fastq_r1"]
-        elif config["read_mode"] == "PE_ANCIENT":
+        elif config["read_mode"] == PE_ANCIENT:
             return config["fastq"]
-        elif config["read_mode"] == "SE":
+        elif config["read_mode"] == SE:
             return config["fastq"]
 
 

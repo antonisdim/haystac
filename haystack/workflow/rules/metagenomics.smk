@@ -6,15 +6,14 @@ __copyright__ = "Copyright 2020, University of Oxford"
 __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
-from haystack.workflow.scripts.utilities import get_total_paths, normalise_name
+from haystack.workflow.scripts.utilities import get_total_paths, normalise_name, PE_MODERN, PE_ANCIENT, SE
 
-PAIRS = True if config["read_mode"] == "PE_MODERN" else False
 
 def get_bams_for_ts_tv_count(wildcards):
     sample, orgname, accession = wildcards.sample, wildcards.orgname, wildcards.accession
-    if config["read_mode"] == "PE_MODERN":
+    if config["read_mode"] == PE_MODERN:
         return config["analysis_output_dir"] + f"/alignments/{sample}/PE/{orgname}/{orgname}_{accession}.bam"
-    elif config["read_mode"] == "PE_ANCIENT" or config["read_mode"] == "SE":
+    elif config["read_mode"] == PE_ANCIENT or config["read_mode"] == SE:
         return config["analysis_output_dir"] + f"/alignments/{sample}/SE/{orgname}/{orgname}_{accession}.bam"
 
 
@@ -30,7 +29,7 @@ rule count_accession_ts_tv:
             "benchmarks/count_accession_ts_tv_{sample}_{orgname}_{accession}.benchmark.txt", 1,
         )
     params:
-        pairs=PAIRS,
+        pairs=config["read_mode"] == PE_MODERN,
     message:
         "Counting the number of transitions and transversions per read for taxon {wildcards.orgname}."
     script:
@@ -83,7 +82,7 @@ rule initial_ts_tv:
 
 
 def get_right_readlen(wildcards):
-    if PAIRS:
+    if config["read_mode"] == PE_MODERN:
         return config["analysis_output_dir"] + f"/fastq/PE/{wildcards.sample}_mapq_pair.readlen"
     else:
         return config["analysis_output_dir"] + f"/fastq/SE/{wildcards.sample}_mapq.readlen"
@@ -163,9 +162,9 @@ def get_t_test_values_paths(wildcards):
     inputs = []
 
     reads = ""
-    if config["read_mode"] == "PE_MODERN":
+    if config["read_mode"] == PE_MODERN:
         reads = "PE"
-    elif config["read_mode"] == "PE_ANCIENT" or config["read_mode"] == "SE":
+    elif config["read_mode"] == PE_ANCIENT or config["read_mode"] == SE:
         reads = "SE"
 
     for key, seq in sequences.iterrows():

@@ -6,7 +6,7 @@ __copyright__ = "Copyright 2020, University of Oxford"
 __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
-from haystack.workflow.scripts.utilities import get_total_paths, normalise_name
+from haystack.workflow.scripts.utilities import get_total_paths, normalise_name, PE_MODERN, PE_ANCIENT, SE
 
 
 rule dedup_merged_mapdamage:
@@ -76,9 +76,9 @@ def get_mapdamage_out_dir_paths(wildcards):
     inputs = []
 
     reads = ""
-    if config["read_mode"] == "PE_MODERN":
+    if config["read_mode"] == PE_MODERN:
         reads = "PE"
-    elif config["read_mode"] == "PE_ANCIENT" or config["read_mode"] == "SE":
+    elif config["read_mode"] == PE_ANCIENT or config["read_mode"] == SE:
         reads = "SE"
 
     for key, seq in sequences.iterrows():
@@ -89,7 +89,7 @@ def get_mapdamage_out_dir_paths(wildcards):
 
         inputs.append(config["analysis_output_dir"] + f"/mapdamage/{wildcards.sample}/{reads}/{orgname}-{accession}")
 
-    if config["read_mode"] == "PE_ANCIENT" or config["read_mode"] == "SE":
+    if config["read_mode"] == PE_ANCIENT or config["read_mode"] == SE:
         return inputs
     else:
         print(

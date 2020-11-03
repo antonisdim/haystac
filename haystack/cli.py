@@ -35,6 +35,9 @@ from haystack.workflow.scripts.utilities import (
     SequenceFileType,
     AccessionFileType,
     SraAccessionType,
+    PE_MODERN,
+    PE_ANCIENT,
+    SE,
     FAIL,
     END,
     is_tty,
@@ -603,11 +606,11 @@ The haystack commands are:
         target_list.append(f"fastq_inputs/meta/{config['sample_prefix']}.size")
 
         if config["trim_adapters"]:
-            if config["read_mode"] == "PE_MODERN":
+            if config["read_mode"] == PE_MODERN:
                 target_list.append(f"fastq_inputs/PE_mod/{config['sample_prefix']}_R1_adRm.fastq.gz")
-            elif config["read_mode"] == "PE_ANCIENT":
+            elif config["read_mode"] == PE_ANCIENT:
                 target_list.append(f"fastq_inputs/PE_anc/{config['sample_prefix']}_adRm.fastq.gz")
-            elif config["read_mode"] == "SE":
+            elif config["read_mode"] == SE:
                 target_list.append(f"fastq_inputs/SE/{config['sample_prefix']}_adRm.fastq.gz")
 
         config_sample = os.path.join(args.sample_output_dir, "sample_config.yaml")
@@ -729,7 +732,7 @@ The haystack commands are:
         target_list = list()
 
         if args.mode == "filter":
-            if config["read_mode"] == "PE_MODERN":
+            if config["read_mode"] == PE_MODERN:
                 target_list.append(f"fastq/PE/{config['sample_prefix']}_mapq_pair.readlen")
             else:
                 target_list.append(f"fastq/SE/{config['sample_prefix']}_mapq.readlen")

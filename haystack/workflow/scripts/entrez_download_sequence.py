@@ -34,7 +34,7 @@ def entrez_download_sequence(accession, output_file, force=False, mtdna=False):
     """
 
     # query the assembly database to see if there is an FTP url we can use
-    ftp_url = entrez_assembly_ftp(accession, force) if not mtdna else ''
+    ftp_url = entrez_assembly_ftp(accession, force) if not mtdna else ""
 
     if ftp_url:
         # read the FTP stream, unzip the contents and write them one line at a time to our bgzip file
@@ -109,5 +109,5 @@ if __name__ == "__main__":
         accession=snakemake.wildcards.accession,
         output_file=snakemake.output[0],
         force=snakemake.config["force_accessions"],
-        mtdna=snakemake.params[0],
+        mtdna=snakemake.config["mtDNA"],
     )
