@@ -17,33 +17,13 @@ from haystack.workflow.scripts.utilities import (
 SUBSAMPLE_FIXED_READS = 200000
 
 
-def get_inputs_for_bowtie_r1(wildcards):
-    if config["trim_adapters"]:
-        if config["read_mode"] == PE_MODERN:
-            return config["sample_output_dir"] + f"/fastq_inputs/PE_mod/{wildcards.sample}_R1_adRm.fastq.gz"
-        elif config["read_mode"] == PE_ANCIENT:
-            return config["sample_output_dir"] + f"/fastq_inputs/PE_anc/{wildcards.sample}_adRm.fastq.gz"
-        elif config["read_mode"] == SE:
-            return config["sample_output_dir"] + f"/fastq_inputs/SE/{wildcards.sample}_adRm.fastq.gz"
-
-    if config["read_mode"] == PE_MODERN:
-        return config["fastq_r1"]
-    elif config["read_mode"] == PE_ANCIENT or config["read_mode"] == SE:
-        return config["fastq"]
-
-
-def get_inputs_for_bowtie_r2(wildcards):
-    if config["trim_adapters"]:
-        if config["read_mode"] == PE_MODERN:
-            return config["sample_output_dir"] + f"/fastq_inputs/PE_mod/{wildcards.sample}_R2_adRm.fastq.gz"
-
-    if config["read_mode"] == PE_MODERN:
-        return config["fastq_r2"]
-
-
 rule bowtie_alignment_single_end:
     input:
-        fastq=get_inputs_for_bowtie_r1,
+        fastq=(
+            config["sample_output_dir"] + "/fastq_inputs/SE/{sample}_adRm.fastq.gz"
+            if config["trim_adapters"]
+            else config["fastq"]
+        ),
         bt2idx=config["db_output"] + "/bowtie/chunk{chunk_num}.1.bt2l",
     log:
         config["analysis_output_dir"] + "/bam/{sample}_chunk{chunk_num}.log",
@@ -66,8 +46,16 @@ rule bowtie_alignment_single_end:
 
 rule bowtie_alignment_paired_end:
     input:
-        fastq_r1=get_inputs_for_bowtie_r1,
-        fastq_r2=get_inputs_for_bowtie_r2,
+        fastq_r1=(
+            config["sample_output_dir"] + "/fastq_inputs/" + config["read_mode"] + "/{sample}_adRm.fastq.gz"
+            if config["trim_adapters"]
+            else config["fastq_r1"]
+        ),
+        fastq_r2=(
+            config["sample_output_dir"] + "/fastq_inputs/" + config["read_mode"] + "/{sample}_adRm.fastq.gz"
+            if config["trim_adapters"]
+            else config["fastq_r2"]
+        ),
         bt2idx=config["db_output"] + "/bowtie/chunk{chunk_num}.1.bt2l",
     log:
         config["analysis_output_dir"] + "/bam/{sample}_chunk{chunk_num}.log",

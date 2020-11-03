@@ -72,37 +72,12 @@ rule entrez_download_sequence:
         "../scripts/entrez_download_sequence.py"
 
 
-def get_total_taxa(_):
-    """
-    Get all the individual bam file paths for the taxa in our database.
-    """
-    sequences = get_total_paths(
-        checkpoints,
-        config["query"],
-        config["refseq_rep"],
-        config["sequences"],
-        config["accessions"],
-        config["genera"],
-        config["force_accessions"],
-        config["exclude_accessions"],
-    )
-
-    inputs = []
-
-    for key, seq in sequences.iterrows():
-        orgname, accession = (
-            normalise_name(seq["species"]),
-            seq["AccessionVersion"],
-        )
-
-        inputs.append(config["cache"] + f"/ncbi/{orgname}/{accession}.fasta.gz")
-
-    return inputs
-
-
 rule entrez_db_list:
     input:
-        get_total_taxa,
+        [
+            config["cache"] + f"/ncbi/{orgname}/{accession}.fasta.gz"
+            for orgname, accession in get_total_paths(checkpoints, config)
+        ],
     log:
         config["db_output"] + "/db_taxa_accessions.log",
     output:

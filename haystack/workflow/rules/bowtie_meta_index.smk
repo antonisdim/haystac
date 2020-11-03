@@ -8,6 +8,8 @@ __license__ = "MIT"
 
 import pandas as pd
 
+from itertools import chain
+
 from haystack.workflow.scripts.utilities import (
     normalise_name,
     FAIL,
@@ -56,170 +58,17 @@ rule index_database_entrez:
         "bowtie2-build --large-index --threads {threads} {input} {params.basename} &> {log}"
 
 
-def get_idx_entrez(_):
-    """
-    Get all the index paths for the taxa in our database from the entrez query.
-    """
-    if not config["query"]:
-        return []
-
-    # noinspection PyUnresolvedReferences
-    pick_sequences = checkpoints.entrez_pick_sequences.get()
-    sequences = pd.read_csv(pick_sequences.output[0], sep="\t")
-
-    if len(sequences) == 0:
-        err_message = "The entrez pick sequences file is empty."
-        raise RuntimeError(f"{FAIL}{err_message}{END}" if is_tty else f"{err_message}")
-
-    if config["exclude_accessions"]:
-        sequences = sequences[~sequences["AccessionVersion"].isin(config["exclude_accessions"])]
-
-    inputs = []
-
-    for key, seq in sequences.iterrows():
-        orgname, accession = (
-            normalise_name(seq["species"]),
-            seq["AccessionVersion"],
-        )
-        inputs.append(config["cache"] + f"/ncbi/{orgname}/{accession}.1.bt2l")
-        inputs.append(config["cache"] + f"/ncbi/{orgname}/{accession}.fasta.gz.fai")
-
-    return inputs
-
-
-def get_idx_ref_gen(_):
-    """
-    Get all the index paths for the taxa in our database from the refseq rep and genbank.
-    """
-    if not config["refseq_rep"]:
-        return []
-
-    # noinspection PyUnresolvedReferences
-    refseq_rep_prok = checkpoints.entrez_refseq_accessions.get()
-
-    refseq_genomes = pd.read_csv(refseq_rep_prok.output[0], sep="\t")
-    genbank_genomes = pd.read_csv(refseq_rep_prok.output[1], sep="\t")
-    refseq_plasmids = pd.read_csv(refseq_rep_prok.output[3], sep="\t")
-    genbank_plasmids = pd.read_csv(refseq_rep_prok.output[4], sep="\t")
-
-    sequences = pd.concat([refseq_genomes, genbank_genomes, refseq_plasmids, genbank_plasmids])
-
-    if config["exclude_accessions"]:
-        sequences = sequences[~sequences["AccessionVersion"].isin(config["exclude_accessions"])]
-
-    inputs = []
-
-    for key, seq in sequences.iterrows():
-        orgname, accession = (
-            normalise_name(seq["species"]),
-            seq["AccessionVersion"],
-        )
-        inputs.append(config["cache"] + f"/ncbi/{orgname}/{accession}.1.bt2l")
-        inputs.append(config["cache"] + f"/ncbi/{orgname}/{accession}.fasta.gz.fai")
-
-    return inputs
-
-
-def get_idx_assembly(_):
-    """
-    Get all the individual bam file paths for the taxa in our database.
-    """
-    if not config["refseq_rep"]:
-        return []
-
-    # noinspection PyUnresolvedReferences
-    refseq_rep_prok = checkpoints.entrez_refseq_accessions.get()
-
-    assemblies = pd.read_csv(refseq_rep_prok.output[2], sep="\t")
-
-    if not config["force_accessions"]:
-        # noinspection PyUnresolvedReferences
-        invalid_assemblies = checkpoints.entrez_invalid_assemblies.get()
-        invalid_assembly_sequences = pd.read_csv(invalid_assemblies.output[0], sep="\t")
-
-        assemblies = assemblies[~assemblies["AccessionVersion"].isin(invalid_assembly_sequences["AccessionVersion"])]
-
-    sequences = assemblies
-
-    if config["exclude_accessions"]:
-        sequences = sequences[~sequences["AccessionVersion"].isin(config["exclude_accessions"])]
-
-    inputs = []
-
-    for key, seq in sequences.iterrows():
-        orgname, accession = (
-            normalise_name(seq["species"]),
-            seq["AccessionVersion"],
-        )
-        inputs.append(config["cache"] + f"/ncbi/{orgname}/{accession}.1.bt2l")
-        inputs.append(config["cache"] + f"/ncbi/{orgname}/{accession}.fasta.gz.fai")
-
-    return inputs
-
-
-def get_idx_custom_seqs():
-    """
-    Get all the individual bam file paths for the taxa in our database.
-    """
-    if not config["sequences"]:
-        return []
-
-    custom_fasta_paths = pd.read_csv(
-        config["sequences"], sep="\t", header=None, names=["species", "accession", "path"],
-    )
-
-    sequences = custom_fasta_paths
-
-    if config["exclude_accessions"]:
-        sequences = sequences[~sequences["AccessionVersion"].isin(config["exclude_accessions"])]
-
-    inputs = []
-
-    for key, seq in sequences.iterrows():
-        orgname, accession = (
-            normalise_name(seq["species"]),
-            seq["accession"],
-        )
-        inputs.append(config["cache"] + f"/ncbi/{orgname}/custom_seq-{accession}.1.bt2l")
-        inputs.append(config["cache"] + f"/ncbi/{orgname}/custom_seq-{accession}.fasta.gz.fai")
-
-    return inputs
-
-
-def get_idx_custom_acc():
-    """
-    Get all the individual bam file paths for the taxa in our database.
-    """
-    if not config["accessions"]:
-        return []
-
-    custom_accessions = pd.read_csv(config["accessions"], sep="\t", header=None, names=["species", "accession"])
-
-    sequences = custom_accessions
-
-    if config["exclude_accessions"]:
-        sequences = sequences[~sequences["AccessionVersion"].isin(config["exclude_accessions"])]
-
-    inputs = []
-
-    for key, seq in sequences.iterrows():
-        orgname, accession = (
-            normalise_name(seq["species"]),
-            seq["accession"],
-        )
-        inputs.append(config["cache"] + f"/ncbi/{orgname}/{accession}.1.bt2l")
-        inputs.append(config["cache"] + f"/ncbi/{orgname}/{accession}.fasta.gz.fai")
-
-    return inputs
-
-
 rule idx_database:
     input:
-        get_idx_entrez,
-        get_idx_ref_gen,
-        get_idx_assembly,
-        get_idx_custom_seqs(),
-        get_idx_custom_acc(),
+        list(
+            chain.from_iterable(
+                (
+                    config["cache"] + f"/ncbi/{orgname}/{accession}.1.bt2l",
+                    config["cache"] + f"/ncbi/{orgname}/{accession}.fasta.gz.fai",
+                )
+                for orgname, accession in get_total_paths(checkpoints, config)
+            )
+        ),
     output:
         config["db_output"] + "/idx_database.done",
     message:

@@ -36,39 +36,12 @@ rule count_accession_ts_tv:
         "../scripts/count_accession_ts_tv.py"
 
 
-def get_ts_tv_count_paths(wildcards):
-    """
-    Get all the individual cav file paths for the taxa in our database.
-    """
-    sequences = get_total_paths(
-        checkpoints,
-        config["query"],
-        config["refseq_rep"],
-        config["sequences"],
-        config["accessions"],
-        config["genera"],
-        config["force_accessions"],
-        config["exclude_accessions"],
-    )
-
-    inputs = []
-
-    for key, seq in sequences.iterrows():
-        orgname, accession = (
-            normalise_name(seq["species"]),
-            seq["AccessionVersion"],
-        )
-
-        inputs.append(
-            config["analysis_output_dir"] + f"/ts_tv_counts/{wildcards.sample}/{orgname}_count_{accession}.csv"
-        )
-
-    return inputs
-
-
 rule initial_ts_tv:
     input:
-        get_ts_tv_count_paths,
+        [
+            config["analysis_output_dir"] + "/ts_tv_counts/{sample}/" + f"{orgname}_count_{accession}.csv"
+            for orgname, accession in get_total_paths(checkpoints, config)
+        ],
     output:
         config["analysis_output_dir"] + "/ts_tv_counts/{sample}/all_ts_tv_counts.csv",
     log:
@@ -92,7 +65,10 @@ rule calculate_likelihoods:
     input:
         config["analysis_output_dir"] + "/ts_tv_counts/{sample}/all_ts_tv_counts.csv",
         get_right_readlen,
-        get_ts_tv_count_paths,
+        [
+            config["analysis_output_dir"] + "/ts_tv_counts/{sample}/" + f"{orgname}_count_{accession}.csv"
+            for orgname, accession in get_total_paths(checkpoints, config)
+        ],
     output:
         config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_likelihood_ts_tv_matrix.csv",
         config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_probability_model_params.json",
@@ -143,47 +119,16 @@ rule coverage_t_test:
         "../scripts/coverage_t_test.py"
 
 
-def get_t_test_values_paths(wildcards):
-    """
-    Get all the individual cav file paths for the taxa in our database.
-    """
-
-    sequences = get_total_paths(
-        checkpoints,
-        config["query"],
-        config["refseq_rep"],
-        config["sequences"],
-        config["accessions"],
-        config["genera"],
-        config["force_accessions"],
-        config["exclude_accessions"],
-    )
-
-    inputs = []
-
-    reads = ""
-    if config["read_mode"] == PE_MODERN:
-        reads = "PE"
-    elif config["read_mode"] == PE_ANCIENT or config["read_mode"] == SE:
-        reads = "SE"
-
-    for key, seq in sequences.iterrows():
-        orgname, accession = (
-            normalise_name(seq["species"]),
-            seq["AccessionVersion"],
-        )
-
-        inputs.append(
-            config["analysis_output_dir"]
-            + f"/probabilities/{wildcards.sample}/{orgname}_t_test_pvalue_{accession}_{reads}.txt"
-        )
-
-    return inputs
-
-
 rule cat_pvalues:
     input:
-        get_t_test_values_paths,
+        [
+            config["analysis_output_dir"]
+            + "/probabilities/{sample}/"
+            + f"{orgname}_t_test_pvalue_{accession}_"
+            + config["read_mode"]
+            + ".txt"
+            for orgname, accession in get_total_paths(checkpoints, config)
+        ],
     output:
         config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_t_test_pvalues.txt",
     log:

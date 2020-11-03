@@ -281,7 +281,7 @@ class SraAccessionType(object):
 
 
 def get_total_paths(
-    checkpoints, entrez_query, with_refseq_rep, sequences, accessions, specific_genera, force_accessions, excluded,
+    checkpoints, config,
 ):
     """
     Get all the individual fasta file paths for the taxa in our database.
@@ -289,7 +289,7 @@ def get_total_paths(
 
     sequences_df = pd.DataFrame()
 
-    if entrez_query:
+    if config["query"]:
         pick_sequences = checkpoints.entrez_pick_sequences.get()
         sequences_df = pd.read_csv(pick_sequences.output[0], sep="\t")
 
@@ -297,7 +297,7 @@ def get_total_paths(
             err_message = "The entrez pick sequences file is empty."
             raise RuntimeError(f"{FAIL}{err_message}{END}" if is_tty else f"{err_message}")
 
-    if with_refseq_rep:
+    if config["refseq_rep"]:
         refseq_rep_prok = checkpoints.entrez_refseq_accessions.get()
         refseq_genomes = pd.read_csv(refseq_rep_prok.output.refseq_genomes, sep="\t")
         genbank_genomes = pd.read_csv(refseq_rep_prok.output.genbank_genomes, sep="\t")
@@ -305,7 +305,7 @@ def get_total_paths(
         refseq_plasmids = pd.read_csv(refseq_rep_prok.output.refseq_plasmids, sep="\t")
         genbank_plasmids = pd.read_csv(refseq_rep_prok.output.genbank_plasmids, sep="\t")
 
-        if not force_accessions:
+        if not config["force_accessions"]:
             invalid_assemblies = checkpoints.entrez_invalid_assemblies.get()
             invalid_assembly_sequences = pd.read_csv(invalid_assemblies.output[0], sep="\t")
 
@@ -321,14 +321,14 @@ def get_total_paths(
             genbank_plasmids,
         ]
 
-        if entrez_query:
+        if config["query"]:
             sources.append(sequences_df)
 
         sequences_df = pd.concat(sources)
 
-    if sequences:
+    if config["sequences"]:
         custom_fasta_paths = pd.read_csv(
-            sequences, sep="\t", header=None, names=["species", "AccessionVersion", "path"],
+            config["sequences"], sep="\t", header=None, names=["species", "AccessionVersion", "path"],
         )
 
         custom_seqs = custom_fasta_paths[["species", "AccessionVersion"]]
@@ -336,18 +336,29 @@ def get_total_paths(
 
         sequences_df = sequences_df.append(custom_seqs)
 
-    if accessions:
-        custom_accessions = pd.read_csv(accessions, sep="\t", header=None, names=["species", "AccessionVersion"],)
+    if config["accessions"]:
+        custom_accessions = pd.read_csv(
+            config["accessions"], sep="\t", header=None, names=["species", "AccessionVersion"],
+        )
 
         sequences_df = sequences_df.append(custom_accessions)
 
-    if specific_genera:
-        sequences_df = sequences_df[sequences_df["species"].str.contains("|".join(specific_genera))]
+    if config["genera"]:
+        sequences_df = sequences_df[sequences_df["species"].str.contains("|".join(config["genera"]))]
 
-    if excluded:
-        sequences_df = sequences_df[~sequences_df["AccessionVersion"].isin(excluded)]
+    if config["exclude_accessions"]:
+        sequences_df = sequences_df[~sequences_df["AccessionVersion"].isin(config["exclude_accessions"])]
 
-    return sequences_df
+    inputs = []
+
+    for key, seq in sequences_df.iterrows():
+        orgname, accession = (
+            normalise_name(seq["species"]),
+            seq["AccessionVersion"],
+        )
+        inputs.append((orgname, accession))
+
+    return inputs
 
 
 def normalise_name(taxon):

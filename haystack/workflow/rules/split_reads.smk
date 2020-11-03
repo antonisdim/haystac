@@ -110,71 +110,26 @@ rule get_dark_matter_reads_pe:
         "../scripts/get_dark_matter_reads_pe.py"
 
 
-# noinspection PyUnresolvedReferences
-def get_dirichlet_bams(wildcards):
-    """
-    Get all the individual cav file paths for the taxa in our database.
-    """
-    sequences = get_total_paths(
-        checkpoints,
-        config["query"],
-        config["refseq_rep"],
-        config["sequences"],
-        config["accessions"],
-        config["genera"],
-        config["force_accessions"],
-        config["exclude_accessions"],
-    )
-
-    inputs = []
-
-    reads = ""
-    if config["read_mode"] == PE_MODERN:
-        reads = "PE"
-    elif config["read_mode"] == PE_ANCIENT or config["read_mode"] == SE:
-        reads = "SE"
-
-    for key, seq in sequences.iterrows():
-        orgname, accession = (
-            normalise_name(seq["species"]),
-            seq["AccessionVersion"],
-        )
-
-        inputs.append(
-            config["analysis_output_dir"]
-            + f"/dirichlet_reads/{wildcards.sample}/{orgname}/{orgname}_{accession}_dirichlet_{reads}.bam"
-        )
-
-    return inputs
-
-
-def get_grey_matter_reads():
-    if config["read_mode"] == PE_MODERN:
-        return [
-            config["analysis_output_dir"] + "/dirichlet_reads/{sample}/Grey_Matter/Grey_Matter_dirichlet_R1.fastq.gz",
-            config["analysis_output_dir"] + "/dirichlet_reads/{sample}/Grey_Matter/Grey_Matter_dirichlet_R2.fastq.gz",
-        ]
-
-    elif config["read_mode"] == PE_ANCIENT or config["read_mode"] == SE:
-        return config["analysis_output_dir"] + "/dirichlet_reads/{sample}/Grey_Matter/Grey_Matter_dirichlet.fastq.gz"
-
-
-def get_dark_matter_reads():
-    if config["read_mode"] == PE_MODERN:
-        return [
-            config["analysis_output_dir"] + "/dirichlet_reads/{sample}/Dark_Matter/Dark_Matter_dirichlet_R1.fastq.gz",
-            config["analysis_output_dir"] + "/dirichlet_reads/{sample}/Dark_Matter/Dark_Matter_dirichlet_R2.fastq.gz",
-        ]
-
-    elif config["read_mode"] == PE_ANCIENT or config["read_mode"] == SE:
-        return config["analysis_output_dir"] + "/dirichlet_reads/{sample}/Dark_Matter/Dark_Matter_dirichlet.fastq.gz"
-
-
 rule all_dirichlet:
     input:
-        get_dirichlet_bams,
-        get_grey_matter_reads(),
-        get_dark_matter_reads(),
+        [
+            config["analysis_output_dir"]
+            + "/dirichlet_reads/{sample}/"
+            + f"{orgname}/{orgname}_{accession}_dirichlet_"
+            + config["read_mode"]
+            + ".bam"
+            for orgname, accession in get_total_paths(checkpoints, config)
+        ],
+        [
+            config["analysis_output_dir"] + "/dirichlet_reads/{sample}/Grey_Matter/Grey_Matter_dirichlet_R1.fastq.gz"
+            if config["read_mode"] == PE_MODERN
+            else config["analysis_output_dir"] + "/dirichlet_reads/{sample}/Grey_Matter/Grey_Matter_dirichlet.fastq.gz"
+        ],
+        [
+            config["analysis_output_dir"] + "/dirichlet_reads/{sample}/Dark_Matter/Dark_Matter_dirichlet_R1.fastq.gz"
+            if config["read_mode"] == PE_MODERN
+            else config["analysis_output_dir"] + "/dirichlet_reads/{sample}/Dark_Matter/Dark_Matter_dirichlet.fastq.gz"
+        ],
     output:
         config["analysis_output_dir"] + "/dirichlet_reads/{sample}_dirichlet_reads.done",
     benchmark:

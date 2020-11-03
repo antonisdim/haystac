@@ -77,45 +77,14 @@ rule align_taxon_paired_end:
         ") 2> {log}"
 
 
-# noinspection PyUnresolvedReferences
-def get_bamfile_paths(wildcards):
-    """
-    Get all the individual bam file paths for the taxa in our database.
-    """
-    sequences = get_total_paths(
-        checkpoints,
-        config["query"],
-        config["refseq_rep"],
-        config["sequences"],
-        config["accessions"],
-        config["genera"],
-        config["force_accessions"],
-        config["exclude_accessions"],
-    )
-
-    inputs = []
-
-    for key, seq in sequences.iterrows():
-        orgname, accession = (
-            normalise_name(seq["species"]),
-            seq["AccessionVersion"],
-        )
-
-        if config["read_mode"] == SE or config["read_mode"] == PE_ANCIENT:
-            inputs.append(
-                config["analysis_output_dir"] + f"/alignments/{wildcards.sample}/SE/{orgname}/{orgname}_{accession}.bam"
-            )
-        elif config["read_mode"] == PE_MODERN:
-            inputs.append(
-                config["analysis_output_dir"] + f"/alignments/{wildcards.sample}/PE/{orgname}/{orgname}_{accession}.bam"
-            )
-
-    return inputs
-
-
 rule all_alignments:
     input:
-        get_bamfile_paths,
+        [
+            config["analysis_output_dir"]
+            + "/alignments/{sample}/"
+            + f"{config['read_mode']}/{orgname}/{orgname}_{accession}.bam"
+            for orgname, accession in get_total_paths(checkpoints, config)
+        ],
     output:
         config["analysis_output_dir"] + "/alignments/{sample}_alignments.done",
     benchmark:

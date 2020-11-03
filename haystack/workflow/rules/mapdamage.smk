@@ -62,41 +62,22 @@ def get_mapdamage_out_dir_paths(wildcards):
     Get all the individual cav file paths for the taxa in our database.
     """
 
-    sequences = get_total_paths(
-        checkpoints,
-        config["query"],
-        config["refseq_rep"],
-        config["sequences"],
-        config["accessions"],
-        config["genera"],
-        config["force_accessions"],
-        config["exclude_accessions"],
-    )
-
+    sequences = get_total_paths(checkpoints, config)
     inputs = []
 
-    reads = ""
-    if config["read_mode"] == PE_MODERN:
-        reads = "PE"
-    elif config["read_mode"] == PE_ANCIENT or config["read_mode"] == SE:
-        reads = "SE"
-
-    for key, seq in sequences.iterrows():
-        orgname, accession = (
-            normalise_name(seq["species"]),
-            seq["AccessionVersion"],
+    for orgname, orgname in sequences:
+        inputs.append(
+            config["analysis_output_dir"] + f"/mapdamage/{wildcards.sample}/{config['read_mode']}/{orgname}-{orgname}"
         )
 
-        inputs.append(config["analysis_output_dir"] + f"/mapdamage/{wildcards.sample}/{reads}/{orgname}-{accession}")
-
-    if config["read_mode"] == PE_ANCIENT or config["read_mode"] == SE:
-        return inputs
-    else:
+    if config["read_mode"] == PE_MODERN:
         print(
             "WARNING: dedup is treating PE uncollapsed reads as SE reads. "
             "Removing PCR duplicates might not have been done correctly."
         )
         print("WARNING: mapDamage has not been optimised to analyse paired end alignment data.")
+        return inputs
+    else:
         return inputs
 
 

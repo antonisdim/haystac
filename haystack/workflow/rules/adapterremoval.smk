@@ -38,9 +38,9 @@ rule adapterremoval_paired_end_ancient:
         fastq_r1=config["fastq_r1"],
         fastq_r2=config["fastq_r2"],
     log:
-        config["sample_output_dir"] + "/fastq_inputs/PE_anc/{accession}_adRm.log",
+        config["sample_output_dir"] + "/fastq_inputs/PE_ANCIENT/{accession}_adRm.log",
     output:
-        config["sample_output_dir"] + "/fastq_inputs/PE_anc/{accession}_adRm.fastq.gz",
+        config["sample_output_dir"] + "/fastq_inputs/PE_ANCIENT/{accession}_adRm.fastq.gz",
     benchmark:
         repeat("benchmarks/adapterremoval_paired_end_ancient_{accession}.benchmark.txt", 1)
     message:
@@ -48,7 +48,7 @@ rule adapterremoval_paired_end_ancient:
     conda:
         "../envs/adapterremoval.yaml"
     params:
-        basename=config["sample_output_dir"] + "/fastq_inputs/PE_anc/{accession}",
+        basename=config["sample_output_dir"] + "/fastq_inputs/PE_ANCIENT/{accession}",
     shell:
         "(AdapterRemoval"
         "   --file1 {input.fastq_r1} "
@@ -69,10 +69,10 @@ rule adapterremoval_paired_end_modern:
         fastq_r1=config["fastq_r1"],
         fastq_r2=config["fastq_r2"],
     log:
-        config["sample_output_dir"] + "/fastq_inputs/PE_mod/{accession}_adRm.log",
+        config["sample_output_dir"] + "/fastq_inputs/PE_MODERN/{accession}_adRm.log",
     output:
-        fastq_r1=config["sample_output_dir"] + "/fastq_inputs/PE_mod/{accession}_R1_adRm.fastq.gz",
-        fastq_r2=config["sample_output_dir"] + "/fastq_inputs/PE_mod/{accession}_R2_adRm.fastq.gz",
+        fastq_r1=config["sample_output_dir"] + "/fastq_inputs/PE_MODERN/{accession}_R1_adRm.fastq.gz",
+        fastq_r2=config["sample_output_dir"] + "/fastq_inputs/PE_MODERN/{accession}_R2_adRm.fastq.gz",
     benchmark:
         repeat("benchmarks/adapterremoval_paired_end_modern_{accession}.benchmark.txt", 1)
     message:
@@ -80,7 +80,7 @@ rule adapterremoval_paired_end_modern:
     conda:
         "../envs/adapterremoval.yaml"
     params:
-        basename=config["sample_output_dir"] + "/fastq_inputs/PE_mod/{accession}",
+        basename=config["sample_output_dir"] + "/fastq_inputs/PE_MODERN/{accession}",
     shell:
         "(AdapterRemoval"
         "   --file1 {input.fastq_r1}"

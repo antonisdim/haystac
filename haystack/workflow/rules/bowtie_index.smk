@@ -14,41 +14,15 @@ from psutil import virtual_memory
 MEGABYTE = float(1024 ** 2)
 MAX_MEM_MB = virtual_memory().total / MEGABYTE
 
-from haystack.workflow.scripts.utilities import get_total_paths, normalise_name
-
-
-def get_total_fasta_paths(_):
-    """
-    Get all the individual fasta file paths for the taxa in our database.
-    """
-
-    sequences = get_total_paths(
-        checkpoints,
-        config["query"],
-        config["refseq_rep"],
-        config["sequences"],
-        config["accessions"],
-        config["genera"],
-        config["force_accessions"],
-        config["exclude_accessions"],
-    )
-
-    inputs = []
-
-    for key, seq in sequences.iterrows():
-        orgname, accession = (
-            normalise_name(seq["species"]),
-            seq["AccessionVersion"],
-        )
-
-        inputs.append(config["cache"] + f"/ncbi/{orgname}/{accession}.fasta.gz")
-
-    return inputs
+from haystack.workflow.scripts.utilities import get_total_paths
 
 
 rule random_db_paths:
     input:
-        get_total_fasta_paths,
+        [
+            config["cache"] + f"/ncbi/{orgname}/{accession}.fasta.gz"
+            for orgname, accession in get_total_paths(checkpoints, config)
+        ],
     log:
         config["db_output"] + "/bowtie/bt2_random_fasta_paths.log",
     output:
