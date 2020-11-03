@@ -101,11 +101,11 @@ def get_bamfile_paths(wildcards):
             seq["AccessionVersion"],
         )
 
-        if config["SE"] or config["PE_ANCIENT"]:
+        if config["read_mode"] == "SE" or config["read_mode"] == "PE_ANCIENT":
             inputs.append(
                 config["analysis_output_dir"] + f"/alignments/{wildcards.sample}/SE/{orgname}/{orgname}_{accession}.bam"
             )
-        elif config["PE_MODERN"]:
+        elif config["read_mode"] == "PE_MODERN":
             inputs.append(
                 config["analysis_output_dir"] + f"/alignments/{wildcards.sample}/PE/{orgname}/{orgname}_{accession}.bam"
             )

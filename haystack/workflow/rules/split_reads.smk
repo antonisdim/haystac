@@ -129,9 +129,9 @@ def get_dirichlet_bams(wildcards):
     inputs = []
 
     reads = ""
-    if config["PE_MODERN"]:
+    if config["read_mode"] == "PE_MODERN":
         reads = "PE"
-    elif config["PE_ANCIENT"] or config["SE"]:
+    elif config["read_mode"] == "PE_ANCIENT" or config["read_mode"] == "SE":
         reads = "SE"
 
     for key, seq in sequences.iterrows():
@@ -149,24 +149,24 @@ def get_dirichlet_bams(wildcards):
 
 
 def get_grey_matter_reads():
-    if config["PE_MODERN"]:
+    if config["read_mode"] == "PE_MODERN":
         return [
             config["analysis_output_dir"] + "/dirichlet_reads/{sample}/Grey_Matter/Grey_Matter_dirichlet_R1.fastq.gz",
             config["analysis_output_dir"] + "/dirichlet_reads/{sample}/Grey_Matter/Grey_Matter_dirichlet_R2.fastq.gz",
         ]
 
-    elif config["PE_ANCIENT"] or config["SE"]:
+    elif config["read_mode"] == "PE_ANCIENT" or config["read_mode"] == "SE":
         return config["analysis_output_dir"] + "/dirichlet_reads/{sample}/Grey_Matter/Grey_Matter_dirichlet.fastq.gz"
 
 
 def get_dark_matter_reads():
-    if config["PE_MODERN"]:
+    if config["read_mode"] == "PE_MODERN":
         return [
             config["analysis_output_dir"] + "/dirichlet_reads/{sample}/Dark_Matter/Dark_Matter_dirichlet_R1.fastq.gz",
             config["analysis_output_dir"] + "/dirichlet_reads/{sample}/Dark_Matter/Dark_Matter_dirichlet_R2.fastq.gz",
         ]
 
-    elif config["PE_ANCIENT"] or config["SE"]:
+    elif config["read_mode"] == "PE_ANCIENT" or config["read_mode"] == "SE":
         return config["analysis_output_dir"] + "/dirichlet_reads/{sample}/Dark_Matter/Dark_Matter_dirichlet.fastq.gz"
 
 

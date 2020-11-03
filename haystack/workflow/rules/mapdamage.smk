@@ -76,9 +76,9 @@ def get_mapdamage_out_dir_paths(wildcards):
     inputs = []
 
     reads = ""
-    if config["PE_MODERN"]:
+    if config["read_mode"] == "PE_MODERN":
         reads = "PE"
-    elif config["PE_ANCIENT"] or config["SE"]:
+    elif config["read_mode"] == "PE_ANCIENT" or config["read_mode"] == "SE":
         reads = "SE"
 
     for key, seq in sequences.iterrows():
@@ -89,7 +89,7 @@ def get_mapdamage_out_dir_paths(wildcards):
 
         inputs.append(config["analysis_output_dir"] + f"/mapdamage/{wildcards.sample}/{reads}/{orgname}-{accession}")
 
-    if config["PE_ANCIENT"] or config["SE"]:
+    if config["read_mode"] == "PE_ANCIENT" or config["read_mode"] == "SE":
         return inputs
     else:
         print(

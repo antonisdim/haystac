@@ -8,12 +8,13 @@ __license__ = "MIT"
 
 from haystack.workflow.scripts.utilities import get_total_paths, normalise_name
 
+PAIRS = True if config["read_mode"] == "PE_MODERN" else False
 
 def get_bams_for_ts_tv_count(wildcards):
     sample, orgname, accession = wildcards.sample, wildcards.orgname, wildcards.accession
-    if config["PE_MODERN"]:
+    if config["read_mode"] == "PE_MODERN":
         return config["analysis_output_dir"] + f"/alignments/{sample}/PE/{orgname}/{orgname}_{accession}.bam"
-    elif config["PE_ANCIENT"] or config["SE"]:
+    elif config["read_mode"] == "PE_ANCIENT" or config["read_mode"] == "SE":
         return config["analysis_output_dir"] + f"/alignments/{sample}/SE/{orgname}/{orgname}_{accession}.bam"
 
 
@@ -29,7 +30,7 @@ rule count_accession_ts_tv:
             "benchmarks/count_accession_ts_tv_{sample}_{orgname}_{accession}.benchmark.txt", 1,
         )
     params:
-        pairs=config["PE_MODERN"],
+        pairs=PAIRS,
     message:
         "Counting the number of transitions and transversions per read for taxon {wildcards.orgname}."
     script:
@@ -82,7 +83,7 @@ rule initial_ts_tv:
 
 
 def get_right_readlen(wildcards):
-    if config["PE_MODERN"]:
+    if PAIRS:
         return config["analysis_output_dir"] + f"/fastq/PE/{wildcards.sample}_mapq_pair.readlen"
     else:
         return config["analysis_output_dir"] + f"/fastq/SE/{wildcards.sample}_mapq.readlen"
@@ -162,9 +163,9 @@ def get_t_test_values_paths(wildcards):
     inputs = []
 
     reads = ""
-    if config["PE_MODERN"]:
+    if config["read_mode"] == "PE_MODERN":
         reads = "PE"
-    elif config["PE_ANCIENT"] or config["SE"]:
+    elif config["read_mode"] == "PE_ANCIENT" or config["read_mode"] == "SE":
         reads = "SE"
 
     for key, seq in sequences.iterrows():

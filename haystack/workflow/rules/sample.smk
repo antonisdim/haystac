@@ -9,19 +9,19 @@ __license__ = "MIT"
 
 def get_inputs_for_count_fastq_len(wildcards):
     if config["trim_adapters"]:
-        if config["PE_MODERN"]:
+        if config["read_mode"] == "PE_MODERN":
             return config["sample_output_dir"] + f"/fastq_inputs/PE_mod/{wildcards.sample}_R1_adRm.fastq.gz"
-        elif config["PE_ANCIENT"]:
+        elif config["read_mode"] == "PE_ANCIENT":
             return config["sample_output_dir"] + f"/fastq_inputs/PE_anc/{wildcards.sample}_adRm.fastq.gz"
-        elif config["SE"]:
+        elif config["read_mode"] == "SE":
             return config["sample_output_dir"] + f"/fastq_inputs/SE/{wildcards.sample}_adRm.fastq.gz"
 
     else:
-        if config["PE_MODERN"]:
-            return config["fastq_R1"]
-        elif config["PE_ANCIENT"]:
+        if config["read_mode"] == "PE_MODERN":
+            return config["fastq_r1"]
+        elif config["read_mode"] == "PE_ANCIENT":
             return config["fastq"]
-        elif config["SE"]:
+        elif config["read_mode"] == "SE":
             return config["fastq"]
 
 

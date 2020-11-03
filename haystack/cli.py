@@ -568,11 +568,12 @@ The haystack commands are:
         # add all command line options to the merged config
         config = {**self.config_merged, **vars(args)}
 
-        # TODO are these flags really necessary?
-        #      why not combine into one single config value? (e.g. config["mode"] = SE|PE|COLLAPSE
-        config["SE"] = not (args.fastq_r1 and args.fastq_r2)
-        config["PE_ANCIENT"] = not config["SE"] and args.collapse
-        config["PE_MODERN"] = not config["SE"] and not args.collapse
+        if not (args.fastq_r1 and args.fastq_r2):
+            config["read_mode"] = "SE"
+        if (args.fastq_r1 and args.fastq_r2) and args.collapse:
+            config["read_mode"] = "PE_ANCIENT"
+        if (args.fastq_r1 and args.fastq_r2) and not args.collapse:
+            config["read_mode"] = "PE_MODERN"
 
         if args.sra:
             config["sra"], config["layout"] = args.sra
@@ -587,26 +588,26 @@ The haystack commands are:
             # query the SRA to see if this is a paired-end library or not
             if config["layout"] == "paired":
                 if config["collapse"]:
-                    config["PE_ANCIENT"] = True
+                    config["read_mode"] = "PE_ANCIENT"
                 else:
-                    config["PE_MODERN"] = True
+                    config["read_mode"] = "PE_MODERN"
 
                 config["fastq_r1"] = config["sample_output_dir"] + f"/sra_data/PE/{config['sra']}_R1.fastq.gz"
                 config["fastq_r2"] = config["sample_output_dir"] + f"/sra_data/PE/{config['sra']}_R1.fastq.gz"
 
             else:
-                config["SE"] = True
+                config["read_mode"] = "SE"
                 config["fastq"] = config["sample_output_dir"] + f"/sra_data/SE/{config['sra']}.fastq.gz"
 
         target_list = list()
         target_list.append(f"fastq_inputs/meta/{config['sample_prefix']}.size")
 
         if config["trim_adapters"]:
-            if config["PE_MODERN"]:
+            if config["read_mode"] == "PE_MODERN":
                 target_list.append(f"fastq_inputs/PE_mod/{config['sample_prefix']}_R1_adRm.fastq.gz")
-            elif config["PE_ANCIENT"]:
+            elif config["read_mode"] == "PE_ANCIENT":
                 target_list.append(f"fastq_inputs/PE_anc/{config['sample_prefix']}_adRm.fastq.gz")
-            elif config["SE"]:
+            elif config["read_mode"] == "SE":
                 target_list.append(f"fastq_inputs/SE/{config['sample_prefix']}_adRm.fastq.gz")
 
         config_sample = os.path.join(args.sample_output_dir, "sample_config.yaml")
@@ -728,7 +729,7 @@ The haystack commands are:
         target_list = list()
 
         if args.mode == "filter":
-            if config["PE_MODERN"]:
+            if config["read_mode"] == "PE_MODERN":
                 target_list.append(f"fastq/PE/{config['sample_prefix']}_mapq_pair.readlen")
             else:
                 target_list.append(f"fastq/SE/{config['sample_prefix']}_mapq.readlen")
@@ -811,7 +812,7 @@ The haystack commands are:
         """
         Helper function for running the snakemake workflow
         """
-        print("HAYSTACK\n")  # TODO include version number
+        print("HAYSTACK v 0.1\n")
         print(f"Date: {datetime.datetime.now()}\n")
 
         config["workflow_dir"] = os.path.join(CODE_DIR, "workflow")
