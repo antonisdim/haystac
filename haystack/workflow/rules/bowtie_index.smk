@@ -117,6 +117,7 @@ rule bowtie_index:
         "../envs/bowtie2.yaml"
     params:
         basename=config["db_output"] + "/bowtie/chunk{chunk_num}",
+    priority: 1
     shell:
         "bowtie2-build --large-index --threads {threads} {input.fasta_chunk} {params.basename} &> {log}"
 

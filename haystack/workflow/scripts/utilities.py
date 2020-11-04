@@ -32,6 +32,16 @@ class ValidationError(Exception):
     pass
 
 
+class RuntimeErrorMessage(Exception):
+    """
+    RuntimeError formatting.
+    """
+
+    def __call__(self, err_message):
+
+        raise RuntimeError(f"{FAIL}{err_message}{END}" if is_tty else f"{err_message}")
+
+
 class ArgumentCustomFormatter(argparse.HelpFormatter):
     """
     Custom formatter for argparse
