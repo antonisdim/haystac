@@ -15,6 +15,8 @@ from xml.etree import ElementTree
 import requests
 import yaml
 
+from haystack.workflow.scripts.utilities import RuntimeErrorMessage
+
 # base url of the Entrez web service
 ENTREZ_URL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/"
 
