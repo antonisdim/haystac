@@ -8,10 +8,8 @@ __license__ = "MIT"
 
 import os
 import sys
-from haystack.workflow.scripts.utilities import (
-    check_unique_taxa_in_custom_input,
-    RuntimeErrorMessage,
-)
+
+from haystack.workflow.scripts.utilities import RuntimeErrorMessage
 
 
 def calculate_bt2_idx_chunks(mem_resources, mem_rescale_factor, fasta_files, output):

@@ -14,7 +14,6 @@ from xml.etree import ElementTree
 
 import requests
 import yaml
-import haystack.workflow.scripts.utilities
 
 # base url of the Entrez web service
 ENTREZ_URL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/"
@@ -172,7 +171,7 @@ def entrez_range_accessions(accession, first, last):
         return [f"{first[:idx]}{str(item).zfill(pad)}" for item in range(int(first[idx:]), int(last[idx:]) + 1)]
     except ValueError:
         raise RuntimeErrorMessage(
-            f"Could not resolve the accession range '{first}-{last}' " f"for master record '{accession}'"
+            f"Could not resolve the accession range '{first}-{last}' for master record '{accession}'"
         )
 
 
@@ -207,7 +206,7 @@ def entrez_find_replacement_accession(accession):
 
     except requests.exceptions.HTTPError:
         raise RuntimeErrorMessage(
-            f"Could not find either the GenBank record " f"for '{accession}' or an alternative accession"
+            f"Could not find either the GenBank record for '{accession}' or an alternative accession"
         )
 
     etree = ElementTree.XML(r.text)

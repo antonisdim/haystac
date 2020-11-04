@@ -10,7 +10,7 @@ MIN_FRAG_LEN = 0
 MAX_FRAG_LEN = 1000
 META_ALN_MIN_SCORE_CONSTANT = -6
 
-from haystack.workflow.scripts.utilities import get_total_paths, normalise_name, PE_MODERN, PE_ANCIENT, SE, reads
+from haystack.workflow.scripts.utilities import get_total_paths, reads
 
 
 def get_min_score(wildcards, input):

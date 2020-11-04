@@ -69,7 +69,7 @@ def get_paths_for_custom_seqs():
     return inputs
 
 
-def get_paths_for_custom_acc(wildcards):
+def get_paths_for_custom_acc(_):
     if config["accessions"] == "":
         return ""
 

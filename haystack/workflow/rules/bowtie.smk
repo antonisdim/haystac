@@ -8,11 +8,7 @@ __license__ = "MIT"
 
 from math import ceil
 
-from haystack.workflow.scripts.utilities import (
-    PE_MODERN,
-    PE_ANCIENT,
-    SE,
-)
+from haystack.workflow.scripts.utilities import PE_MODERN
 
 SUBSAMPLE_FIXED_READS = 200000
 

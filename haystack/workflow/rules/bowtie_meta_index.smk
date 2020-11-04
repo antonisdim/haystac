@@ -6,16 +6,9 @@ __copyright__ = "Copyright 2020, University of Oxford"
 __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
-import pandas as pd
-
 from itertools import chain
 
-from haystack.workflow.scripts.utilities import (
-    normalise_name,
-    FAIL,
-    END,
-    is_tty,
-)
+from haystack.workflow.scripts.utilities import get_total_paths
 
 
 rule fasta_idx:

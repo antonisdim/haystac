@@ -13,8 +13,6 @@ import sys
 
 import pandas as pd
 
-import haystack.workflow.scripts.entrez_utils
-
 PE_MODERN = "PE_MODERN"
 PE_ANCIENT = "PE_ANCIENT"
 SE = "SE"
@@ -35,11 +33,7 @@ class RuntimeErrorMessage(RuntimeError):
     """
 
     def __init__(self, message):
-
-        super().__init__(message)
-        self.message = message
-
-        raise RuntimeError(f"{FAIL}{message}{END}" if is_tty else f"{message}")
+        super().__init__(f"{FAIL}{message}{END}" if is_tty else f"{message}")
 
 
 class ArgumentCustomFormatter(argparse.HelpFormatter):
@@ -113,7 +107,7 @@ class RangeType(object):
                 raise ValueError()
         except ValueError:
             raise argparse.ArgumentTypeError(
-                f"'{value}' is not a valid {self.type.__name__} " f"in the range " f"({self.lower}, {self.upper})"
+                f"'{value}' is not a valid {self.type.__name__} in the range ({self.lower}, {self.upper})"
             )
 
         return self.type(value)
@@ -190,7 +184,7 @@ class SpreadsheetFileType(object):
 
         if len(self.data.columns) != len(self.cols):
             raise argparse.ArgumentTypeError(
-                f"'{value}' must have {len(self.cols)} columns " f"and be tab delimited (cols={len(self.data.columns)})"
+                f"'{value}' must have {len(self.cols)} columns and be tab delimited (cols={len(self.data.columns)})"
             )
 
         # find the row number of any empty cells
@@ -364,7 +358,8 @@ def get_total_paths(
 
 def normalise_name(taxon):
     """remove unnecessary characters from a taxon name string."""
-    # TODO replace with a regex pattern (e.g [^\w]) so we don't have to blacklist specific chrs (see also AccessionFileType)
+    # TODO replace with a regex pattern (e.g [^\w]) so we don't have to blacklist specific chrs
+    #  (see also AccessionFileType)
     return taxon.replace(" ", "_").replace("[", "").replace("]", "").replace("/", "_")
 
 

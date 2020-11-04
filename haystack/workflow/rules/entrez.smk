@@ -6,7 +6,7 @@ __copyright__ = "Copyright 2020, University of Oxford"
 __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
-from haystack.workflow.scripts.utilities import normalise_name, get_total_paths
+from haystack.workflow.scripts.utilities import get_total_paths
 
 
 rule entrez_nuccore_query:

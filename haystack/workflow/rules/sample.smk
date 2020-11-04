@@ -6,7 +6,7 @@ __copyright__ = "Copyright 2020, University of Oxford"
 __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
-from haystack.workflow.scripts.utilities import PE_MODERN, PE_ANCIENT, SE
+from haystack.workflow.scripts.utilities import PE_MODERN
 
 
 def get_inputs_for_count_fastq_len(wildcards):

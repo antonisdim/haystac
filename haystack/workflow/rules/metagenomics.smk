@@ -6,7 +6,7 @@ __copyright__ = "Copyright 2020, University of Oxford"
 __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
-from haystack.workflow.scripts.utilities import get_total_paths, normalise_name, PE_MODERN, PE_ANCIENT, SE, reads
+from haystack.workflow.scripts.utilities import get_total_paths, PE_MODERN, PE_ANCIENT, SE, reads
 
 
 def get_bams_for_ts_tv_count(wildcards):
