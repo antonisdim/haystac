@@ -259,14 +259,14 @@ class SraAccessionType(object):
     """
 
     def __call__(self, value):
-
+        # import these locally to avoid cyclic import issues
         from haystack.workflow.scripts.entrez_utils import entrez_esearch, entrez_efetch
+
         try:
             # query the SRA to see if this a valid accession
             _, _, id_list = entrez_esearch("sra", f"{value}[Accession]")
             etree = entrez_efetch("sra", id_list)
-        except Exception as e:
-            print(e)
+        except Exception:
             raise argparse.ArgumentTypeError(f"Invalid SRA accession '{value}'")
 
         try:
