@@ -13,6 +13,8 @@ import sys
 
 import pandas as pd
 
+import haystack.workflow.scripts.entrez_utils
+
 PE_MODERN = "PE_MODERN"
 PE_ANCIENT = "PE_ANCIENT"
 SE = "SE"
@@ -22,24 +24,22 @@ END = "\033[0m"
 
 is_tty = sys.stdout.isatty()
 
-from haystack.workflow.scripts.entrez_utils import (
-    entrez_esearch,
-    entrez_efetch,
-)
-
 
 class ValidationError(Exception):
     pass
 
 
-class RuntimeErrorMessage(Exception):
+class RuntimeErrorMessage(RuntimeError):
     """
-    RuntimeError formatting.
+    RuntimeError message formatting
     """
 
-    def __call__(self, err_message):
+    def __init__(self, message):
 
-        raise RuntimeError(f"{FAIL}{err_message}{END}" if is_tty else f"{err_message}")
+        super().__init__(message)
+        self.message = message
+
+        raise RuntimeError(f"{FAIL}{message}{END}" if is_tty else f"{message}")
 
 
 class ArgumentCustomFormatter(argparse.HelpFormatter):
@@ -79,8 +79,7 @@ class WritablePathType(object):
             path.mkdir(parents=True, exist_ok=True)
             return value
         except Exception:
-            err_message = f"'{value}' is not a valid writable path"
-            raise argparse.ArgumentTypeError(f"{FAIL}{err_message}{END}" if is_tty else f"{err_message}")
+            raise argparse.ArgumentTypeError(f"'{value}' is not a valid writable path")
 
 
 class PositiveIntType(object):
@@ -93,8 +92,7 @@ class PositiveIntType(object):
             if not int(value) > 0:
                 raise ValueError()
         except ValueError:
-            err_message = f"'{value}' is not a valid positive integer"
-            raise argparse.ArgumentTypeError(f"{FAIL}{err_message}{END}" if is_tty else f"{err_message}")
+            raise argparse.ArgumentTypeError(f"'{value}' is not a valid positive integer")
 
         return int(value)
 
@@ -114,8 +112,9 @@ class RangeType(object):
             if not (self.lower <= self.type(value) <= self.upper):
                 raise ValueError()
         except ValueError:
-            err_message = f"'{value}' is not a valid {self.type.__name__} in the range " f"({self.lower}, {self.upper})"
-            raise argparse.ArgumentTypeError(f"{FAIL}{err_message}{END}" if is_tty else f"{err_message}")
+            raise argparse.ArgumentTypeError(
+                f"'{value}' is not a valid {self.type.__name__} " f"in the range " f"({self.lower}, {self.upper})"
+            )
 
         return self.type(value)
 
@@ -151,8 +150,7 @@ class BoolType(object):
         elif value.lower() in ("no", "false", "f", "n", "0"):
             return False
         else:
-            err_message = f"'{value}' is not a valid boolean"
-            raise argparse.ArgumentTypeError(f"{FAIL}{err_message}{END}" if is_tty else f"{err_message}")
+            raise argparse.ArgumentTypeError(f"'{value}' is not a valid boolean")
 
 
 class JsonType(object):
@@ -166,8 +164,7 @@ class JsonType(object):
         try:
             return json.loads(value)
         except json.decoder.JSONDecodeError as error:
-            err_message = f"'{value}' is not a valid JSON string\n {error}"
-            raise argparse.ArgumentTypeError(f"{FAIL}{err_message}{END}" if is_tty else f"{err_message}")
+            raise argparse.ArgumentTypeError(f"'{value}' is not a valid JSON string\n {error}")
 
 
 class SpreadsheetFileType(object):
@@ -181,31 +178,26 @@ class SpreadsheetFileType(object):
     def __call__(self, value):
 
         if not os.path.exists(value):
-            err_message = f"'{value}' does not exit"
-            raise argparse.ArgumentTypeError(f"{FAIL}{err_message}{END}" if is_tty else f"{err_message}")
+            raise argparse.ArgumentTypeError(f"'{value}' does not exit")
 
         if os.stat(value).st_size == 0:
-            err_message = f"'{value}' is empty"
-            raise argparse.ArgumentTypeError(f"{FAIL}{err_message}{END}" if is_tty else f"{err_message}")
+            raise argparse.ArgumentTypeError(f"'{value}' is empty")
 
         try:
             self.data = pd.read_table(value, sep="\t", header=None, index_col=False,)
         except Exception:
-            err_message = f"'{value}' unknown error parsing file"
-            raise argparse.ArgumentTypeError(f"{FAIL}{err_message}{END}" if is_tty else f"{err_message}")
+            raise argparse.ArgumentTypeError(f"'{value}' unknown error parsing file")
 
         if len(self.data.columns) != len(self.cols):
-            err_message = (
-                f"'{value}' must have {len(self.cols)} columns and be tab delimited (cols={len(self.data.columns)})"
+            raise argparse.ArgumentTypeError(
+                f"'{value}' must have {len(self.cols)} columns " f"and be tab delimited (cols={len(self.data.columns)})"
             )
-            raise argparse.ArgumentTypeError(f"{FAIL}{err_message}{END}" if is_tty else f"{err_message}")
 
         # find the row number of any empty cells
         bad_rows = ", ".join([str(i + 1) for i in self.data.index[self.data.isnull().any(axis=1)].tolist()])
 
         if bad_rows:
-            err_message = f"'{value}' contains missing data in line(s): {bad_rows}"
-            raise argparse.ArgumentTypeError(f"{FAIL}{err_message}{END}" if is_tty else f"{err_message}")
+            raise argparse.ArgumentTypeError(f"'{value}' contains missing data in line(s): {bad_rows}")
 
         return value
 
@@ -235,8 +227,7 @@ class AccessionFileType(SpreadsheetFileType):
         )
 
         if bad_accs:
-            err_message = f"'{value}' these accession codes contain invalid characters:\n{bad_accs}"
-            raise argparse.ArgumentTypeError(f"{FAIL}{err_message}{END}" if is_tty else f"{err_message}")
+            raise argparse.ArgumentTypeError(f"'{value}' these accession codes contain invalid characters:\n{bad_accs}")
 
         return value
 
@@ -263,8 +254,7 @@ class SequenceFileType(AccessionFileType):
         )
 
         if bad_files:
-            err_message = f"'{value}' these sequence files do not exist or are empty:\n{bad_files}"
-            raise argparse.ArgumentTypeError(f"{FAIL}{err_message}{END}" if is_tty else f"{err_message}")
+            raise argparse.ArgumentTypeError(f"'{value}' these sequence files do not exist or are empty:\n{bad_files}")
 
         return value
 
@@ -281,15 +271,13 @@ class SraAccessionType(object):
             etree = entrez_efetch("sra", id_list)
         except Exception as e:
             print(e)
-            err_message = f"Invalid SRA accession '{value}'"
-            raise argparse.ArgumentTypeError(f"{FAIL}{err_message}{END}" if is_tty else f"{err_message}")
+            raise argparse.ArgumentTypeError(f"Invalid SRA accession '{value}'")
 
         try:
             # now get the library layout
             layout = etree.find(".//LIBRARY_LAYOUT/*").tag.lower()
         except Exception:
-            err_message = f"Unable to resolve the library layout for SRA accession '{value}'"
-            raise argparse.ArgumentTypeError(f"{FAIL}{err_message}{END}" if is_tty else f"{err_message}")
+            raise argparse.ArgumentTypeError(f"Unable to resolve the library layout for SRA accession '{value}'")
 
         return value, layout
 
@@ -308,8 +296,7 @@ def get_total_paths(
         sequences_df = pd.read_csv(pick_sequences.output[0], sep="\t")
 
         if len(sequences_df) == 0:
-            err_message = "The entrez pick sequences file is empty."
-            raise RuntimeError(f"{FAIL}{err_message}{END}" if is_tty else f"{err_message}")
+            raise RuntimeErrorMessage("The entrez pick sequences file is empty.")
 
     if config["refseq_rep"]:
         refseq_rep_prok = checkpoints.entrez_refseq_accessions.get()
@@ -392,8 +379,12 @@ def check_unique_taxa_in_custom_input(accessions, sequences):
         taxon_seq = custom_fasta_paths["species"].tolist()
 
         if bool(set(taxon_acc) & set(taxon_seq)):
-            err_message = "You have provided the same taxon both in your custom sequences file and your custom accessions file. Please pick and keep ONLY one entry from both of these files. You can only have 1 sequence per chosen taxon in your database."
-            raise RuntimeError(f"{FAIL}{err_message}{END}" if is_tty else f"{err_message}")
+            raise RuntimeErrorMessage(
+                "You have provided the same taxon both in your custom sequences "
+                "file and your custom accessions file. Please pick and keep ONLY "
+                "one entry from both of these files. You can only have 1 sequence "
+                "per chosen taxon in your database."
+            )
 
 
 def chunker(seq, size):

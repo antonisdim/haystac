@@ -14,11 +14,7 @@ from xml.etree import ElementTree
 
 import requests
 import yaml
-
-FAIL = "\x1b[31m"
-END = "\033[0m"
-
-is_tty = sys.stdout.isatty()
+import haystack.workflow.scripts.utilities
 
 # base url of the Entrez web service
 ENTREZ_URL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/"
@@ -61,8 +57,7 @@ def entrez_request(action, params=None):
     url = ENTREZ_URL + action
 
     if len(params.get("id", [])) > ENTREZ_MAX_UID:
-        err_message = f"List of Entrez IDs exceeds the maximum: {ENTREZ_MAX_UID}"
-        raise RuntimeError(f"{FAIL}{err_message}{END}" if is_tty else f"{err_message}")
+        raise RuntimeErrorMessage(f"List of Entrez IDs exceeds the maximum: {ENTREZ_MAX_UID}")
 
     if config.get("debug"):
         # turn into a get request
@@ -126,8 +121,7 @@ def entrez_assembly_ftp(accession, force=False):
 
     if len(id_list) > 1:
         # should never happen, but...
-        err_message = f"Multiple assembly accessions found for '{accession}': {id_list}"
-        raise RuntimeError(f"{FAIL}{err_message}{END}" if is_tty else f"{err_message}")
+        raise RuntimeErrorMessage(f"Multiple assembly accessions found for '{accession}': {id_list}")
 
     elif len(id_list) == 0:
         # no entry in the assembly database for this accession code
@@ -148,7 +142,7 @@ def entrez_assembly_ftp(accession, force=False):
         if force:
             print(f"WARNING: {message}", file=sys.stderr)
         else:
-            raise RuntimeError(f"{FAIL}{message}{END}" if is_tty else f"{message}")
+            raise RuntimeErrorMessage(message)
 
     # preference RefSeq URLs over GenBank URLs
     ftp_stub = etree.find(".//FtpPath_RefSeq") or etree.find(".//FtpPath_GenBank")
@@ -177,8 +171,9 @@ def entrez_range_accessions(accession, first, last):
         # return the range
         return [f"{first[:idx]}{str(item).zfill(pad)}" for item in range(int(first[idx:]), int(last[idx:]) + 1)]
     except ValueError:
-        err_message = f"Could not resolve the accession range '{first}-{last}' for master record '{accession}'"
-        raise RuntimeError(f"{FAIL}{err_message}{END}" if is_tty else f"{err_message}")
+        raise RuntimeErrorMessage(
+            f"Could not resolve the accession range '{first}-{last}' " f"for master record '{accession}'"
+        )
 
 
 def entrez_xml_to_dict(etree):
@@ -211,7 +206,9 @@ def entrez_find_replacement_accession(accession):
         r = entrez_request("efetch.fcgi", {"db": "nuccore", "id": accession_new, "rettype": "gb", "retmode": "xml"},)
 
     except requests.exceptions.HTTPError:
-        raise RuntimeError(f"Could not find either the GenBank record for '{accession}' or an alternative accession")
+        raise RuntimeErrorMessage(
+            f"Could not find either the GenBank record " f"for '{accession}' or an alternative accession"
+        )
 
     etree = ElementTree.XML(r.text)
     replacement = etree.find(".//GBSeq_accession-version")
@@ -226,6 +223,6 @@ def entrez_find_replacement_accession(accession):
         )
         return replacement.text
     else:
-        raise RuntimeError(
+        raise RuntimeErrorMessage(
             f"Could not find either the GenBank record for '{accession}' or a valid alternative accession"
         )
