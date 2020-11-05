@@ -42,7 +42,7 @@ rule index_database_entrez:
         repeat("benchmarks/index_database_{orgname}_{accession}.benchmark.txt", 1)
     message:
         "Preparing the bowtie2 index for genome {wildcards.accession} of taxon {wildcards.orgname}."
-    threads: config["bowtie2_threads"]
+    threads: 1  #config["bowtie2_threads"]  # TODO this should check how big the genome is and use more if it's large
     params:
         basename=config["cache"] + "/ncbi/{orgname}/{accession}",
     conda:
