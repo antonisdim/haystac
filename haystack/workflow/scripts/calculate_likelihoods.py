@@ -102,7 +102,7 @@ def calculate_likelihoods(ts_tv_file, readlen_file, taxa_file_paths, config, out
         data_ts_missing = 2 * data_ts_missing
         data_tv_missing = 2 * data_tv_missing
 
-    print("calculating the likelihood nominator", file=sys.stderr)
+    print("calculating the likelihood numerator", file=sys.stderr)
     init_ts_tv["ll_nom"] = init_ts_tv["Ts"].rpow(delta_t) * init_ts_tv["Tv"].rpow(delta_v)
 
     total_taxa_count = len(taxa_file_paths)

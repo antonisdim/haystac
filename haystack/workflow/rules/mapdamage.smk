@@ -71,6 +71,7 @@ def get_mapdamage_out_dir_paths(wildcards):
         )
 
     if config["read_mode"] == PE_MODERN:
+        # TODO make a print warning function
         print(
             "WARNING: dedup is treating PE uncollapsed reads as SE reads. "
             "Removing PCR duplicates might not have been done correctly."
