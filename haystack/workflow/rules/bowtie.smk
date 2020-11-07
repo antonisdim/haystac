@@ -29,7 +29,7 @@ rule bowtie_alignment_single_end:
         repeat("benchmarks/bowtie_alignment_{sample}_chunk{chunk_num}.benchmark.txt", 1)
     params:
         index=config["db_output"] + "/bowtie/chunk{chunk_num}",
-    threads: config["bowtie2_threads"]
+    threads: config["cores"]
     message:
         "The filtering alignment for sample {wildcards.sample}, for index chunk number {wildcards.chunk_num} "
         "is being executed."
@@ -61,7 +61,7 @@ rule bowtie_alignment_paired_end:
         repeat("benchmarks/bowtie_alignment_{sample}_chunk{chunk_num}.benchmark.txt", 1)
     params:
         index=config["db_output"] + "/bowtie/chunk{chunk_num}",
-    threads: config["bowtie2_threads"]
+    threads: config["cores"]
     message:
         "The filtering alignment for sample {wildcards.sample}, for index chunk number {wildcards.chunk_num} "
         "is being executed."

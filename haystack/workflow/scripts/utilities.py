@@ -328,7 +328,7 @@ def get_total_paths(
             config["sequences"], sep="\t", header=None, names=["species", "AccessionVersion", "path"],
         )
 
-        custom_seqs = custom_fasta_paths[["species", "AccessionVersion"]]
+        custom_seqs = custom_fasta_paths[["species", "AccessionVersion"]].copy()
         custom_seqs["AccessionVersion"] = "custom_seq-" + custom_seqs["AccessionVersion"].astype(str)
 
         sequences_df = sequences_df.append(custom_seqs)
