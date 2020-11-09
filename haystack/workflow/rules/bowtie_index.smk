@@ -17,12 +17,17 @@ MAX_MEM_MB = virtual_memory().total / MEGABYTE
 from haystack.workflow.scripts.utilities import get_total_paths
 
 
+def get_db_list(_):
+    """Get fasta paths in our db"""
+    return [
+        config["cache"] + f"/ncbi/{orgname}/{accession}.fasta.gz"
+        for orgname, accession in get_total_paths(checkpoints, config)
+    ]
+
+
 rule random_db_paths:
     input:
-        [
-            config["cache"] + f"/ncbi/{orgname}/{accession}.fasta.gz"
-            for orgname, accession in get_total_paths(checkpoints, config)
-        ],
+        get_db_list,
     log:
         config["db_output"] + "/bowtie/bt2_random_fasta_paths.log",
     output:

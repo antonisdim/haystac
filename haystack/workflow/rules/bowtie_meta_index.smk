@@ -42,7 +42,7 @@ rule index_database_entrez:
         repeat("benchmarks/index_database_{orgname}_{accession}.benchmark.txt", 1)
     message:
         "Preparing the bowtie2 index for genome {wildcards.accession} of taxon {wildcards.orgname}."
-    threads: 1  #config["bowtie2_threads"]  # TODO this should check how big the genome is and use more if it's large
+    threads: 1 #config["bowtie2_threads"]  # TODO this should check how big the genome is and use more if it's large
     params:
         basename=config["cache"] + "/ncbi/{orgname}/{accession}",
     conda:
@@ -51,17 +51,22 @@ rule index_database_entrez:
         "bowtie2-build --large-index --threads {threads} {input} {params.basename} &> {log}"
 
 
+def get_index_paths(_):
+    """Get paths for db indices"""
+    return list(
+        chain.from_iterable(
+            (
+                config["cache"] + f"/ncbi/{orgname}/{accession}.1.bt2l",
+                config["cache"] + f"/ncbi/{orgname}/{accession}.fasta.gz.fai",
+            )
+            for orgname, accession in get_total_paths(checkpoints, config)
+        )
+    )
+
+
 rule idx_database:
     input:
-        list(
-            chain.from_iterable(
-                (
-                    config["cache"] + f"/ncbi/{orgname}/{accession}.1.bt2l",
-                    config["cache"] + f"/ncbi/{orgname}/{accession}.fasta.gz.fai",
-                )
-                for orgname, accession in get_total_paths(checkpoints, config)
-            )
-        ),
+        get_index_paths,
     output:
         config["db_output"] + "/idx_database.done",
     message:

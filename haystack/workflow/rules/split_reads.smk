@@ -110,16 +110,21 @@ rule get_dark_matter_reads_pe:
         "../scripts/get_dark_matter_reads_pe.py"
 
 
+def get_dirichlet_bams(_):
+    """Get paths for dirichlet assigned reads in bams"""
+    return [
+        config["analysis_output_dir"]
+        + "/dirichlet_reads/{sample}/"
+        + f"{orgname}/{orgname}_{accession}_dirichlet_"
+        + reads(config)
+        + ".bam"
+        for orgname, accession in get_total_paths(checkpoints, config)
+    ]
+
+
 rule all_dirichlet:
     input:
-        [
-            config["analysis_output_dir"]
-            + "/dirichlet_reads/{sample}/"
-            + f"{orgname}/{orgname}_{accession}_dirichlet_"
-            + reads(config)
-            + ".bam"
-            for orgname, accession in get_total_paths(checkpoints, config)
-        ],
+        get_dirichlet_bams,
         [
             config["analysis_output_dir"] + "/dirichlet_reads/{sample}/Grey_Matter/Grey_Matter_dirichlet_R1.fastq.gz"
             if config["read_mode"] == PE_MODERN

@@ -138,8 +138,10 @@ def entrez_assembly_ftp(accession, force=False):
     anomalous = [reason.text for reason in etree.findall(".//Anomalous/Property")]
 
     if anomalous:
-        message = f"Assembly '{accession}' has been marked as anomalous for the following reasons: " \
-                  f"'{'; '.join(anomalous)}'"
+        message = (
+            f"Assembly '{accession}' has been marked as anomalous for the following reasons: "
+            f"'{'; '.join(anomalous)}'"
+        )
 
         if force:
             # TODO make a print warning function

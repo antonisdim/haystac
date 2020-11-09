@@ -36,12 +36,17 @@ rule count_accession_ts_tv:
         "../scripts/count_accession_ts_tv.py"
 
 
+def get_counts(_):
+    """Get ts and tv count file paths"""
+    return [
+        config["analysis_output_dir"] + "/ts_tv_counts/{sample}/" + f"{orgname}_count_{accession}.csv"
+        for orgname, accession in get_total_paths(checkpoints, config)
+    ]
+
+
 rule initial_ts_tv:
     input:
-        [
-            config["analysis_output_dir"] + "/ts_tv_counts/{sample}/" + f"{orgname}_count_{accession}.csv"
-            for orgname, accession in get_total_paths(checkpoints, config)
-        ],
+        get_counts,
     output:
         config["analysis_output_dir"] + "/ts_tv_counts/{sample}/all_ts_tv_counts.csv",
     log:
@@ -65,10 +70,7 @@ rule calculate_likelihoods:
     input:
         config["analysis_output_dir"] + "/ts_tv_counts/{sample}/all_ts_tv_counts.csv",
         get_right_readlen,
-        [
-            config["analysis_output_dir"] + "/ts_tv_counts/{sample}/" + f"{orgname}_count_{accession}.csv"
-            for orgname, accession in get_total_paths(checkpoints, config)
-        ],
+        get_counts,
     output:
         config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_likelihood_ts_tv_matrix.csv",
         config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_probability_model_params.json",
@@ -119,16 +121,21 @@ rule coverage_t_test:
         "../scripts/coverage_t_test.py"
 
 
+def get_p_values(_):
+    """Get p value file paths"""
+    return [
+        config["analysis_output_dir"]
+        + "/probabilities/{sample}/"
+        + f"{orgname}_t_test_pvalue_{accession}_"
+        + reads(config)
+        + ".txt"
+        for orgname, accession in get_total_paths(checkpoints, config)
+    ]
+
+
 rule cat_pvalues:
     input:
-        [
-            config["analysis_output_dir"]
-            + "/probabilities/{sample}/"
-            + f"{orgname}_t_test_pvalue_{accession}_"
-            + reads(config)
-            + ".txt"
-            for orgname, accession in get_total_paths(checkpoints, config)
-        ],
+        get_p_values,
     output:
         config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_t_test_pvalues.txt",
     log:

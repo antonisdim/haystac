@@ -77,15 +77,20 @@ rule align_taxon_paired_end:
         ") 2> {log}"
 
 
+def get_meta_bams(_):
+    "Get paths for individual bam files"
+    return [
+        config["analysis_output_dir"]
+        + "/alignments/{sample}/"
+        + reads(config)
+        + f"/{orgname}/{orgname}_{accession}.bam"
+        for orgname, accession in get_total_paths(checkpoints, config)
+    ]
+
+
 rule all_alignments:
     input:
-        [
-            config["analysis_output_dir"]
-            + "/alignments/{sample}/"
-            + reads(config)
-            + f"/{orgname}/{orgname}_{accession}.bam"
-            for orgname, accession in get_total_paths(checkpoints, config)
-        ],
+        get_meta_bams,
     output:
         config["analysis_output_dir"] + "/alignments/{sample}_alignments.done",
     benchmark:
