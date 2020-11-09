@@ -60,6 +60,9 @@ checkpoint calculate_bt2_idx_chunks:
 def get_bt2_idx_filter_chunk(wildcards):
     """Pick the files for the specific bt2 index chunk"""
 
+    # TODO this gets run every time the DAG is calculated! this should have it's own rule and script file
+    # TODO why does this input function even exist, when the logic is duplicated in calculate_bt2_idx_chunks()?
+    # TODO why are you accessing this file without using a checkpoint?
     fasta_paths_random = []
     with open(config["db_output"] + "/bowtie/bt2_random_fasta_paths.txt", "r") as fin:
         for line in fin:
