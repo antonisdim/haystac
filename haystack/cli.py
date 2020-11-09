@@ -434,7 +434,11 @@ The haystack commands are:
 
             try:
                 with open(config_fetch, "r") as fin:
-                    config = yaml.safe_load(fin)
+                    # TODO this overrides all the CLI params, which prevents --cores and --mem being set, which makes
+                    #   the whole --mode index feature useless!
+                    # config = yaml.safe_load(fin)
+                    # TODO we should check to make sure that the core CLI flags are not different (e.g. --query)
+                    config = {**yaml.safe_load(fin), **config}
             except FileNotFoundError:
                 raise ValidationError(
                     "Please run haystack `database --mode fetch` before attempting to index the database."
