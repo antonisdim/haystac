@@ -8,6 +8,7 @@ __license__ = "MIT"
 
 import os
 import sys
+import pandas as pd
 
 from haystack.workflow.scripts.utilities import RuntimeErrorMessage
 
@@ -24,6 +25,8 @@ def calculate_bt2_idx_chunks(mem_resources, mem_rescale_factor, fasta_files, out
     total_size = 0.0
     chunks = 1
 
+    chunk_df_list = []
+
     for fasta_file in fasta_paths_random:
         file_size = os.stat(fasta_file).st_size / (1024 ** 2)
 
@@ -39,8 +42,11 @@ def calculate_bt2_idx_chunks(mem_resources, mem_rescale_factor, fasta_files, out
         else:
             total_size += file_size
 
-    with open(output, "w") as outfile:
-        print(chunks, file=outfile)
+        chunk_df_list.append([chunks, fasta_file])
+
+    chunk_df = pd.DataFrame(chunk_df_list)
+
+    chunk_df.to_csv(output, sep="\t", index=False, header=False)
 
 
 if __name__ == "__main__":

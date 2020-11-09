@@ -60,35 +60,14 @@ checkpoint calculate_bt2_idx_chunks:
 def get_bt2_idx_filter_chunk(wildcards):
     """Pick the files for the specific bt2 index chunk"""
 
-    # TODO this gets run every time the DAG is calculated! this should have it's own rule and script file
-    # TODO why does this input function even exist, when the logic is duplicated in calculate_bt2_idx_chunks()?
-    # TODO why are you accessing this file without using a checkpoint?
-    fasta_paths_random = []
-    with open(config["db_output"] + "/bowtie/bt2_random_fasta_paths.txt", "r") as fin:
-        for line in fin:
-            fasta_paths_random.append(line.strip())
+    # read the file with the chunks
+    get_chunk_num = checkpoints.calculate_bt2_idx_chunks.get()
+    chunk_df = pd.read_csv(get_chunk_num.output[0], sep="\t", names=["chunk", "path"])
 
-    chunk_files = []
-    chunk_size = float(config["mem"]) / float(config["bowtie2_scaling"])
-    total_size = 0.0
+    # store the paths belonging to a chunk in a list
+    fasta_paths_random = chunk_df[chunk_df["chunk"] == int(wildcards.chunk_num)]["path"].to_list()
 
-    for fasta_file in fasta_paths_random:
-        total_size += os.stat(fasta_file).st_size / MEGABYTE
-
-        chunk = (total_size // chunk_size) + 1
-
-        if chunk == int(wildcards.chunk_num):
-            chunk_files.append(fasta_file)
-        elif chunk > int(wildcards.chunk_num):
-            break
-
-    chunk_list_file = config["db_output"] + f"/bowtie/chunk{wildcards.chunk_num}.list"
-
-    # save the list of files in this chunk
-    with open(chunk_list_file, "w") as fout:
-        fout.write("\n".join(chunk_files))
-
-    return chunk_list_file
+    return fasta_paths_random
 
 
 rule create_bt2_idx_filter_chunk:
@@ -101,7 +80,7 @@ rule create_bt2_idx_filter_chunk:
     message:
         "Creating chunk {wildcards.chunk_num} of the genome database index."
     shell:
-        "cat {input} | xargs cat > {output}"
+        "cat {input} > {output}"
 
 
 rule bowtie_index:
@@ -135,7 +114,9 @@ def get__bt2_idx_chunk_paths(_):
 
     # noinspection PyUnresolvedReferences
     get_chunk_num = checkpoints.calculate_bt2_idx_chunks.get()
-    idx_chunk_total = ceil(float(open(get_chunk_num.output[0]).read().strip()))
+    chunk_df = pd.read_csv(get_chunk_num.output[0], sep="\t", names=["chunk", "path"])
+
+    idx_chunk_total = chunk_df["chunk"].max()
 
     return expand(
         config["db_output"] + "/bowtie/chunk{chunk_num}.1.bt2l",
