@@ -102,9 +102,27 @@ rule calculate_taxa_probabilities:
         "../scripts/calculate_taxa_probabilities.py"
 
 
-rule coverage_t_test:
+rule coverage_counts:
     input:
         config["analysis_output_dir"] + "/alignments/{sample}/{reads}/{orgname}/{orgname}_{accession}.bam",
+    output:
+        config["analysis_output_dir"] + "/probabilities/{sample}/{orgname}_cov_count_{accession}_{reads}.txt",
+    log:
+        config["analysis_output_dir"] + "/probabilities/{sample}/{orgname}_cov_count_{accession}_{reads}.log",
+    benchmark:
+        repeat(
+            "benchmarks/coverage_counts_{sample}_{orgname}_{accession}_{reads}.benchmark.txt", 1,
+        )
+    message:
+        "Counting coverage stats for sample {wildcards.sample} and taxon {wildcards.orgname}."
+    shell:
+        "(samtools mpileup {input} | awk 'NR>1 {{rows++; sum += $4}} END {{print rows, sum}}' OFS='\t') 1> {output} "
+        "2> {log}"
+
+
+rule coverage_t_test:
+    input:
+        config["analysis_output_dir"] + "/probabilities/{sample}/{orgname}_cov_count_{accession}_{reads}.txt",
         config["cache"] + "/ncbi/{orgname}/{accession}.fasta.gz.fai",
     output:
         config["analysis_output_dir"] + "/probabilities/{sample}/{orgname}_t_test_pvalue_{accession}_{reads}.txt",

@@ -13,23 +13,21 @@ import pysam
 from scipy.stats import fisher_exact
 
 
-def coverage_t_test(bam, taxon_fasta_idx, taxon, outfile):
+def coverage_t_test(cov_file, taxon_fasta_idx, taxon, outfile):
     """
     Function that calculates the pvalue of the coverage. Testing if there was clustering bias during the
     sequencing/the reads that contribute to the identification/abundance of a species come only
     from a specific genomic region
     """
+
+    assert os.stat(cov_file).st_size, f"The file with the coverage stats {cov_file} is empty."
+
     taxon_seqlen = genome_sizes(taxon_fasta_idx)
 
-    pileup_dict = {}
+    cov_stats = pd.read_csv(cov_file, sep="\t", names=["observed", "expected"])
 
-    bamfile = pysam.AlignmentFile(bam, "rb")
-
-    for pileupcolumn in bamfile.pileup():
-        pileup_dict[pileupcolumn.pos] = pileupcolumn.n
-
-    expected_coverage = sum(list(pileup_dict.values()))
-    observed_coverage = len(list(pileup_dict.keys()))
+    expected_coverage = cov_stats['expected'].iloc[0]
+    observed_coverage = cov_stats['observed'].iloc[0]
 
     contingency_first_row = [observed_coverage, expected_coverage]
     print("Observed and expected coverage are ", contingency_first_row, file=sys.stderr)
@@ -60,7 +58,7 @@ if __name__ == "__main__":
 
     # noinspection PyUnresolvedReferences
     coverage_t_test(
-        bam=snakemake.input[0],
+        cov_file=snakemake.input[0],
         taxon_fasta_idx=snakemake.input[1],
         taxon=snakemake.wildcards.orgname,
         outfile=snakemake.output[0],
