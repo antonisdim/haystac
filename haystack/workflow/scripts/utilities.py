@@ -278,6 +278,34 @@ class SraAccessionType(object):
         return value, layout
 
 
+class NuccoreQueryType(object):
+    """
+    Is this a valid nuccore query
+    """
+
+    def __call__(self, value):
+        # import these locally to avoid cyclic import issues
+        from haystack.workflow.scripts.entrez_utils import entrez_esearch
+
+        # check if the user has given us a file instead of a string
+        if os.path.isfile(value):
+            query = open(value).read().strip()
+        else:
+            query = value
+
+        try:
+            # query nuccore to see if this a valid query
+            _, _, id_list = entrez_esearch("nuccore", f"{query}")
+        except Exception:
+            raise argparse.ArgumentTypeError(f"Invalid NCBI query '{query}'")
+
+        # if the query returns no result set raise error
+        if len(id_list) == 0:
+            raise argparse.ArgumentTypeError(f"No results in NCBI nucleotide for query '{query}'")
+
+        return value
+
+
 def get_total_paths(
     checkpoints, config,
 ):

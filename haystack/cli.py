@@ -35,6 +35,7 @@ from haystack.workflow.scripts.utilities import (
     SequenceFileType,
     AccessionFileType,
     SraAccessionType,
+    NuccoreQueryType,
     PE_MODERN,
     PE_ANCIENT,
     SE,
@@ -276,19 +277,19 @@ The haystack commands are:
 
         choice = parser.add_argument_group("Required choice")
 
-        # TODO how can we validate these queries?
         choice.add_argument(
             "--query",
             help="Database query in the NCBI query language. "
             "Please refer to the documentation for assistance with constructing a valid query.",
             metavar="<query>",
+            type=NuccoreQueryType(),
         )
 
         choice.add_argument(
             "--query-file",
             help="File containing a database query in the NCBI query language.",
             metavar="<path>",
-            type=FileType("r"),
+            type=NuccoreQueryType(),
         )
 
         choice.add_argument(
