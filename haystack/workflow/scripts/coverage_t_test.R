@@ -37,11 +37,13 @@ observed_coverage <- cov_stats[1,"observed"]
 
 contingency_first_row <- c(observed_coverage, expected_coverage)
 
-print(paste("Observed and expected coverage are", contingency_first_row, sep='\t'))
+print(paste("Observed and expected coverage are", contingency_first_row, sep=' '))
 
 contingency_second_row <- c(taxon_seqlen, taxon_seqlen)
 
 test_input <- matrix(rbind(contingency_first_row, contingency_second_row), nrow=2)
+
+print(test_input)
 
 #perform the test
 pvalue <- fisher.test(test_input)$p.value
