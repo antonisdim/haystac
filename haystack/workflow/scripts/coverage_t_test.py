@@ -11,7 +11,7 @@ import os
 
 import pandas as pd
 import pysam
-from scipy.stats import fisher_exact
+from scipy.stats import fisher_exact, chi2_contingency
 
 
 def coverage_t_test(cov_file, taxon_fasta_idx, taxon, outfile):
@@ -35,7 +35,9 @@ def coverage_t_test(cov_file, taxon_fasta_idx, taxon, outfile):
 
     contingency_second_row = [taxon_seqlen, taxon_seqlen]
 
-    oddsratio, pvalue = fisher_exact([contingency_first_row, contingency_second_row])
+    # oddsratio, pvalue = fisher_exact([contingency_first_row, contingency_second_row])
+
+    chi2, pvalue, dof, expected = chi2_contingency([contingency_first_row, contingency_second_row])
 
     with open(outfile, "w") as outhandle:
         print(taxon, pvalue, file=outhandle, sep="\t")
