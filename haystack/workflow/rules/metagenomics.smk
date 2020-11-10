@@ -138,7 +138,7 @@ rule coverage_t_test:
         "Performing a T-Test to assess if reads from sample {wildcards.sample} represent a random genome sample of "
         "taxon {wildcards.orgname}."
     script:
-        "../scripts/coverage_t_test.py"
+        "../scripts/coverage_t_test.R"
 
 
 def get_p_values(_):
