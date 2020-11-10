@@ -13,7 +13,7 @@ outfile <- snakemake@output[[1]]
 file_empty <- function(filenames) file.info(filenames)$size == 0
 
 genome_sizes <- function(taxon_fasta_idx) {
-  faidx <- read.csv(taxon_fasta_idx, sep='\t')
+  faidx <- read.csv(taxon_fasta_idx, sep='\t', header=FALSE)
   names(faidx) <- c('Name','Length','Offset', 'Linebases', 'Linewidth')
   taxon_seq_len <- sum(faidx[,"Length"])
   return(taxon_seq_len)
@@ -29,7 +29,7 @@ if (file_empty(cov_file)) {
 taxon_seqlen <- genome_sizes(taxon_fasta_idx)
 
 # read the cov stats file
-cov_stats <- read.csv(cov_file, sep='\t')
+cov_stats <- read.csv(cov_file, sep='\t', header=FALSE)
 names(cov_stats) <- c('observed','expected')
 
 expected_coverage <- cov_stats[1,"expected"]
