@@ -7,6 +7,7 @@ __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
 import sys
+import os
 
 import pandas as pd
 import pysam

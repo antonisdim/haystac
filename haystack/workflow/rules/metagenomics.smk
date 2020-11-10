@@ -115,6 +115,8 @@ rule coverage_counts:
         )
     message:
         "Counting coverage stats for sample {wildcards.sample} and taxon {wildcards.orgname}."
+    conda:
+        "../envs/samtools.yaml"
     shell:
         "(samtools mpileup {input} | awk 'NR>1 {{rows++; sum += $4}} END {{print rows, sum}}' OFS='\t') 1> {output} "
         "2> {log}"
