@@ -46,7 +46,8 @@ checkpoint calculate_bt2_idx_chunks:
     log:
         config["db_output"] + "/bowtie/bt2_idx_chunk_num.log",
     output:
-        config["db_output"] + "/bowtie/bt2_idx_chunk_num.txt",
+        config["db_output"] + "/bowtie/bt2_idx_chunk_list.txt",
+        config["db_output"] + "/bowtie/bt2_idx_chunk_num.txt"
     params:
         query=config["db_output"],
         mem_resources=float(config["mem"]),
@@ -114,9 +115,7 @@ def get__bt2_idx_chunk_paths(_):
 
     # noinspection PyUnresolvedReferences
     get_chunk_num = checkpoints.calculate_bt2_idx_chunks.get()
-    chunk_df = pd.read_csv(get_chunk_num.output[0], sep="\t", names=["chunk", "path"])
-
-    idx_chunk_total = chunk_df["chunk"].max()
+    idx_chunk_total = ceil(float(open(get_chunk_num.output[1]).read().strip()))
 
     return expand(
         config["db_output"] + "/bowtie/chunk{chunk_num}.1.bt2l",

@@ -13,7 +13,7 @@ import pandas as pd
 from haystack.workflow.scripts.utilities import RuntimeErrorMessage
 
 
-def calculate_bt2_idx_chunks(mem_resources, mem_rescale_factor, fasta_files, output):
+def calculate_bt2_idx_chunks(mem_resources, mem_rescale_factor, fasta_files, output_tsv, output_txt):
     """Calculate the number of chunks that the db sequences are going to be split into"""
 
     fasta_paths_random = []
@@ -44,9 +44,15 @@ def calculate_bt2_idx_chunks(mem_resources, mem_rescale_factor, fasta_files, out
 
         chunk_df_list.append([chunks, fasta_file])
 
-    chunk_df = pd.DataFrame(chunk_df_list)
+    chunk_df = pd.DataFrame(chunk_df_list, columns=['chunk', 'path'])
 
-    chunk_df.to_csv(output, sep="\t", index=False, header=False)
+    chunk_df.to_csv(output_tsv, sep="\t", index=False, header=False)
+
+    idx_chunk_total = chunk_df["chunk"].max()
+
+    with open(output_txt, "w") as outfile:
+        print(idx_chunk_total, file=outfile)
+
 
 
 if __name__ == "__main__":
@@ -58,5 +64,6 @@ if __name__ == "__main__":
         mem_resources=snakemake.params[1],
         mem_rescale_factor=snakemake.params[2],
         fasta_files=snakemake.input,
-        output=snakemake.output[0],
+        output_tsv=snakemake.output[0],
+        output_txt=snakemake.output[1],
     )

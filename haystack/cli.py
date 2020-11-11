@@ -738,6 +738,9 @@ The haystack commands are:
                 "The sample has not been prepared correctly. Please pre-process the samples using `haystack sample`"
             )
 
+        # Check that the db and sample config params match
+        CheckExistingConfig(database_config_file, config_sample)
+
         # add all command line options to the merged config
         config = {**self.config_merged, **database_config, **sample_config, **vars(args)}
 

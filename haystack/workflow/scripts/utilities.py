@@ -317,7 +317,18 @@ class NuccoreQueryType(object):
 
 
 class CheckExistingConfig(object):
-    def __init__(self, filename, cli_params):
+    """
+    Checks the details of an existing yaml file against cli params or another yaml file
+    """
+
+    def __init__(self, filename, params):
+
+        # check if second argument is a dict or a yaml file
+        if isinstance(params, dict):
+            params_config = params
+        elif os.path.isfile(params):
+            with open(params, "r") as fin_params:
+                params_config = yaml.safe_load(fin_params)
 
         # check if a config already exists
         if not os.path.isfile(filename):
@@ -328,44 +339,46 @@ class CheckExistingConfig(object):
             with open(filename, "r") as fin:
                 existing_config = yaml.safe_load(fin)
 
-                important_args = [
-                    "cache",
-                    "api_key",
-                    "mismatch_probability",
-                    "bowtie2_scaling",
-                    "query",
-                    "query_file",
-                    "accessions_file",
-                    "sequences_file",
-                    "refseq_rep",
-                    "force_accessions",
-                    "exclude_accessions",
-                    "resolve_accessions",
-                    "rank",
-                    "genera",
-                    "mtDNA",
-                    "seed",
-                    "sample_prefix",
-                    "fastq",
-                    "fastq_r1",
-                    "fastq_r2",
-                    "sra",
-                    "collapse",
-                    "trim_adapters",
-                    "sample",
-                    "min_prob",
-                    "query_file_md5",
-                    "accessions_md5",
-                    "sequences_md5",
-                ]
+                if not isinstance(params, dict):
+                    important_args = ['cache']
+                else:
+                    important_args = [
+                        "cache",
+                        "api_key",
+                        "mismatch_probability",
+                        "bowtie2_scaling",
+                        "query",
+                        "query_file",
+                        "accessions_file",
+                        "sequences_file",
+                        "refseq_rep",
+                        "force_accessions",
+                        "exclude_accessions",
+                        "resolve_accessions",
+                        "rank",
+                        "mtDNA",
+                        "seed",
+                        "sample_prefix",
+                        "fastq",
+                        "fastq_r1",
+                        "fastq_r2",
+                        "sra",
+                        "collapse",
+                        "trim_adapters",
+                        "sample",
+                        "min_prob",
+                        "query_file_md5",
+                        "accessions_md5",
+                        "sequences_md5",
+                    ]
 
                 for arg in important_args:
                     # check if all the important params match
-                    if arg in existing_config.keys() and arg in cli_params.keys():
-                        if existing_config[arg] != cli_params[arg]:
+                    if arg in existing_config.keys() and arg in params_config.keys():
+                        if existing_config[arg] != params_config[arg]:
                             raise RuntimeErrorMessage(
                                 f"You are trying to set a value for parameter {arg} on top of an already existing one "
-                                f"(old: {existing_config[arg]}, new: {cli_params[arg]}). "
+                                f"(old: {existing_config[arg]}, new: {params_config[arg]}). "
                                 f"Please either revert to the original parameter you used or create a "
                                 f"new output directory."
                             )
