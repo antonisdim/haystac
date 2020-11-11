@@ -10,6 +10,7 @@ import argparse
 import os
 import re
 import sys
+import yaml
 
 import pandas as pd
 
@@ -313,6 +314,61 @@ class NuccoreQueryType(object):
             raise ArgumentErrorMessage(f"No results in NCBI nucleotide for query '{query}'")
 
         return value
+
+
+class CheckExistingConfig(object):
+    def __init__(self, filename, cli_params):
+
+        # check if a config already exists
+        if not os.path.isfile(filename):
+            pass
+
+        else:
+            # open the config file
+            with open(filename, "r") as fin:
+                existing_config = yaml.safe_load(fin)
+
+                important_args = [
+                    "cache",
+                    "api_key",
+                    "mismatch_probability",
+                    "bowtie2_scaling",
+                    "query",
+                    "query_file",
+                    "accessions_file",
+                    "sequences_file",
+                    "refseq_rep",
+                    "force_accessions",
+                    "exclude_accessions",
+                    "resolve_accessions",
+                    "rank",
+                    "genera",
+                    "mtDNA",
+                    "seed",
+                    "sample_prefix",
+                    "fastq",
+                    "fastq_r1",
+                    "fastq_r2",
+                    "sra",
+                    "collapse",
+                    "trim_adapters",
+                    "sample",
+                    "min_prob",
+                    "query_file_md5",
+                    "accessions_md5",
+                    "sequences_md5",
+                ]
+
+                for arg in important_args:
+                    # check if all the important params match
+                    if arg in existing_config.keys() and arg in cli_params.keys():
+                        if existing_config[arg] != cli_params[arg]:
+                            raise RuntimeErrorMessage(
+                                f"You are trying to set a value for parameter {arg} on top of an already existing one "
+                                f"(old: {existing_config[arg]}, new: {cli_params[arg]}). "
+                                f"Please either revert to the original parameter you used or create a "
+                                f"new output directory."
+                            )
 
 
 def get_total_paths(

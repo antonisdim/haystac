@@ -12,6 +12,7 @@ import datetime
 import os
 import shutil
 import sys
+import hashlib
 from multiprocessing import cpu_count
 
 import argcomplete
@@ -36,6 +37,7 @@ from haystack.workflow.scripts.utilities import (
     AccessionFileType,
     SraAccessionType,
     NuccoreQueryType,
+    CheckExistingConfig,
     PE_MODERN,
     PE_ANCIENT,
     SE,
@@ -412,6 +414,12 @@ The haystack commands are:
         # add all command line options to the merged config
         config = {**self.config_merged, **vars(args)}
 
+        # store the md5 checksums for the database user input files
+
+        config["query_file_md5"] = hashlib.md5(open(args.query_file, "r").read()).hexdigest() if args.query_file else ""
+        config["accessions_md5"] = hashlib.md5(open(args.accessions, "r").read()).hexdigest() if args.query_file else ""
+        config["sequences_md5"] = hashlib.md5(open(args.sequences, "r").read()).hexdigest() if args.query_file else ""
+
         # TODO if build, confirm details match! do the same for sample and analyse
         config_fetch = os.path.join(args.db_output, "database_fetch_config.yaml")
         config_build = os.path.join(args.db_output, "database_build_config.yaml")
@@ -439,6 +447,7 @@ The haystack commands are:
                     #   the whole --mode index feature useless!
                     # config = yaml.safe_load(fin)
                     # TODO we should check to make sure that the core CLI flags are not different (e.g. --query)
+                    CheckExistingConfig(config_fetch, config)
                     config = {**yaml.safe_load(fin), **config}
             except FileNotFoundError:
                 raise ValidationError(
@@ -454,6 +463,9 @@ The haystack commands are:
                 raise ValidationError(
                     "Please run haystack `database --mode index` as the database has already been fetched."
                 )
+
+            if os.path.exists(config_build):
+                CheckExistingConfig(config_build, config)
 
             with open(config_build, "w") as fout:
                 yaml.safe_dump(config, fout, default_flow_style=False)
@@ -614,6 +626,9 @@ The haystack commands are:
 
         config_sample = os.path.join(args.sample_output_dir, "sample_config.yaml")
 
+        if os.path.exists(config_sample):
+            CheckExistingConfig(config_sample, config)
+
         with open(config_sample, "w") as fout:
             yaml.safe_dump(config, fout, default_flow_style=False)
 
@@ -759,6 +774,9 @@ The haystack commands are:
             target_list.append(f"mapdamage/{config['sample_prefix']}_mapdamage.done")
 
         config_analysis = os.path.join(args.analysis_output_dir, config["sample_prefix"] + "_config.yaml")
+
+        if os.path.exists(config_analysis):
+            CheckExistingConfig(config_analysis, config)
 
         with open(config_analysis, "w") as fout:
             yaml.safe_dump(config, fout, default_flow_style=False)
