@@ -36,6 +36,15 @@ class RuntimeErrorMessage(RuntimeError):
         super().__init__(f"{FAIL}{message}{END}" if is_tty else f"{message}")
 
 
+class ArgumentErrorMessage(argparse.ArgumentTypeError):
+    """
+    RuntimeError message formatting
+    """
+
+    def __init__(self, message):
+        super().__init__(f"{FAIL}{message}{END}" if is_tty else f"{message}")
+
+
 class ArgumentCustomFormatter(argparse.HelpFormatter):
     """
     Custom formatter for argparse
@@ -73,7 +82,7 @@ class WritablePathType(object):
             path.mkdir(parents=True, exist_ok=True)
             return value
         except Exception:
-            raise argparse.ArgumentTypeError(f"'{value}' is not a valid writable path")
+            raise ArgumentErrorMessage(f"'{value}' is not a valid writable path")
 
 
 class PositiveIntType(object):
@@ -86,7 +95,7 @@ class PositiveIntType(object):
             if not int(value) > 0:
                 raise ValueError()
         except ValueError:
-            raise argparse.ArgumentTypeError(f"'{value}' is not a valid positive integer")
+            raise ArgumentErrorMessage(f"'{value}' is not a valid positive integer")
 
         return int(value)
 
@@ -106,7 +115,7 @@ class RangeType(object):
             if not (self.lower <= self.type(value) <= self.upper):
                 raise ValueError()
         except ValueError:
-            raise argparse.ArgumentTypeError(
+            raise ArgumentErrorMessage(
                 f"'{value}' is not a valid {self.type.__name__} in the range ({self.lower}, {self.upper})"
             )
 
@@ -144,7 +153,7 @@ class BoolType(object):
         elif value.lower() in ("no", "false", "f", "n", "0"):
             return False
         else:
-            raise argparse.ArgumentTypeError(f"'{value}' is not a valid boolean")
+            raise ArgumentErrorMessage(f"'{value}' is not a valid boolean")
 
 
 class JsonType(object):
@@ -158,7 +167,7 @@ class JsonType(object):
         try:
             return json.loads(value)
         except json.decoder.JSONDecodeError as error:
-            raise argparse.ArgumentTypeError(f"'{value}' is not a valid JSON string\n {error}")
+            raise ArgumentErrorMessage(f"'{value}' is not a valid JSON string\n {error}")
 
 
 class SpreadsheetFileType(object):
@@ -172,18 +181,18 @@ class SpreadsheetFileType(object):
     def __call__(self, value):
 
         if not os.path.exists(value):
-            raise argparse.ArgumentTypeError(f"'{value}' does not exit")
+            raise ArgumentErrorMessage(f"'{value}' does not exit")
 
         if os.stat(value).st_size == 0:
-            raise argparse.ArgumentTypeError(f"'{value}' is empty")
+            raise ArgumentErrorMessage(f"'{value}' is empty")
 
         try:
             self.data = pd.read_table(value, sep="\t", header=None, index_col=False,)
         except Exception:
-            raise argparse.ArgumentTypeError(f"'{value}' unknown error parsing file")
+            raise ArgumentErrorMessage(f"'{value}' unknown error parsing file")
 
         if len(self.data.columns) != len(self.cols):
-            raise argparse.ArgumentTypeError(
+            raise ArgumentErrorMessage(
                 f"'{value}' must have {len(self.cols)} columns and be tab delimited (cols={len(self.data.columns)})"
             )
 
@@ -191,7 +200,7 @@ class SpreadsheetFileType(object):
         bad_rows = ", ".join([str(i + 1) for i in self.data.index[self.data.isnull().any(axis=1)].tolist()])
 
         if bad_rows:
-            raise argparse.ArgumentTypeError(f"'{value}' contains missing data in line(s): {bad_rows}")
+            raise ArgumentErrorMessage(f"'{value}' contains missing data in line(s): {bad_rows}")
 
         return value
 
@@ -221,7 +230,7 @@ class AccessionFileType(SpreadsheetFileType):
         )
 
         if bad_accs:
-            raise argparse.ArgumentTypeError(f"'{value}' these accession codes contain invalid characters:\n{bad_accs}")
+            raise ArgumentErrorMessage(f"'{value}' these accession codes contain invalid characters:\n{bad_accs}")
 
         return value
 
@@ -248,7 +257,7 @@ class SequenceFileType(AccessionFileType):
         )
 
         if bad_files:
-            raise argparse.ArgumentTypeError(f"'{value}' these sequence files do not exist or are empty:\n{bad_files}")
+            raise ArgumentErrorMessage(f"'{value}' these sequence files do not exist or are empty:\n{bad_files}")
 
         return value
 
@@ -267,13 +276,13 @@ class SraAccessionType(object):
             _, _, id_list = entrez_esearch("sra", f"{value}[Accession]")
             etree = entrez_efetch("sra", id_list)
         except Exception:
-            raise argparse.ArgumentTypeError(f"Invalid SRA accession '{value}'")
+            raise ArgumentErrorMessage(f"Invalid SRA accession '{value}'")
 
         try:
             # now get the library layout
             layout = etree.find(".//LIBRARY_LAYOUT/*").tag.lower()
         except Exception:
-            raise argparse.ArgumentTypeError(f"Unable to resolve the library layout for SRA accession '{value}'")
+            raise ArgumentErrorMessage(f"Unable to resolve the library layout for SRA accession '{value}'")
 
         return value, layout
 
@@ -297,11 +306,11 @@ class NuccoreQueryType(object):
             # query nuccore to see if this a valid query
             _, _, id_list = entrez_esearch("nuccore", f"{query}")
         except Exception:
-            raise argparse.ArgumentTypeError(f"Invalid NCBI query '{query}'")
+            raise ArgumentErrorMessage(f"Invalid NCBI query '{query}'")
 
         # if the query returns no result set raise error
         if len(id_list) == 0:
-            raise argparse.ArgumentTypeError(f"No results in NCBI nucleotide for query '{query}'")
+            raise ArgumentErrorMessage(f"No results in NCBI nucleotide for query '{query}'")
 
         return value
 
