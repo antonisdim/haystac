@@ -420,7 +420,6 @@ The haystack commands are:
         config["accessions_md5"] = md5(args.accessions) if args.query_file else ""
         config["sequences_md5"] = md5(args.sequences) if args.query_file else ""
 
-        # TODO if build, confirm details match! do the same for sample and analyse
         config_fetch = os.path.join(args.db_output, "database_fetch_config.yaml")
         config_build = os.path.join(args.db_output, "database_build_config.yaml")
 
@@ -445,12 +444,7 @@ The haystack commands are:
 
             try:
                 with open(config_fetch, "r") as fin:
-                    # TODO this overrides all the CLI params, which prevents --cores and --mem being set, which makes
-                    #   the whole --mode index feature useless!
-                    # config = yaml.safe_load(fin)
-                    # TODO we should check to make sure that the core CLI flags are not different (e.g. --query)
                     # config = {**yaml.safe_load(fin), **config}
-
                     fetch_args = {**yaml.safe_load(fin)}
                     fetch_args.update((k, v) for k, v in config.items() if v is not None)
                     config = fetch_args

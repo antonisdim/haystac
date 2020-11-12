@@ -219,11 +219,10 @@ class AccessionFileType(SpreadsheetFileType):
 
         # check all accessions pass the regex pattern
         idx = self.cols.index("accession")
-
-        # TODO do we need to check `species` is valid also?
+        species = self.cols.index("species")
 
         # TODO check regex for consistency with other parts of the code
-        bad_list = "\n".join(
+        bad_list_acc = "\n".join(
             [
                 f"line {i + 1}: '{acc}'"
                 for i, acc in enumerate(self.data[idx].tolist())
@@ -231,8 +230,19 @@ class AccessionFileType(SpreadsheetFileType):
             ]
         )
 
-        if bad_list:
-            raise ArgumentErrorMessage(f"'{value}' these accession codes contain invalid characters:\n{bad_list}")
+        bad_list_species = "\n".join(
+            [
+                f"line {i + 1}: '{acc}'"
+                for i, acc in enumerate(self.data[species].tolist())
+                if not re.match(r"^[\w.]+$", acc)
+            ]
+        )
+
+        if bad_list_acc or bad_list_species:
+            bad_list = bad_list_acc + "\n" + bad_list_species
+            raise ArgumentErrorMessage(
+                f"'{value}' these accession codes or taxon names contain invalid characters:\n{bad_list}"
+            )
 
         return value
 
