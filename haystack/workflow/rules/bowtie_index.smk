@@ -8,7 +8,6 @@ __license__ = "MIT"
 
 from math import ceil
 
-import pandas as pd
 from psutil import virtual_memory
 
 MEGABYTE = float(1024 ** 2)
@@ -58,23 +57,9 @@ checkpoint calculate_bt2_idx_chunks:
         "../scripts/calculate_bt2_idx_chunks.py"
 
 
-def get_bt2_idx_filter_chunk(wildcards):
-    """Pick the files for the specific bt2 index chunk"""
-
-    # read the file with the chunks
-    # noinspection PyUnresolvedReferences
-    get_chunk_num = checkpoints.calculate_bt2_idx_chunks.get()
-    chunk_df = pd.read_csv(get_chunk_num.output[0], sep="\t", names=["chunk", "path"])
-
-    # store the paths belonging to a chunk in a list
-    fasta_paths_random = chunk_df[chunk_df["chunk"] == int(wildcards.chunk_num)]["path"].to_list()
-
-    return fasta_paths_random
-
-
 rule create_bt2_idx_filter_chunk:
     input:
-        get_bt2_idx_filter_chunk,
+        config["db_output"] + "/bowtie/bt2_idx_chunk_list.txt",
     log:
         config["db_output"] + "/bowtie/bt2_idx_filter_{chunk_num}.log",
     output:
@@ -82,7 +67,7 @@ rule create_bt2_idx_filter_chunk:
     message:
         "Creating chunk {wildcards.chunk_num} of the genome database index."
     shell:
-        "cat {input} > {output}"
+        "awk '$1=={wildcards.chunk_num} {{print $2}}' {input} | xargs cat > {output}"
 
 
 rule bowtie_index:
