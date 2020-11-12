@@ -115,7 +115,7 @@ For the first part of the analysis an index out of all the genomes that are incl
 Database building modes
 -----------------------
 
-For the complete construction of a database, sequences need to be downloaded and subseqeuently indexed. 
+For the complete construction of a database, sequences need to be downloaded and subsequently indexed.
 The default mode of the module `haystack database` is `build`, which downloads and indexes all the sequences that have been requested by the user.
 If a user would like to just download the sequences and index them later it is possible to do so, by specifying the flag `haystack database --mode fetch`, to download the sequences first and then execute `haystack database --mode index` in order to perform the indexing.
 If mode `fetch` is run first the mode `index` should be run subsequently, and not mode `build`, otherwise an error will be raised. If the user would like to build the database in one step then mode `build` is the correct choice. 
@@ -178,7 +178,7 @@ After all the metagenomic individual alignments have been competed, the number o
 
     haystack analyse --mode likelihoods --database yersinia_example/database_build_config.yaml --sample ./samples/SRR12157896_config.yaml --analysis-output-dir ./analysis_output
 
-Important Note on the Dirichlet Assignment provess during Likelihood calculation
+Important Note on the Dirichlet Assignment process during Likelihood calculation
 --------------------------------------------------------------------------------
 
 It is important to be aware of the individual read posterior probability threshold, for a read to be assigned to a taxon. The three allowed options are 0.5 for 50% (least conservative option), 0.75 for 75% (conservative option) and 0.95 for 95% probability (most conservative option). As a default HAYSTACK uses the conservative 0.75 probability threshold for the Dirichlet assignment. The higher value you pick the more conservative the assignments become. It is useful to sometimes pick a value depending on what taxa are being identified. If there is a need to distinguish between closely related taxa then a more conservative threshold would increase the specificity of the analysis therefore being more appropriate, whereas when you're trying to generally characterise a metagenome a less conservative value could increase the sensitivity of the analysis be more helpful.
@@ -205,7 +205,7 @@ In order to calculate mean posterior abundances we can run the following command
 Reads
 -----
 
-After the mean posterior abundances have been calculated for a sample all the reads that have been assigned to a taxon through the Dirichlet process can be outputted in separate bam files ready for further analyses (like assemblying or variant calling for instance) via the `haystack reads` module. Reads that have been assigned to the Grey and Dark Matter are outputted in fastq files as they have not been uniquely assigned to a taxon.
+After the mean posterior abundances have been calculated for a sample all the reads that have been assigned to a taxon through the Dirichlet process can be outputted in separate bam files ready for further analyses (like assembling or variant calling for instance) via the `haystack reads` module. Reads that have been assigned to the Grey and Dark Matter are outputted in fastq files as they have not been uniquely assigned to a taxon.
 
 Here is an example command
 

@@ -13,6 +13,7 @@ META_ALN_MIN_SCORE_CONSTANT = -6
 from haystack.workflow.scripts.utilities import get_total_paths, reads
 
 
+# noinspection PyUnusedLocal,PyShadowingBuiltins,PyShadowingNames
 def get_min_score(wildcards, input):
     """Get the min score dor the edit distance of the alignment."""
     return (
@@ -78,7 +79,7 @@ rule align_taxon_paired_end:
 
 
 def get_meta_bams(_):
-    "Get paths for individual bam files"
+    """Get paths for individual bam files"""
     return [
         config["analysis_output_dir"]
         + "/alignments/{sample}/"

@@ -10,6 +10,7 @@ import shutil
 import sys
 
 
+# TODO get rid of this file and do the concat operations on the command line using `cat {list} | xargs cat > {output}`
 def concat_files(list_of_files, output_file):
     """Concatenating files that are provided as input into a single file."""
 

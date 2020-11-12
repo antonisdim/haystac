@@ -7,6 +7,7 @@ __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
 import argparse
+import hashlib
 import os
 import re
 import sys
@@ -222,7 +223,7 @@ class AccessionFileType(SpreadsheetFileType):
         # TODO do we need to check `species` is valid also?
 
         # TODO check regex for consistency with other parts of the code
-        bad_accs = "\n".join(
+        bad_list = "\n".join(
             [
                 f"line {i + 1}: '{acc}'"
                 for i, acc in enumerate(self.data[idx].tolist())
@@ -230,8 +231,8 @@ class AccessionFileType(SpreadsheetFileType):
             ]
         )
 
-        if bad_accs:
-            raise ArgumentErrorMessage(f"'{value}' these accession codes contain invalid characters:\n{bad_accs}")
+        if bad_list:
+            raise ArgumentErrorMessage(f"'{value}' these accession codes contain invalid characters:\n{bad_list}")
 
         return value
 
@@ -494,5 +495,14 @@ def chunker(seq, size):
     return (seq[pos : pos + size] for pos in range(0, len(seq), size))
 
 
+# TODO why does this need to exist?
 def reads(config):
     return "PE" if config["read_mode"] == PE_MODERN else "SE"
+
+
+def md5(filename):
+    hash_md5 = hashlib.md5()
+    with open(filename, "rb") as f:
+        for chunk in iter(lambda: f.read(4096), b""):
+            hash_md5.update(chunk)
+    return hash_md5.hexdigest()

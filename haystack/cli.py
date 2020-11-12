@@ -9,7 +9,6 @@ __license__ = "MIT"
 
 import argparse
 import datetime
-import hashlib
 import os
 import shutil
 import sys
@@ -44,6 +43,7 @@ from haystack.workflow.scripts.utilities import (
     FAIL,
     END,
     is_tty,
+    md5,
 )
 
 os.environ["OPENBLAS_NUM_THREADS"] = "1"
@@ -246,6 +246,7 @@ The haystack commands are:
         with open(CONFIG_USER, "w") as fout:
             yaml.safe_dump(self.config_user, fout, default_flow_style=False)
 
+    # noinspection PyDictCreation
     def database(self):
         """
         Build a database of target species
@@ -415,10 +416,9 @@ The haystack commands are:
         config = {**self.config_merged, **vars(args)}
 
         # store the md5 checksums for the database user input files
-
-        config["query_file_md5"] = hashlib.md5(open(args.query_file, "r").read()).hexdigest() if args.query_file else ""
-        config["accessions_md5"] = hashlib.md5(open(args.accessions, "r").read()).hexdigest() if args.query_file else ""
-        config["sequences_md5"] = hashlib.md5(open(args.sequences, "r").read()).hexdigest() if args.query_file else ""
+        config["query_file_md5"] = md5(args.query_file) if args.query_file else ""
+        config["accessions_md5"] = md5(args.accessions) if args.query_file else ""
+        config["sequences_md5"] = md5(args.sequences) if args.query_file else ""
 
         # TODO if build, confirm details match! do the same for sample and analyse
         config_fetch = os.path.join(args.db_output, "database_fetch_config.yaml")

@@ -62,6 +62,7 @@ def get_bt2_idx_filter_chunk(wildcards):
     """Pick the files for the specific bt2 index chunk"""
 
     # read the file with the chunks
+    # noinspection PyUnresolvedReferences
     get_chunk_num = checkpoints.calculate_bt2_idx_chunks.get()
     chunk_df = pd.read_csv(get_chunk_num.output[0], sep="\t", names=["chunk", "path"])
 
@@ -90,12 +91,12 @@ rule bowtie_index:
     log:
         config["db_output"] + "/bowtie/chunk{chunk_num}_index.log",
     output:
-        expand(
-            config["db_output"] + "/bowtie/chunk{chunk_num}.{n}.bt2l", n=[1, 2, 3, 4], allow_missing=True,
-        ),
-        expand(
-            config["db_output"] + "/bowtie/chunk{chunk_num}.rev.{n}.bt2l", n=[1, 2], allow_missing=True,
-        ),
+        config["db_output"] + "/bowtie/chunk{chunk_num}.1.bt2l",
+        config["db_output"] + "/bowtie/chunk{chunk_num}.2.bt2l",
+        config["db_output"] + "/bowtie/chunk{chunk_num}.3.bt2l",
+        config["db_output"] + "/bowtie/chunk{chunk_num}.4.bt2l",
+        config["db_output"] + "/bowtie/chunk{chunk_num}.rev.1.bt2l",
+        config["db_output"] + "/bowtie/chunk{chunk_num}.rev.2.bt2l",
     benchmark:
         repeat("benchmarks/bowtie_index_chunk{chunk_num}.benchmark.txt", 1)
     message:

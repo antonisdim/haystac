@@ -7,7 +7,7 @@ Introduction
 Alignment based metagenomics
 ----------------------------
 
-`haystack` is an easy to use pipeine for metagenomic identifications 
+`haystack` is an easy to use pipeline for metagenomic identifications 
 
 You can easily:
 

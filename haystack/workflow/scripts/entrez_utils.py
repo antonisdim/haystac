@@ -89,7 +89,7 @@ def entrez_esearch(database, query):
     # get the search keys
     key = etree.find("QueryKey").text
     webenv = etree.find("WebEnv").text
-    id_list = [id.text for id in etree.findall(".//Id")]
+    id_list = [id_node.text for id_node in etree.findall(".//Id")]
 
     return key, webenv, id_list
 

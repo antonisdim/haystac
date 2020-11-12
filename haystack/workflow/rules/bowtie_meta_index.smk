@@ -32,12 +32,12 @@ rule index_database_entrez:
     log:
         config["cache"] + "/ncbi/{orgname}/{accession}_index.log",
     output:
-        expand(
-            config["cache"] + "/ncbi/{orgname}/{accession}.{n}.bt2l", n=[1, 2, 3, 4], allow_missing=True,
-        ),
-        expand(
-            config["cache"] + "/ncbi/{orgname}/{accession}.rev.{n}.bt2l", n=[1, 2], allow_missing=True,
-        ),
+        config["cache"] + "/ncbi/{orgname}/{accession}.1.bt2l",
+        config["cache"] + "/ncbi/{orgname}/{accession}.2.bt2l",
+        config["cache"] + "/ncbi/{orgname}/{accession}.3.bt2l",
+        config["cache"] + "/ncbi/{orgname}/{accession}.4.bt2l",
+        config["cache"] + "/ncbi/{orgname}/{accession}.rev.1.bt2l",
+        config["cache"] + "/ncbi/{orgname}/{accession}.rev.2.bt2l",
     benchmark:
         repeat("benchmarks/index_database_{orgname}_{accession}.benchmark.txt", 1)
     message:
