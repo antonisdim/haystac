@@ -6,7 +6,7 @@ __copyright__ = "Copyright 2020, University of Oxford"
 __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
-from haystack.workflow.scripts.utilities import get_total_paths, PE_MODERN
+from haystack.workflow.scripts.utilities import get_total_paths, PE_MODERN, print_warning
 
 
 rule dedup_merged_mapdamage:
@@ -71,12 +71,11 @@ def get_mapdamage_out_dir_paths(wildcards):
         )
 
     if config["read_mode"] == PE_MODERN:
-        # TODO make a print warning function
-        print(
+        print_warning(
             "WARNING: dedup is treating PE uncollapsed reads as SE reads. "
             "Removing PCR duplicates might not have been done correctly."
         )
-        print("WARNING: mapDamage has not been optimised to analyse paired end alignment data.")
+        print_warning("WARNING: mapDamage has not been optimised to analyse paired end alignment data.")
         return inputs
     else:
         return inputs

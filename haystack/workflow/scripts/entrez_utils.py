@@ -15,7 +15,7 @@ from xml.etree import ElementTree
 import requests
 import yaml
 
-from haystack.workflow.scripts.utilities import RuntimeErrorMessage
+from haystack.workflow.scripts.utilities import RuntimeErrorMessage, print_warning
 
 # base url of the Entrez web service
 ENTREZ_URL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/"
@@ -144,8 +144,7 @@ def entrez_assembly_ftp(accession, force=False):
         )
 
         if force:
-            # TODO make a print warning function
-            print(f"WARNING: {message}", file=sys.stderr)
+            print_warning(f"WARNING: {message}", file=sys.stderr)
         else:
             raise RuntimeErrorMessage(message)
 
@@ -222,7 +221,7 @@ def entrez_find_replacement_accession(accession):
     keywords = [keyword.text.lower() for keyword in etree.findall(".//GBKeyword")]
 
     if replacement is not None and "wgs" in keywords:
-        print(
+        print_warning(
             f"WARNING: Replacing the superseded WGS accession '{accession}' with '{replacement.text}'.",
             file=sys.stderr,
         )

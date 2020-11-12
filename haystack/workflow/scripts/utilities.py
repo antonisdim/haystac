@@ -19,6 +19,7 @@ PE_MODERN = "PE_MODERN"
 PE_ANCIENT = "PE_ANCIENT"
 SE = "SE"
 
+WARNING = "\x1b[33m"
 FAIL = "\x1b[31m"
 END = "\033[0m"
 
@@ -505,14 +506,23 @@ def chunker(seq, size):
     return (seq[pos : pos + size] for pos in range(0, len(seq), size))
 
 
-# TODO why does this need to exist?
+# TODO why does this need to exist? - because after we process a sample the reads are either SE or PE. If there are better ways for that I'm happy to change it
 def reads(config):
     return "PE" if config["read_mode"] == PE_MODERN else "SE"
 
 
 def md5(filename):
     hash_md5 = hashlib.md5()
+
+    # open file and get the checksum
     with open(filename, "rb") as f:
+        # read it in chunks in case the file is big
         for chunk in iter(lambda: f.read(4096), b""):
             hash_md5.update(chunk)
+
     return hash_md5.hexdigest()
+
+
+def print_warning(*args, **kwargs):
+    """Function to print warnings"""
+    print(f"{WARNING}{''.join(map(str,args))}{END}" if is_tty else f"{message}", **kwargs)
