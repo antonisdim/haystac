@@ -8,6 +8,7 @@ __license__ = "MIT"
 
 import os
 import sys
+
 import pandas as pd
 
 from haystack.workflow.scripts.utilities import RuntimeErrorMessage
@@ -44,7 +45,7 @@ def calculate_bt2_idx_chunks(mem_resources, mem_rescale_factor, fasta_files, out
 
         chunk_df_list.append([chunks, fasta_file])
 
-    chunk_df = pd.DataFrame(chunk_df_list, columns=['chunk', 'path'])
+    chunk_df = pd.DataFrame(chunk_df_list, columns=["chunk", "path"])
 
     chunk_df.to_csv(output_tsv, sep="\t", index=False, header=False)
 
@@ -52,7 +53,6 @@ def calculate_bt2_idx_chunks(mem_resources, mem_rescale_factor, fasta_files, out
 
     with open(output_txt, "w") as outfile:
         print(idx_chunk_total, file=outfile)
-
 
 
 if __name__ == "__main__":

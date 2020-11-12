@@ -10,9 +10,9 @@ import argparse
 import os
 import re
 import sys
-import yaml
 
 import pandas as pd
+import yaml
 
 PE_MODERN = "PE_MODERN"
 PE_ANCIENT = "PE_ANCIENT"
@@ -340,7 +340,7 @@ class CheckExistingConfig(object):
                 existing_config = yaml.safe_load(fin)
 
                 if not isinstance(params, dict):
-                    important_args = ['cache']
+                    important_args = ["cache"]
                 else:
                     important_args = [
                         "cache",

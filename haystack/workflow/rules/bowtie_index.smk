@@ -6,9 +6,9 @@ __copyright__ = "Copyright 2020, University of Oxford"
 __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
-import os
 from math import ceil
 
+import pandas as pd
 from psutil import virtual_memory
 
 MEGABYTE = float(1024 ** 2)
@@ -47,7 +47,7 @@ checkpoint calculate_bt2_idx_chunks:
         config["db_output"] + "/bowtie/bt2_idx_chunk_num.log",
     output:
         config["db_output"] + "/bowtie/bt2_idx_chunk_list.txt",
-        config["db_output"] + "/bowtie/bt2_idx_chunk_num.txt"
+        config["db_output"] + "/bowtie/bt2_idx_chunk_num.txt",
     params:
         query=config["db_output"],
         mem_resources=float(config["mem"]),

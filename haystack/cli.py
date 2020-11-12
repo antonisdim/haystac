@@ -9,10 +9,10 @@ __license__ = "MIT"
 
 import argparse
 import datetime
+import hashlib
 import os
 import shutil
 import sys
-import hashlib
 from multiprocessing import cpu_count
 
 import argcomplete

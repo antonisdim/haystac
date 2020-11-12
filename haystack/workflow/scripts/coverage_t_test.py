@@ -6,12 +6,11 @@ __copyright__ = "Copyright 2020, University of Oxford"
 __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
-import sys
 import os
+import sys
 
 import pandas as pd
-import pysam
-from scipy.stats import fisher_exact, chi2_contingency
+from scipy.stats import chi2_contingency
 
 
 def coverage_t_test(cov_file, taxon_fasta_idx, taxon, outfile):
