@@ -434,6 +434,8 @@ The haystack commands are:
             if args.query or args.accessions or args.sequences or args.refseq_rep or args.query_file:
                 target_list.append("db_taxa_accessions.tsv")
 
+            CheckExistingConfig(config_fetch, config)
+
             with open(config_fetch, "w") as fout:
                 yaml.safe_dump(config, fout, default_flow_style=False)
 
@@ -447,8 +449,13 @@ The haystack commands are:
                     #   the whole --mode index feature useless!
                     # config = yaml.safe_load(fin)
                     # TODO we should check to make sure that the core CLI flags are not different (e.g. --query)
+                    # config = {**yaml.safe_load(fin), **config}
+
+                    fetch_args = {**yaml.safe_load(fin)}
+                    fetch_args.update((k, v) for k, v in config.items() if v is not None)
+                    config = fetch_args
+
                     CheckExistingConfig(config_fetch, config)
-                    config = {**yaml.safe_load(fin), **config}
             except FileNotFoundError:
                 raise ValidationError(
                     "Please run haystack `database --mode fetch` before attempting to index the database."
