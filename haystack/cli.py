@@ -772,7 +772,7 @@ The haystack commands are:
             )
 
         elif args.mode == "reads":
-            target_list.append("/dirichlet_reads/{config['sample_prefix']}_dirichlet_reads.done")
+            target_list.append(f"dirichlet_reads/{config['sample_prefix']}_dirichlet_reads.done")
 
         elif args.mode == "mapdamage":
             target_list.append(f"mapdamage/{config['sample_prefix']}_mapdamage.done")

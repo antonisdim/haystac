@@ -36,7 +36,7 @@ def coverage_t_test(cov_file, taxon_fasta_idx, taxon, outfile):
 
     # oddsratio, pvalue = fisher_exact([contingency_first_row, contingency_second_row])
 
-    chi2, pvalue, dof, expected = chi2_contingency([contingency_first_row, contingency_second_row])
+    chi2, pvalue, dof, expected = chi2_contingency(contingency_first_row)
 
     with open(outfile, "w") as outhandle:
         print(taxon, pvalue, file=outhandle, sep="\t")
