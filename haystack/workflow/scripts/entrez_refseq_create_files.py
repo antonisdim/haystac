@@ -142,12 +142,11 @@ def entrez_refseq_create_files(
             nuccore_plasmids_to_drop.append(key)
     nuccore_plasmids_exploded.drop(nuccore_plasmids_to_drop, inplace=True)
 
-    # todo working example the head() needs to leave for a proper run
-    genbank_exploded.head(5).to_csv(genbank_genomes_out, sep="\t", header=header, index=False)
-    nuccore_exploded.head(5).to_csv(nuccore_genomes_out, sep="\t", header=header, index=False)
-    assemblies_exploded.head(5).to_csv(assemblies_out, sep="\t", header=header, index=False)
-    genbank_plasmids_filtered_exploded.head(5).to_csv(genbank_plasmids_out, sep="\t", header=header, index=False)
-    nuccore_plasmids_exploded.head(5).to_csv(nuccore_plasmids_out, sep="\t", header=header, index=False)
+    genbank_exploded.to_csv(genbank_genomes_out, sep="\t", header=header, index=False)
+    nuccore_exploded.to_csv(nuccore_genomes_out, sep="\t", header=header, index=False)
+    assemblies_exploded.to_csv(assemblies_out, sep="\t", header=header, index=False)
+    genbank_plasmids_filtered_exploded.to_csv(genbank_plasmids_out, sep="\t", header=header, index=False)
+    nuccore_plasmids_exploded.to_csv(nuccore_plasmids_out, sep="\t", header=header, index=False)
 
 
 if __name__ == "__main__":

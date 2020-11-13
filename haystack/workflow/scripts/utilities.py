@@ -367,7 +367,7 @@ class CheckExistingConfig(object):
                         "sequences_file",
                         "refseq_rep",
                         "force_accessions",
-                        "exclude_accessions",
+                        # "exclude_accessions",
                         "resolve_accessions",
                         "rank",
                         "mtDNA",
