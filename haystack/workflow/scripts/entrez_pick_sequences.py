@@ -8,6 +8,8 @@ __license__ = "MIT"
 
 import pandas as pd
 
+from haystack.workflow.scripts.utilities import ORGNAME_REGEX
+
 
 def entrez_pick_sequences(config, nuccore_file, taxa_file, output_file):
     accessions = pd.read_csv(nuccore_file, sep="\t")
@@ -32,24 +34,22 @@ def entrez_pick_sequences(config, nuccore_file, taxa_file, output_file):
         # the entrez query might give a different accession for a certain species than the refseq rep one and
         # I don't want that. If the species exists in the refseq I want to keep the refseq records
         selected_sequences = selected_sequences[
-            ~selected_sequences["species"].str.replace(" ", "_").isin(refseq_genomes.species)
+            ~selected_sequences["species"].replace(ORGNAME_REGEX, "_", regex=True).isin(refseq_genomes.species)
         ]
         selected_sequences = selected_sequences[
-            ~selected_sequences["species"].str.replace(" ", "_").isin(genbank_genomes.species)
+            ~selected_sequences["species"].replace(ORGNAME_REGEX, "_", regex=True).isin(genbank_genomes.species)
         ]
         selected_sequences = selected_sequences[
-            ~selected_sequences["species"].str.replace(" ", "_").isin(assemblies.species)
+            ~selected_sequences["species"].replace(ORGNAME_REGEX, "_", regex=True).isin(assemblies.species)
         ]
         selected_sequences = selected_sequences[
-            ~selected_sequences["species"].str.replace(" ", "_").isin(refseq_plasmids.species)
+            ~selected_sequences["species"].replace(ORGNAME_REGEX, "_", regex=True).isin(refseq_plasmids.species)
         ]
         selected_sequences = selected_sequences[
-            ~selected_sequences["species"].str.replace(" ", "_").isin(genbank_plasmids.species)
+            ~selected_sequences["species"].replace(ORGNAME_REGEX, "_", regex=True).isin(genbank_plasmids.species)
         ]
 
-    selected_sequences["species"] = selected_sequences["species"].str.replace("'", "")
-    selected_sequences["species"] = selected_sequences["species"].str.replace("(", "")
-    selected_sequences["species"] = selected_sequences["species"].str.replace(")", "")
+    selected_sequences["species"] = selected_sequences["species"].replace(ORGNAME_REGEX, "_", regex=True)
 
     if config["sequences"]:
         custom_fasta_paths = pd.read_csv(

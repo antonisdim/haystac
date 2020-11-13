@@ -15,6 +15,9 @@ import sys
 import pandas as pd
 import yaml
 
+ORGNAME_REGEX = r"[^\w.-]+"
+ACCESSION_REGEX = r"[^\w.-]+"
+
 PE_MODERN = "PE_MODERN"
 PE_ANCIENT = "PE_ANCIENT"
 SE = "SE"
@@ -222,20 +225,19 @@ class AccessionFileType(SpreadsheetFileType):
         idx = self.cols.index("accession")
         species = self.cols.index("species")
 
-        # TODO check regex for consistency with other parts of the code
         bad_list_acc = "\n".join(
             [
                 f"line {i + 1}: '{acc}'"
                 for i, acc in enumerate(self.data[idx].tolist())
-                if not re.match(r"^[\w.]+$", acc)
+                if not re.match(ACCESSION_REGEX, acc)
             ]
         )
 
         bad_list_species = "\n".join(
             [
-                f"line {i + 1}: '{acc}'"
-                for i, acc in enumerate(self.data[species].tolist())
-                if not re.match(r"^[\w.]+$", acc)
+                f"line {i + 1}: '{tax}'"
+                for i, tax in enumerate(self.data[species].tolist())
+                if not re.match(ORGNAME_REGEX, tax)
             ]
         )
 
@@ -478,9 +480,11 @@ def get_total_paths(
 
 def normalise_name(taxon):
     """remove unnecessary characters from a taxon name string."""
-    # TODO replace with a regex pattern (e.g [^\w]) so we don't have to blacklist specific chrs
-    #  (see also AccessionFileType)
-    return taxon.replace(" ", "_").replace("[", "").replace("]", "").replace("/", "_")
+
+    return re.sub(ORGNAME_REGEX, "_", taxon)
+
+
+# return taxon.replace(" ", "_").replace("[", "").replace("]", "").replace("/", "_")
 
 
 def check_unique_taxa_in_custom_input(accessions, sequences):

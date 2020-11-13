@@ -10,7 +10,13 @@ import re
 
 import pandas as pd
 
-from haystack.workflow.scripts.utilities import normalise_name, check_unique_taxa_in_custom_input, RuntimeErrorMessage
+from haystack.workflow.scripts.utilities import (
+    normalise_name,
+    check_unique_taxa_in_custom_input,
+    RuntimeErrorMessage,
+    ACCESSION_REGEX,
+    ORGNAME_REGEX,
+)
 
 
 rule entrez_custom_sequences:
@@ -60,8 +66,10 @@ def get_paths_for_custom_seqs():
             str(seq["accession"]).strip(),
         )
 
-        # TODO make wildcard_constraints consistent with this
-        if not re.match("^[\w.]+$", accession):
+        if not re.match(ORGNAME_REGEX, orgname):
+            raise RuntimeErrorMessage(f"The taxon name for '{orgname}' contains an illegal character")
+
+        if not re.match(ACCESSION_REGEX, accession):
             raise RuntimeErrorMessage(f"The accession '{accession}' for '{orgname}' contains an illegal character")
 
         inputs.append(config["cache"] + f"/ncbi/{orgname}/custom_seq-{accession}.fasta.gz")
@@ -101,8 +109,10 @@ def get_paths_for_custom_acc(_):
             str(seq["accession"]).strip(),
         )
 
-        # TODO make wildcard_constraints consistent with this
-        if not re.match("^[\w.]+$", accession):
+        if not re.match(ORGNAME_REGEX, orgname):
+            raise RuntimeErrorMessage(f"The taxon name for '{orgname}' contains an illegal character")
+
+        if not re.match(ACCESSION_REGEX, accession):
             raise RuntimeErrorMessage(f"The accession '{accession}' for '{orgname}' contains an illegal character")
 
         inputs.append(config["cache"] + f"/ncbi/{orgname}/{accession}.fasta.gz")

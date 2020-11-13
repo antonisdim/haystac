@@ -17,6 +17,6 @@ include: "rules/split_reads.smk"
 wildcard_constraints:
     query="[\w]+",
     sample="[\w]+",
-    orgname="[^/]+", # TODO check for consistency with other parts of the code
-    accession="[^/]+", # TODO check for consistency with other parts of the code
+    orgname="[\w.-]+",
+    accession="[\w.-]+",
     chunk="\d+",
