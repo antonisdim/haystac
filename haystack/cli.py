@@ -472,10 +472,9 @@ The haystack commands are:
                 yaml.safe_dump(config, fout, default_flow_style=False)
 
         target_list = [os.path.join(args.db_output, target) for target in target_list]
-        snakefile = os.path.join(CODE_DIR, "workflow/database.smk")
 
         # run the `haystack` workflow
-        exit_code = self._run_snakemake(snakefile, args, config, target_list)
+        exit_code = self._run_snakemake("database", args, config, target_list)
 
         if args.mode == "fetch" and exit_code == 0 and not args.unlock:
             print(f"Please run `haystack database --mode index --output {db_original}` after this step.")
@@ -634,9 +633,8 @@ The haystack commands are:
             yaml.safe_dump(config, fout, default_flow_style=False)
 
         target_list = [os.path.join(args.sample_output_dir, target) for target in target_list]
-        snakefile = os.path.join(CODE_DIR, "workflow/sample.smk")
 
-        return self._run_snakemake(snakefile, args, config, target_list)
+        return self._run_snakemake("sample", args, config, target_list)
 
     def analyse(self):
         """
@@ -786,9 +784,8 @@ The haystack commands are:
             yaml.safe_dump(config, fout, default_flow_style=False)
 
         target_list = [os.path.join(args.analysis_output_dir, target) for target in target_list]
-        snakefile = os.path.join(CODE_DIR, "workflow/analyse.smk")
 
-        return self._run_snakemake(snakefile, args, config, target_list)
+        return self._run_snakemake("analyse", args, config, target_list)
 
     def _common_arguments(self, parser):
         """
@@ -830,13 +827,14 @@ The haystack commands are:
             type=JsonType(),
         )
 
-    def _run_snakemake(self, snakefile, args, config, target_list):
+    def _run_snakemake(self, module, args, config, target_list):
         """
         Helper function for running the snakemake workflow
         """
         print("HAYSTACK v 0.1\n")
         print(f"Date: {datetime.datetime.now()}\n")
 
+        config["module"] = module
         config["workflow_dir"] = os.path.join(CODE_DIR, "workflow")
 
         print("Config parameters:\n")
@@ -863,7 +861,7 @@ The haystack commands are:
         smk_params = config.pop("snakemake") or {}
 
         success = snakemake.snakemake(
-            snakefile,
+            snakefile=os.path.join(CODE_DIR, "workflow/workflow.smk"),
             config=config,
             targets=target_list,
             cores=int(args.cores),
