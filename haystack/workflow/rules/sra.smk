@@ -6,11 +6,20 @@ __copyright__ = "Copyright 2020, University of Oxford"
 __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
+import os
+
+rule sra_tools_disable_cache:
+    output:
+        os.path.expanduser("~/.ncbi/user-settings.mkfg")
+    shell:
+        "mkdir -p ~/.ncbi && echo '/repository/user/main/public/cache-disabled = \"true\"' > {output}"
+
 
 rule get_sra_fastq_se:
+    input:
+        os.path.expanduser("~/.ncbi/user-settings.mkfg")
     output:
         temp(config["sample_output_dir"] + "/sra_data/SE/{accession}.fastq"),
-        temp("~/ncbi/public/sra/{accession}.sra.cache"),
     log:
         temp(config["sample_output_dir"] + "/sra_data/SE/{accession}.log"),
     threads: 6
@@ -29,10 +38,11 @@ rule get_sra_fastq_se:
 
 
 rule get_sra_fastq_pe:
+    input:
+        os.path.expanduser("~/.ncbi/user-settings.mkfg")
     output:
         temp(config["sample_output_dir"] + "/sra_data/PE/{accession}_1.fastq"),
         temp(config["sample_output_dir"] + "/sra_data/PE/{accession}_2.fastq"),
-        temp("~/ncbi/public/sra/{accession}.sra.cache"),
     log:
         temp(config["sample_output_dir"] + "/sra_data/PE/{accession}.log"),
     threads: 6
