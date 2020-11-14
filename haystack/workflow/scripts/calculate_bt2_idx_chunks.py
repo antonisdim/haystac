@@ -11,7 +11,7 @@ import sys
 
 import pandas as pd
 
-from haystack.workflow.scripts.utilities import RuntimeErrorMessage
+from haystack.workflow.scripts.utilities import print_error
 
 
 def calculate_bt2_idx_chunks(mem_resources, mem_rescale_factor, fasta_files, output_tsv, output_txt):
@@ -32,7 +32,7 @@ def calculate_bt2_idx_chunks(mem_resources, mem_rescale_factor, fasta_files, out
         file_size = os.stat(fasta_file).st_size / (1024 ** 2)
 
         if file_size >= mem_resources:
-            raise RuntimeErrorMessage(
+            print_error(
                 f"Fasta file {fasta_file} is bigger than the RAM resources provided. "
                 f"Unfortunately an index cannot be built."
             )

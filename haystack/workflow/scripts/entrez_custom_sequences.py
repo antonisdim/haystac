@@ -14,7 +14,7 @@ import sys
 import pandas as pd
 from Bio import bgzf
 
-from haystack.workflow.scripts.utilities import RuntimeErrorMessage
+from haystack.workflow.scripts.utilities import print_error
 
 
 def entrez_custom_sequences(config, taxon, output_file):
@@ -25,7 +25,7 @@ def entrez_custom_sequences(config, taxon, output_file):
         )
 
     else:
-        raise RuntimeErrorMessage(
+        print_error(
             "The file containing the paths to the custom fasta sequences isn not there. "
             "Please provide a valid path for the tab delimited input file."
         )
@@ -58,7 +58,7 @@ def entrez_custom_sequences(config, taxon, output_file):
                     shutil.copyfileobj(fin, fout)
 
     else:
-        raise RuntimeErrorMessage(
+        print_error(
             f"The path for the fasta file input for taxon {taxon} "
             f"isn't valid. Please provide a valid path in your input file."
         )

@@ -13,7 +13,6 @@ import pandas as pd
 from haystack.workflow.scripts.utilities import (
     normalise_name,
     check_unique_taxa_in_custom_input,
-    RuntimeErrorMessage,
     ACCESSION_REGEX,
     ORGNAME_REGEX,
     print_error,
@@ -72,10 +71,10 @@ def get_paths_for_custom_seqs():
         )
 
         if not re.match(ORGNAME_REGEX, orgname):
-            raise RuntimeErrorMessage(f"The taxon name for '{orgname}' contains an illegal character")
+            print_error(f"The taxon name for '{orgname}' contains an illegal character")
 
         if not re.match(ACCESSION_REGEX, accession):
-            raise RuntimeErrorMessage(f"The accession '{accession}' for '{orgname}' contains an illegal character")
+            print_error(f"The accession '{accession}' for '{orgname}' contains an illegal character")
 
         inputs.append(config["cache"] + f"/ncbi/{orgname}/custom_seq-{accession}.fasta.gz")
 
@@ -93,7 +92,7 @@ def get_paths_for_custom_acc(_):
             dup_taxa = ", ".join(
                 [i for i in custom_accessions[custom_accessions["species"].duplicated()]["species"].to_list()]
             )
-            raise RuntimeErrorMessage(
+            print_error(
                 f"You have provided more than one sequence for {dup_taxa}. "
                 f"Only one sequence per taxon is allowed. "
                 f"Please only provide your favourite sequence for each taxon."
@@ -115,10 +114,10 @@ def get_paths_for_custom_acc(_):
         )
 
         if not re.match(ORGNAME_REGEX, orgname):
-            raise RuntimeErrorMessage(f"The taxon name for '{orgname}' contains an illegal character")
+            print_error(f"The taxon name for '{orgname}' contains an illegal character")
 
         if not re.match(ACCESSION_REGEX, accession):
-            raise RuntimeErrorMessage(f"The accession '{accession}' for '{orgname}' contains an illegal character")
+            print_error(f"The accession '{accession}' for '{orgname}' contains an illegal character")
 
         inputs.append(config["cache"] + f"/ncbi/{orgname}/{accession}.fasta.gz")
 

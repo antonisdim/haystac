@@ -33,24 +33,6 @@ class ValidationError(Exception):
     pass
 
 
-class RuntimeErrorMessage(RuntimeError):
-    """
-    RuntimeError message formatting
-    """
-
-    def __init__(self, message):
-        super().__init__(f"{FAIL}{message}{END}" if is_tty else f"{message}")
-
-
-class ArgumentErrorMessage(argparse.ArgumentTypeError):
-    """
-    RuntimeError message formatting
-    """
-
-    def __init__(self, message):
-        super().__init__(f"{FAIL}{message}{END}" if is_tty else f"{message}")
-
-
 class ArgumentCustomFormatter(argparse.HelpFormatter):
     """
     Custom formatter for argparse
@@ -88,7 +70,7 @@ class WritablePathType(object):
             path.mkdir(parents=True, exist_ok=True)
             return value
         except Exception:
-            raise ArgumentErrorMessage(f"'{value}' is not a valid writable path")
+            raise argparse.ArgumentTypeError(f"'{value}' is not a valid writable path")
 
 
 class PositiveIntType(object):
@@ -101,7 +83,7 @@ class PositiveIntType(object):
             if not int(value) > 0:
                 raise ValueError()
         except ValueError:
-            raise ArgumentErrorMessage(f"'{value}' is not a valid positive integer")
+            raise argparse.ArgumentTypeError(f"'{value}' is not a valid positive integer")
 
         return int(value)
 
@@ -121,7 +103,7 @@ class RangeType(object):
             if not (self.lower <= self.type(value) <= self.upper):
                 raise ValueError()
         except ValueError:
-            raise ArgumentErrorMessage(
+            raise argparse.ArgumentTypeError(
                 f"'{value}' is not a valid {self.type.__name__} in the range ({self.lower}, {self.upper})"
             )
 
@@ -159,7 +141,7 @@ class BoolType(object):
         elif value.lower() in ("no", "false", "f", "n", "0"):
             return False
         else:
-            raise ArgumentErrorMessage(f"'{value}' is not a valid boolean")
+            raise argparse.ArgumentTypeError(f"'{value}' is not a valid boolean")
 
 
 class JsonType(object):
@@ -173,7 +155,7 @@ class JsonType(object):
         try:
             return json.loads(value)
         except json.decoder.JSONDecodeError as error:
-            raise ArgumentErrorMessage(f"'{value}' is not a valid JSON string\n {error}")
+            raise argparse.ArgumentTypeError(f"'{value}' is not a valid JSON string\n {error}")
 
 
 class SpreadsheetFileType(object):
@@ -187,18 +169,18 @@ class SpreadsheetFileType(object):
     def __call__(self, value):
 
         if not os.path.exists(value):
-            raise ArgumentErrorMessage(f"'{value}' does not exit")
+            raise argparse.ArgumentTypeError(f"'{value}' does not exit")
 
         if os.stat(value).st_size == 0:
-            raise ArgumentErrorMessage(f"'{value}' is empty")
+            raise argparse.ArgumentTypeError(f"'{value}' is empty")
 
         try:
             self.data = pd.read_table(value, sep="\t", header=None, index_col=False,)
         except Exception:
-            raise ArgumentErrorMessage(f"'{value}' unknown error parsing file")
+            raise argparse.ArgumentTypeError(f"'{value}' unknown error parsing file")
 
         if len(self.data.columns) != len(self.cols):
-            raise ArgumentErrorMessage(
+            raise argparse.ArgumentTypeError(
                 f"'{value}' must have {len(self.cols)} columns and be tab delimited (cols={len(self.data.columns)})"
             )
 
@@ -206,7 +188,7 @@ class SpreadsheetFileType(object):
         bad_rows = ", ".join([str(i + 1) for i in self.data.index[self.data.isnull().any(axis=1)].tolist()])
 
         if bad_rows:
-            raise ArgumentErrorMessage(f"'{value}' contains missing data in line(s): {bad_rows}")
+            raise argparse.ArgumentTypeError(f"'{value}' contains missing data in line(s): {bad_rows}")
 
         return value
 
@@ -243,7 +225,7 @@ class AccessionFileType(SpreadsheetFileType):
 
         if bad_list_acc or bad_list_species:
             bad_list = bad_list_acc + "\n" + bad_list_species
-            raise ArgumentErrorMessage(
+            raise argparse.ArgumentTypeError(
                 f"'{value}' these accession codes or taxon names contain invalid characters:\n{bad_list}"
             )
 
@@ -272,7 +254,7 @@ class SequenceFileType(AccessionFileType):
         )
 
         if bad_files:
-            raise ArgumentErrorMessage(f"'{value}' these sequence files do not exist or are empty:\n{bad_files}")
+            raise argparse.ArgumentTypeError(f"'{value}' these sequence files do not exist or are empty:\n{bad_files}")
 
         return value
 
@@ -291,13 +273,13 @@ class SraAccessionType(object):
             _, _, id_list = entrez_esearch("sra", f"{value}[Accession]")
             etree = entrez_efetch("sra", id_list)
         except Exception:
-            raise ArgumentErrorMessage(f"Invalid SRA accession '{value}'")
+            raise argparse.ArgumentTypeError(f"Invalid SRA accession '{value}'")
 
         try:
             # now get the library layout
             layout = etree.find(".//LIBRARY_LAYOUT/*").tag.lower()
         except Exception:
-            raise ArgumentErrorMessage(f"Unable to resolve the library layout for SRA accession '{value}'")
+            raise argparse.ArgumentTypeError(f"Unable to resolve the library layout for SRA accession '{value}'")
 
         return value, layout
 
@@ -321,11 +303,11 @@ class NuccoreQueryType(object):
             # query nuccore to see if this a valid query
             _, _, id_list = entrez_esearch("nuccore", f"{query}")
         except Exception:
-            raise ArgumentErrorMessage(f"Invalid NCBI query '{query}'")
+            raise argparse.ArgumentTypeError(f"Invalid NCBI query '{query}'")
 
         # if the query returns no result set raise error
         if len(id_list) == 0:
-            raise ArgumentErrorMessage(f"No results in NCBI nucleotide for query '{query}'")
+            raise argparse.ArgumentTypeError(f"No results in NCBI nucleotide for query '{query}'")
 
         return value
 
@@ -390,7 +372,7 @@ class CheckExistingConfig(object):
                     # check if all the important params match
                     if arg in existing_config.keys() and arg in params_config.keys():
                         if existing_config[arg] != params_config[arg]:
-                            raise RuntimeErrorMessage(
+                            print_error(
                                 f"You are trying to set a value for parameter {arg} on top of an already existing one "
                                 f"(old: {existing_config[arg]}, new: {params_config[arg]}). "
                                 f"Please either revert to the original parameter you used or create a "
@@ -411,8 +393,7 @@ def get_total_paths(
         pick_sequences = checkpoints.entrez_pick_sequences.get()
         sequences_df = pd.read_csv(pick_sequences.output[0], sep="\t")
 
-        if len(sequences_df) == 0:
-            raise RuntimeErrorMessage("The entrez pick sequences file is empty.")
+        assert len(sequences_df) > 0, f"The entrez pick sequences file is empty {pick_sequences.output[0]}"
 
     if config["refseq_rep"]:
         refseq_rep_prok = checkpoints.entrez_refseq_accessions.get()
@@ -498,7 +479,7 @@ def check_unique_taxa_in_custom_input(accessions, sequences):
         taxon_seq = custom_fasta_paths["species"].tolist()
 
         if bool(set(taxon_acc) & set(taxon_seq)):
-            raise RuntimeErrorMessage(
+            print_error(
                 "You have provided the same taxon both in your custom sequences "
                 "file and your custom accessions file. Please pick and keep ONLY "
                 "one entry from both of these files. You can only have 1 sequence "
@@ -529,7 +510,7 @@ def md5(filename):
 
 def print_error(message):
     """Function to print errors and exit"""
-    message = f"WARNING: {message}"
+    message = f"ERROR: {message}"
     print(f"{FAIL}{message}{END}" if is_tty else message, file=sys.stderr)
     exit(1)
 

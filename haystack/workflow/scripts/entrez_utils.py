@@ -7,7 +7,6 @@ __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
 import os
-import sys
 import time
 from urllib.parse import urlencode
 from xml.etree import ElementTree
@@ -15,7 +14,7 @@ from xml.etree import ElementTree
 import requests
 import yaml
 
-from haystack.workflow.scripts.utilities import RuntimeErrorMessage, print_warning
+from haystack.workflow.scripts.utilities import print_warning, print_error
 
 # base url of the Entrez web service
 ENTREZ_URL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/"
@@ -58,7 +57,7 @@ def entrez_request(action, params=None):
     url = ENTREZ_URL + action
 
     if len(params.get("id", [])) > ENTREZ_MAX_UID:
-        raise RuntimeErrorMessage(f"List of Entrez IDs exceeds the maximum: {ENTREZ_MAX_UID}")
+        print_error(f"List of Entrez IDs exceeds the maximum: {ENTREZ_MAX_UID}")
 
     if config.get("debug"):
         # turn into a get request
@@ -122,7 +121,7 @@ def entrez_assembly_ftp(accession, force=False):
 
     if len(id_list) > 1:
         # should never happen, but...
-        raise RuntimeErrorMessage(f"Multiple assembly accessions found for '{accession}': {id_list}")
+        print_error(f"Multiple assembly accessions found for '{accession}': {id_list}")
 
     elif len(id_list) == 0:
         # no entry in the assembly database for this accession code
@@ -146,7 +145,7 @@ def entrez_assembly_ftp(accession, force=False):
         if force:
             print_warning(message)
         else:
-            raise RuntimeErrorMessage(message)
+            print_error(message)
 
     # preference RefSeq URLs over GenBank URLs
     ftp_stub = etree.find(".//FtpPath_RefSeq") or etree.find(".//FtpPath_GenBank")
@@ -175,9 +174,7 @@ def entrez_range_accessions(accession, first, last):
         # return the range
         return [f"{first[:idx]}{str(item).zfill(pad)}" for item in range(int(first[idx:]), int(last[idx:]) + 1)]
     except ValueError:
-        raise RuntimeErrorMessage(
-            f"Could not resolve the accession range '{first}-{last}' for master record '{accession}'"
-        )
+        print_error(f"Could not resolve the accession range '{first}-{last}' for master record '{accession}'")
 
 
 def entrez_xml_to_dict(etree):
@@ -210,9 +207,7 @@ def entrez_find_replacement_accession(accession):
         r = entrez_request("efetch.fcgi", {"db": "nuccore", "id": accession_new, "rettype": "gb", "retmode": "xml"},)
 
     except requests.exceptions.HTTPError:
-        raise RuntimeErrorMessage(
-            f"Could not find either the GenBank record for '{accession}' or an alternative accession"
-        )
+        print_error(f"Could not find either the GenBank record for '{accession}' or an alternative accession")
 
     etree = ElementTree.XML(r.text)
     replacement = etree.find(".//GBSeq_accession-version")
@@ -221,12 +216,7 @@ def entrez_find_replacement_accession(accession):
     keywords = [keyword.text.lower() for keyword in etree.findall(".//GBKeyword")]
 
     if replacement is not None and "wgs" in keywords:
-        print_warning(
-            f"WARNING: Replacing the superseded WGS accession '{accession}' with '{replacement.text}'.",
-            file=sys.stderr,
-        )
+        print_warning(f"Replacing the superseded WGS accession '{accession}' with '{replacement.text}'")
         return replacement.text
     else:
-        raise RuntimeErrorMessage(
-            f"Could not find either the GenBank record for '{accession}' or a valid alternative accession"
-        )
+        print_error(f"Could not find either the GenBank record for '{accession}' or a valid alternative accession")
