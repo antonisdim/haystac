@@ -229,7 +229,7 @@ class AccessionFileType(SpreadsheetFileType):
             [
                 f"line {i + 1}: '{acc}'"
                 for i, acc in enumerate(self.data[idx].tolist())
-                if not re.match(ACCESSION_REGEX, acc)
+                if re.search(ACCESSION_REGEX, acc)
             ]
         )
 
@@ -237,7 +237,7 @@ class AccessionFileType(SpreadsheetFileType):
             [
                 f"line {i + 1}: '{tax}'"
                 for i, tax in enumerate(self.data[species].tolist())
-                if not re.match(ORGNAME_REGEX, tax)
+                if re.search(ORGNAME_REGEX, tax)
             ]
         )
 
