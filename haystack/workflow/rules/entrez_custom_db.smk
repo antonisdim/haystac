@@ -16,6 +16,8 @@ from haystack.workflow.scripts.utilities import (
     RuntimeErrorMessage,
     ACCESSION_REGEX,
     ORGNAME_REGEX,
+    print_error,
+    print_warning,
 )
 
 
@@ -41,17 +43,20 @@ def get_paths_for_custom_seqs():
     )
 
     if custom_fasta_paths["species"].duplicated().any():
+        dup_taxa = [i for i in custom_fasta_paths[custom_fasta_paths["species"].duplicated()]["species"].to_list()]
+        message = f"{config['sequences']} contains multiple sequences for {', '.join(dup_taxa)}."
+
         if not config["resolve_accessions"]:
-            dup_taxa = ", ".join(
-                [i for i in custom_fasta_paths[custom_fasta_paths["species"].duplicated()]["species"].to_list()]
+            message += (
+                "Either remove all duplicates, or set the `--resolve-accessions` flag to automatically choose one."
             )
-            raise RuntimeErrorMessage(
-                f"You have provided more than one sequence for {dup_taxa}. "
-                f"Only one sequence per taxon is allowed. "
-                f"Please only provide your favourite sequence for each taxon."
-            )
+            print_error(message)
         else:
+            # TODO don't just drop duplicates, use the longest!
             custom_fasta_paths = custom_fasta_paths[~custom_fasta_paths["species"].duplicated()]
+            # TODO tell the user which one you chose!
+            # message += "Chose {accession} for  {taxa}"
+            print_warning(message)
 
     check_unique_taxa_in_custom_input(config["accessions"], config["sequences"])
 
