@@ -144,7 +144,7 @@ def entrez_assembly_ftp(accession, force=False):
         )
 
         if force:
-            print_warning(f"WARNING: {message}", file=sys.stderr)
+            print_warning(message)
         else:
             raise RuntimeErrorMessage(message)
 

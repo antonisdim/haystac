@@ -71,14 +71,10 @@ def get_mapdamage_out_dir_paths(wildcards):
         )
 
     if config["read_mode"] == PE_MODERN:
-        print_warning(
-            "WARNING: dedup is treating PE uncollapsed reads as SE reads. "
-            "Removing PCR duplicates might not have been done correctly."
-        )
-        print_warning("WARNING: mapDamage has not been optimised to analyse paired end alignment data.")
-        return inputs
-    else:
-        return inputs
+        print_warning("dedup treats uncollapsed PE reads as SE. PCR deduplication might not have been done correctly.")
+        print_warning("mapDamage has not been optimised to analyse paired end alignment data.")
+
+    return inputs
 
 
 rule all_mapdamage:

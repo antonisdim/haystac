@@ -527,6 +527,14 @@ def md5(filename):
     return hash_md5.hexdigest()
 
 
-def print_warning(*args, **kwargs):
+def print_error(message):
+    """Function to print errors and exit"""
+    message = f"WARNING: {message}"
+    print(f"{FAIL}{message}{END}" if is_tty else message, file=sys.stderr)
+    exit(1)
+
+
+def print_warning(message):
     """Function to print warnings"""
-    print(f"{WARNING}{''.join(map(str,args))}{END}" if is_tty else f"{message}", **kwargs)
+    message = f"WARNING: {message}"
+    print(f"{WARNING}{message}{END}" if is_tty else message, file=sys.stderr)
