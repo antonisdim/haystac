@@ -164,6 +164,7 @@ rule average_fastq_read_len_single_end:
         "| awk '{{count++; bases += length}} END {{print bases/count}}' 1> {output} ) 2> {log}"
 
 
+# TODO this throws an ugly error when there are no aligned files. give the user a more informative error
 rule average_fastq_read_len_paired_end:
     input:
         mate1=config["analysis_output_dir"] + "/fastq/PE/{sample}_R1_mapq.fastq.gz",
