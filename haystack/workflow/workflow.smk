@@ -6,6 +6,8 @@ __copyright__ = "Copyright 2020, University of Oxford"
 __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
+from haystack.workflow.scripts.utilities import REGEX_WHITELIST
+
 if config["module"] == "sample":
 
     include: "rules/sample.smk"
@@ -52,8 +54,7 @@ elif config["module"] == "analyse":
 
 
 wildcard_constraints:
-    query="[\w]+",
-    sample="[\w]+",
-    orgname="[\w.-]+",
-    accession="[\w.-]+",
+    sample=REGEX_WHITELIST,
+    orgname=REGEX_WHITELIST,
+    accession=REGEX_WHITELIST,
     chunk="\d+",

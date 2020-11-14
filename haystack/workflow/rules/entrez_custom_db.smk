@@ -13,8 +13,7 @@ import pandas as pd
 from haystack.workflow.scripts.utilities import (
     normalise_name,
     check_unique_taxa_in_custom_input,
-    ACCESSION_REGEX,
-    ORGNAME_REGEX,
+    REGEX_BLACKLIST,
     print_error,
     print_warning,
 )
@@ -70,10 +69,10 @@ def get_paths_for_custom_seqs():
             str(seq["accession"]).strip(),
         )
 
-        if not re.match(ORGNAME_REGEX, orgname):
+        if re.match(REGEX_BLACKLIST, orgname) is not None:
             print_error(f"The taxon name for '{orgname}' contains an illegal character")
 
-        if not re.match(ACCESSION_REGEX, accession):
+        if re.match(REGEX_BLACKLIST, accession) is not None:
             print_error(f"The accession '{accession}' for '{orgname}' contains an illegal character")
 
         inputs.append(config["cache"] + f"/ncbi/{orgname}/custom_seq-{accession}.fasta.gz")
@@ -113,10 +112,10 @@ def get_paths_for_custom_acc(_):
             str(seq["accession"]).strip(),
         )
 
-        if not re.match(ORGNAME_REGEX, orgname):
+        if re.match(REGEX_BLACKLIST, orgname) is not None:
             print_error(f"The taxon name for '{orgname}' contains an illegal character")
 
-        if not re.match(ACCESSION_REGEX, accession):
+        if re.match(REGEX_BLACKLIST, accession) is not None:
             print_error(f"The accession '{accession}' for '{orgname}' contains an illegal character")
 
         inputs.append(config["cache"] + f"/ncbi/{orgname}/{accession}.fasta.gz")

@@ -11,7 +11,7 @@ import sys
 import pandas as pd
 
 from haystack.workflow.scripts.entrez_utils import entrez_assembly_ftp
-from haystack.workflow.scripts.utilities import ORGNAME_REGEX
+from haystack.workflow.scripts.utilities import REGEX_BLACKLIST
 
 
 def entrez_refseq_create_files(
@@ -29,19 +29,19 @@ def entrez_refseq_create_files(
 
     assemblies = prok_refseq_rep_rmdup.loc[prok_refseq_rep_rmdup["WGS"].notna(), ["#Species/genus", "WGS"]]
 
-    assemblies["#Species/genus"] = assemblies["#Species/genus"].replace(ORGNAME_REGEX, "_", regex=True)
+    assemblies["#Species/genus"] = assemblies["#Species/genus"].replace(REGEX_BLACKLIST, "_", regex=True)
 
     nuccore = prok_refseq_rep_rmdup.loc[
         prok_refseq_rep_rmdup["Chromosome RefSeq"].notna(), ["#Species/genus", "Chromosome RefSeq"],
     ]
 
-    nuccore["#Species/genus"] = nuccore["#Species/genus"].replace(ORGNAME_REGEX, "_", regex=True)
+    nuccore["#Species/genus"] = nuccore["#Species/genus"].replace(REGEX_BLACKLIST, "_", regex=True)
 
     genbank = prok_refseq_rep_rmdup.loc[
         prok_refseq_rep_rmdup["Chromosome GenBank"].notna(), ["#Species/genus", "Chromosome GenBank"],
     ]
 
-    genbank["#Species/genus"] = genbank["#Species/genus"].replace(ORGNAME_REGEX, "_", regex=True)
+    genbank["#Species/genus"] = genbank["#Species/genus"].replace(REGEX_BLACKLIST, "_", regex=True)
 
     genbank_filtered = genbank[
         (~genbank["#Species/genus"].isin(assemblies["#Species/genus"]))
@@ -82,14 +82,14 @@ def entrez_refseq_create_files(
     nuccore_plasmids_exploded = nuccore_plasmids.explode("Plasmid RefSeq")
 
     nuccore_plasmids_exploded["#Species/genus"] = nuccore_plasmids_exploded["#Species/genus"].replace(
-        ORGNAME_REGEX, "_", regex=True
+        REGEX_BLACKLIST, "_", regex=True
     )
 
     genbank_plasmids_filtered.loc[:, "Plasmid GenBank"] = genbank_plasmids_filtered["Plasmid GenBank"].str.split(",")
     genbank_plasmids_filtered_exploded = genbank_plasmids_filtered.explode("Plasmid GenBank")
 
     genbank_plasmids_filtered_exploded["#Species/genus"] = genbank_plasmids_filtered_exploded["#Species/genus"].replace(
-        ORGNAME_REGEX, "_", regex=True
+        REGEX_BLACKLIST, "_", regex=True
     )
 
     header = ["species", "AccessionVersion"]

@@ -15,8 +15,8 @@ import sys
 import pandas as pd
 import yaml
 
-ORGNAME_REGEX = r"[^\w.-]+"
-ACCESSION_REGEX = r"[^\w.-]+"
+REGEX_WHITELIST = r"[\w.-]+"
+REGEX_BLACKLIST = r"[^\w.-]+"
 
 PE_MODERN = "PE_MODERN"
 PE_ANCIENT = "PE_ANCIENT"
@@ -211,7 +211,7 @@ class AccessionFileType(SpreadsheetFileType):
             [
                 f"line {i + 1}: '{acc}'"
                 for i, acc in enumerate(self.data[idx].tolist())
-                if re.search(ACCESSION_REGEX, acc)
+                if re.match(REGEX_BLACKLIST, acc) is not None
             ]
         )
 
@@ -219,7 +219,7 @@ class AccessionFileType(SpreadsheetFileType):
             [
                 f"line {i + 1}: '{tax}'"
                 for i, tax in enumerate(self.data[species].tolist())
-                if re.search(ORGNAME_REGEX, tax)
+                if re.match(REGEX_BLACKLIST, tax) is not None
             ]
         )
 
@@ -462,7 +462,7 @@ def get_total_paths(
 def normalise_name(taxon):
     """remove unnecessary characters from a taxon name string."""
 
-    return re.sub(ORGNAME_REGEX, "_", taxon)
+    return re.sub(REGEX_BLACKLIST, "_", taxon)
 
 
 # return taxon.replace(" ", "_").replace("[", "").replace("]", "").replace("/", "_")
