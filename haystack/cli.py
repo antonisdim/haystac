@@ -40,10 +40,8 @@ from haystack.workflow.scripts.utilities import (
     PE_MODERN,
     PE_ANCIENT,
     SE,
-    FAIL,
-    END,
-    is_tty,
     md5,
+    print_warning,
 )
 
 os.environ["OPENBLAS_NUM_THREADS"] = "1"
@@ -100,8 +98,7 @@ The haystack commands are:
             exit(reval)
 
         except ValidationError as error:
-            err_message = f"haystack: error: {error}"
-            print(f"{FAIL}{err_message}{END}" if is_tty else f"{err_message}")
+            print(f"haystack: error: {error}")
             exit(1)
 
     @staticmethod
@@ -246,7 +243,6 @@ The haystack commands are:
         with open(CONFIG_USER, "w") as fout:
             yaml.safe_dump(self.config_user, fout, default_flow_style=False)
 
-    # noinspection PyDictCreation
     def database(self):
         """
         Build a database of target species
@@ -413,6 +409,7 @@ The haystack commands are:
         args.sequences = args.sequences or ""
 
         # add all command line options to the merged config
+        # noinspection PyDictCreation
         config = {**self.config_merged, **vars(args)}
 
         # store the md5 checksums for the database user input files
@@ -423,8 +420,10 @@ The haystack commands are:
         config_fetch = os.path.join(args.db_output, "database_fetch_config.yaml")
         config_build = os.path.join(args.db_output, "database_build_config.yaml")
 
-        # if refseq_rep we set force_accessions to true
         if args.refseq_rep:
+            if not args.force_accessions:
+                print_warning("Automatically setting `--force-accessions` in `--refseq-rep` mode")
+
             config["force_accessions"] = True
 
         target_list = list()
