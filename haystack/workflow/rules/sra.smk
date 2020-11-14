@@ -8,9 +8,10 @@ __license__ = "MIT"
 
 import os
 
+
 rule sra_tools_disable_cache:
     output:
-        os.path.expanduser("~/.ncbi/user-settings.mkfg")
+        os.path.expanduser("~/.ncbi/user-settings.mkfg"),
     message:
         "Disabling the SRA toolkit cache."
     shell:
@@ -19,7 +20,7 @@ rule sra_tools_disable_cache:
 
 rule get_sra_fastq_se:
     input:
-        os.path.expanduser("~/.ncbi/user-settings.mkfg")
+        os.path.expanduser("~/.ncbi/user-settings.mkfg"),
     output:
         temp(config["sample_output_dir"] + "/sra_data/SE/{accession}.fastq"),
     log:
@@ -41,7 +42,7 @@ rule get_sra_fastq_se:
 
 rule get_sra_fastq_pe:
     input:
-        os.path.expanduser("~/.ncbi/user-settings.mkfg")
+        os.path.expanduser("~/.ncbi/user-settings.mkfg"),
     output:
         temp(config["sample_output_dir"] + "/sra_data/PE/{accession}_1.fastq"),
         temp(config["sample_output_dir"] + "/sra_data/PE/{accession}_2.fastq"),
