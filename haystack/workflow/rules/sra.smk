@@ -11,6 +11,8 @@ import os
 rule sra_tools_disable_cache:
     output:
         os.path.expanduser("~/.ncbi/user-settings.mkfg")
+    message:
+        "Disabling the SRA toolkit cache."
     shell:
         "mkdir -p ~/.ncbi && echo '/repository/user/main/public/cache-disabled = \"true\"' > {output}"
 
