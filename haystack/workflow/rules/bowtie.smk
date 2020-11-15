@@ -6,6 +6,8 @@ __copyright__ = "Copyright 2020, University of Oxford"
 __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
+import os
+
 from math import ceil
 
 from haystack.workflow.scripts.utilities import PE
@@ -79,7 +81,7 @@ def get_sorted_bam_paths(wildcards):
 
     return expand(
         config["analysis_output_dir"] + "/bam/" + config["read_mode"] + "_{sample}_sorted_chunk{chunk_num}.bam",
-        reads=reads,
+        reads=config["read_mode"],
         sample=wildcards.sample,
         chunk_num=range(1, idx_chunk_total + 1),
     )
@@ -144,6 +146,21 @@ rule extract_fastq_paired_end:
         ") 2> {log}"
 
 
+def mapg_fastq(wilcards):
+    """Input function to assert that the fastqs are not empty"""
+
+    if config["read_mode"] == PE:
+        input_file = config["analysis_output_dir"] + f"/fastq/{wilcards.read_mode}/{wilcards.sample}_mapq_R1.fastq.gz"
+        assert os.stat(input_file).st_size, f"There are no aligned reads in file {input_file}"
+        return input_file
+
+    elif config["read_mode"] == COLLAPSED or config["read_mode"] == SE:
+        input_file = config["analysis_output_dir"] + f"/fastq/{wilcards.read_mode}/{wilcards.sample}_mapq.fastq.gz"
+        assert os.stat(input_file).st_size, f"There are no aligned reads in file {input_file}"
+        return input_file
+
+
+
 rule average_fastq_read_len_single_end:
     input:
         config["analysis_output_dir"] + "/fastq/{read_mode}/{sample}_mapq.fastq.gz",
@@ -162,7 +179,6 @@ rule average_fastq_read_len_single_end:
         "| awk '{{count++; bases += length}} END {{print bases/count}}' 1> {output} ) 2> {log}"
 
 
-# TODO this throws an ugly error when there are no aligned files. give the user a more informative error
 rule average_fastq_read_len_paired_end:
     input:
         mate1=config["analysis_output_dir"] + "/fastq/{read_mode}/{sample}_mapq_R1.fastq.gz",
