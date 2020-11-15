@@ -6,15 +6,18 @@ __copyright__ = "Copyright 2020, University of Oxford"
 __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
-from haystack.workflow.scripts.utilities import get_total_paths, PE_MODERN, PE_ANCIENT, SE, reads
+from haystack.workflow.scripts.utilities import get_total_paths, PE, COLLAPSED, SE
 
 
 def get_bams_for_ts_tv_count(wildcards):
     sample, orgname, accession = wildcards.sample, wildcards.orgname, wildcards.accession
-    if config["read_mode"] == PE_MODERN:
+    if config["read_mode"] == PE:
         return config["analysis_output_dir"] + f"/alignments/{sample}/PE/{orgname}/{orgname}_{accession}.bam"
-    elif config["read_mode"] == PE_ANCIENT or config["read_mode"] == SE:
-        return config["analysis_output_dir"] + f"/alignments/{sample}/SE/{orgname}/{orgname}_{accession}.bam"
+    elif config["read_mode"] == COLLAPSED or config["read_mode"] == SE:
+        return (
+            config["analysis_output_dir"]
+            + f"/alignments/{sample}/{config['read_mode']}/{orgname}/{orgname}_{accession}.bam"
+        )
 
 
 rule count_accession_ts_tv:
@@ -29,7 +32,7 @@ rule count_accession_ts_tv:
             "benchmarks/count_accession_ts_tv_{sample}_{orgname}_{accession}.benchmark.txt", 1,
         )
     params:
-        pairs=config["read_mode"] == PE_MODERN,
+        pairs=config["read_mode"] == PE,
     message:
         "Counting the number of transitions and transversions per read for taxon {wildcards.orgname}."
     script:
@@ -60,10 +63,10 @@ rule initial_ts_tv:
 
 
 def get_right_readlen(wildcards):
-    if config["read_mode"] == PE_MODERN:
+    if config["read_mode"] == PE:
         return config["analysis_output_dir"] + f"/fastq/PE/{wildcards.sample}_mapq_pair.readlen"
     else:
-        return config["analysis_output_dir"] + f"/fastq/SE/{wildcards.sample}_mapq.readlen"
+        return config["analysis_output_dir"] + f"/fastq/{config['read_mode']}/{wildcards.sample}_mapq.readlen"
 
 
 rule calculate_likelihoods:
@@ -147,7 +150,7 @@ def get_p_values(_):
         config["analysis_output_dir"]
         + "/probabilities/{sample}/"
         + f"{orgname}_t_test_pvalue_{accession}_"
-        + reads(config)
+        + config["read_mode"]
         + ".txt"
         for orgname, accession in get_total_paths(checkpoints, config)
     ]

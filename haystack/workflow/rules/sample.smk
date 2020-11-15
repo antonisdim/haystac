@@ -6,12 +6,12 @@ __copyright__ = "Copyright 2020, University of Oxford"
 __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
-from haystack.workflow.scripts.utilities import PE_MODERN
+from haystack.workflow.scripts.utilities import PE
 
 
 def get_inputs_for_count_fastq_len(wildcards):
     if config["trim_adapters"]:
-        if config["read_mode"] == PE_MODERN:
+        if config["read_mode"] == PE:
             return (
                 config["sample_output_dir"] + f"/fastq_inputs/{config['read_mode']}/{wildcards.sample}_R1_adRm.fastq.gz"
             )

@@ -37,8 +37,8 @@ from haystack.workflow.scripts.utilities import (
     SraAccessionType,
     NuccoreQueryType,
     CheckExistingConfig,
-    PE_MODERN,
-    PE_ANCIENT,
+    PE,
+    COLLAPSED,
     SE,
     md5,
     print_warning,
@@ -585,9 +585,9 @@ The haystack commands are:
         if not (args.fastq_r1 and args.fastq_r2):
             config["read_mode"] = "SE"
         if (args.fastq_r1 and args.fastq_r2) and args.collapse:
-            config["read_mode"] = "PE_ANCIENT"
+            config["read_mode"] = "COLLAPSED"
         if (args.fastq_r1 and args.fastq_r2) and not args.collapse:
-            config["read_mode"] = "PE_MODERN"
+            config["read_mode"] = "PE"
 
         if args.sra:
             config["sra"], config["layout"] = args.sra
@@ -601,9 +601,9 @@ The haystack commands are:
             # query the SRA to see if this is a paired-end library or not
             if config["layout"] == "paired":
                 if config["collapse"]:
-                    config["read_mode"] = "PE_ANCIENT"
+                    config["read_mode"] = "COLLAPSED"
                 else:
-                    config["read_mode"] = "PE_MODERN"
+                    config["read_mode"] = "PE"
 
                 config["fastq_r1"] = config["sample_output_dir"] + f"/sra_data/PE/{config['sra']}_R1.fastq.gz"
                 config["fastq_r2"] = config["sample_output_dir"] + f"/sra_data/PE/{config['sra']}_R1.fastq.gz"
@@ -616,9 +616,9 @@ The haystack commands are:
         target_list.append(f"fastq_inputs/meta/{config['sample_prefix']}.size")
 
         if config["trim_adapters"]:
-            if config["read_mode"] == PE_MODERN:
+            if config["read_mode"] == PE:
                 target_list.append(f"fastq_inputs/{config['read_mode']}/{config['sample_prefix']}_R1_adRm.fastq.gz")
-            elif config["read_mode"] == PE_ANCIENT:
+            elif config["read_mode"] == COLLAPSED:
                 target_list.append(f"fastq_inputs/{config['read_mode']}/{config['sample_prefix']}_adRm.fastq.gz")
             elif config["read_mode"] == SE:
                 target_list.append(f"fastq_inputs/{config['read_mode']}/{config['sample_prefix']}_adRm.fastq.gz")
@@ -745,13 +745,13 @@ The haystack commands are:
         target_list = list()
 
         if args.mode == "filter":
-            if config["read_mode"] == PE_MODERN:
+            if config["read_mode"] == PE:
                 target_list.append(f"fastq/PE/{config['sample_prefix']}_mapq_pair.readlen")
             else:
-                target_list.append(f"fastq/SE/{config['sample_prefix']}_mapq.readlen")
+                target_list.append(f"fastq/{config['read_mode']}/{config['sample_prefix']}_mapq.readlen")
 
         elif args.mode == "align":
-            target_list.append(f"sigma/{config['sample_prefix']}_alignments.done")
+            target_list.append(f"alignments/{config['sample_prefix']}_{config['read_mode']}_alignments.done")
 
         elif args.mode == "likelihoods":
             target_list.append(

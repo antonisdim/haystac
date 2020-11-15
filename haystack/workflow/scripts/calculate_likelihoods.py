@@ -13,7 +13,7 @@ import sys
 import numpy as np
 import pandas as pd
 
-from haystack.workflow.scripts.utilities import PE_MODERN
+from haystack.workflow.scripts.utilities import PE
 
 
 def calculate_likelihoods(ts_tv_file, readlen_file, taxa_file_paths, config, output_matrix, output_params):
@@ -98,7 +98,7 @@ def calculate_likelihoods(ts_tv_file, readlen_file, taxa_file_paths, config, out
     data_tv_missing = pow(delta_v, tv_missing_val)
 
     # as we count max mismatches for every mate of a pair. So if a whole pair is missing we double the missing values
-    if config["read_mode"] == PE_MODERN:
+    if config["read_mode"] == PE:
         data_ts_missing = 2 * data_ts_missing
         data_tv_missing = 2 * data_tv_missing
 

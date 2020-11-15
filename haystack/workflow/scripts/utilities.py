@@ -18,8 +18,8 @@ import yaml
 REGEX_WHITELIST = r"[\w.-]+"
 REGEX_BLACKLIST = r"[^\w.-]+"
 
-PE_MODERN = "PE_MODERN"
-PE_ANCIENT = "PE_ANCIENT"
+PE = "PE"
+COLLAPSED = "COLLAPSED"
 SE = "SE"
 
 WARNING = "\x1b[33m"
@@ -489,11 +489,6 @@ def check_unique_taxa_in_custom_input(accessions, sequences):
 
 def chunker(seq, size):
     return (seq[pos : pos + size] for pos in range(0, len(seq), size))
-
-
-# TODO why does this need to exist? - because after we process a sample the reads are either SE or PE. If there are better ways for that I'm happy to change it
-def reads(config):
-    return "PE" if config["read_mode"] == PE_MODERN else "SE"
 
 
 def md5(filename):

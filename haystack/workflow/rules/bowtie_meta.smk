@@ -10,7 +10,7 @@ MIN_FRAG_LEN = 0
 MAX_FRAG_LEN = 1000
 META_ALN_MIN_SCORE_CONSTANT = -6
 
-from haystack.workflow.scripts.utilities import get_total_paths, reads
+from haystack.workflow.scripts.utilities import get_total_paths
 
 
 # noinspection PyUnusedLocal,PyShadowingBuiltins,PyShadowingNames
@@ -33,7 +33,39 @@ rule align_taxon_single_end:
         bai_file=config["analysis_output_dir"] + "/alignments/{sample}/SE/{orgname}/{orgname}_{accession}.bam.bai",
     benchmark:
         repeat(
-            "benchmarks/align_taxon_single_end_{sample}_{orgname}_{accession}.benchmark.txt", 1,
+            "benchmarks/align_taxon_SE_{sample}_{orgname}_{accession}.benchmark.txt", 1,
+        )
+    params:
+        min_score=get_min_score,
+        basename=config["cache"] + "/ncbi/{orgname}/{accession}",
+    threads: config["bowtie2_threads"]
+    message:
+        "Aligning the filtered reads from sample {wildcards.sample} against taxon {wildcards.orgname}."
+    conda:
+        "../envs/bowtie2.yaml"
+    shell:
+        "( bowtie2 --time --no-unal --no-discordant --no-mixed --ignore-quals --mp 6,6 --np 6 "
+        "   --score-min L,{params.min_score},0.0 --gbar 1000 -q --threads {threads} "
+        "   -x {params.basename} -I {MIN_FRAG_LEN} -X {MAX_FRAG_LEN} -U {input.fastq} "
+        "| samtools sort -O bam -o {output.bam_file} && samtools index {output.bam_file} "
+        ") 2> {log}"
+
+
+rule align_taxon_collapsed:
+    input:
+        fastq=config["analysis_output_dir"] + "/fastq/COLLAPSED/{sample}_mapq.fastq.gz",
+        db_idx=config["cache"] + "/ncbi/{orgname}/{accession}.1.bt2l",
+        readlen=config["analysis_output_dir"] + "/fastq/COLLAPSED/{sample}_mapq.readlen",
+    log:
+        config["analysis_output_dir"] + "/alignments/{sample}/COLLAPSED/{orgname}/{accession}.log",
+    output:
+        bam_file=config["analysis_output_dir"] + "/alignments/{sample}/COLLAPSED/{orgname}/{orgname}_{accession}.bam",
+        bai_file=(
+            config["analysis_output_dir"] + "/alignments/{sample}/COLLAPSED/{orgname}/{orgname}_{accession}.bam.bai"
+        ),
+    benchmark:
+        repeat(
+            "benchmarks/align_taxon_COLLAPSED_{sample}_{orgname}_{accession}.benchmark.txt", 1,
         )
     params:
         min_score=get_min_score,
@@ -53,8 +85,8 @@ rule align_taxon_single_end:
 
 rule align_taxon_paired_end:
     input:
-        fastq_r1=config["analysis_output_dir"] + "/fastq/PE/{sample}_R1_mapq.fastq.gz",
-        fastq_r2=config["analysis_output_dir"] + "/fastq/PE/{sample}_R2_mapq.fastq.gz",
+        fastq_r1=config["analysis_output_dir"] + "/fastq/PE/{sample}_mapq_R1.fastq.gz",
+        fastq_r2=config["analysis_output_dir"] + "/fastq/PE/{sample}_mapq_R2.fastq.gz",
         db_idx=config["cache"] + "/ncbi/{orgname}/{accession}.1.bt2l",
         readlen=config["analysis_output_dir"] + "/fastq/PE/{sample}_mapq_pair.readlen",
     log:
@@ -83,7 +115,7 @@ def get_meta_bams(_):
     return [
         config["analysis_output_dir"]
         + "/alignments/{sample}/"
-        + reads(config)
+        + config["read_mode"]
         + f"/{orgname}/{orgname}_{accession}.bam"
         for orgname, accession in get_total_paths(checkpoints, config)
     ]
@@ -93,9 +125,9 @@ rule all_alignments:
     input:
         get_meta_bams,
     output:
-        config["analysis_output_dir"] + "/alignments/{sample}_alignments.done",
+        config["analysis_output_dir"] + "/alignments/{sample}_{read_mode}_alignments.done",
     benchmark:
-        repeat("benchmarks/all_alignments_{sample}.benchmark.txt", 1)
+        repeat("benchmarks/all_alignments_{sample}_{read_mode}.benchmark.txt", 1)
     message:
         "All metagenomic alignments are done."
     shell:

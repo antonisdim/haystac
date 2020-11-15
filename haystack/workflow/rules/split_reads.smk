@@ -6,7 +6,7 @@ __copyright__ = "Copyright 2020, University of Oxford"
 __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
-from haystack.workflow.scripts.utilities import get_total_paths, PE_MODERN, reads
+from haystack.workflow.scripts.utilities import get_total_paths, PE
 
 
 rule get_dirichlet_reads:
@@ -116,7 +116,7 @@ def get_dirichlet_bams(_):
         config["analysis_output_dir"]
         + "/dirichlet_reads/{sample}/"
         + f"{orgname}/{orgname}_{accession}_dirichlet_"
-        + reads(config)
+        + config["read_mode"]
         + ".bam"
         for orgname, accession in get_total_paths(checkpoints, config)
     ]
@@ -127,12 +127,12 @@ rule all_dirichlet:
         get_dirichlet_bams,
         [
             config["analysis_output_dir"] + "/dirichlet_reads/{sample}/Grey_Matter/Grey_Matter_dirichlet_R1.fastq.gz"
-            if config["read_mode"] == PE_MODERN
+            if config["read_mode"] == PE
             else config["analysis_output_dir"] + "/dirichlet_reads/{sample}/Grey_Matter/Grey_Matter_dirichlet.fastq.gz"
         ],
         [
             config["analysis_output_dir"] + "/dirichlet_reads/{sample}/Dark_Matter/Dark_Matter_dirichlet_R1.fastq.gz"
-            if config["read_mode"] == PE_MODERN
+            if config["read_mode"] == PE
             else config["analysis_output_dir"] + "/dirichlet_reads/{sample}/Dark_Matter/Dark_Matter_dirichlet.fastq.gz"
         ],
     output:

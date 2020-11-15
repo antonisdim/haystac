@@ -8,7 +8,7 @@ __license__ = "MIT"
 
 from math import ceil
 
-from haystack.workflow.scripts.utilities import PE_MODERN
+from haystack.workflow.scripts.utilities import PE
 
 SUBSAMPLE_FIXED_READS = 200000
 
@@ -22,11 +22,11 @@ rule bowtie_alignment_single_end:
         ),
         bt2idx=config["db_output"] + "/bowtie/chunk{chunk_num}.1.bt2l",
     log:
-        config["analysis_output_dir"] + "/bam/{sample}_chunk{chunk_num}.log",
+        config["analysis_output_dir"] + "/bam/{read_mode}_{sample}_chunk{chunk_num}.log",
     output:
-        bam_file=temp(config["analysis_output_dir"] + "/bam/SE_{sample}_sorted_chunk{chunk_num}.bam"),
+        bam_file=temp(config["analysis_output_dir"] + "/bam/{read_mode}_{sample}_sorted_chunk{chunk_num}.bam"),
     benchmark:
-        repeat("benchmarks/bowtie_alignment_{sample}_chunk{chunk_num}.benchmark.txt", 1)
+        repeat("benchmarks/bowtie_alignment_{read_mode}_{sample}_chunk{chunk_num}.benchmark.txt", 1)
     params:
         index=config["db_output"] + "/bowtie/chunk{chunk_num}",
     threads: config["cores"]
@@ -54,11 +54,11 @@ rule bowtie_alignment_paired_end:
         ),
         bt2idx=config["db_output"] + "/bowtie/chunk{chunk_num}.1.bt2l",
     log:
-        config["analysis_output_dir"] + "/bam/{sample}_chunk{chunk_num}.log",
+        config["analysis_output_dir"] + "/bam/PE_{sample}_chunk{chunk_num}.log",
     output:
         bam_file=temp(config["analysis_output_dir"] + "/bam/PE_{sample}_sorted_chunk{chunk_num}.bam"),
     benchmark:
-        repeat("benchmarks/bowtie_alignment_{sample}_chunk{chunk_num}.benchmark.txt", 1)
+        repeat("benchmarks/bowtie_alignment_{sample}_chunk{chunk_num}_PE.benchmark.txt", 1)
     params:
         index=config["db_output"] + "/bowtie/chunk{chunk_num}",
     threads: config["cores"]
@@ -77,10 +77,8 @@ def get_sorted_bam_paths(wildcards):
 
     idx_chunk_total = ceil(float(open(config["db_output"] + "/bowtie/bt2_idx_chunk_num.txt").read().strip()))
 
-    reads = ["PE"] if config["read_mode"] == PE_MODERN else ["SE"]
-
     return expand(
-        config["analysis_output_dir"] + "/bam/{reads}_{sample}_sorted_chunk{chunk_num}.bam",
+        config["analysis_output_dir"] + "/bam/" + config["read_mode"] + "_{sample}_sorted_chunk{chunk_num}.bam",
         reads=reads,
         sample=wildcards.sample,
         chunk_num=range(1, idx_chunk_total + 1),
@@ -106,13 +104,13 @@ rule merge_bams:
 
 rule extract_fastq_single_end:
     input:
-        config["analysis_output_dir"] + "/bam/SE_{sample}_sorted.bam",
+        config["analysis_output_dir"] + "/bam/{read_mode}_{sample}_sorted.bam",
     log:
-        config["analysis_output_dir"] + "/fastq/SE/{sample}_mapq.log",
+        config["analysis_output_dir"] + "/fastq/{read_mode}/{sample}_mapq.log",
     output:
-        config["analysis_output_dir"] + "/fastq/SE/{sample}_mapq.fastq.gz",
+        config["analysis_output_dir"] + "/fastq/{read_mode}/{sample}_mapq.fastq.gz",
     benchmark:
-        repeat("benchmarks/extract_fastq_single_end_{sample}.benchmark.txt", 1)
+        repeat("benchmarks/extract_fastq_single_end_{sample}_{read_mode}.benchmark.txt", 1)
     message:
         "Extracting all the aligned reads for sample {wildcards.sample} and storing them in {output}. "
         "The log file can be found in {log}."
@@ -124,16 +122,16 @@ rule extract_fastq_single_end:
 
 rule extract_fastq_paired_end:
     input:
-        config["analysis_output_dir"] + "/bam/PE_{sample}_sorted.bam",
+        config["analysis_output_dir"] + "/bam/{read_mode}_{sample}_sorted.bam",
     log:
-        config["analysis_output_dir"] + "/fastq/PE/{sample}_mapq.log",
+        config["analysis_output_dir"] + "/fastq/{read_mode}/{sample}_mapq.log",
     output:
-        fastq_r1=config["analysis_output_dir"] + "/fastq/PE/{sample}_R1_mapq.fastq.gz",
-        fastq_r2=config["analysis_output_dir"] + "/fastq/PE/{sample}_R2_mapq.fastq.gz",
-        temp_r1=temp(config["analysis_output_dir"] + "/fastq/PE/{sample}_temp_R1_mapq.fastq.gz"),
-        temp_r2=temp(config["analysis_output_dir"] + "/fastq/PE/{sample}_temp_R2_mapq.fastq.gz"),
+        fastq_r1=config["analysis_output_dir"] + "/fastq/{read_mode}/{sample}_mapq_R1.fastq.gz",
+        fastq_r2=config["analysis_output_dir"] + "/fastq/{read_mode}/{sample}_mapq_R2.fastq.gz",
+        temp_r1=temp(config["analysis_output_dir"] + "/fastq/{read_mode}/{sample}_temp_R1_mapq.fastq.gz"),
+        temp_r2=temp(config["analysis_output_dir"] + "/fastq/{read_mode}/{sample}_temp_R2_mapq.fastq.gz"),
     benchmark:
-        repeat("benchmarks/extract_fastq_paired_end_{sample}.benchmark.txt", 1)
+        repeat("benchmarks/extract_fastq_paired_end_{sample}_{read_mode}.benchmark.txt", 1)
     message:
         "Extracting the aligned reads for sample {wildcards.sample}."
     conda:
@@ -148,13 +146,13 @@ rule extract_fastq_paired_end:
 
 rule average_fastq_read_len_single_end:
     input:
-        config["analysis_output_dir"] + "/fastq/SE/{sample}_mapq.fastq.gz",
+        config["analysis_output_dir"] + "/fastq/{read_mode}/{sample}_mapq.fastq.gz",
     log:
-        config["analysis_output_dir"] + "/fastq/SE/{sample}_mapq_readlen.log",
+        config["analysis_output_dir"] + "/fastq/{read_mode}/{sample}_mapq_readlen.log",
     output:
-        config["analysis_output_dir"] + "/fastq/SE/{sample}_mapq.readlen",
+        config["analysis_output_dir"] + "/fastq/{read_mode}/{sample}_mapq.readlen",
     benchmark:
-        repeat("benchmarks/average_fastq_read_len_single_end_{sample}.benchmark.txt", 1)
+        repeat("benchmarks/average_fastq_read_len_single_end_{sample}_{read_mode}.benchmark.txt", 1)
     message:
         "Calculating the average read length for sample {wildcards.sample}."
     conda:
@@ -167,16 +165,16 @@ rule average_fastq_read_len_single_end:
 # TODO this throws an ugly error when there are no aligned files. give the user a more informative error
 rule average_fastq_read_len_paired_end:
     input:
-        mate1=config["analysis_output_dir"] + "/fastq/PE/{sample}_R1_mapq.fastq.gz",
-        mate2=config["analysis_output_dir"] + "/fastq/PE/{sample}_R2_mapq.fastq.gz",
+        mate1=config["analysis_output_dir"] + "/fastq/{read_mode}/{sample}_mapq_R1.fastq.gz",
+        mate2=config["analysis_output_dir"] + "/fastq/{read_mode}/{sample}_mapq_R2.fastq.gz",
     log:
-        config["analysis_output_dir"] + "/fastq/PE/{sample}_mapq_readlen.log",
+        config["analysis_output_dir"] + "/fastq/{read_mode}/{sample}_mapq_readlen.log",
     output:
-        mate1=temp(config["analysis_output_dir"] + "/fastq/{sample}_R1_mapq.readlen"),
-        mate2=temp(config["analysis_output_dir"] + "/fastq/{sample}_R2_mapq.readlen"),
-        pair=config["analysis_output_dir"] + "/fastq/PE/{sample}_mapq_pair.readlen",
+        mate1=temp(config["analysis_output_dir"] + "/fastq/{read_mode}/{sample}_mapq_R1.readlen"),
+        mate2=temp(config["analysis_output_dir"] + "/fastq/{read_mode}/{sample}_mapq_R2.readlen"),
+        pair=config["analysis_output_dir"] + "/fastq/{read_mode}/{sample}_mapq_pair.readlen",
     benchmark:
-        repeat("benchmarks/average_fastq_read_len_paired_end_{sample}.benchmark.txt", 1)
+        repeat("benchmarks/average_fastq_read_len_paired_end_{sample}_{read_mode}.benchmark.txt", 1)
     message:
         "Calculating the average read length for sample {wildcards.sample}."
     conda:
