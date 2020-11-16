@@ -25,3 +25,5 @@ prime
 build
 dist
 *.egg-info/
+*fasta.gz
+*benchmark.txt
