@@ -80,7 +80,7 @@ def get_db_chunk_alignments(wildcards):
 
     return expand(
         config["analysis_output_dir"] + "/bam/{read_mode}_{sample}_sorted_chunk{chunk_num}.bam",
-        reads=config["read_mode"],
+        read_mode=config["read_mode"],
         sample=wildcards.sample,
         chunk_num=range(1, idx_chunk_total + 1),
     )
@@ -153,8 +153,9 @@ def get_extracted_db_fastq(wildcards):
     else:
         input_file = config["analysis_output_dir"] + f"/fastq/{wildcards.read_mode}/{wildcards.sample}_mapq.fastq.gz"
 
-    if os.stat(input_file).st_size == 0:
-        print_error(f"None of the reads in the sample file match any of the taxa in the database.")
+    if os.path.exists(input_file):
+        if os.stat(input_file).st_size == 0:
+            print_error(f"None of the reads in the sample file match any of the taxa in the database.")
 
     return input_file
 

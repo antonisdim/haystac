@@ -551,6 +551,9 @@ The haystack commands are:
         if args.collapse and not (args.fastq_r1 and args.fastq_r2) and args.sra[1] != "paired":
             raise ValidationError("Collapse can only be used with --fastq-r1 and --fastq-r2.")
 
+        if args.collapse and not args.trim_adapters:
+            raise ValidationError("Collapse can only be used with `--trim-adapters True`.")
+
         if not args.sample_prefix and not args.sra:
             raise ValidationError("Please provide a --sample-prefix name.")
 
