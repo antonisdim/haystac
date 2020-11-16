@@ -547,14 +547,6 @@ The haystack commands are:
             default=self.config_default["trim_adapters"],
         )
 
-        # TODO does this do anything?
-        optional.add_argument(
-            "--adaperremoval-flags",
-            help="Pass additional flags to `AdapterRemoval`",
-            metavar="'<json>'",
-            type=JsonType(),
-        )
-
         # add the common arguments
         self._common_arguments(parser)
 

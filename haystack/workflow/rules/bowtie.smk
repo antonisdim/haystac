@@ -10,7 +10,7 @@ import os
 
 from math import ceil
 
-from haystack.workflow.scripts.utilities import PE
+from haystack.workflow.scripts.utilities import PE, print_error
 
 SUBSAMPLE_FIXED_READS = 200000
 
@@ -146,18 +146,19 @@ rule extract_fastq_paired_end:
         ") 2> {log}"
 
 
-def mapg_fastq(wilcards):
+def mapg_fastq(wildcards):
     """Input function to assert that the fastqs are not empty"""
 
+    input_file = ""
     if config["read_mode"] == PE:
-        input_file = config["analysis_output_dir"] + f"/fastq/{wilcards.read_mode}/{wilcards.sample}_mapq_R1.fastq.gz"
-        assert os.stat(input_file).st_size, f"There are no aligned reads in file {input_file}"
-        return input_file
-
+        input_file = config["analysis_output_dir"] + f"/fastq/{wildcards.read_mode}/{wildcards.sample}_mapq_R1.fastq.gz"
     elif config["read_mode"] == COLLAPSED or config["read_mode"] == SE:
-        input_file = config["analysis_output_dir"] + f"/fastq/{wilcards.read_mode}/{wilcards.sample}_mapq.fastq.gz"
-        assert os.stat(input_file).st_size, f"There are no aligned reads in file {input_file}"
-        return input_file
+        input_file = config["analysis_output_dir"] + f"/fastq/{wildcards.read_mode}/{wildcards.sample}_mapq.fastq.gz"
+
+    if os.stat(input_file).st_size == 0:
+        print_error(f"None of the reads in the sample file {input_file} match any of the taxa in the database.")
+
+    return input_file
 
 
 
