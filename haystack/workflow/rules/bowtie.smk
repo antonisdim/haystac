@@ -152,7 +152,7 @@ def mapg_fastq(wildcards):
     input_file = ""
     if config["read_mode"] == PE:
         input_file = config["analysis_output_dir"] + f"/fastq/{wildcards.read_mode}/{wildcards.sample}_mapq_R1.fastq.gz"
-    elif config["read_mode"] == COLLAPSED or config["read_mode"] == SE:
+    else:
         input_file = config["analysis_output_dir"] + f"/fastq/{wildcards.read_mode}/{wildcards.sample}_mapq.fastq.gz"
 
     if os.stat(input_file).st_size == 0:
