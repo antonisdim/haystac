@@ -348,9 +348,9 @@ class CheckExistingConfig(object):
                         "accessions_file",
                         "sequences_file",
                         "refseq_rep",
-                        "force_accessions",
+                        # "force_accessions",
                         # "exclude_accessions",
-                        "resolve_accessions",
+                        # "resolve_accessions",
                         "rank",
                         "mtDNA",
                         "seed",
@@ -424,10 +424,14 @@ def get_total_paths(
 
         sequences_df = pd.concat(sources)
 
+    if config["sequences"] or config["accessions"]:
+        check_unique_taxa_in_custom_inputs(config["accessions"], config["sequences"])
+
     if config["sequences"]:
         custom_fasta_paths = pd.read_csv(
             config["sequences"], sep="\t", header=None, names=["species", "AccessionVersion", "path"],
         )
+        check_unique_taxa_in_user_file(custom_fasta_paths, config)
 
         custom_seqs = custom_fasta_paths[["species", "AccessionVersion"]].copy()
         custom_seqs["AccessionVersion"] = "custom_seq-" + custom_seqs["AccessionVersion"].astype(str)
@@ -438,6 +442,7 @@ def get_total_paths(
         custom_accessions = pd.read_csv(
             config["accessions"], sep="\t", header=None, names=["species", "AccessionVersion"],
         )
+        check_unique_taxa_in_user_file(custom_accessions, config)
 
         sequences_df = sequences_df.append(custom_accessions)
 
@@ -468,7 +473,7 @@ def normalise_name(taxon):
 # return taxon.replace(" ", "_").replace("[", "").replace("]", "").replace("/", "_")
 
 
-def check_unique_taxa_in_custom_input(accessions, sequences):
+def check_unique_taxa_in_custom_inputs(accessions, sequences):
     """Checks that custom input files have only one entry per taxon"""
 
     if accessions != "" and sequences != "":
@@ -489,6 +494,27 @@ def check_unique_taxa_in_custom_input(accessions, sequences):
 
 def chunker(seq, size):
     return (seq[pos : pos + size] for pos in range(0, len(seq), size))
+
+
+def check_unique_taxa_in_user_file(df, config):
+    """Checks that there are only unique inputs for taxa"""
+
+    if df["species"].duplicated().any():
+        dup_taxa = [i for i in df[df["species"].duplicated()]["species"].to_list()]
+        message = f"{config['sequences']} contains multiple sequences for {', '.join(dup_taxa)}. "
+
+        if not config["resolve_accessions"]:
+            message += (
+                "Either remove all duplicates, or set the `--resolve-accessions` flag to automatically choose one. "
+                "It is the first accession that will be chosen."
+            )
+            print_error(message)
+        else:
+            df = df[~df["species"].duplicated(keep="first")]
+            for idx, val in df[df["species"].duplicated()].iterrows():
+                message += f"Accession {val['accession']} for {val['species']} was omitted."
+                print_warning(message)
+            return df
 
 
 def md5(filename):

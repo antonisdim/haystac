@@ -324,10 +324,9 @@ The haystack commands are:
             default=[],
         )
 
-        # TODO the deduplication is not random, so don't pretend that it is
         optional.add_argument(
             "--resolve-accessions",
-            help="Pick an accession randomly when two accessions for a taxon can be found in user provided input files",
+            help="Pick the first accession when two accessions for a taxon can be found in user provided input files",
             action="store_true",
         )
 
