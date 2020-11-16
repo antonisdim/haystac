@@ -50,10 +50,10 @@ def get_paths_for_custom_seqs():
             )
             print_error(message)
         else:
-            # TODO don't just drop duplicates, use the longest!
+            # TODO be explicit in your call to duplicated(keep="first") to tell it which one to keep
             custom_fasta_paths = custom_fasta_paths[~custom_fasta_paths["species"].duplicated()]
             # TODO tell the user which one you chose!
-            # message += "Chose {accession} for  {taxa}"
+            #   message += "Chose {accession} for  {taxa}"
             print_warning(message)
 
     check_unique_taxa_in_custom_input(config["accessions"], config["sequences"])
@@ -87,17 +87,20 @@ def get_paths_for_custom_acc(_):
     custom_accessions = pd.read_csv(config["accessions"], sep="\t", header=None, names=["species", "accession"])
 
     if custom_accessions["species"].duplicated().any():
+        dup_taxa = [i for i in custom_accessions[custom_accessions["species"].duplicated()]["species"].to_list()]
+        message = f"{config['sequences']} contains multiple sequences for {', '.join(dup_taxa)}."
+
         if not config["resolve_accessions"]:
-            dup_taxa = ", ".join(
-                [i for i in custom_accessions[custom_accessions["species"].duplicated()]["species"].to_list()]
+            message += (
+                "Either remove all duplicates, or set the `--resolve-accessions` flag to automatically choose one."
             )
-            print_error(
-                f"You have provided more than one sequence for {dup_taxa}. "
-                f"Only one sequence per taxon is allowed. "
-                f"Please only provide your favourite sequence for each taxon."
-            )
+            print_error(message)
         else:
+            # TODO be explicit in your call to duplicated(keep="first") to tell it which one to keep
             custom_accessions = custom_accessions[~custom_accessions["species"].duplicated()]
+            # TODO tell the user which one you chose!
+            #   message += "Chose {accession} for  {taxa}"
+            print_warning(message)
 
     check_unique_taxa_in_custom_input(config["accessions"], config["sequences"])
 

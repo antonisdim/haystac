@@ -25,6 +25,8 @@ def entrez_refseq_create_files(
 ):
     prok_refseq_rep = pd.read_csv(input_file, sep="\t")
 
+    # TODO be explicit in your call to duplicated(keep="first") to tell it which one to keep
+    # TODO tell the user which one you chose!
     prok_refseq_rep_rmdup = prok_refseq_rep[~prok_refseq_rep["#Species/genus"].duplicated()]
 
     assemblies = prok_refseq_rep_rmdup.loc[prok_refseq_rep_rmdup["WGS"].notna(), ["#Species/genus", "WGS"]]
@@ -49,6 +51,8 @@ def entrez_refseq_create_files(
     ].copy()
     genbank_filtered.loc[:, "Chromosome GenBank"] = genbank_filtered["Chromosome GenBank"].str.split(",")
     genbank_exploded = genbank_filtered.explode("Chromosome GenBank")
+    # TODO be explicit in your call to duplicated(keep="first") to tell it which one to keep
+    # TODO tell the user which one you chose!
     genbank_exploded = genbank_exploded[~genbank_exploded["#Species/genus"].duplicated()]
 
     nuccore_filtered = nuccore[
@@ -57,6 +61,8 @@ def entrez_refseq_create_files(
     ].copy()
     nuccore_filtered.loc[:, "Chromosome RefSeq"] = nuccore_filtered["Chromosome RefSeq"].str.split(",")
     nuccore_exploded = nuccore_filtered.explode("Chromosome RefSeq")
+    # TODO be explicit in your call to duplicated(keep="first") to tell it which one to keep
+    # TODO tell the user which one you chose!
     nuccore_exploded = nuccore_exploded[~nuccore_exploded["#Species/genus"].duplicated()]
 
     assemblies_filtered = assemblies[
@@ -65,6 +71,8 @@ def entrez_refseq_create_files(
     ]
     assemblies_filtered.loc[:, "WGS"] = assemblies_filtered["WGS"].str.split(",")
     assemblies_exploded = assemblies_filtered.explode("WGS")
+    # TODO be explicit in your call to duplicated(keep="first") to tell it which one to keep
+    # TODO tell the user which one you chose!
     assemblies_exploded = assemblies_exploded[~assemblies_exploded["#Species/genus"].duplicated()]
 
     nuccore_plasmids = prok_refseq_rep_rmdup[
