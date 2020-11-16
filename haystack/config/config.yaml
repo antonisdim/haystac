@@ -3,8 +3,6 @@ cache:
   ~/haystack/cache/
 mismatch_probability:
   0.05
-bowtie2_threads:
-  15
 bowtie2_scaling:
   5.0
 use_conda:

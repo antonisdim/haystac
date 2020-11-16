@@ -25,7 +25,7 @@ rule get_sra_fastq_se:
         temp(config["sample_output_dir"] + "/sra_data/SE/{accession}.fastq"),
     log:
         temp(config["sample_output_dir"] + "/sra_data/SE/{accession}.log"),
-    threads: 6
+    threads: min(6, config["cores"])
     message:
         "Download SRA file for accession {wildcards.accession}."
     conda:
@@ -48,7 +48,7 @@ rule get_sra_fastq_pe:
         temp(config["sample_output_dir"] + "/sra_data/PE/{accession}_2.fastq"),
     log:
         temp(config["sample_output_dir"] + "/sra_data/PE/{accession}.log"),
-    threads: 6
+    threads: min(6, config["cores"])
     message:
         "Download SRA files for accession {wildcards.accession}."
     conda:

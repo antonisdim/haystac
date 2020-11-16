@@ -6,6 +6,8 @@ __copyright__ = "Copyright 2020, University of Oxford"
 __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
+from math import floor
+
 MIN_FRAG_LEN = 0
 MAX_FRAG_LEN = 1000
 META_ALN_MIN_SCORE_CONSTANT = -6
@@ -48,7 +50,7 @@ rule align_taxon_single_end:
     params:
         min_score=get_min_score,
         basename=config["cache"] + "/ncbi/{orgname}/{accession}",
-    threads: config["bowtie2_threads"]
+    threads: max(1, floor(config["cores"] / 4))
     message:
         "Aligning the filtered reads from sample {wildcards.sample} against taxon {wildcards.orgname}."
     conda:
@@ -75,7 +77,7 @@ rule align_taxon_paired_end:
     params:
         min_score=get_min_score,
         basename=config["cache"] + "/ncbi/{orgname}/{accession}",
-    threads: config["bowtie2_threads"]
+    threads: max(1, floor(config["cores"] / 4))
     message:
         "Aligning the filtered reads from sample {wildcards.sample} against taxon {wildcards.orgname}."
     conda:

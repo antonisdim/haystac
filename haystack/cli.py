@@ -196,14 +196,6 @@ The haystack commands are:
             default=argparse.SUPPRESS,
         )
 
-        optional.add_argument(
-            "--bowtie2-threads",
-            help=f"Number of threads to use for each bowtie2 alignment "
-            f"(default: {self.config_default['bowtie2_threads']})",
-            type=IntRangeType(1, MAX_CPU),
-            metavar="<int>",
-            default=argparse.SUPPRESS,
-        )
 
         optional.add_argument(
             "--bowtie2-scaling",

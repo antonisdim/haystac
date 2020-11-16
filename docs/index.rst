@@ -39,10 +39,6 @@ If a user is running haystack for the first time on a machine, they should run t
 Here is an example command that allows the configuration of all the parameters interactively 
 
     haystack config
-    
-Here is an example command that configures the number of threads that bowtie2 is allowed to use for mapping and index building
-
-    haystack config --bowtie2-threads 10
 
 Unless the user has a deep understanding of its dataset we advise to be cautious when changing the base mismatch probability that is used later on in the method's probabilistic model. We also advise caution when changing the bowtie2 file size scaling factor.
 
@@ -245,8 +241,6 @@ haystack config
                           (default: 5)
     -mp , --mismatch-probability 
                           Base mismatch probability <float> (default: 0.05)
-    -t , --bowtie2-threads 
-                          Threads for the bowtie2 alignments <int> (default: 1)
     -s , --bowtie2-scaling 
                           Factor to rescale/chunk the input file for the
                           mutlifasta index for the filtering alignment (default:
