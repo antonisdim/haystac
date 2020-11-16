@@ -17,7 +17,7 @@ SUBSAMPLE_FIXED_READS = 200000
 rule bowtie_alignment_single_end:
     input:
         fastq=(
-            config["sample_output_dir"] + "/fastq_inputs/" + config["read_mode"] + "/{sample}_adRm.fastq.gz"
+            config["sample_output_dir"] + "/fastq_inputs/{read_mode}/{sample}_adRm.fastq.gz"
             if config["trim_adapters"]
             else config["fastq"]
         ),
@@ -44,12 +44,12 @@ rule bowtie_alignment_single_end:
 rule bowtie_alignment_paired_end:
     input:
         fastq_r1=(
-            config["sample_output_dir"] + "/fastq_inputs/" + config["read_mode"] + "/{sample}_R1_adRm.fastq.gz"
+            config["sample_output_dir"] + "/fastq_inputs/PE/{sample}_R1_adRm.fastq.gz"
             if config["trim_adapters"]
             else config["fastq_r1"]
         ),
         fastq_r2=(
-            config["sample_output_dir"] + "/fastq_inputs/" + config["read_mode"] + "/{sample}_R2_adRm.fastq.gz"
+            config["sample_output_dir"] + "/fastq_inputs/PE/{sample}_R2_adRm.fastq.gz"
             if config["trim_adapters"]
             else config["fastq_r2"]
         ),
@@ -79,7 +79,7 @@ def get_sorted_bam_paths(wildcards):
     idx_chunk_total = ceil(float(open(config["db_output"] + "/bowtie/bt2_idx_chunk_num.txt").read().strip()))
 
     return expand(
-        config["analysis_output_dir"] + "/bam/" + config["read_mode"] + "_{sample}_sorted_chunk{chunk_num}.bam",
+        config["analysis_output_dir"] + "/bam/{read_mode}_{sample}_sorted_chunk{chunk_num}.bam",
         reads=config["read_mode"],
         sample=wildcards.sample,
         chunk_num=range(1, idx_chunk_total + 1),

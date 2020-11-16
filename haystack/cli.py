@@ -196,7 +196,6 @@ The haystack commands are:
             default=argparse.SUPPRESS,
         )
 
-
         optional.add_argument(
             "--bowtie2-scaling",
             help=f"Rescaling factor to keep the bowtie2 mutlifasta index below the maximum memory limit "

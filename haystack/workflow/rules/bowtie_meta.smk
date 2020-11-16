@@ -25,27 +25,21 @@ def get_min_score(wildcards, input):
 
 rule align_taxon_single_end:
     input:
-        fastq=config["analysis_output_dir"] + "/fastq/" + config["read_mode"] + "/{sample}_mapq.fastq.gz",
+        fastq=config["analysis_output_dir"] + "/fastq/{read_mode}/{sample}_mapq.fastq.gz",
         db_idx=config["cache"] + "/ncbi/{orgname}/{accession}.1.bt2l",
-        readlen=config["analysis_output_dir"] + "/fastq/" + config["read_mode"] + "/{sample}_mapq.readlen",
+        readlen=config["analysis_output_dir"] + "/fastq/{read_mode}/{sample}_mapq.readlen",
     log:
-        config["analysis_output_dir"] + "/alignments/{sample}/" + config["read_mode"] + "/{orgname}/{accession}.log",
+        config["analysis_output_dir"] + "/alignments/{sample}/{read_mode}/{orgname}/{accession}.log",
     output:
         bam_file=(
-            config["analysis_output_dir"]
-            + "/alignments/{sample}/"
-            + config["read_mode"]
-            + "/{orgname}/{orgname}_{accession}.bam"
+            config["analysis_output_dir"] + "/alignments/{sample}/{read_mode}/{orgname}/{orgname}_{accession}.bam"
         ),
         bai_file=(
-            config["analysis_output_dir"]
-            + "/alignments/{sample}/"
-            + config["read_mode"]
-            + "/{orgname}/{orgname}_{accession}.bam.bai"
+            config["analysis_output_dir"] + "/alignments/{sample}/{read_mode}/{orgname}/{orgname}_{accession}.bam.bai"
         ),
     benchmark:
         repeat(
-            "benchmarks/align_taxon_" + config["read_mode"] + "_{sample}_{orgname}_{accession}.benchmark.txt", 1,
+            "benchmarks/align_taxon_{read_mode}_{sample}_{orgname}_{accession}.benchmark.txt", 1,
         )
     params:
         min_score=get_min_score,
