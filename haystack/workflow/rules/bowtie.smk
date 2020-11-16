@@ -7,7 +7,6 @@ __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
 import os
-
 from math import ceil
 
 from haystack.workflow.scripts.utilities import PE, print_error

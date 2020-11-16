@@ -23,49 +23,27 @@ def get_min_score(wildcards, input):
 
 rule align_taxon_single_end:
     input:
-        fastq=config["analysis_output_dir"] + "/fastq/SE/{sample}_mapq.fastq.gz",
+        fastq=config["analysis_output_dir"] + "/fastq/" + config["read_mode"] + "/{sample}_mapq.fastq.gz",
         db_idx=config["cache"] + "/ncbi/{orgname}/{accession}.1.bt2l",
-        readlen=config["analysis_output_dir"] + "/fastq/SE/{sample}_mapq.readlen",
+        readlen=config["analysis_output_dir"] + "/fastq/" + config["read_mode"] + "/{sample}_mapq.readlen",
     log:
-        config["analysis_output_dir"] + "/alignments/{sample}/SE/{orgname}/{accession}.log",
+        config["analysis_output_dir"] + "/alignments/{sample}/" + config["read_mode"] + "/{orgname}/{accession}.log",
     output:
-        bam_file=config["analysis_output_dir"] + "/alignments/{sample}/SE/{orgname}/{orgname}_{accession}.bam",
-        bai_file=config["analysis_output_dir"] + "/alignments/{sample}/SE/{orgname}/{orgname}_{accession}.bam.bai",
-    benchmark:
-        repeat(
-            "benchmarks/align_taxon_SE_{sample}_{orgname}_{accession}.benchmark.txt", 1,
-        )
-    params:
-        min_score=get_min_score,
-        basename=config["cache"] + "/ncbi/{orgname}/{accession}",
-    threads: config["bowtie2_threads"]
-    message:
-        "Aligning the filtered reads from sample {wildcards.sample} against taxon {wildcards.orgname}."
-    conda:
-        "../envs/bowtie2.yaml"
-    shell:
-        "( bowtie2 --time --no-unal --no-discordant --no-mixed --ignore-quals --mp 6,6 --np 6 "
-        "   --score-min L,{params.min_score},0.0 --gbar 1000 -q --threads {threads} "
-        "   -x {params.basename} -I {MIN_FRAG_LEN} -X {MAX_FRAG_LEN} -U {input.fastq} "
-        "| samtools sort -O bam -o {output.bam_file} && samtools index {output.bam_file} "
-        ") 2> {log}"
-
-
-rule align_taxon_collapsed:
-    input:
-        fastq=config["analysis_output_dir"] + "/fastq/COLLAPSED/{sample}_mapq.fastq.gz",
-        db_idx=config["cache"] + "/ncbi/{orgname}/{accession}.1.bt2l",
-        readlen=config["analysis_output_dir"] + "/fastq/COLLAPSED/{sample}_mapq.readlen",
-    log:
-        config["analysis_output_dir"] + "/alignments/{sample}/COLLAPSED/{orgname}/{accession}.log",
-    output:
-        bam_file=config["analysis_output_dir"] + "/alignments/{sample}/COLLAPSED/{orgname}/{orgname}_{accession}.bam",
+        bam_file=(
+            config["analysis_output_dir"]
+            + "/alignments/{sample}/"
+            + config["read_mode"]
+            + "/{orgname}/{orgname}_{accession}.bam"
+        ),
         bai_file=(
-            config["analysis_output_dir"] + "/alignments/{sample}/COLLAPSED/{orgname}/{orgname}_{accession}.bam.bai"
+            config["analysis_output_dir"]
+            + "/alignments/{sample}/"
+            + config["read_mode"]
+            + "/{orgname}/{orgname}_{accession}.bam.bai"
         ),
     benchmark:
         repeat(
-            "benchmarks/align_taxon_COLLAPSED_{sample}_{orgname}_{accession}.benchmark.txt", 1,
+            "benchmarks/align_taxon_" + config["read_mode"] + "_{sample}_{orgname}_{accession}.benchmark.txt", 1,
         )
     params:
         min_score=get_min_score,

@@ -6,14 +6,14 @@ __copyright__ = "Copyright 2020, University of Oxford"
 __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
-from haystack.workflow.scripts.utilities import get_total_paths, PE, COLLAPSED, SE
+from haystack.workflow.scripts.utilities import get_total_paths, PE
 
 
 def get_bams_for_ts_tv_count(wildcards):
     sample, orgname, accession = wildcards.sample, wildcards.orgname, wildcards.accession
     if config["read_mode"] == PE:
         return config["analysis_output_dir"] + f"/alignments/{sample}/PE/{orgname}/{orgname}_{accession}.bam"
-    elif config["read_mode"] == COLLAPSED or config["read_mode"] == SE:
+    else:
         return (
             config["analysis_output_dir"]
             + f"/alignments/{sample}/{config['read_mode']}/{orgname}/{orgname}_{accession}.bam"

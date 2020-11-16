@@ -576,11 +576,11 @@ The haystack commands are:
         config = {**self.config_merged, **vars(args)}
 
         if not (args.fastq_r1 and args.fastq_r2):
-            config["read_mode"] = "SE"
+            config["read_mode"] = SE
         if (args.fastq_r1 and args.fastq_r2) and args.collapse:
-            config["read_mode"] = "COLLAPSED"
+            config["read_mode"] = COLLAPSED
         if (args.fastq_r1 and args.fastq_r2) and not args.collapse:
-            config["read_mode"] = "PE"
+            config["read_mode"] = PE
 
         if args.sra:
             config["sra"], config["layout"] = args.sra
@@ -594,15 +594,15 @@ The haystack commands are:
             # query the SRA to see if this is a paired-end library or not
             if config["layout"] == "paired":
                 if config["collapse"]:
-                    config["read_mode"] = "COLLAPSED"
+                    config["read_mode"] = COLLAPSED
                 else:
-                    config["read_mode"] = "PE"
+                    config["read_mode"] = PE
 
                 config["fastq_r1"] = config["sample_output_dir"] + f"/sra_data/PE/{config['sra']}_R1.fastq.gz"
                 config["fastq_r2"] = config["sample_output_dir"] + f"/sra_data/PE/{config['sra']}_R1.fastq.gz"
 
             else:
-                config["read_mode"] = "SE"
+                config["read_mode"] = SE
                 config["fastq"] = config["sample_output_dir"] + f"/sra_data/SE/{config['sra']}.fastq.gz"
 
         target_list = list()
