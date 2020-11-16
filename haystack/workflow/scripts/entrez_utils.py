@@ -209,6 +209,7 @@ def entrez_find_replacement_accession(accession):
     except requests.exceptions.HTTPError:
         print_error(f"Could not find either the GenBank record for '{accession}' or an alternative accession")
 
+    # noinspection PyUnboundLocalVariable
     etree = ElementTree.XML(r.text)
     replacement = etree.find(".//GBSeq_accession-version")
 

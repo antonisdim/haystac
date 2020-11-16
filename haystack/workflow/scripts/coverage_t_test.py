@@ -32,6 +32,7 @@ def coverage_t_test(cov_file, taxon_fasta_idx, taxon, outfile):
     contingency_first_row = [observed_coverage, expected_coverage]
     print("Observed and expected coverage are ", contingency_first_row, file=sys.stderr)
 
+    # TODO do we still need this?
     contingency_second_row = [taxon_seqlen, taxon_seqlen]
 
     # oddsratio, pvalue = fisher_exact([contingency_first_row, contingency_second_row])

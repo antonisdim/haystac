@@ -160,7 +160,6 @@ def mapq_fastq(wildcards):
     return input_file
 
 
-
 rule average_fastq_read_len_single_end:
     input:
         mapq_fastq,

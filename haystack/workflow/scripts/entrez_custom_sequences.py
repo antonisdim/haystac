@@ -30,6 +30,7 @@ def entrez_custom_sequences(config, taxon, output_file):
             "Please provide a valid path for the tab delimited input file."
         )
 
+    # noinspection PyUnboundLocalVariable
     fasta_file = custom_fasta_paths.loc[custom_fasta_paths["species"] == taxon]["path"].values[0]
 
     if os.path.exists(fasta_file):

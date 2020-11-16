@@ -12,6 +12,7 @@ import sys
 import pandas as pd
 from Bio import SeqIO
 
+
 # TODO both get_grey_matter_reads_pe and get_grey_matter_reads_se are redundant!
 #  use get_dark_matter_reads_se with a flag for dark/grey
 def get_grey_matter_reads(input_fastq_r1, input_fastq_r2, matrix_file, output_fastq_r1, output_fastq_r2):
