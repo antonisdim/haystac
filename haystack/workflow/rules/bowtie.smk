@@ -146,7 +146,7 @@ rule extract_fastq_paired_end:
         ") 2> {log}"
 
 
-def mapg_fastq(wildcards):
+def mapq_fastq(wildcards):
     """Input function to assert that the fastqs are not empty"""
 
     if config["read_mode"] == PE:
@@ -163,7 +163,7 @@ def mapg_fastq(wildcards):
 
 rule average_fastq_read_len_single_end:
     input:
-        config["analysis_output_dir"] + "/fastq/{read_mode}/{sample}_mapq.fastq.gz",
+        mapq_fastq,
     log:
         config["analysis_output_dir"] + "/fastq/{read_mode}/{sample}_mapq_readlen.log",
     output:
@@ -181,7 +181,7 @@ rule average_fastq_read_len_single_end:
 
 rule average_fastq_read_len_paired_end:
     input:
-        mate1=config["analysis_output_dir"] + "/fastq/{read_mode}/{sample}_mapq_R1.fastq.gz",
+        mate1=mapq_fastq,
         mate2=config["analysis_output_dir"] + "/fastq/{read_mode}/{sample}_mapq_R2.fastq.gz",
     log:
         config["analysis_output_dir"] + "/fastq/{read_mode}/{sample}_mapq_readlen.log",
