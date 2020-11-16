@@ -149,14 +149,13 @@ rule extract_fastq_paired_end:
 def mapg_fastq(wildcards):
     """Input function to assert that the fastqs are not empty"""
 
-    input_file = ""
     if config["read_mode"] == PE:
         input_file = config["analysis_output_dir"] + f"/fastq/{wildcards.read_mode}/{wildcards.sample}_mapq_R1.fastq.gz"
     else:
         input_file = config["analysis_output_dir"] + f"/fastq/{wildcards.read_mode}/{wildcards.sample}_mapq.fastq.gz"
 
     if os.stat(input_file).st_size == 0:
-        print_error(f"None of the reads in the sample file {input_file} match any of the taxa in the database.")
+        print_error(f"None of the reads in the sample file match any of the taxa in the database.")
 
     return input_file
 
