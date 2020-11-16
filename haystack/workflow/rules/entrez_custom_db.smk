@@ -40,6 +40,7 @@ def get_paths_for_custom_seqs():
         config["sequences"], sep="\t", header=None, names=["species", "accession", "path"],
     )
 
+    # TODO this block of code is duplicated (lines:43-80 == 89-129)
     if custom_fasta_paths["species"].duplicated().any():
         dup_taxa = [i for i in custom_fasta_paths[custom_fasta_paths["species"].duplicated()]["species"].to_list()]
         message = f"{config['sequences']} contains multiple sequences for {', '.join(dup_taxa)}."
@@ -86,6 +87,7 @@ def get_paths_for_custom_acc(_):
 
     custom_accessions = pd.read_csv(config["accessions"], sep="\t", header=None, names=["species", "accession"])
 
+    # TODO this block of code is duplicated (lines:44-81 == 91-131)
     if custom_accessions["species"].duplicated().any():
         dup_taxa = [i for i in custom_accessions[custom_accessions["species"].duplicated()]["species"].to_list()]
         message = f"{config['sequences']} contains multiple sequences for {', '.join(dup_taxa)}."

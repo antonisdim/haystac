@@ -107,6 +107,7 @@ def entrez_refseq_create_files(
             config["sequences"], sep="\t", header=None, names=["species", "accession", "path"],
         )
 
+        # TODO this block of code is duplicated (lines:111-121 == 127-137)
         genbank_exploded = genbank_exploded[(~genbank_exploded["#Species/genus"].isin(custom_fasta_paths["species"]))]
         nuccore_exploded = nuccore_exploded[(~nuccore_exploded["#Species/genus"].isin(custom_fasta_paths["species"]))]
         assemblies_exploded = assemblies_exploded[
@@ -122,6 +123,7 @@ def entrez_refseq_create_files(
     if config["accessions"]:
         custom_accessions = pd.read_csv(config["accessions"], sep="\t", header=None, names=["species", "accession"],)
 
+        # TODO this block of code is duplicated (lines:111-121 == 127-137)
         genbank_exploded = genbank_exploded[(~genbank_exploded["#Species/genus"].isin(custom_accessions["species"]))]
         nuccore_exploded = nuccore_exploded[(~nuccore_exploded["#Species/genus"].isin(custom_accessions["species"]))]
         assemblies_exploded = assemblies_exploded[

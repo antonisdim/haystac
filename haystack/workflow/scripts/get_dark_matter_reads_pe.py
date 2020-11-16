@@ -13,6 +13,7 @@ import pandas as pd
 from Bio import SeqIO
 
 
+# TODO this entire file is redundant! why not just call get_dark_matter_reads_se() twice?
 def get_grey_matter_reads(input_fastq_r1, input_fastq_r2, matrix_file, output_fastq_r1, output_fastq_r2):
     """get_dark_matter_reads_pe to extract all the grey matter reads into 2 fastq files."""
 
