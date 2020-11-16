@@ -16,7 +16,7 @@ MAX_MEM_MB = virtual_memory().total / MEGABYTE
 from haystack.workflow.scripts.utilities import get_total_paths
 
 
-def get_db_list(_):
+def get_db_accessions(_):
     """Get fasta paths in our db"""
     return [
         config["cache"] + f"/ncbi/{orgname}/{accession}.fasta.gz"
@@ -24,9 +24,9 @@ def get_db_list(_):
     ]
 
 
-rule random_db_paths:
+rule randomise_db_order:
     input:
-        get_db_list,
+        get_db_accessions,
     log:
         config["db_output"] + "/bowtie/bt2_random_fasta_paths.log",
     output:
@@ -39,7 +39,7 @@ rule random_db_paths:
         "../scripts/random_db_paths.py"
 
 
-checkpoint calculate_bt2_idx_chunks:
+checkpoint calculate_db_chunks:
     input:
         config["db_output"] + "/bowtie/bt2_random_fasta_paths.txt",
     log:
@@ -57,7 +57,7 @@ checkpoint calculate_bt2_idx_chunks:
         "../scripts/calculate_bt2_idx_chunks.py"
 
 
-rule create_bt2_idx_filter_chunk:
+rule create_db_chunk:
     input:
         config["db_output"] + "/bowtie/bt2_idx_chunk_list.txt",
     log:
@@ -70,7 +70,7 @@ rule create_bt2_idx_filter_chunk:
         "awk '$1=={wildcards.chunk_num} {{print $2}}' {input} | xargs cat > {output}"
 
 
-rule bowtie_index:
+rule bowtie_index_db_chunk:
     input:
         fasta_chunk=config["db_output"] + "/bowtie/chunk{chunk_num}.fasta.gz",
     log:
@@ -96,11 +96,11 @@ rule bowtie_index:
         "bowtie2-build --large-index --threads {config[cores]} {input.fasta_chunk} {params.basename} &> {log}"
 
 
-def get__bt2_idx_chunk_paths(_):
+def get_index_db_chunks(_):
     """Get the paths for the index chunks for the filtering bowtie2 alignment"""
 
     # noinspection PyUnresolvedReferences
-    get_chunk_num = checkpoints.calculate_bt2_idx_chunks.get()
+    get_chunk_num = checkpoints.calculate_db_chunks.get()
     idx_chunk_total = ceil(float(open(get_chunk_num.output[1]).read().strip()))
 
     return expand(
@@ -109,9 +109,9 @@ def get__bt2_idx_chunk_paths(_):
     )
 
 
-rule bowtie_index_done:
+rule index_all_db_chunks:
     input:
-        get__bt2_idx_chunk_paths,
+        get_index_db_chunks,
     output:
         config["db_output"] + "/bowtie/bowtie_index.done",
     benchmark:

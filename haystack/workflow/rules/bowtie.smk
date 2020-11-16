@@ -14,7 +14,7 @@ from haystack.workflow.scripts.utilities import PE, print_error
 SUBSAMPLE_FIXED_READS = 200000
 
 
-rule bowtie_alignment_single_end:
+rule bowtie_align_db_single_end:
     input:
         fastq=(
             config["sample_output_dir"] + "/fastq_inputs/{read_mode}/{sample}_adRm.fastq.gz"
@@ -41,7 +41,7 @@ rule bowtie_alignment_single_end:
         "| samtools sort -O bam -o {output.bam_file} ) 2> {log}"
 
 
-rule bowtie_alignment_paired_end:
+rule bowtie_align_db_paired_end:
     input:
         fastq_r1=(
             config["sample_output_dir"] + "/fastq_inputs/PE/{sample}_R1_adRm.fastq.gz"
@@ -73,7 +73,7 @@ rule bowtie_alignment_paired_end:
         "| samtools sort -O bam -o {output.bam_file} ) 2> {log}"
 
 
-def get_sorted_bam_paths(wildcards):
+def get_db_chunk_alignments(wildcards):
     """Get the sorted bam paths for each index chunk"""
 
     idx_chunk_total = ceil(float(open(config["db_output"] + "/bowtie/bt2_idx_chunk_num.txt").read().strip()))
@@ -86,9 +86,9 @@ def get_sorted_bam_paths(wildcards):
     )
 
 
-rule merge_bams:
+rule merge_db_alignments:
     input:
-        aln_path=get_sorted_bam_paths,
+        aln_path=get_db_chunk_alignments,
     log:
         config["analysis_output_dir"] + "/bam/{read_mode}_{sample}_merge_bams.log",
     output:
@@ -103,7 +103,7 @@ rule merge_bams:
         "samtools merge -f {output} {input.aln_path} 2> {log}"
 
 
-rule extract_fastq_single_end:
+rule extract_db_fastq_single_end:
     input:
         config["analysis_output_dir"] + "/bam/{read_mode}_{sample}_sorted.bam",
     log:
@@ -121,7 +121,7 @@ rule extract_fastq_single_end:
         "( samtools view -h -F 4 {input} | samtools fastq -c 6 - | seqkit rmdup -n -o {output} ) 2> {log}"
 
 
-rule extract_fastq_paired_end:
+rule extract_db_fastq_paired_end:
     input:
         config["analysis_output_dir"] + "/bam/{read_mode}_{sample}_sorted.bam",
     log:
@@ -145,7 +145,7 @@ rule extract_fastq_paired_end:
         ") 2> {log}"
 
 
-def mapq_fastq(wildcards):
+def get_extracted_db_fastq(wildcards):
     """Input function to assert that the fastqs are not empty"""
 
     if config["read_mode"] == PE:
@@ -161,7 +161,7 @@ def mapq_fastq(wildcards):
 
 rule average_fastq_read_len_single_end:
     input:
-        mapq_fastq,
+        get_extracted_db_fastq,
     log:
         config["analysis_output_dir"] + "/fastq/{read_mode}/{sample}_mapq_readlen.log",
     output:
@@ -179,7 +179,7 @@ rule average_fastq_read_len_single_end:
 
 rule average_fastq_read_len_paired_end:
     input:
-        mate1=mapq_fastq,
+        mate1=get_extracted_db_fastq,
         mate2=config["analysis_output_dir"] + "/fastq/{read_mode}/{sample}_mapq_R2.fastq.gz",
     log:
         config["analysis_output_dir"] + "/fastq/{read_mode}/{sample}_mapq_readlen.log",

@@ -23,7 +23,7 @@ def get_min_score(wildcards, input):
     )
 
 
-rule align_taxon_single_end:
+rule bowtie_align_accession_single_end:
     input:
         fastq=config["analysis_output_dir"] + "/fastq/{read_mode}/{sample}_mapq.fastq.gz",
         db_idx=config["cache"] + "/ncbi/{orgname}/{accession}.1.bt2l",
@@ -57,7 +57,7 @@ rule align_taxon_single_end:
         ") 2> {log}"
 
 
-rule align_taxon_paired_end:
+rule bowtie_align_accession_paired_end:
     input:
         fastq_r1=config["analysis_output_dir"] + "/fastq/PE/{sample}_mapq_R1.fastq.gz",
         fastq_r2=config["analysis_output_dir"] + "/fastq/PE/{sample}_mapq_R2.fastq.gz",
@@ -84,7 +84,7 @@ rule align_taxon_paired_end:
         ") 2> {log}"
 
 
-def get_meta_bams(_):
+def get_accession_alignments(_):
     """Get paths for individual bam files"""
     return [
         config["analysis_output_dir"]
@@ -95,9 +95,9 @@ def get_meta_bams(_):
     ]
 
 
-rule all_alignments:
+rule align_all_accessions:
     input:
-        get_meta_bams,
+        get_accession_alignments,
     output:
         config["analysis_output_dir"] + "/alignments/{sample}_{read_mode}_alignments.done",
     benchmark:

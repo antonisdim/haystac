@@ -72,7 +72,7 @@ rule entrez_download_sequence:
         "../scripts/entrez_download_sequence.py"
 
 
-def get_db_list(_):
+def get_all_accessions(_):
     """Get fasta paths in our db"""
     return [
         config["cache"] + f"/ncbi/{orgname}/{accession}.fasta.gz"
@@ -82,7 +82,7 @@ def get_db_list(_):
 
 rule entrez_db_list:
     input:
-        get_db_list,
+        get_all_accessions,
     log:
         config["db_output"] + "/db_taxa_accessions.log",
     output:

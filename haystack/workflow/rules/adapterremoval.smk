@@ -33,7 +33,7 @@ rule adapterremoval_single_end:
         ") 2> {log}"
 
 
-rule adapterremoval_paired_end_ancient:
+rule adapterremoval_collapsed:
     input:
         fastq_r1=config["fastq_r1"],
         fastq_r2=config["fastq_r2"],
@@ -64,7 +64,7 @@ rule adapterremoval_paired_end_ancient:
         ") 2> {log}"
 
 
-rule adapterremoval_paired_end_modern:
+rule adapterremoval_paired_end:
     input:
         fastq_r1=config["fastq_r1"],
         fastq_r2=config["fastq_r2"],

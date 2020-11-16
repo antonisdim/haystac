@@ -11,7 +11,7 @@ from itertools import chain
 from haystack.workflow.scripts.utilities import get_total_paths
 
 
-rule fasta_idx:
+rule samtools_index_accession:
     input:
         config["cache"] + "/ncbi/{orgname}/{accession}.fasta.gz",
     output:
@@ -26,7 +26,7 @@ rule fasta_idx:
         "samtools faidx {input}"
 
 
-rule index_database_entrez:
+rule bowtie_index_accession:
     input:
         config["cache"] + "/ncbi/{orgname}/{accession}.fasta.gz",
     log:
@@ -64,7 +64,7 @@ def get_index_paths(_):
     )
 
 
-rule idx_database:
+rule index_all_accessions:
     input:
         get_index_paths,
     output:
