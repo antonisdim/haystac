@@ -6,6 +6,7 @@ __copyright__ = "Copyright 2020, University of Oxford"
 __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
+import os
 from itertools import chain
 
 from haystack.workflow.scripts.utilities import get_total_paths
@@ -42,7 +43,7 @@ rule bowtie_index_accession:
         repeat("benchmarks/index_database_{orgname}_{accession}.benchmark.txt", 1)
     message:
         "Preparing the bowtie2 index for genome {wildcards.accession} of taxon {wildcards.orgname}."
-    threads: 1  # TODO this should check how big the genome is and use more if it's large
+    threads: lambda wildcards, input: 1 if os.stat(input[0]).st_size / (1024 ** 2) < 100 else config["cores"]
     params:
         basename=config["cache"] + "/ncbi/{orgname}/{accession}",
     conda:

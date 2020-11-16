@@ -21,9 +21,9 @@ elif config["module"] == "database":
 
     include: "rules/entrez.smk"
 
-    include: "rules/bowtie_index.smk"
+    include: "rules/database_index.smk"
 
-    include: "rules/bowtie_meta_index.smk"
+    include: "rules/accession_index.smk"
 
     include: "rules/entrez_custom_db.smk"
 
@@ -34,9 +34,9 @@ elif config["module"] == "analyse":
 
     include: "rules/entrez.smk"
 
-    include: "rules/bowtie.smk"
+    include: "rules/database_align.smk"
 
-    include: "rules/bowtie_meta.smk"
+    include: "rules/accession_align.smk"
 
     include: "rules/metagenomics.smk"
 
