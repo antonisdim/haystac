@@ -13,6 +13,7 @@ import pandas as pd
 from scipy.stats import chi2_contingency
 
 
+# TODO not a t-test
 def coverage_t_test(cov_file, taxon_fasta_idx, taxon, outfile):
     """
     Function that calculates the pvalue of the coverage. Testing if there was clustering bias during the

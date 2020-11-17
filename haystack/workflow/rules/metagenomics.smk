@@ -138,6 +138,7 @@ rule coverage_t_test:
             "benchmarks/coverage_t_test_{sample}_{orgname}_{accession}_{reads}.benchmark.txt", 1,
         )
     message:
+        # TODO not a t-test
         "Performing a T-Test to assess if reads from sample {wildcards.sample} represent a random genome sample of "
         "taxon {wildcards.orgname}."
     script:
@@ -166,6 +167,7 @@ rule cat_pvalues:
     benchmark:
         repeat("benchmarks/cat_pvalues_{sample}.benchmark.txt", 1)
     message:
+        # TODO not a t-test
         "Concatenating all the T-Test p-value outputs for sample {wildcards.sample}."
     script:
         "../scripts/concat_files.py"
