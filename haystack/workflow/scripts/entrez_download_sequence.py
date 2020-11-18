@@ -38,7 +38,8 @@ def download_entrez_ftp(ftp_url, output_file, attempt=1):
     except urllib.error.URLError as error:
         if attempt <= ENTREZ_MAX_RETRY:
             # try downloading it again
-            download_entrez_ftp(ftp_url, output_file, attempt + 1)
+            attempt += 1
+            download_entrez_ftp(ftp_url, output_file, attempt)
             return
         else:
             raise error
