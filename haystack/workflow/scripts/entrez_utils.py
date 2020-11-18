@@ -34,7 +34,7 @@ ENTREZ_RATE_HIGH = 10
 ENTREZ_MAX_UID = 200
 
 # maximum number of retries when we encounter NCBI server/network error
-ENTREZ_MAX_RETRY = 3
+ENTREZ_MAX_RETRY = 2
 
 # TODO document the codes
 # check if the error is because of NCBI [NewConnectionError, ConnectionResetError, TimeoutError, ConnectionRefusedError,

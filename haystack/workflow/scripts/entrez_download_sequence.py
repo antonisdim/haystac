@@ -32,6 +32,7 @@ def download_entrez_ftp(ftp_url, output_file, attempt=1):
         with gzip.open(urllib.request.urlretrieve(ftp_url)[0]) as fin, bgzf.open(output_file, "w") as fout:
             for line in fin:
                 print(line.strip().decode("utf-8"), file=fout)
+        urllib.request.urlcleanup()
         return
 
     except urllib.error.URLError as error:
