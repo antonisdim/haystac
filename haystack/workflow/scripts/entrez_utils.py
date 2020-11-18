@@ -16,9 +16,6 @@ import yaml
 
 from haystack.workflow.scripts.utilities import print_warning, print_error
 
-# todo delete once we are sure
-from datetime import datetime
-
 # base url of the Entrez web service
 ENTREZ_URL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/"
 
@@ -37,7 +34,12 @@ ENTREZ_RATE_HIGH = 10
 ENTREZ_MAX_UID = 200
 
 # maximum number of retries when we encounter NCBI server/network error
-MAX_RETRY = 3
+ENTREZ_MAX_RETRY = 3
+
+# TODO document the codes
+# check if the error is because of NCBI [NewConnectionError, ConnectionResetError, TimeoutError, ConnectionRefusedError,
+# InternalServerError]
+ENTREZ_ERRORS = [101, 104, 110, 111, 500]
 
 
 def entrez_request(action, params=None, attempt=1):
@@ -45,9 +47,6 @@ def entrez_request(action, params=None, attempt=1):
     Helper function to ensure that we never exceed the rate limit.
     """
     params = params or dict()
-
-    with open('count_requests.txt', 'a') as fout:
-        print(datetime.now(), params, file=fout)
 
     # tell NCBI which application is making these requests
     params["tool"] = ENTREZ_TOOL
@@ -79,16 +78,10 @@ def entrez_request(action, params=None, attempt=1):
     # enforce the rate limit (even when the request failed)
     time.sleep(ENTREZ_WAIT_TIME)
 
-    # check if the error is because of NCBI [NewConnectionError, ConnectionResetError, TimeoutError,
-    # ConnectionRefusedError, InternalServerError]
-    errors = [101, 104, 110, 111, 500]
-    if r.status_code in errors and attempt <= MAX_RETRY:
-        attempt = + 1
-        entrez_request(action, params, attempt)
-        return
+    if r.status_code in ENTREZ_ERRORS and attempt <= ENTREZ_MAX_RETRY:
+        return entrez_request(action, params, attempt + 1)
 
     if not r.ok:
-        print(r.text)
         r.raise_for_status()
 
     return r

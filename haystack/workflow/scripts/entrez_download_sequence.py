@@ -7,7 +7,7 @@ __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
 import gzip
-from urllib.request import urlretrieve
+import urllib
 from xml.etree import ElementTree
 
 import requests
@@ -19,29 +19,28 @@ from haystack.workflow.scripts.entrez_utils import (
     entrez_assembly_ftp,
     entrez_find_replacement_accession,
     ENTREZ_MAX_UID,
-    MAX_RETRY,
+    ENTREZ_MAX_RETRY,
 )
 from haystack.workflow.scripts.utilities import chunker, print_error
 
-# todo delete them after we are sure this works
-from datetime import datetime
-import sys
 
-
-def download(ftp_url, output_file, attempt=1):
-    """Function to download the ftp links"""
-
-    print(datetime.now(),'urlretrieve', file=sys.stderr)
+def download_entrez_ftp(ftp_url, output_file, attempt=1):
+    """
+    Read the FTP stream, unzip the contents and write them one line at a time to our bgzip file
+    """
     try:
-        with gzip.open(urlretrieve(ftp_url)[0]) as fin, bgzf.open(output_file, "w") as fout:
+        with gzip.open(urllib.request.urlretrieve(ftp_url)[0]) as fin, bgzf.open(output_file, "w") as fout:
             for line in fin:
                 print(line.strip().decode("utf-8"), file=fout)
         return
-    except urllib.error.URLError:
-        attempt += 1
-        if attempt <= MAX_RETRY:
-            download(ftp_url, output_file, attempt)
-        return
+
+    except urllib.error.URLError as error:
+        if attempt <= ENTREZ_MAX_RETRY:
+            # try downloading it again
+            download_entrez_ftp(ftp_url, output_file, attempt + 1)
+            return
+        else:
+            raise error
 
 
 def entrez_download_sequence(accession, output_file, force=False, mtdna=False):
@@ -52,15 +51,17 @@ def entrez_download_sequence(accession, output_file, force=False, mtdna=False):
     # query the assembly database to see if there is an FTP url we can use
     ftp_url = entrez_assembly_ftp(accession, force) if not mtdna else ""
 
-    if ftp_url:
-        # read the FTP stream, unzip the contents and write them one line at a time to our bgzip file
-        download(ftp_url, output_file)
+    try:
+        if ftp_url:
+            download_entrez_ftp(ftp_url, output_file)
+            return
 
-        return
+    except urllib.error.URLError:
+        pass
 
     try:
         # fetch the fasta record from nuccore
-        r = entrez_request("efetch.fcgi", {"db": "nuccore", "id": accession, "rettype": "fasta", "retmode": "text"},)
+        r = entrez_request("efetch.fcgi", {"db": "nuccore", "id": accession, "rettype": "fasta", "retmode": "text"})
 
         # the fasta may be empty if this is a "master record" containing multiple other records (NZ_APLR00000000.1)
         if len(r.text.strip()) > 1:
@@ -74,7 +75,7 @@ def entrez_download_sequence(accession, output_file, force=False, mtdna=False):
 
     try:
         # get the full GenBank XML record
-        r = entrez_request("efetch.fcgi", {"db": "nuccore", "id": accession, "rettype": "gb", "retmode": "xml"},)
+        r = entrez_request("efetch.fcgi", {"db": "nuccore", "id": accession, "rettype": "gb", "retmode": "xml"})
 
     except requests.exceptions.HTTPError:
         # check for a replacement accession (there may be a newer version if this a WGS project)
@@ -116,8 +117,6 @@ def entrez_download_sequence(accession, output_file, force=False, mtdna=False):
 
 
 if __name__ == "__main__":
-    sys.stderr = open('count_requests.txt', "a")
-
     # noinspection PyUnresolvedReferences
     entrez_download_sequence(
         accession=snakemake.wildcards.accession,
