@@ -19,8 +19,29 @@ from haystack.workflow.scripts.entrez_utils import (
     entrez_assembly_ftp,
     entrez_find_replacement_accession,
     ENTREZ_MAX_UID,
+    MAX_RETRY,
 )
 from haystack.workflow.scripts.utilities import chunker, print_error
+
+# todo delete them after we are sure this works
+from datetime import datetime
+import sys
+
+
+def download(ftp_url, output_file, attempt=1):
+    """Function to download the ftp links"""
+
+    print(datetime.now(),'urlretrieve', file=sys.stderr)
+    try:
+        with gzip.open(urlretrieve(ftp_url)[0]) as fin, bgzf.open(output_file, "w") as fout:
+            for line in fin:
+                print(line.strip().decode("utf-8"), file=fout)
+        return
+    except urllib.error.URLError:
+        attempt += 1
+        if attempt <= MAX_RETRY:
+            download(ftp_url, output_file, attempt)
+        return
 
 
 def entrez_download_sequence(accession, output_file, force=False, mtdna=False):
@@ -33,9 +54,7 @@ def entrez_download_sequence(accession, output_file, force=False, mtdna=False):
 
     if ftp_url:
         # read the FTP stream, unzip the contents and write them one line at a time to our bgzip file
-        with gzip.open(urlretrieve(ftp_url)[0]) as fin, bgzf.open(output_file, "w") as fout:
-            for line in fin:
-                print(line.strip().decode("utf-8"), file=fout)
+        download(ftp_url, output_file)
 
         return
 
@@ -97,6 +116,8 @@ def entrez_download_sequence(accession, output_file, force=False, mtdna=False):
 
 
 if __name__ == "__main__":
+    sys.stderr = open('count_requests.txt', "a")
+
     # noinspection PyUnresolvedReferences
     entrez_download_sequence(
         accession=snakemake.wildcards.accession,
