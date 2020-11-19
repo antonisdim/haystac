@@ -42,8 +42,6 @@ rule randomise_db_order:
 checkpoint calculate_db_chunks:
     input:
         config["db_output"] + "/bowtie/bt2_random_fasta_paths.txt",
-    log:
-        config["db_output"] + "/bowtie/bt2_idx_chunk_num.log",
     output:
         config["db_output"] + "/bowtie/bt2_idx_chunk_list.txt",
         config["db_output"] + "/bowtie/bt2_idx_chunk_num.txt",
@@ -60,8 +58,6 @@ checkpoint calculate_db_chunks:
 rule create_db_chunk:
     input:
         config["db_output"] + "/bowtie/bt2_idx_chunk_list.txt",
-    log:
-        config["db_output"] + "/bowtie/bt2_idx_filter_{chunk_num}.log",
     output:
         config["db_output"] + "/bowtie/chunk{chunk_num}.fasta.gz",
     message:

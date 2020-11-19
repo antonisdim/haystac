@@ -56,8 +56,6 @@ def calculate_bt2_idx_chunks(mem_resources, mem_rescale_factor, fasta_files, out
 
 
 if __name__ == "__main__":
-    # noinspection PyUnresolvedReferences
-    sys.stderr = open(snakemake.log[0], "w")
 
     # noinspection PyUnresolvedReferences
     calculate_bt2_idx_chunks(
