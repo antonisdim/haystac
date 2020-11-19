@@ -33,20 +33,22 @@ conda install -c bioconda haystack
 
 ```
 # build a target database of species you are interested in
-rip_multilevel database \
+haystac database \
     --query '("Yersinia"[Organism] OR "Yersinia"[Organism]) AND "complete genome"[All Fields]' \
     --output yersinia_db
 ```
 
 ```
-rip_multilevel sample \
+# prepare a sample for analyis 
+haystac sample \
     --sra SRR12157896 \
     --collapse \
     --output SRR12157896
 ```
 
 ```
-rip_multilevel analyse \
+# analyse a sample against a specific database
+haystac analyse \
     --mode abundances \
     --database yersinia_db \
     --sample SRR12157896 \
