@@ -78,11 +78,11 @@ def entrez_request(action, params=None, attempt=1):
     # enforce the rate limit (even when the request failed)
     time.sleep(ENTREZ_WAIT_TIME)
 
-    if r.status_code in ENTREZ_ERRORS and attempt < ENTREZ_MAX_ATTEMPTS:
-        return entrez_request(action, params, attempt + 1)
-
     if not r.ok:
-        r.raise_for_status()
+        if r.status_code in ENTREZ_ERRORS and attempt < ENTREZ_MAX_ATTEMPTS:
+            return entrez_request(action, params, attempt + 1)
+        else:
+            r.raise_for_status()
 
     return r
 
