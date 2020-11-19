@@ -19,7 +19,7 @@ from haystack.workflow.scripts.entrez_utils import (
     entrez_assembly_ftp,
     entrez_find_replacement_accession,
     ENTREZ_MAX_UID,
-    ENTREZ_MAX_RETRY,
+    ENTREZ_MAX_ATTEMPTS,
 )
 from haystack.workflow.scripts.utilities import chunker, print_error
 
@@ -36,10 +36,9 @@ def download_entrez_ftp(ftp_url, output_file, attempt=1):
         return
 
     except urllib.error.URLError as error:
-        if attempt <= ENTREZ_MAX_RETRY:
+        if attempt < ENTREZ_MAX_ATTEMPTS:
             # try downloading it again
-            attempt += 1
-            download_entrez_ftp(ftp_url, output_file, attempt)
+            download_entrez_ftp(ftp_url, output_file, attempt + 1)
             return
         else:
             raise error

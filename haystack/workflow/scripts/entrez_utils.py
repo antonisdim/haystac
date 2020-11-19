@@ -34,7 +34,7 @@ ENTREZ_RATE_HIGH = 10
 ENTREZ_MAX_UID = 200
 
 # maximum number of retries when we encounter NCBI server/network error
-ENTREZ_MAX_RETRY = 1
+ENTREZ_MAX_ATTEMPTS = 2
 
 # TODO document the codes
 # check if the error is because of NCBI [NewConnectionError, ConnectionResetError, TimeoutError, ConnectionRefusedError,
@@ -78,9 +78,8 @@ def entrez_request(action, params=None, attempt=1):
     # enforce the rate limit (even when the request failed)
     time.sleep(ENTREZ_WAIT_TIME)
 
-    if r.status_code in ENTREZ_ERRORS and attempt <= ENTREZ_MAX_RETRY:
-        attempt += 1
-        return entrez_request(action, params, attempt)
+    if r.status_code in ENTREZ_ERRORS and attempt < ENTREZ_MAX_ATTEMPTS:
+        return entrez_request(action, params, attempt + 1)
 
     if not r.ok:
         r.raise_for_status()
