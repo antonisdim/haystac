@@ -7,6 +7,7 @@ __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
 import os
+import sys
 import time
 from urllib.parse import urlencode
 from xml.etree import ElementTree
@@ -80,6 +81,7 @@ def entrez_request(action, params=None, attempt=1):
 
     if not r.ok:
         if r.status_code in ENTREZ_ERRORS and attempt < ENTREZ_MAX_ATTEMPTS:
+            print(f"ERROR: r.status_code={r.status_code} and attempt={attempt} for {params}, retrying", file=sys.stderr)
             return entrez_request(action, params, attempt + 1)
         else:
             r.raise_for_status()

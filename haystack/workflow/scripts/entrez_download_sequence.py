@@ -7,6 +7,7 @@ __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
 import gzip
+import sys
 import urllib.error
 import urllib.request
 from xml.etree import ElementTree
@@ -40,6 +41,7 @@ def download_entrez_ftp(ftp_url, output_file, attempt=1):
 
     except urllib.error.URLError as error:
         if attempt < ENTREZ_MAX_ATTEMPTS:
+            print(f"ERROR: error={error} and attempt={attempt} for {ftp_url}, retrying", file=sys.stderr)
             # try downloading it again
             download_entrez_ftp(ftp_url, output_file, attempt + 1)
         else:
