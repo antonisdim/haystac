@@ -31,7 +31,7 @@ def calculate_bt2_idx_chunks(mem_resources, mem_rescale_factor, fasta_files, out
     for fasta_file in fasta_paths_random:
         file_size = os.stat(fasta_file).st_size / (1024 ** 2)
 
-        if file_size >= mem_resources:
+        if file_size >= mem_resources or file_size >= chunk_size:
             print_error(
                 f"Fasta file {fasta_file} is bigger than the RAM resources provided. "
                 f"Unfortunately an index cannot be built."
