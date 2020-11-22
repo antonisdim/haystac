@@ -54,7 +54,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--matrix_file",
         help="Matrix file produced by haystac to that contains the posterior probabilities of each read belonging to "
-             "a taxon in the db.",
+        "a taxon in the db.",
         metavar="",
     )
 

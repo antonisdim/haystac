@@ -6,6 +6,7 @@ __copyright__ = "Copyright 2020, University of Oxford"
 __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
+import os
 import sys
 
 import pandas as pd
@@ -25,9 +26,7 @@ def entrez_refseq_create_files(
 ):
     prok_refseq_rep = pd.read_csv(input_file, sep="\t")
 
-    # TODO be explicit in your call to duplicated(keep="first") to tell it which one to keep
-    # TODO tell the user which one you chose!
-    prok_refseq_rep_rmdup = prok_refseq_rep[~prok_refseq_rep["#Species/genus"].duplicated()]
+    prok_refseq_rep_rmdup = prok_refseq_rep[~prok_refseq_rep["#Species/genus"].duplicated(keep="first")]
 
     assemblies = prok_refseq_rep_rmdup.loc[prok_refseq_rep_rmdup["WGS"].notna(), ["#Species/genus", "WGS"]]
 
@@ -51,9 +50,7 @@ def entrez_refseq_create_files(
     ].copy()
     genbank_filtered.loc[:, "Chromosome GenBank"] = genbank_filtered["Chromosome GenBank"].str.split(",")
     genbank_exploded = genbank_filtered.explode("Chromosome GenBank")
-    # TODO be explicit in your call to duplicated(keep="first") to tell it which one to keep
-    # TODO tell the user which one you chose!
-    genbank_exploded = genbank_exploded[~genbank_exploded["#Species/genus"].duplicated()]
+    genbank_exploded = genbank_exploded[~genbank_exploded["#Species/genus"].duplicated(keep="first")]
 
     nuccore_filtered = nuccore[
         (~nuccore["#Species/genus"].isin(assemblies["#Species/genus"]))
@@ -61,9 +58,7 @@ def entrez_refseq_create_files(
     ].copy()
     nuccore_filtered.loc[:, "Chromosome RefSeq"] = nuccore_filtered["Chromosome RefSeq"].str.split(",")
     nuccore_exploded = nuccore_filtered.explode("Chromosome RefSeq")
-    # TODO be explicit in your call to duplicated(keep="first") to tell it which one to keep
-    # TODO tell the user which one you chose!
-    nuccore_exploded = nuccore_exploded[~nuccore_exploded["#Species/genus"].duplicated()]
+    nuccore_exploded = nuccore_exploded[~nuccore_exploded["#Species/genus"].duplicated(keep="first")]
 
     assemblies_filtered = assemblies[
         (~assemblies["#Species/genus"].isin(nuccore_filtered["#Species/genus"]))
@@ -71,9 +66,7 @@ def entrez_refseq_create_files(
     ]
     assemblies_filtered.loc[:, "WGS"] = assemblies_filtered["WGS"].str.split(",")
     assemblies_exploded = assemblies_filtered.explode("WGS")
-    # TODO be explicit in your call to duplicated(keep="first") to tell it which one to keep
-    # TODO tell the user which one you chose!
-    assemblies_exploded = assemblies_exploded[~assemblies_exploded["#Species/genus"].duplicated()]
+    assemblies_exploded = assemblies_exploded[~assemblies_exploded["#Species/genus"].duplicated(keep="first")]
 
     nuccore_plasmids = prok_refseq_rep_rmdup[
         prok_refseq_rep_rmdup["Plasmid RefSeq"].notna() & prok_refseq_rep_rmdup["WGS"].isna()
@@ -102,39 +95,29 @@ def entrez_refseq_create_files(
 
     header = ["species", "AccessionVersion"]
 
-    if config["sequences"]:
-        custom_fasta_paths = pd.read_csv(
-            config["sequences"], sep="\t", header=None, names=["species", "accession", "path"],
-        )
+    if config["sequences"] or config["accessions"]:
+        user_inputs = []
+        if os.path.isfile(config["sequences"]):
+            custom_fasta_paths = pd.read_csv(
+                config["sequences"], sep="\t", header=None, names=["species", "accession", "path"],
+            )
+            user_inputs.append(custom_fasta_paths)
+        if os.path.isfile(config["accessions"]):
+            custom_accessions = pd.read_csv(
+                config["accessions"], sep="\t", header=None, names=["species", "accession"],
+            )
+            user_inputs.append(custom_accessions)
 
-        # TODO this block of code is duplicated (lines:111-121 == 127-137)
-        genbank_exploded = genbank_exploded[(~genbank_exploded["#Species/genus"].isin(custom_fasta_paths["species"]))]
-        nuccore_exploded = nuccore_exploded[(~nuccore_exploded["#Species/genus"].isin(custom_fasta_paths["species"]))]
-        assemblies_exploded = assemblies_exploded[
-            (~assemblies_exploded["#Species/genus"].isin(custom_fasta_paths["species"]))
-        ]
-        genbank_plasmids_filtered_exploded = genbank_plasmids_filtered_exploded[
-            (~genbank_plasmids_filtered_exploded["#Species/genus"].isin(custom_fasta_paths["species"]))
-        ]
-        nuccore_plasmids_exploded = nuccore_plasmids_exploded[
-            (~nuccore_plasmids_exploded["#Species/genus"].isin(custom_fasta_paths["species"]))
-        ]
-
-    if config["accessions"]:
-        custom_accessions = pd.read_csv(config["accessions"], sep="\t", header=None, names=["species", "accession"],)
-
-        # TODO this block of code is duplicated (lines:111-121 == 127-137)
-        genbank_exploded = genbank_exploded[(~genbank_exploded["#Species/genus"].isin(custom_accessions["species"]))]
-        nuccore_exploded = nuccore_exploded[(~nuccore_exploded["#Species/genus"].isin(custom_accessions["species"]))]
-        assemblies_exploded = assemblies_exploded[
-            (~assemblies_exploded["#Species/genus"].isin(custom_accessions["species"]))
-        ]
-        genbank_plasmids_filtered_exploded = genbank_plasmids_filtered_exploded[
-            (~genbank_plasmids_filtered_exploded["#Species/genus"].isin(custom_accessions["species"]))
-        ]
-        nuccore_plasmids_exploded = nuccore_plasmids_exploded[
-            (~nuccore_plasmids_exploded["#Species/genus"].isin(custom_accessions["species"]))
-        ]
+        for user_df in user_inputs:
+            genbank_exploded = genbank_exploded[(~genbank_exploded["#Species/genus"].isin(user_df["species"]))]
+            nuccore_exploded = nuccore_exploded[(~nuccore_exploded["#Species/genus"].isin(user_df["species"]))]
+            assemblies_exploded = assemblies_exploded[(~assemblies_exploded["#Species/genus"].isin(user_df["species"]))]
+            genbank_plasmids_filtered_exploded = genbank_plasmids_filtered_exploded[
+                (~genbank_plasmids_filtered_exploded["#Species/genus"].isin(user_df["species"]))
+            ]
+            nuccore_plasmids_exploded = nuccore_plasmids_exploded[
+                (~nuccore_plasmids_exploded["#Species/genus"].isin(user_df["species"]))
+            ]
 
     genbank_plasmids_to_drop = []
     for key, seq in genbank_plasmids_filtered_exploded.iterrows():

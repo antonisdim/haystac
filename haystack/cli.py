@@ -304,7 +304,8 @@ The haystack commands are:
         #      prokaryotes, viruses) see https://ftp.ncbi.nlm.nih.gov/genomes/GENOME_REPORTS/
         choice.add_argument(
             "--refseq-rep",
-            help="Include all prokaryotic species (excluding strains) from the representative RefSeq DB",
+            help="Include all prokaryotic species (excluding strains) from the representative RefSeq DB. "
+            "If multiple accessions exist for a given species, the first pair of species/accession is kept.",
             action="store_true",
         )
 
