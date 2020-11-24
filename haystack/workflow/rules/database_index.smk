@@ -82,7 +82,9 @@ rule bowtie_index_db_chunk:
         repeat("benchmarks/bowtie_index_chunk{chunk_num}.benchmark.txt", 1)
     message:
         "Bowtie2 index for chunk {input.fasta_chunk} is being built."
-    threads: ceil(config["cores"] / 2)
+    threads: config["cores"]
+    resources:
+        memory=config["mem"],
     conda:
         "../envs/bowtie2.yaml"
     params:

@@ -41,10 +41,14 @@ def get_grey_matter_reads(input_fastq, matrix_file, output_fastq, matter):
         with gzip.open(input_fastq, "rt") as input_handle:
             with gzip.open(output_fastq, "wt") as output_handle:
 
+                dark_reads = []
                 for record in SeqIO.parse(input_handle, "fastq"):
 
                     if record.id not in aligned_read_names:
-                        SeqIO.write(record, output_handle, "fastq")
+                        dark_reads.append(record)
+                        if len(dark_reads) >= 1000000:
+                            SeqIO.write(dark_reads, output_handle, "fastq")
+                            dark_reads = []
 
 
 if __name__ == "__main__":
