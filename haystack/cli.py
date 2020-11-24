@@ -42,6 +42,7 @@ from haystack.workflow.scripts.utilities import (
     SE,
     md5,
     print_warning,
+    print_error,
 )
 
 os.environ["OPENBLAS_NUM_THREADS"] = "1"
@@ -98,8 +99,7 @@ The haystack commands are:
             exit(reval)
 
         except ValidationError as error:
-            print(f"haystack: error: {error}")
-            exit(1)
+            print_error(f"{error}")
 
     @staticmethod
     def _parse_args(parser, level=1):
@@ -386,9 +386,6 @@ The haystack commands are:
             # load the query file
             with open(args.query_file) as fin:
                 args.query = fin.read().strip()
-
-            if not args.query:
-                raise ValidationError(f"The query file '{args.query_file}' is empty.")
 
         db_original = args.db_output
 

@@ -296,6 +296,8 @@ class NuccoreQueryType(object):
         # check if the user has given us a file instead of a string
         if os.path.isfile(value):
             query = open(value).read().strip()
+            if not query:
+                raise argparse.ArgumentTypeError(f"The query file '{value}' is empty.")
         else:
             query = value
 
@@ -531,7 +533,7 @@ def md5(filename):
 
 def print_error(message):
     """Function to print errors and exit"""
-    message = f"ERROR: {message}"
+    message = f"haystack: error: {message}"
     print(f"{FAIL}{message}{END}" if is_tty else message, file=sys.stderr)
     exit(1)
 
