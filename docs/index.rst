@@ -260,125 +260,133 @@ Command Line Interface
 haystac config
 --------------
 
-    -h, --help            show this help message and exit
-    -e , --email          Email address for NCBI identification. Mandatory.
-    -gc , --cache
-                          Path where all the genomes that are downloaded and/or
-                          used by haystack are being stored. (default ~/haystack/cache/)
-    -b , --batchsize      Batchsize for fetching records from NCBI <int>
-                          (default: 5)
-    -mp , --mismatch-probability 
-                          Base mismatch probability <float> (default: 0.05)
-    -s , --bowtie2-scaling 
-                          Factor to rescale/chunk the input file for the
-                          mutlifasta index for the filtering alignment (default:
-                          2.5)
+  -h, --help            Show this help message and exit
+  --cache <path>        Cache folder for storing genomes downloaded from NCBI
+                        and other shared data (default:
+                        /Users/edimopoulos/haystack/cache)
+  --clear-cache         Clear the contents of the cache folder, and delete the
+                        folder itself (default: False)
+  --api-key <code>      Personal NCBI API key (increases max concurrent
+                        requests from 3 to 10,
+                        https://www.ncbi.nlm.nih.gov/account/register/)
+  --mismatch-probability <float>
+                        Base mismatch probability (default: 0.05)
+  --bowtie2-threads <int>
+                        Number of threads to use for each bowtie2 alignment
+                        (default: 15)
+  --bowtie2-scaling <float>
+                        Rescaling factor to keep the bowtie2 mutlifasta index
+                        below the maximum memory limit (default: 5.0)
+  --use-conda <bool>    Use conda as a package manger (default: True)
 
 haystac database
 ----------------
 
-    -h, --help            show this help message and exit
-    --dry-run
-    -m , --mode           Database creation mode for haystack
-    -o , --db-output      Path to the database output directory.
-    -R , --refseq-rep     Use the prokaryotic representative species of the
-                          RefSeq DB for the species id pipeline. only species no
-                          strains. either or both of with_refseq_rep and
-                          with_entrez_query should be set (default: False)
-    -MT , --mtDNA         Download mitochondrial genomes for eukaryotes only. Do
-                          not use with --refseq-rep or any queries for
-                          prokaryotes (default: False)
-    -q , --query          Actual NCBI query in the NCBI query language. Please
-                          refer to the documentation on how to construct one
-                          correctly.
-    -Q , --query-file     Actual NCBI query in the NCBI query language, stored
-                          in a simple text file.
-    -r , --rank           Taxonomic rank to perform the identifications on
-                          (genus, species, subspecies, serotype) <str> (default:
-                          species)
-    -s , --sequences      TAB DELIMITED input file containing the the name of
-                          the taxon with no special characters, and an
-                          underscore '_' instead of spaces, a user defined
-                          accession code and the path of the fasta file. The
-                          fasta file that the path point to can be either
-                          uncompressed or compressed with gzip/bgzip
-    -a , --accessions     TAB DELIMITED input file containing the the name of
-                          the taxon with no special characters, and an
-                          underscore '_' instead of spaces, a user defined valid
-                          NCBI nucleotide, assembly or WGS accession code.
-    -g  [ ...], --genera  [ ...]
-                          List containing the names of specific genera the
-                          abundances should be calculated on, separated by a
-                          space character <genus1 genus2 genus3 ...>
-    -c , --cores          Number of cores for HAYSTACK to use
-    -M , --mem            Max memory resources allowed to be used ofr indexing
-                          the input for the filtering alignment (default: max
-                          available memory 8192.0)
-    -u, --unlock          Unlock the working directory after smk is abruptly
-                          killed <bool> (default: False)
-    -d, --debug           Debug the HAYSTACK workflow <bool> (default: False)
-    -smk , --snakemake    Snakemake flags (default: '')
+Required arguments:
+  --mode <mode>         Database creation mode for haystack [fetch, index,
+                        build]
+  --output <path>       Path to the database output directory
+
+Required choice:
+  --query <query>       Database query in the NCBI query language. Please
+                        refer to the documentation for assistance with
+                        constructing a valid query.
+  --query-file <path>   File containing a database query in the NCBI query
+                        language.
+  --accessions-file <path>
+                        Tab delimited file containing one record per row: the
+                        name of the taxon, and a valid NCBI accession code
+                        from the nucleotide, assembly or WGS databases.
+  --sequences-file <path>
+                        Tab delimited file containing one record per row: the
+                        name of the taxon, a user defined accession code, and
+                        the path to the fasta file (optionally compressed).
+  --refseq-rep          Include all prokaryotic species (excluding strains)
+                        from the representative RefSeq DB (default: False)
+
+Optional arguments:
+  --force-accessions    Disable validation checks for 'anomalous' assembly
+                        flags in NCBI (default: False)
+  --exclude-accessions <accession> [<accession> ...]
+                        List of NCBI accessions to exclude. (default: [])
+  --resolve-accessions  Pick an accession randomly when two accessions for a
+                        taxon can be found in user provided input files
+                        (default: False)
+  --rank <rank>         Taxonomic rank to perform the identifications on
+                        [genus, species, subspecies, serotype] (default:
+                        species)
+  --genera <genus> [<genus> ...]
+                        List of genera to restrict the abundance calculations.
+  --mtDNA               For eukaryotes, download mitochondrial genomes only.
+                        Not to be used with --refseq-rep or queries containing
+                        prokaryotes (default: False)
+  --seed <int>          Random seed for database indexing
+
+Common arguments:
+  -h, --help            Show this help message and exit
+  --cores <int>         Maximum number of CPU cores to use (default: 4)
+  --mem <int>           Maximum memory (MB) to use (default: 8192)
+  --unlock              Unlock the output directory following a crash or hard
+                        restart (default: False)
+  --debug               Enable debugging mode (default: False)
+  --snakemake '<json>'  Pass additional flags to the `snakemake` scheduler.
 
 haystac sample
 --------------
 
-    -h, --help            show this help message and exit
-    -p , --sample-prefix 
-                          Sample prefix for all the future analysis. Optional if
-                          SRA accession is provided instead <str>
-    -o , --sample-output-dir 
-                          /path/to/sample <str>
-    -f , --fastq          Path to the fastq input file. Can be raw or with
-                          adapters removed
-    -f1 , --fastq-r1      Path to the mate 1 fastq input file, if reads are PE.
-                          Can be raw or with adapters removed
-    -f2 , --fastq-r2      Path to the mate 2 fastq input file, if reads are PE.
-                          Can be raw or with adapters removed
-    -SA , --sra           Fetch raw data files from the SRA using the provided
-                          accession code <str>
-    -C, --collapse        Collapse paired end reads <bool> (default: False)
-    -T , --trim_adapters 
-                          Remove adapters from raw fastq files <bool> (default:
-                          True)
-    -TF , --adaperremoval-flags 
-                          Additional flags to provide to Adapterremoval <str>
-    -c , --cores          Number of cores for HAYSTACK to use
-    -M , --mem            Max memory resources allowed to be used ofr indexing
-                          the input for the filtering alignment (default: max
-                          available memory 8192.0)
-    -u, --unlock          Unlock the working directory after smk is abruptly
-                          killed <bool> (default: False)
-    -d, --debug           Debug the HAYSTACK workflow <bool> (default: False)
-    -smk , --snakemake    Snakemake flags (default: '')
-    --dry-run
+Required arguments:
+  --sample-prefix <prefix>
+                        Sample prefix for all the future analysis.
+  --output <path>       Path to the sample output directory
+
+Required choice:
+  --fastq <path>        Single-end fastq input file (optionally compressed).
+  --fastq-r1 <path>     Paired-end forward strand (R1) fastq input file.
+  --fastq-r2 <path>     Paired-end reverse strand (R2) fastq input file.
+  --sra <accession>     Download fastq input from the SRA database
+
+Optional arguments:
+  --collapse <bool>     Collapse overlapping paired-end reads, e.g. for aDNA
+                        (default: False)
+  --trim-adapters <bool>
+                        Automatically trim sequencing adapters from fastq
+                        input (default: True)
+
+Common arguments:
+  -h, --help            Show this help message and exit
+  --cores <int>         Maximum number of CPU cores to use (default: 4)
+  --mem <int>           Maximum memory (MB) to use (default: 8192)
+  --unlock              Unlock the output directory following a crash or hard
+                        restart (default: False)
+  --debug               Enable debugging mode (default: False)
+  --snakemake '<json>'  Pass additional flags to the `snakemake` scheduler.
 
 haystac analyse
 ---------------
 
-    -h, --help            show this help message and exit
-    -m , --mode           Analysis mode for the selected sample
-    -D , --database       Path to the database yaml file used for the sample
-                          analysis. MANDATORY
-    -S , --sample         Path to the sample parameter yaml file. MANDATORY
-    -g  [ ...], --genera  [ ...]
-                          List containing the names of specific genera the
-                          abundances should be calculated on, separated by a
-                          space character <genus1 genus2 genus3 ...>
-    -o , --analysis-output-dir 
-                          Path to results directory.
-    -T , --read-probability-threshold 
-                          Posterior probability threshold for a read to belong
-                          to a certain species. Chose from 0.5, 0.75 and 0.95
-                          (default:0.75).
-    -c , --cores          Number of cores for HAYSTACK to use
-    -M , --mem            Max memory resources allowed to be used ofr indexing
-                          the input for the filtering alignment (default: max
-                          available memory 8192.0)
-    -u, --unlock          Unlock the working directory after smk is abruptly
-                          killed <bool> (default: False)
-    -d, --debug           Debug the HAYSTACK workflow <bool> (default: False)
-    -smk , --snakemake    Snakemake flags (default: '')
-    --dry-run
+Required arguments:
+  --mode <mode>         Analysis mode for the selected sample [filter, align,
+                        likelihoods, probabilities, abundances, reads,
+                        mapdamage]
+  --database <path>     Path to the database output directory
+  --sample <path>       Path to the sample output directory
+  --output <path>       Path to the analysis output directory
+
+Optional arguments:
+  --genera <genus> [<genus> ...]
+                        List of genera to restrict the abundance calculations.
+                        (default: [])
+  --min-prob <float>    Minimum posterior probability to assign an aligned
+                        read to a given species (default: 0.75)
+
+Common arguments:
+  -h, --help            Show this help message and exit
+  --cores <int>         Maximum number of CPU cores to use (default: 4)
+  --mem <int>           Maximum memory (MB) to use (default: 8192)
+  --unlock              Unlock the output directory following a crash or hard
+                        restart (default: False)
+  --debug               Enable debugging mode (default: False)
+  --snakemake '<json>'  Pass additional flags to the `snakemake` scheduler.
 
 
 Citations
