@@ -1,5 +1,6 @@
 channels:
   - r
+  - conda-forge
 dependencies:
   - r-inline=0.3.15
   - r-gam=1.16.1

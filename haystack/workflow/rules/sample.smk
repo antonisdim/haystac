@@ -25,8 +25,6 @@ def get_inputs_for_count_fastq_len(wildcards):
 rule count_fastq_length:
     input:
         fastq=get_inputs_for_count_fastq_len,
-    log:
-        config["sample_output_dir"] + "/fastq_inputs/meta/{sample}.log",
     output:
         config["sample_output_dir"] + "/fastq_inputs/meta/{sample}.size",
     benchmark:
@@ -36,4 +34,4 @@ rule count_fastq_length:
     conda:
         "../envs/seqtk.yaml"
     shell:
-        "(seqtk seq -A {input.fastq} | grep -v '^>' | wc -l 1> {output} ) 2> {log}"
+        "seqtk seq -A {input.fastq} | grep -v '^>' | wc -l 1> {output}"

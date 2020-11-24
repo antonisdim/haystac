@@ -7,6 +7,7 @@ __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
 from haystack.workflow.scripts.utilities import get_total_paths, PE
+from haystack.cli import CODE_DIR
 
 
 rule get_dirichlet_reads:
@@ -43,8 +44,8 @@ rule get_grey_matter_reads_se:
     message:
         "Preparing fastq files with all the reads that got assigned to the Grey Matter for sample {wildcards.sample}."
     shell:
-        "python ../scripts/get_matter_reads.py --input_fastq {input.fastq} --matrix_file {input.dirichlet_matrix} "
-        "--output_fastq {output} --matter grey"
+        "python {CODE_DIR}/workflow/scripts/get_matter_reads.py --input_fastq {input.fastq} "
+        "--matrix_file {input.dirichlet_matrix} --output_fastq {output} --matter grey"
 
 
 rule get_grey_matter_reads_pe:
@@ -66,7 +67,8 @@ rule get_grey_matter_reads_pe:
     message:
         "Preparing fastq files with all the reads that got assigned to the Grey Matter for sample {wildcards.sample}."
     shell:
-        "python ../scripts/get_matter_reads.py --input_fastq {input.fastq_r1} --matrix_file {input.dirichlet_matrix} "
+        "python {CODE_DIR}/workflow/scripts/get_matter_reads.py --input_fastq {input.fastq_r1} "
+        "--matrix_file {input.dirichlet_matrix} "
         "--output_fastq {output.out_r1} --matter grey; python ../scripts/get_matter_reads.py "
         "--input_fastq {input.fastq_r2} --matrix_file {input.dirichlet_matrix} --output_fastq {output.out_r2} "
         "--matter grey"
@@ -85,7 +87,8 @@ rule get_dark_matter_reads_se:
     message:
         "Preparing fastq files with all the reads that got assigned to the Dark Matter for sample {wildcards.sample}."
     shell:
-        "python ../scripts/get_matter_reads.py --input_fastq {input.fastq} --matrix_file {input.dirichlet_matrix} "
+        "python {CODE_DIR}/workflow/scripts/get_matter_reads.py --input_fastq {input.fastq} "
+        "--matrix_file {input.dirichlet_matrix} "
         "--output_fastq {output} --matter dark"
 
 
@@ -108,7 +111,8 @@ rule get_dark_matter_reads_pe:
     message:
         "Preparing fastq files with all the reads that got assigned to the Dark Matter for sample {wildcards.sample}."
     shell:
-        "python ../scripts/get_matter_reads.py --input_fastq {input.fastq_r1} --matrix_file {input.dirichlet_matrix} "
+        "python {CODE_DIR}/workflow/scripts/get_matter_reads.py --input_fastq {input.fastq_r1} "
+        "--matrix_file {input.dirichlet_matrix} "
         "--output_fastq {output.out_r1} --matter dark; python ../scripts/get_matter_reads.py "
         "--input_fastq {input.fastq_r2} --matrix_file {input.dirichlet_matrix} --output_fastq {output.out_r2} "
         "--matter dark"

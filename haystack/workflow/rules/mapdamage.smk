@@ -65,9 +65,9 @@ def get_mapdamage_out_dir_paths(wildcards):
     sequences = get_total_paths(checkpoints, config)
     inputs = []
 
-    for orgname, orgname in sequences:
+    for orgname, accession in sequences:
         inputs.append(
-            config["analysis_output_dir"] + f"/mapdamage/{wildcards.sample}/{config['read_mode']}/{orgname}-{orgname}"
+            config["analysis_output_dir"] + f"/mapdamage/{wildcards.sample}/{config['read_mode']}/{orgname}-{accession}"
         )
 
     if config["read_mode"] == PE:
