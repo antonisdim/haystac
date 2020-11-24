@@ -33,6 +33,9 @@ def get_grey_matter_reads(input_fastq, matrix_file, output_fastq, matter):
                     if record.id in grey_matter_reads:
                         SeqIO.write(record, output_handle, "fastq")
 
+    # todo this is SLOW, it needs to be sped up -
+    #  I think the main problem is writing to the file as the grey matter one is finishing much faster,
+    #  and they both iterate through the same number of reads
     elif matter == "dark":
         aligned_read_names = ts_tv_group.index.tolist()
         with gzip.open(input_fastq, "rt") as input_handle:
