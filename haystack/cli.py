@@ -37,6 +37,7 @@ from haystack.workflow.scripts.utilities import (
     SraAccessionType,
     NuccoreQueryType,
     CheckExistingConfig,
+    FastqFile,
     PE,
     COLLAPSED,
     SE,
@@ -500,18 +501,15 @@ The haystack commands are:
         choice = parser.add_argument_group("Required choice")
 
         choice.add_argument(
-            "--fastq",
-            help="Single-end fastq input file (optionally compressed).",
-            metavar="<path>",
-            type=FileType("r"),
+            "--fastq", help="Single-end fastq input file (optionally compressed).", metavar="<path>", type=FastqFile(),
         )
 
         choice.add_argument(
-            "--fastq-r1", help="Paired-end forward strand (R1) fastq input file.", metavar="<path>", type=FileType("r"),
+            "--fastq-r1", help="Paired-end forward strand (R1) fastq input file.", metavar="<path>", type=FastqFile(),
         )
 
         choice.add_argument(
-            "--fastq-r2", help="Paired-end reverse strand (R2) fastq input file.", metavar="<path>", type=FileType("r"),
+            "--fastq-r2", help="Paired-end reverse strand (R2) fastq input file.", metavar="<path>", type=FastqFile(),
         )
 
         choice.add_argument(
@@ -546,11 +544,28 @@ The haystack commands are:
         if bool(args.fastq) + (bool(args.fastq_r1) and bool(args.fastq_r2)) + bool(args.sra) != 1:
             raise ValidationError("Please specify either --sra or --fastq, or both --fastq-r1 and --fastq-r2.")
 
-        if args.collapse and not (args.fastq_r1 and args.fastq_r2) and args.sra[1] != "paired":
-            raise ValidationError("Collapse can only be used with --fastq-r1 and --fastq-r2.")
+        if (bool(args.fastq) and bool(args.fastq_r1)) or (bool(args.fastq) and bool(args.fastq_r2)):
+            raise ValidationError(
+                "Please specify either --fastq, or both --fastq-r1 and --fastq-r2. "
+                "Any combination of these flags is not valid"
+            )
+
+        if bool(args.sra) and (bool(args.fastq_r1) or bool(args.fastq) or bool(args.fastq_r2)):
+            raise ValidationError(
+                "Please specify either --sra or --fastq, or both --fastq-r1 and --fastq-r2. "
+                "Any combination of these flags is not valid"
+            )
+
+        if args.collapse and (
+            not (args.fastq_r1 and args.fastq_r2) and not (bool(args.sra) and args.sra[1] != "paired")
+        ):
+            raise ValidationError("Collapse can only be used with --fastq-r1 and --fastq-r2 or sra PE data.")
 
         if args.collapse and not args.trim_adapters:
             raise ValidationError("Collapse can only be used with `--trim-adapters True`.")
+
+        if args.sample_prefix and args.sra:
+            raise ValidationError("If you are using `--sra`, you cannot provide a `--sample-prefix` value.")
 
         if not args.sample_prefix and not args.sra:
             raise ValidationError("Please provide a --sample-prefix name.")

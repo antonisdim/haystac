@@ -382,6 +382,36 @@ class CheckExistingConfig(object):
                             )
 
 
+class FastqFile(object):
+    """
+    Is it a valid user input fastq file
+    """
+
+    def __call__(self, value):
+
+        if not os.path.exists(value):
+            raise argparse.ArgumentTypeError(f"'{value}' does not exit")
+
+        if os.stat(value).st_size == 0:
+            raise argparse.ArgumentTypeError(f"'{value}' is empty")
+
+        if ".gz" not in value:
+            with open(value, "r") as fin:
+                first_line = fin.readline()
+        else:
+            import gzip
+
+            with gzip.open(value, "rt") as fin:
+                first_line = fin.readline()
+
+        print(first_line)
+
+        if first_line[0] != "@":
+            raise argparse.ArgumentTypeError(f"'{value}' is not a valid fastq file.")
+
+        return value
+
+
 def get_total_paths(
     checkpoints, config,
 ):
