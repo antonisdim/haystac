@@ -7,9 +7,6 @@
 
 #### haystac config ####
 
-# bash strict mode
-set -euo pipefail
-
 # bad base mismatch base probability
 haystack config --mismatch-probability 0.5
 
@@ -22,35 +19,39 @@ haystack config --use-conda tr
 
 #### haystac database ####
 
+# create an empty file for some examples
+touch empty.txt
+
 # bad database mode
-haystack database --mode database
+haystack database --mode database --output db_example
 
 # no query whatsoever
 haystack database --mode build --output db_example
 
 # bad query
-haystack database --mode build --query qwerty
+haystack database --mode build --query qwerty --output db_example
 
 # empty query file
-touch empty.txt
-haystack database --mode build --query-file empty.txt
+haystack database --mode build --query-file empty.txt --output db_example
 
 # empty acessions file
---accessions-file
+haystack database --mode build --accessions-file empty.txt --output db_example
 
 # bad delimiter accessions file
+echo "Yersinia_aldovae  NZ_CP009781.1" > acc_bad_delimiter.txt
+haystack database --mode build --accessions-file acc_bad_delimiter.txt --output db_example
 
 # duplicated accession
+echo -e "Yersinia_aldovae\tNZ_CP009781.1" > acc_duplicated.txt
+echo -e "Yersinia_aldovae\tNZ_CP009781.1" >> acc_duplicated.txt
+haystack database --mode build --accessions-file acc_duplicated.txt --output db_example
 
+# query and query file together
+echo "Yersinia" > q_file.txt
+haystack database --mode build --query "Yersinia" --query-file q_file.txt --output db_example
 
+# refseq rep and mtDNA flags together
+haystack database --mode build --refseq-rep --mtDNA --output db_example
 
---sequences-file
-
---exclude-accessions
-
-args.mtDNA and args.refseq_rep
-
- if args.query and args.query_file:
-            raise ValidationError("Please specify either `--query <query>` or `--query-file <path>` but not both.")
-
-
+# empty exclude-accessions 
+haystack database --mode build --refseq-rep --output db_example --exclude-accessions
