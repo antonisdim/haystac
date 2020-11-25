@@ -62,6 +62,19 @@ haystack database --mode build --refseq-rep --output db_example
 
 #### haystac sample ####
 
+# produce some inputs
+echo "@ERR1018966.1 HWI-D00554:43:C5LFJANXX:7:1101:1879:2212 length=37
+GATCGGCCGCCTCGCGCTCGTCGATCGCCAGGTAGCG
++ERR1018966.1 HWI-D00554:43:C5LFJANXX:7:1101:1879:2212 length=37
+B@BCBGG>GGGGGGGGGGGGGGGGGGGGGGBGGEGGC
+" > example_input.fastq
+
+cp example_input.fastq example_input_r1.fastq
+cp example_input.fastq example_input_r2.fastq
+
+echo ">example_seq1
+GATCGGCCGCCTCGCGCTCGTCGATCGCCAGGTAGCG" > example.fasta
+
 # emtpy fastq fill
 rm -rf example_sample
 haystack sample --sample-prefix bad_example --output example_sample --fastq empty.txt
