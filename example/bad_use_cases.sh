@@ -123,6 +123,16 @@ rm -rf example_sample
 haystack sample --output example_sample --fastq example_input.fastq
 
 
+#### haystac analyse ####
 
+# bad mode
+haystack analyse --mode likelihood
 
+# not all the required arguments (--mode, --database, --sample, --output)
+haystack analyse --mode abundances --output analysis_example
 
+# no db yaml file in db folder
+haystack analyse --mode abundances --output analysis_example --database db_example_empty --sample example_sample
+
+# no sample yaml file in sample folder
+haystack analyse --mode abundances --output analysis_example --database db_example --sample example_sample_empty
