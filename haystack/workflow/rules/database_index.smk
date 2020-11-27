@@ -6,6 +6,7 @@ __copyright__ = "Copyright 2020, University of Oxford"
 __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
+import os
 from math import ceil
 
 from psutil import virtual_memory
@@ -84,7 +85,7 @@ rule bowtie_index_db_chunk:
         "Bowtie2 index for chunk {input.fasta_chunk} is being built."
     threads: config["cores"]
     resources:
-        memory=config["mem"],
+        mem_mb=lambda wildcards, input: os.stat(input.fasta_chunk).st_size * config["bowtie2_scaling"] / 1024 ** 2,
     conda:
         "../envs/bowtie2.yaml"
     params:

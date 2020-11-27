@@ -404,8 +404,6 @@ class FastqFile(object):
             with gzip.open(value, "rt") as fin:
                 first_line = fin.readline()
 
-        print(first_line)
-
         if first_line[0] != "@":
             raise argparse.ArgumentTypeError(f"'{value}' is not a valid fastq file.")
 

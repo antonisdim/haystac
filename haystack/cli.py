@@ -863,7 +863,7 @@ The haystack commands are:
             config=config,
             targets=target_list,
             cores=int(args.cores),
-            resources={"entrez_api": self.max_entrez_requests, "memory": int(args.mem)},
+            resources={"entrez_api": self.max_entrez_requests, "mem_mb": int(args.mem)},
             force_incomplete=True,
             # handle the rule-specific conda environments
             use_conda=config["use_conda"],
