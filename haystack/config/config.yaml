@@ -4,7 +4,7 @@ cache:
 mismatch_probability:
   0.05
 bowtie2_scaling:
-  5.0
+  25.0
 use_conda:
   True
 
