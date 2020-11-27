@@ -45,6 +45,7 @@ rule bowtie_align_accession_single_end:
         min_score=get_min_score,
         basename=config["cache"] + "/ncbi/{orgname}/{accession}",
     threads: max(1, floor(config["cores"] / 4))
+    # TODO report memory usage as a function of threads
     message:
         "Aligning the filtered reads from sample {wildcards.sample} against taxon {wildcards.orgname}."
     conda:
@@ -72,6 +73,7 @@ rule bowtie_align_accession_paired_end:
         min_score=get_min_score,
         basename=config["cache"] + "/ncbi/{orgname}/{accession}",
     threads: max(1, floor(config["cores"] / 4))
+    # TODO report memory usage as a function of threads
     message:
         "Aligning the filtered reads from sample {wildcards.sample} against taxon {wildcards.orgname}."
     conda:
