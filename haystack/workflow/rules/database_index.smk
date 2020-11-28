@@ -86,7 +86,7 @@ rule bowtie_index_db_chunk:
     threads: config["cores"]
     resources:
         # TODO report memory usage as a function of threads
-        mem_mb=lambda wildcards, input: os.stat(input.fasta_chunk).st_size * config["bowtie2_scaling"] / 1024 ** 2,
+        mem_mb=lambda wildcards, input: int(os.stat(input.fasta_chunk).st_size * config["bowtie2_scaling"] / 1024 ** 2),
     conda:
         "../envs/bowtie2.yaml"
     params:
