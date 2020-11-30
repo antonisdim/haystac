@@ -45,8 +45,7 @@ rule bowtie_index_accession:
         "Preparing the bowtie2 index for genome {wildcards.accession} of taxon {wildcards.orgname}."
     threads: lambda wildcards, input: 1 if os.stat(input[0]).st_size / (1024 ** 2) < 100 else config["cores"]
     resources:
-        # TODO report memory usage as a function of threads
-        mem_mb=lambda wildcards, input: int(os.stat(input[0]).st_size * config["bowtie2_scaling"] / 1024 ** 2),
+        mem_mb=lambda wildcards, input: int(os.stat(input[0]).st_size * config["bowtie2_scaling"] / 1024 ** 2), # TODO report memory usage as a function of threads
     params:
         basename=config["cache"] + "/ncbi/{orgname}/{accession}",
     conda:

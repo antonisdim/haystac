@@ -7,6 +7,7 @@ __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
 from math import floor
+import os
 
 MIN_FRAG_LEN = 0
 MAX_FRAG_LEN = 1000
@@ -45,7 +46,13 @@ rule bowtie_align_accession_single_end:
         min_score=get_min_score,
         basename=config["cache"] + "/ncbi/{orgname}/{accession}",
     threads: max(1, floor(config["cores"] / 4))
-    # TODO report memory usage as a function of threads
+    resources:
+        mem_mb=(
+            lambda wildcards: os.stat(
+                config["cache"] + f"/ncbi/{wildcards.orgname}/{wildcards.accession}.fasta.gz"
+            ).st_size
+            * 5
+        ),
     message:
         "Aligning the filtered reads from sample {wildcards.sample} against taxon {wildcards.orgname}."
     conda:
@@ -73,7 +80,13 @@ rule bowtie_align_accession_paired_end:
         min_score=get_min_score,
         basename=config["cache"] + "/ncbi/{orgname}/{accession}",
     threads: max(1, floor(config["cores"] / 4))
-    # TODO report memory usage as a function of threads
+    resources:
+        mem_mb=(
+            lambda wildcards: os.stat(
+                config["cache"] + f"/ncbi/{wildcards.orgname}/{wildcards.accession}.fasta.gz"
+            ).st_size
+            * 5
+        ),
     message:
         "Aligning the filtered reads from sample {wildcards.sample} against taxon {wildcards.orgname}."
     conda:

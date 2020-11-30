@@ -58,3 +58,4 @@ wildcard_constraints:
     orgname=REGEX_WHITELIST,
     accession=REGEX_WHITELIST,
     chunk="\d+",
+    read_mode="(SE|PE|COLLAPSED)",

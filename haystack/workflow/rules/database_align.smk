@@ -31,6 +31,10 @@ rule bowtie_align_db_single_end:
     params:
         index=config["db_output"] + "/bowtie/chunk{chunk_num}",
     threads: config["cores"]
+    resources:
+        mem_mb=(
+            lambda wildcards: os.stat(config["db_output"] + f"/bowtie/chunk{wildcards.chunk_num}.fasta.gz").st_size * 5
+        ),
     message:
         "The filtering alignment for sample {wildcards.sample}, for index chunk number {wildcards.chunk_num} "
         "is being executed."
@@ -63,6 +67,10 @@ rule bowtie_align_db_paired_end:
     params:
         index=config["db_output"] + "/bowtie/chunk{chunk_num}",
     threads: config["cores"]
+    resources:
+        mem_mb=(
+            lambda wildcards: os.stat(config["db_output"] + f"/bowtie/chunk{wildcards.chunk_num}.fasta.gz").st_size * 5
+        ),
     message:
         "The filtering alignment for sample {wildcards.sample}, for index chunk number {wildcards.chunk_num} "
         "is being executed."
