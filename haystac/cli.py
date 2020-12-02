@@ -19,11 +19,11 @@ import snakemake
 import yaml
 from psutil import virtual_memory
 
-from haystack.workflow.scripts.entrez_utils import (
+from haystac.workflow.scripts.entrez_utils import (
     ENTREZ_RATE_LOW,
     ENTREZ_RATE_HIGH,
 )
-from haystack.workflow.scripts.utilities import (
+from haystac.workflow.scripts.utilities import (
     ValidationError,
     ArgumentCustomFormatter,
     FileType,
@@ -56,7 +56,7 @@ CODE_DIR = os.path.abspath(os.path.dirname(__file__))
 SNAKE_DIR = ".snakemake"
 
 CONFIG_DEFAULT = f"{CODE_DIR}/config/config.yaml"
-CONFIG_USER = os.path.abspath(os.path.expanduser("~/.haystack/config.yaml"))
+CONFIG_USER = os.path.abspath(os.path.expanduser("~/.haystac/config.yaml"))
 CONFIG_RUNTIME = f"{SNAKE_DIR}/config.yaml"
 
 COMMANDS = ["config", "database", "sample", "analyse"]
@@ -69,16 +69,16 @@ TAXONOMIC_RANKS = ["genus", "species", "subspecies", "serotype"]
 RESTART_TIMES = 2
 
 
-class Haystack(object):
+class Haystac(object):
     """
-    Command-line interface for running `haystack`
+    Command-line interface for running `haystac`
     """
 
     def __init__(self):
         parser = argparse.ArgumentParser(
-            usage="""haystack <command> [<args>]
+            usage="""haystac <command> [<args>]
 
-The haystack commands are:
+The haystac commands are:
    config         Configuration options
    database       Build a database of target species
    sample         Prepare a sample for analysis
@@ -155,7 +155,7 @@ The haystack commands are:
         """
         # noinspection PyTypeChecker
         parser = argparse.ArgumentParser(
-            prog="haystack config",
+            prog="haystac config",
             description="Configuration options",
             formatter_class=ArgumentCustomFormatter,
             add_help=False,
@@ -241,7 +241,7 @@ The haystack commands are:
         """
         # noinspection PyTypeChecker
         parser = argparse.ArgumentParser(
-            prog="haystack database",
+            prog="haystac database",
             description="Build a database of target species",
             formatter_class=ArgumentCustomFormatter,
             add_help=False,
@@ -251,7 +251,7 @@ The haystack commands are:
 
         required.add_argument(
             "--mode",
-            help="Database creation mode for haystack [%(choices)s]",
+            help="Database creation mode for haystac [%(choices)s]",
             metavar="<mode>",
             choices=DATABASE_MODES,
             required=True,
@@ -441,7 +441,7 @@ The haystack commands are:
                     CheckExistingConfig(config_fetch, config)
             except FileNotFoundError:
                 raise ValidationError(
-                    "Please run haystack `database --mode fetch` before attempting to index the database."
+                    "Please run haystac `database --mode fetch` before attempting to index the database."
                 )
 
         elif args.mode == "build":
@@ -451,7 +451,7 @@ The haystack commands are:
 
             if os.path.exists(config_fetch):
                 raise ValidationError(
-                    "Please run haystack `database --mode index` as the database has already been fetched."
+                    "Please run haystac `database --mode index` as the database has already been fetched."
                 )
 
             if os.path.exists(config_build):
@@ -462,11 +462,11 @@ The haystack commands are:
 
         target_list = [os.path.join(args.db_output, target) for target in target_list]
 
-        # run the `haystack` workflow
+        # run the `haystac` workflow
         exit_code = self._run_snakemake("database", args, config, target_list)
 
         if args.mode == "fetch" and exit_code == 0 and not args.unlock:
-            print(f"Please run `haystack database --mode index --output {db_original}` after this step.")
+            print(f"Please run `haystac database --mode index --output {db_original}` after this step.")
 
         return exit_code
 
@@ -476,7 +476,7 @@ The haystack commands are:
         """
         # noinspection PyTypeChecker
         parser = argparse.ArgumentParser(
-            prog="haystack sample",
+            prog="haystac sample",
             description="Prepare a sample for analysis",
             formatter_class=ArgumentCustomFormatter,
             add_help=False,
@@ -640,7 +640,7 @@ The haystack commands are:
         """
         # noinspection PyTypeChecker
         parser = argparse.ArgumentParser(
-            prog="haystack analyse",
+            prog="haystac analyse",
             description="Analyse a sample against a database",
             formatter_class=ArgumentCustomFormatter,
             add_help=False,
@@ -723,7 +723,7 @@ The haystack commands are:
                 database_config = yaml.safe_load(fin)
         except FileNotFoundError:
             raise ValidationError(
-                "The database has not been built correctly. Please rebuild the database using `haystack database`"
+                "The database has not been built correctly. Please rebuild the database using `haystac database`"
             )
 
         try:
@@ -732,7 +732,7 @@ The haystack commands are:
                 sample_config = yaml.safe_load(fin)
         except FileNotFoundError:
             raise ValidationError(
-                "The sample has not been prepared correctly. Please pre-process the samples using `haystack sample`"
+                "The sample has not been prepared correctly. Please pre-process the samples using `haystac sample`"
             )
 
         # Check that the db and sample config params match
@@ -829,7 +829,7 @@ The haystack commands are:
         """
         Helper function for running the snakemake workflow
         """
-        print("HAYSTACK v 0.1\n")
+        print("HAYSTAC v 0.1\n")
         print(f"Date: {datetime.datetime.now()}\n")
 
         config["module"] = module
@@ -890,4 +890,4 @@ The haystack commands are:
 
 
 if __name__ == "__main__":
-    Haystack()
+    Haystac()

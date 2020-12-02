@@ -11,7 +11,7 @@ import sys
 
 import pandas as pd
 
-from haystack.workflow.scripts.utilities import print_error
+from haystac.workflow.scripts.utilities import print_error
 
 
 def calculate_bt2_idx_chunks(mem_resources, mem_rescale_factor, fasta_files, output_tsv, output_txt):

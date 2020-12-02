@@ -11,8 +11,8 @@ import os
 
 import pandas as pd
 
-from haystack.workflow.scripts.entrez_utils import entrez_efetch, ENTREZ_MAX_UID
-from haystack.workflow.scripts.utilities import chunker
+from haystac.workflow.scripts.entrez_utils import entrez_efetch, ENTREZ_MAX_UID
+from haystac.workflow.scripts.utilities import chunker
 
 
 def entrez_taxonomy_query(nuccore_file, output_file):

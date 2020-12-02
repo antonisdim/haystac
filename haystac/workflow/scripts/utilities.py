@@ -266,7 +266,7 @@ class SraAccessionType(object):
 
     def __call__(self, value):
         # import these locally to avoid cyclic import issues
-        from haystack.workflow.scripts.entrez_utils import entrez_esearch, entrez_efetch
+        from haystac.workflow.scripts.entrez_utils import entrez_esearch, entrez_efetch
 
         try:
             # query the SRA to see if this a valid accession
@@ -291,7 +291,7 @@ class NuccoreQueryType(object):
 
     def __call__(self, value):
         # import these locally to avoid cyclic import issues
-        from haystack.workflow.scripts.entrez_utils import entrez_esearch
+        from haystac.workflow.scripts.entrez_utils import entrez_esearch
 
         # check if the user has given us a file instead of a string
         if os.path.isfile(value):
@@ -561,7 +561,7 @@ def md5(filename):
 
 def print_error(message):
     """Function to print errors and exit"""
-    message = f"haystack: error: {message}"
+    message = f"haystac: error: {message}"
     print(f"{FAIL}{message}{END}" if is_tty else message, file=sys.stderr)
     exit(1)
 

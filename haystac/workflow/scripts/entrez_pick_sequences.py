@@ -8,7 +8,7 @@ __license__ = "MIT"
 
 import pandas as pd
 
-from haystack.workflow.scripts.utilities import REGEX_BLACKLIST
+from haystac.workflow.scripts.utilities import REGEX_BLACKLIST
 
 
 def entrez_pick_sequences(config, nuccore_file, taxa_file, output_file):

@@ -9,7 +9,7 @@ __license__ = "MIT"
 import os
 from itertools import chain
 
-from haystack.workflow.scripts.utilities import get_total_paths
+from haystac.workflow.scripts.utilities import get_total_paths
 
 
 rule samtools_index_accession:

@@ -9,7 +9,7 @@ __license__ = "MIT"
 import os
 from math import ceil
 
-from haystack.workflow.scripts.utilities import PE, print_error
+from haystac.workflow.scripts.utilities import PE, print_error
 
 SUBSAMPLE_FIXED_READS = 200000
 

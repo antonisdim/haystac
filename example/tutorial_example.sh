@@ -8,53 +8,53 @@
 # bash strict mode
 set -euo pipefail
 
-# installing haystack
+# installing haystac
 python -m pip install git+https://github.com/antonisdim/haystack.git
 
-# configure haystack by providing a pth for the cache folder
-haystack config --cache ./haystack_cache_example/
+# configure haystac by providing a pth for the cache folder
+haystac config --cache ./haystack_cache_example/
 
 # create an example database for the genus yersinia
-haystack database --mode build \
+haystac database --mode build \
     --query '("Yersinia"[Organism] OR "Yersinia"[Organism]) AND "complete genome"[All Fields]' \
     --output yersinia_example
 
 # download a sample from the SRA and prepare it for analysis
-haystack sample --sra ERR1018966 --output sample_example
+haystac sample --sra ERR1018966 --output sample_example
 
 # perform a filtering alignment against our Yersinia database
-haystack analyse --mode filter \
+haystac analyse --mode filter \
     --database yersinia_example \
     --sample sample_example \
     --output analysis_output
 
 # perform the individual metagenomic alignments
-haystack analyse \
+haystac analyse \
     --mode align \
     --database yersinia_example \
     --sample sample_example \
     --output analysis_output
 
 # perform the likelihood calculation
-haystack analyse --mode likelihoods \
+haystac analyse --mode likelihoods \
     --database yersinia_example \
     --sample sample_example \
     --output analysis_output
 
 # calculate the posterior abundances of the Yersinia species in our sample
-haystack analyse --mode abundances \
+haystac analyse --mode abundances \
     --database yersinia_example \
     --sample sample_example \
     --output analysis_output
 
 # output all the assigned reads in individual bam files
-haystack analyse --mode reads \
+haystac analyse --mode reads \
     --database yersinia_example \
     --sample sample_example \
     --output analysis_output
 
 # perform a mapdamage analysis for each taxon in out database
-haystack analyse --mode mapdamage \
+haystac analyse --mode mapdamage \
     --database yersinia_example \
     --sample sample_example \
     --output analysis_output

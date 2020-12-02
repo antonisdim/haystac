@@ -13,7 +13,7 @@ import sys
 import numpy as np
 import pandas as pd
 
-from haystack.workflow.scripts.utilities import PE
+from haystac.workflow.scripts.utilities import PE
 
 
 def calculate_likelihoods(ts_tv_file, readlen_file, taxa_file_paths, config, output_matrix, output_params):

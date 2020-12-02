@@ -8,12 +8,12 @@ __license__ = "MIT"
 
 import csv
 
-from haystack.workflow.scripts.entrez_utils import (
+from haystac.workflow.scripts.entrez_utils import (
     entrez_esearch,
     entrez_esummary,
     entrez_xml_to_dict,
 )
-from haystack.workflow.scripts.utilities import print_error
+from haystac.workflow.scripts.utilities import print_error
 
 
 def entrez_nuccore_query(query, output_file):

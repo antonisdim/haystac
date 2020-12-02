@@ -14,7 +14,7 @@ import sys
 import pandas as pd
 from Bio import bgzf
 
-from haystack.workflow.scripts.utilities import print_error
+from haystac.workflow.scripts.utilities import print_error
 
 
 def entrez_custom_sequences(config, taxon, output_file):

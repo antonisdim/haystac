@@ -10,7 +10,7 @@ import csv
 
 import pandas as pd
 
-from haystack.workflow.scripts.entrez_utils import entrez_esearch
+from haystac.workflow.scripts.entrez_utils import entrez_esearch
 
 
 def entrez_invalid_assemblies(assemblies, output):

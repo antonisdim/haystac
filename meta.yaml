@@ -1,10 +1,10 @@
 package:
-  name: haystack
+  name: haystac
   version: 0.1
 
 source:
   git_rev:
-  git_url: https://github.com/antonisdim/haystack.git
+  git_url: https://github.com/antonisdim/haystac.git
 
 build:
   - script: python -m pip install --upgrade --no-deps --force-reinstall .
@@ -34,6 +34,6 @@ test:
     -
 
 about:
-  home: https://github.com/antonisdim/haystack.git
+  home: https://github.com/antonisdim/haystac.git
   license: MIT
   summary: New metagenomics pipeline 

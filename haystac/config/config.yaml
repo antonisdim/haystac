@@ -1,6 +1,6 @@
-# `haystack config` defaults
+# `haystac config` defaults
 cache:
-  ~/haystack/cache/
+  ~/haystac/cache/
 mismatch_probability:
   0.05
 bowtie2_scaling:
@@ -8,7 +8,7 @@ bowtie2_scaling:
 use_conda:
   True
 
-# `haystack database` defaults
+# `haystac database` defaults
 rank:
   'species'
 seed:
@@ -18,7 +18,7 @@ cores:
 mem:
   all
 
-# `haystack sample` defaults
+# `haystac sample` defaults
 collapse:
   False
 trim_adapters:

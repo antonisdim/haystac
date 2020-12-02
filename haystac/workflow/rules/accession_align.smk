@@ -13,7 +13,7 @@ MIN_FRAG_LEN = 0
 MAX_FRAG_LEN = 1000
 META_ALN_MIN_SCORE_CONSTANT = -6
 
-from haystack.workflow.scripts.utilities import get_total_paths
+from haystac.workflow.scripts.utilities import get_total_paths
 
 
 # noinspection PyUnusedLocal,PyShadowingBuiltins,PyShadowingNames

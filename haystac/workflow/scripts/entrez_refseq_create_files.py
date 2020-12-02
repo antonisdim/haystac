@@ -11,8 +11,8 @@ import sys
 
 import pandas as pd
 
-from haystack.workflow.scripts.entrez_utils import entrez_assembly_ftp
-from haystack.workflow.scripts.utilities import REGEX_BLACKLIST
+from haystac.workflow.scripts.entrez_utils import entrez_assembly_ftp
+from haystac.workflow.scripts.utilities import REGEX_BLACKLIST
 
 
 def entrez_refseq_create_files(

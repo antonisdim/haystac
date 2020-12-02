@@ -14,13 +14,13 @@ from xml.etree import ElementTree
 import requests
 import yaml
 
-from haystack.workflow.scripts.utilities import print_warning, print_error
+from haystac.workflow.scripts.utilities import print_warning, print_error
 
 # base url of the Entrez web service
 ENTREZ_URL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/"
 
 # tool registration with NCBI, see https://www.ncbi.nlm.nih.gov/books/NBK25497/#chapter2.Frequency_Timing_and_Registrati
-ENTREZ_TOOL = "haystack"
+ENTREZ_TOOL = "haystac"
 ENTREZ_EMAIL = "antonisdim41@gmail.com"
 
 # maximum 1 request per X seconds

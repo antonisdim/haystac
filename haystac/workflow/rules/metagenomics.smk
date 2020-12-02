@@ -6,7 +6,7 @@ __copyright__ = "Copyright 2020, University of Oxford"
 __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
-from haystack.workflow.scripts.utilities import get_total_paths, PE
+from haystac.workflow.scripts.utilities import get_total_paths, PE
 
 
 def get_bams_for_ts_tv_count(wildcards):
@@ -141,7 +141,7 @@ rule coverage_t_test:
         "Performing a chi square contingency test to assess if reads from sample {wildcards.sample} "
         "represent a random genome sample of taxon {wildcards.orgname}."
     script:
-        "../scripts/coverage_t_test.py"
+        "../scripts/coverage_chi2_contingency_test.py"
 
 
 def get_p_values(_):

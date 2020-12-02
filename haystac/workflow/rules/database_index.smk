@@ -14,7 +14,7 @@ from psutil import virtual_memory
 MEGABYTE = float(1024 ** 2)
 MAX_MEM_MB = virtual_memory().total / MEGABYTE
 
-from haystack.workflow.scripts.utilities import get_total_paths
+from haystac.workflow.scripts.utilities import get_total_paths
 
 
 def get_db_accessions(_):

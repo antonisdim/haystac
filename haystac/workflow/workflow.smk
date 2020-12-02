@@ -6,7 +6,7 @@ __copyright__ = "Copyright 2020, University of Oxford"
 __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
-from haystack.workflow.scripts.utilities import REGEX_WHITELIST
+from haystac.workflow.scripts.utilities import REGEX_WHITELIST
 
 if config["module"] == "sample":
 
