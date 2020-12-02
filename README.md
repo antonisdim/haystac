@@ -1,4 +1,4 @@
-HAYSTACK: High-AccuracY and Scalable Taxonomic Assignment of MetagenomiC data 
+HAYSTAC: High-AccuracY and Scalable Taxonomic Assignment of MetagenomiC data 
 ===
 
 Introduction 
@@ -19,7 +19,7 @@ You can easily:
 Setup 
 -----
 
-`haystack` can be run on any unix based system. It needs the conda package manager to run and it easy to install. 
+`haystac` can be run on any unix based system. It needs the conda package manager to run and it easy to install. 
 
 Quick Start 
 -----------
@@ -28,7 +28,7 @@ Four commands/modules that allow you to run the method from start to finish
 
 ```
 # install haystack from conda
-conda install -c bioconda haystack
+conda install -c bioconda haystac
 ```
 
 ```
