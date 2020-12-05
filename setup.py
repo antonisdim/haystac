@@ -7,7 +7,7 @@ with open("requirements.txt") as f:
     required = [x for x in f.read().splitlines() if not x.startswith("#")]
 
 setuptools.setup(
-    name="haystac_metagenomics",
+    name="haystac",
     version="0.1",
     author="Evangelos A. Dimopoulos, Evan K. Irving-Pease",
     author_email="antonisdim41@gmail.com",
