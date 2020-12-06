@@ -23,7 +23,7 @@ setuptools.setup(
     packages=["haystac", "haystac.workflow", "haystac.workflow.scripts"],
     include_package_data=True,
     entry_points={"console_scripts": ["haystac = haystac.cli:Haystac"]},
-    classifiers=["Programming Language :: Python :: 3", "License :: MIT License"],
+    classifiers=["Programming Language :: Python :: 3", "License :: OSI Approved :: MIT License"],
     license="MIT",
     install_requires=required,
 )

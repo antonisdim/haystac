@@ -1,2 +1,3 @@
 recursive-include haystac/workflow *
 recursive-include haystac/config *
+include requirements.txt
