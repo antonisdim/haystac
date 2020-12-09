@@ -16,8 +16,7 @@ rule entrez_custom_sequences:
         config["cache"] + "/ncbi/{orgname}/custom_seq-{accession}.fasta.gz",
     message:
         "Adding the user provided fasta sequence {wildcards.accession} for taxon {wildcards.orgname} to the database."
+    threads: 4
     shell:
-        "(grep {wildcards.orgname} {input} | cut -f 3 | xargs -I '{{}}' bash -c '[[ '{{}}' == *.gz ]] && "
-        "bgzip -cd '{{}}' 1> " + config["cache"] + "/ncbi/{wildcards.orgname}/temp-{wildcards.accession}.fasta; "
-        "bgzip -c " + config["cache"] + "/ncbi/{wildcards.orgname}/temp-{wildcards.accession}.fasta 1> {output} || "
-        "bgzip -c '{{}}' 1> {output}') 2> {log}"
+        "awk -F'\t' '$1 == \"{wildcards.orgname}\" {{print $3}}' {input} | "
+        "xargs gzip --stdout --decompress --force | bgzip --stdout --threads 8 1> {output} 2> {log}"
