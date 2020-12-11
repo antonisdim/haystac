@@ -47,7 +47,7 @@ rule run_mapdamage:
     log:
         config["analysis_output_dir"] + "/mapdamage/{sample}/{reads}/{orgname}_{accession}.log",
     output:
-        directory(config["analysis_output_dir"] + "/mapdamage/{sample}/{reads}/{orgname}-{accession}"),
+        directory(config["analysis_output_dir"] + "/mapdamage/{sample}/{reads}/{orgname}/{accession}"),
     message:
         "Performing a mapDamage analysis for taxon {wildcards.orgname}, for sample {wildcards.sample}."
     conda:
@@ -67,7 +67,7 @@ def get_mapdamage_out_dir_paths(wildcards):
 
     for orgname, accession in sequences:
         inputs.append(
-            config["analysis_output_dir"] + f"/mapdamage/{wildcards.sample}/{config['read_mode']}/{orgname}-{accession}"
+            config["analysis_output_dir"] + f"/mapdamage/{wildcards.sample}/{config['read_mode']}/{orgname}/{accession}"
         )
 
     if config["read_mode"] == PE:
