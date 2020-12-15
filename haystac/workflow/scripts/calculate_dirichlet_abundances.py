@@ -20,7 +20,7 @@ def calculate_dirichlet_abundances(ts_tv_file, p_values_file, total_fastq_reads,
     """
 
     assert os.stat(ts_tv_file).st_size, f"The ts_tv count file is empty {ts_tv_file}"
-    assert os.stat(p_values_file).st_size, f"The t-test p values file is empty {p_values_file}"
+    assert os.stat(p_values_file).st_size, f"The chi-square p values file is empty {p_values_file}"
     assert os.stat(total_fastq_reads).st_size, f"The total fastq reads file is empty {total_fastq_reads}"
 
     # I calculate the coverage of each taxon from reads in its bam/pileup file. Let's go there

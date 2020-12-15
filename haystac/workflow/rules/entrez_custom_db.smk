@@ -18,5 +18,12 @@ rule entrez_custom_sequences:
         "Adding the user provided fasta sequence {wildcards.accession} for taxon {wildcards.orgname} to the database."
     threads: 4
     shell:
-        "awk -F'\t' '$1 == \"{wildcards.orgname}\" {{print $3}}' {input} | "
-        "xargs gzip --stdout --decompress --force | bgzip --stdout --threads 8 1> {output} 2> {log}"
+        "path=$(awk -F'\t' '$1 == \"{wildcards.orgname}\" {{print $3}}' {input}); "
+        'type=$(htsfile "$path"); '
+        'if [[ "$type" == *"gzip-compressed"* ]]; then'
+        '   bgzip --decompress --stdout --threads 8 "$path" | bgzip --stdout --threads 8 1> {output}; '
+        'elif [[ "$type" == *"BGZF-compressed"* ]]; then'
+        '   cp "$path" {output}; '
+        "else "
+        '   bgzip --stdout --threads 8 "$path" 1> {output}; '
+        "fi"
