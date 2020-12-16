@@ -130,9 +130,9 @@ rule coverage_t_test:
         config["analysis_output_dir"] + "/probabilities/{sample}/{orgname}_cov_count_{accession}_{reads}.txt",
         config["cache"] + "/ncbi/{orgname}/{accession}.fasta.gz.fai",
     output:
-        config["analysis_output_dir"] + "/probabilities/{sample}/{orgname}_t_test_pvalue_{accession}_{reads}.txt",
+        config["analysis_output_dir"] + "/probabilities/{sample}/{orgname}_chi2_test_pvalue_{accession}_{reads}.txt",
     log:
-        config["analysis_output_dir"] + "/probabilities/{sample}/{orgname}_t_test_pvalue_{accession}_{reads}.log",
+        config["analysis_output_dir"] + "/probabilities/{sample}/{orgname}_chi2_test_pvalue_{accession}_{reads}.log",
     benchmark:
         repeat(
             "benchmarks/coverage_t_test_{sample}_{orgname}_{accession}_{reads}.benchmark.txt", 1,
@@ -149,7 +149,7 @@ def get_p_values(_):
     return [
         config["analysis_output_dir"]
         + "/probabilities/{sample}/"
-        + f"{orgname}_t_test_pvalue_{accession}_"
+        + f"{orgname}_chi2_test_pvalue_{accession}_"
         + config["read_mode"]
         + ".txt"
         for orgname, accession in get_total_paths(checkpoints, config)
@@ -160,13 +160,13 @@ rule cat_pvalues:
     input:
         get_p_values,
     output:
-        config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_t_test_pvalues.txt",
+        config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_chi2_test_pvalues.txt",
     log:
-        config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_t_test_pvalues.log",
+        config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_chi2_test_pvalues.log",
     benchmark:
         repeat("benchmarks/cat_pvalues_{sample}.benchmark.txt", 1)
     message:
-        "Concatenating all the a chi square contingency test p-value outputs for sample {wildcards.sample}."
+        "Concatenating all the chi square contingency test p-value outputs for sample {wildcards.sample}."
     script:
         "../scripts/concat_files.py"
 
@@ -174,7 +174,7 @@ rule cat_pvalues:
 rule calculate_dirichlet_abundances:
     input:
         config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_likelihood_ts_tv_matrix.csv",
-        config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_t_test_pvalues.txt",
+        config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_chi2_test_pvalues.txt",
         config["sample_output_dir"] + "/fastq_inputs/meta/{sample}.size",
     output:
         config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_posterior_abundance.tsv",

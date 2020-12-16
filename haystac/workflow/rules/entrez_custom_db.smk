@@ -17,6 +17,8 @@ rule entrez_custom_sequences:
     message:
         "Adding the user provided fasta sequence {wildcards.accession} for taxon {wildcards.orgname} to the database."
     threads: 4
+    conda:
+        "../envs/samtools.yaml"
     shell:
         "path=$(awk -F'\t' '$1 == \"{wildcards.orgname}\" {{print $3}}' {input}); "
         'type=$(htsfile "$path"); '

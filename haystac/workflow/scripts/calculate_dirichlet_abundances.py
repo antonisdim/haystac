@@ -27,6 +27,7 @@ def calculate_dirichlet_abundances(ts_tv_file, p_values_file, total_fastq_reads,
 
     t_test_vector = (
         pd.read_csv(p_values_file, sep="\t", names=["species", "pvalue"])
+        .fillna(value=1)
         .groupby("species")
         .apply(hmean)
         .astype("float64")
