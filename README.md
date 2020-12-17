@@ -1,69 +1,137 @@
-HAYSTAC: High-AccuracY and Scalable Taxonomic Assignment of MetagenomiC data 
-===
+# HAYSTAC: A Bayesian framework for robust and rapid species identification in high-throughput sequencing data 
 
-Introduction 
-------------
+## Introduction 
 
-Alignment based metagenomics
-----------------------------
+`haystac` is a light-weight, fast, and user-friendly species identification tool. It evaluates the presence of a 
+particular species of interest in a metagenomic sample, and provides statistical support for the species assignment. 
+The method is designed to estimate the probability that a specific taxon is present in a metagenomic sample given a set 
+of sequencing reads and a database of reference genomes. It works equally well with both modern and ancient DNA sequence
+data.
 
-`haystac` is an easy to use pipeline for metagenomic identifications 
+## Setup
 
-You can easily:
+`haystac` can be run on either macOS or Linux based systems.
 
-1. Construct a database 
-2. Prepare your sample for analysis, including trimming sequencing adapters, collapsing paired end reads and also downloading data from the SRA
-3. Perform species identification 
-4. Perform a chemical damage pattern analysis 
+The easiest way to install `haystac` and all its dependencies is via the [conda package manager](
+https://docs.conda.io/projects/conda/en/latest/index.html).
 
-Setup 
------
-
-`haystac` can be run on any unix based system. It needs the conda package manager to run and it easy to install. 
-
-Quick Start 
------------
-
-Four commands/modules that allow you to run the method from start to finish 
-
+### Install conda
+To install `miniconda3` for macOS:
+```bash
+wget https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -O ~/miniconda.sh
+bash ~/miniconda.sh
 ```
-# install haystack from conda
+or for Linux:
+```bash
+wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh
+bash ~/miniconda.sh
+```
+
+### Install haystac
+<!-- Then use `conda` to install `haystac` from the [bioconda](https://bioconda.github.io/) channel: -->
+Then use `conda` to install `haystac`:
+```
 conda install -c antonisdim haystac
 ```
 
+## Quick Start
+
+`haystac` consists of three main modules:
+1) `database` for building a database of reference genomes
+2) `sample` for pre-processing of samples prior to analysis
+3) `analyse` for analysing a sample against a database
+
+### 1. Build a database
+
+To begin using `haystac` we firstly need to construct a database containing all species of interest to our study. In our 
+[preprint](https://www.biorxiv.org/content/10.1101/2020.12.16.419085v1), we show that `haystac` makes robust species 
+identifications with genus specific databases (for prokaryotes), allowing for very fast hypothesis driven analyses.
+
+In this example, we will build a database containing all species in the *Yersinia* genus, by supplying `haystac` with a 
+simple NBCI search query.
 ```
-# build a target database of species you are interested in
 haystac database \
-    --query '("Yersinia"[Organism] OR "Yersinia"[Organism]) AND "complete genome"[All Fields]' \
+    --query '"Yersinia"[Organism] AND "complete genome"[All Fields]' \
     --output yersinia_db
 ```
 
+To construct an NCBI search query for your area of interest, visit the [NCBI Nucleotide database](
+https://www.ncbi.nlm.nih.gov/nucleotide/) and use the search feature to obtain a correctly formatted query string from 
+the "Search details" box. This search query can be used directly with `haystac` to automatically download and build 
+a reference database based on the accession codes present in the resultset returned by the query.
+
+For more exhaustive analyses, you can build a database containing the 5,681 species present in the [RefSeq 
+representative](https://ftp.ncbi.nlm.nih.gov/genomes/GENOME_REPORTS/) database of prokaryotic species by running:
 ```
-# prepare a sample for analyis 
+haystac database \
+    --refseq-rep \
+    --output refseq_db
+```
+
+### 2. Prepare a sample for analysis
+
+The second step in using `haystac` is to prepare a sample for analysis.
+
+In this example, we will download a sample containing *Yersinia enterocolitica* directly from the [SRA](
+https://www.ncbi.nlm.nih.gov/sra) by supplying its accession code `SRR12157896`. Most published papers include SRA 
+accessions, making it simple to reanalyse published data with `haystac`.
+
+``` 
 haystac sample \
     --sra SRR12157896 \
-    --collapse \
     --output SRR12157896
 ```
 
+To prepare a sample of your own, you will need either single-end or paired-end short read sequencing data in 
+`fastq` format. 
+
+For a paired-end library, you specify the name of the sample, the location of the `fastq` files, and the name of
+the output directory. You may also choose to collapse overlapping mate pairs (e.g. for an aDNA library).
 ```
-# analyse a sample against a specific database
+haystac sample \
+    --sample-prefix sample1 \
+    --fastq-r1 /path/to/sample1_R1.fq.gz \
+    --fastq-r2 /path/to/sample1_R2.fq.gz \
+    --collapse True \
+    --output sample1
+```
+By default, `haystac` will scan the supplied library, identify adapter sequences, and automatically remove them.
+
+### 3. Analyse a sample against a database
+
+The third step in using `haystac` is to peform an analysis of a sample against a database.
+
+Here, we will use `haystac` to calculate the mean posterior abundance of all species in the *Yersinia* genus found within
+the sample `SRR12157896`.
+```
 haystac analyse \
     --mode abundances \
-    --database yersinia_db \
+    --database yersinia_db\
     --sample SRR12157896 \
     --output yersinia_SRR12157896
 ```
 
+`haystac` has many features and potential uses, and we encourage you to use the CLI interface to explore these options.
+The full user documentation are available here: https://haystac.readthedocs.io/en/latest/
 
+## User documentation
 
+`haystac` contains four modules (`config`, `database`, `sample` and `analyse`) and many configurable flags. We 
+encourage you to explore the available options via the help menu (e.g. `haystac database --help`) or consult the user 
+documentation at https://haystac.readthedocs.io/en/latest/
 
-License 
--------
+## Reporting errors
 
+`haystac` is under active development and we encourage you to report any issues you encounter via the [GitHub issue 
+tracker](https://github.com/antonisdim/haystac/issues).  
+
+## Citation
+
+A preprint describing `haystac` is available on *bioRxiv*:
+ 
+> Dimopoulos, E.A.\*, Carmagnini, A.\*, Velsko, I.M., Warinner, C., Larson, G., Frantz, L.A.F., Irving-Pease, E.K., 2020. 
+> HAYSTAC: A Bayesian framework for robust and rapid species identification in high-throughput sequencing data. 
+> *bioRxiv* 2020.12.16.419085. https://www.biorxiv.org/content/10.1101/2020.12.16.419085v1
+
+## License 
 MIT
-
-Citation 
---------
-
-Happening soon 
