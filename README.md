@@ -76,8 +76,8 @@ Note: Building a database this big is not recommended on a laptop computer.
 
 The second step in using `haystac` is to prepare a sample for analysis.
 
-In this example, we will download a sample from [Rasmussen *et al.* (2015)](https://doi.org/10.1016/j.cell.2015.10.009), 
-directly from the SRA, by giving `haystac` its accession code [ERR1018966](https://www.ncbi.nlm.nih.gov/sra/?term=ERR1018966). 
+In this example, we will download an aDNA library from [Rasmussen *et al.* (2015)](https://doi.org/10.1016/j.cell.2015.10.009), 
+by giving `haystac` the SRA accession code [ERR1018966](https://www.ncbi.nlm.nih.gov/sra/?term=ERR1018966). 
 Most published genomics papers include a BioProject code (e.g. [PRJEB10885](
 https://www.ncbi.nlm.nih.gov/bioproject/PRJEB10885)), from which you can obtain SRA accessions for each sequencing 
 library.
@@ -104,7 +104,7 @@ By default, `haystac` will scan the supplied library, identify adapter sequences
 
 ### 3. Analyse a sample against a database
 
-The third step in using `haystac` is to peform an analysis of a sample against a database.
+The third step in using `haystac` is to perform an analysis of a sample against a database.
 
 Here, we will use `haystac` to calculate the mean posterior abundance of all species in the *Yersinia* genus found within
 the sample `ERR1018966`.
@@ -115,6 +115,13 @@ haystac analyse \
     --sample ERR1018966 \
     --output yersinia_ERR1018966
 ```
+
+When the analysis is complete, there will be several new sub-folders in the output directory `yersinia_ERR1018966/`. To 
+determine if sample `ERR1018966` contains *Yersinia pestis* (i.e. the plague) we can consult the spreadsheet containing
+the mean posterior abundance estimates for all *Yersinia* species (i.e., 
+`yersinia_ERR1018966/probabilities/ERR1018966/ERR1018966_posterior_abundance.tsv`). From this, we can see that 3,266 
+reads were uniquely assigned to *Yersinia pestis*, with an overall abundance of 0.047%, and that the chi-squared test 
+indicates that the reads are spread evenly across the genome.
 
 ## User documentation
 
