@@ -356,7 +356,6 @@ class CheckExistingConfig(object):
                         "rank",
                         "mtDNA",
                         "seed",
-                        "sample_prefix",
                         "fastq",
                         "fastq_r1",
                         "fastq_r2",

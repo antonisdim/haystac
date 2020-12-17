@@ -484,11 +484,6 @@ The haystac commands are:
 
         required = parser.add_argument_group("Required arguments")
 
-        # TODO do we need this?
-        required.add_argument(
-            "--sample-prefix", help="Sample prefix for all the future analysis.", metavar="<prefix>",
-        )
-
         required.add_argument(
             "--output",
             help="Path to the sample output directory",
@@ -564,12 +559,6 @@ The haystac commands are:
         if args.collapse and not args.trim_adapters:
             raise ValidationError("Collapse can only be used with `--trim-adapters True`.")
 
-        if args.sample_prefix and args.sra:
-            raise ValidationError("If you are using `--sra`, you cannot provide a `--sample-prefix` value.")
-
-        if not args.sample_prefix and not args.sra:
-            raise ValidationError("Please provide a --sample-prefix name.")
-
         # resolve relative paths
         args.sample_output_dir = os.path.abspath(os.path.expanduser(args.sample_output_dir))
 
@@ -588,14 +577,11 @@ The haystac commands are:
         if (args.fastq_r1 and args.fastq_r2) and not args.collapse:
             config["read_mode"] = PE
 
+        # use the --output folder to name the sample
+        config["sample_prefix"] = os.path.basename(config["sample_output_dir"].rstrip("/"))
+
         if args.sra:
             config["sra"], config["layout"] = args.sra
-
-            if args.sample_prefix:
-                raise ValidationError("--sample-prefix cannot be used with and SRA accession.")
-
-            # use the SRA accession as the sample prefix
-            config["sample_prefix"] = config["sra"]
 
             # query the SRA to see if this is a paired-end library or not
             if config["layout"] == "paired":

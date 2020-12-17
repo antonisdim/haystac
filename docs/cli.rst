@@ -75,8 +75,6 @@ haystac sample
 --------------
 
 Required arguments:
-  --sample-prefix <prefix>
-                        Sample prefix for all the future analysis.
   --output <path>       Path to the sample output directory
 
 Required choice:

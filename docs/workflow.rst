@@ -38,7 +38,7 @@ alignments: directory where all the individual alignment bam files for each taxo
 
 ts_tv_counts: directory where all the transition and transversion counts are stored per taxon
 
-probabilities: directory where the likelihood matrix and final posterior abundances/probabilities are stored. The final output for abundance calculation has the suffix {sample-prefix}_posterior_abundance.tsv, 
+probabilities: directory where the likelihood matrix and final posterior abundances/probabilities are stored. The final output for abundance calculation has the suffix posterior_abundance.tsv,
 
 mapdamage: directory that includes all the mapdamage profiles for every taxon in our Database
 

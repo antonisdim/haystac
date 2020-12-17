@@ -94,7 +94,6 @@ For a paired-end library, you specify the name of the sample, the location of th
 the output directory. You may also choose to collapse overlapping mate pairs (e.g. for an aDNA library).
 ```
 haystac sample \
-    --sample-prefix sample1 \
     --fastq-r1 /path/to/sample1_R1.fq.gz \
     --fastq-r2 /path/to/sample1_R2.fq.gz \
     --collapse True \

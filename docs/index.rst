@@ -68,7 +68,7 @@ alignments: directory where all the individual alignment bam files for each taxo
 
 ts_tv_counts: directory where all the transition and transversion counts are stored per taxon
 
-probabilities: directory where the likelihood matrix and final posterior abundances/probabilities are stored. The final output for abundance calculation has the suffix {sample-prefix}_posterior_abundance.tsv, 
+probabilities: directory where the likelihood matrix and final posterior abundances/probabilities are stored. The final output for abundance calculation has the suffix posterior_abundance.tsv,
 
 mapdamage: directory that includes all the mapdamage profiles for every taxon in our Database
 
@@ -179,9 +179,9 @@ After our database is built we need to prepare our samples for analysis. For tha
 
 It is possible to trim sequencing adapters and collapse PE reads by specifying the relative flags. Samples (specific sequencing runs) can be also downloaded from the SRA if an sra run accession is provided. 
 
-If you have SE or already collapsed reads you only need to specify a file path for the `--fastq` flag and a sample name thought the `--sample-prefix` flag. 
-If your input is PE reads then you will need to specify file paths for both the `--fastq-r1` and `--fastq-r2` flags and a sample name thought the `--sample-prefix` flag. 
-If you want to download files from the SRA all you need to do is provide an SRA accession for the `--sra` flag (the sample name will be the name of the SRA accession code therefore do not use that flag in that case).
+If you have SE or already collapsed reads you only need to specify a file path for the `--fastq` flag.
+If your input is PE reads then you will need to specify file paths for both the `--fastq-r1` and `--fastq-r2` flags.
+If you want to download files from the SRA all you need to do is provide an SRA accession for the `--sra` flag.
 
 Here is an example of downloading reads from the SRA, trimming sequencing adapters and collapsing reads. 
 
@@ -347,8 +347,6 @@ haystac sample
 --------------
 
 Required arguments:
-  --sample-prefix <prefix>
-                        Sample prefix for all the future analysis.
   --output <path>       Path to the sample output directory
 
 Required choice:

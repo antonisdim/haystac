@@ -77,51 +77,42 @@ GATCGGCCGCCTCGCGCTCGTCGATCGCCAGGTAGCG" > example.fasta
 
 # emtpy fastq fill
 rm -rf example_sample
-haystac sample --sample-prefix bad_example --output example_sample --fastq empty.txt
+haystac sample --output example_sample --fastq empty.txt
 
 # bad path for fastq file
 rm -rf example_sample
-haystac sample --sample-prefix bad_example --output example_sample --fastq bad_path.fastq
+haystac sample --output example_sample --fastq bad_path.fastq
 
 # provide fasta instead of fastq
 rm -rf example_sample
-haystac sample --sample-prefix bad_example --output example_sample --fastq example.fasta
+haystac sample --output example_sample --fastq example.fasta
 
 # not providing any seqeunce data for a sample
 rm -rf example_sample
-haystac sample --sample-prefix bad_example --output example_sample
+haystac sample --output example_sample
 
 # providing only one mate when PE
 rm -rf example_sample
-haystac sample --sample-prefix bad_example --output example_sample --fastq-r1 example_input_r1.fastq
-haystac sample --sample-prefix bad_example --output example_sample --fastq-r2 example_input_r2.fastq
+haystac sample --output example_sample --fastq-r1 example_input_r1.fastq
+haystac sample --output example_sample --fastq-r2 example_input_r2.fastq
 
 # providing inputs for both --input and --input_r1
 rm -rf example_sample
-haystac sample --sample-prefix bad_example --output example_sample --fastq example_input.fastq \
+haystac sample --output example_sample --fastq example_input.fastq \
   --fastq-r2 example_input_r2.fastq
 
 # providing inputs for both --sra and --fastq
 rm -rf example_sample
 haystac sample --output example_sample --fastq example_input.fastq --sra ERR1018966
 
-# providing both an --sra and --sample-prefix value
-rm -rf example_sample
-haystac sample --output example_sample --sra ERR1018966 --sample-prefix bad_example
-
 # using --collapse with single end
 rm -rf example_sample
-haystac sample --output example_sample --sample-prefix bad_example --fastq example_input.fastq --collapse True
+haystac sample --output example_sample --fastq example_input.fastq --collapse True
 
 # using --collapse and --trim-adapters False
 rm -rf example_sample
 haystac sample --output example_sample --fastq-r1 example_input_r1.fastq --fastq-r2 example_input_r2.fastq \
-  --sample-prefix bad_example --collapse True --trim-adapters False
-
-# not providing a --sample-prefix
-rm -rf example_sample
-haystac sample --output example_sample --fastq example_input.fastq
-
+  --collapse True --trim-adapters False
 
 #### haystac analyse ####
 
