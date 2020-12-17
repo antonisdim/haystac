@@ -1,4 +1,4 @@
-HAYSTACK documentation
+HAYSTAC documentation
 ===============================
 
 .. toctree::
@@ -111,7 +111,7 @@ Representative RefSeq species
 
 When constructing a database there is always the option to include the species of the representative RefSeq database as well. All you need to do is include the corresponding flag in your command. 
 
-    haystack database --mode build --query '("Yersinia"[Organism] OR "Yersinia"[Organism]) AND "complete genome"[All Fields]' --output yersinia_example --refseq-rep
+    haystac database --mode build --query '("Yersinia"[Organism] OR "Yersinia"[Organism]) AND "complete genome"[All Fields]' --output yersinia_example --refseq-rep
 
 Providing custom accessions 
 ---------------------------
@@ -124,7 +124,7 @@ Here is an example of the contents of such a file:
 
 The we can simply run the following command 
 
-    haystack database --mode build --query '("Yersinia"[Organism] OR "Yersinia"[Organism]) AND "complete genome"[All Fields]' --output yersinia_example --accessions acc_example.txt
+    haystac database --mode build --query '("Yersinia"[Organism] OR "Yersinia"[Organism]) AND "complete genome"[All Fields]' --output yersinia_example --accessions acc_example.txt
 
 Providing custom sequences
 --------------------------
@@ -137,7 +137,7 @@ Here is an example of such a file:
 
 The we can simply run the following command 
 
-    haystack database --mode build --query '("Yersinia"[Organism] OR "Yersinia"[Organism]) AND "complete genome"[All Fields]' --db-output yersinia_example --sequences seq_example.txt
+    haystac database --mode build --query '("Yersinia"[Organism] OR "Yersinia"[Organism]) AND "complete genome"[All Fields]' --db-output yersinia_example --sequences seq_example.txt
 
 Combinations
 ------------
@@ -170,7 +170,7 @@ Here is an example of building a database in two steps instead of one
 Building a mitochondrial DNA database
 -------------------------------------
 
-When a user is providing a query about eukaryotes it is also possible to build a database with only mitochondrial genomes (by default whole genome assemblies will be fetched for a given query). In order to do that a user can specify the `--mtDNA` flag when running `haystack database`. We strongly advise against having a mixed database of full eukaryotic genome assemblies for certain taxa and only mtDNA sequences for other taxa, as this will bias the identifications towards the taxa with full genome assemblies.
+When a user is providing a query about eukaryotes it is also possible to build a database with only mitochondrial genomes (by default whole genome assemblies will be fetched for a given query). In order to do that a user can specify the `--mtDNA` flag when running `haystac database`. We strongly advise against having a mixed database of full eukaryotic genome assemblies for certain taxa and only mtDNA sequences for other taxa, as this will bias the identifications towards the taxa with full genome assemblies.
 
 Preparing a sample for analysis
 -------------------------------
@@ -220,17 +220,17 @@ Likelihood calculation
 
 After all the individual alignments have been competed, the number of transitions and transversions will be counted for every read that has aligned against any of the reference genomes in our database. Then the likelihoods and posterior probabilities for each read being sampled from a given reference genome will be calculated. For this step we can use the `likelihoods` mode of `haystac analyse`.
 
-    haystack analyse --mode likelihoods --database yersinia_example --sample sample_example --output analysis_output
+    haystac analyse --mode likelihoods --database yersinia_example --sample sample_example --output analysis_output
 
 Important Note on the Dirichlet Assignment process during Likelihood calculation
 --------------------------------------------------------------------------------
 
-It is important to be aware of the individual read posterior probability threshold, for a read to be assigned to a taxon. As a default HAYSTACK uses the conservative 0.75 probability threshold for the Dirichlet assignment. The higher value you pick the more conservative the assignments become. It is useful to sometimes pick a value depending on what taxa are being identified. If there is a need to distinguish between closely related taxa then a more conservative threshold would increase the specificity of the analysis therefore being more appropriate, whereas when you're trying to generally characterise a metagenome a less conservative value could increase the sensitivity of the analysis be more helpful.
+It is important to be aware of the individual read posterior probability threshold, for a read to be assigned to a taxon. As a default HAYSTAC uses the conservative 0.75 probability threshold for the Dirichlet assignment. The higher value you pick the more conservative the assignments become. It is useful to sometimes pick a value depending on what taxa are being identified. If there is a need to distinguish between closely related taxa then a more conservative threshold would increase the specificity of the analysis therefore being more appropriate, whereas when you're trying to generally characterise a metagenome a less conservative value could increase the sensitivity of the analysis be more helpful.
 
 Single organism sample or metagenome ? 
 --------------------------------------
 
-Depending on whether we would like to identify the species a sample is belongs to, or perform a metagenomic analysis, we can use the `probabilities` or `abundances` mode of `haystack analyse` respectively.
+Depending on whether we would like to identify the species a sample is belongs to, or perform a metagenomic analysis, we can use the `probabilities` or `abundances` mode of `haystac analyse` respectively.
 
 Assignment Probability Calculation
 ----------------------------------
@@ -258,7 +258,7 @@ Here is an example command
 Mapdamage analysis
 ------------------
 
-If our samples are ancient we can use mapDamage to estimate the level of deamination in the reads that have aligned to any taxon in our database. For that we can use the `mapdamage` module of haystack. The mapDamage analysis will be performed on the subset of reads that have been uniquely assigned to a taxon through the dirichlet process. This module can be either run independently or after the `haystack reads` module.
+If our samples are ancient we can use mapDamage to estimate the level of deamination in the reads that have aligned to any taxon in our database. For that we can use the `mapdamage` module of haystac. The mapDamage analysis will be performed on the subset of reads that have been uniquely assigned to a taxon through the dirichlet process. This module can be either run independently or after the `haystac reads` module.
 
 Here is an example command 
 
@@ -278,8 +278,7 @@ haystac config
 
   -h, --help            Show this help message and exit
   --cache <path>        Cache folder for storing genomes downloaded from NCBI
-                        and other shared data (default:
-                        /Users/edimopoulos/haystack/cache)
+                        and other shared data (default: ~/cache)
   --clear-cache         Clear the contents of the cache folder, and delete the
                         folder itself (default: False)
   --api-key <code>      Personal NCBI API key (increases max concurrent
@@ -299,7 +298,7 @@ haystac database
 ----------------
 
 Required arguments:
-  --mode <mode>         Database creation mode for haystack [fetch, index,
+  --mode <mode>         Database creation mode for haystac [fetch, index,
                         build]
   --output <path>       Path to the database output directory
 

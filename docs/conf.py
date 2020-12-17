@@ -17,7 +17,7 @@
 
 # -- Project information -----------------------------------------------------
 
-project = "HAYSTACK"
+project = "HAYSTAC"
 # noinspection PyShadowingBuiltins
 copyright = "Copyright 2020, University of Oxford"
 author = "Evangelos A. Dimopoulos, Evan K. Irving-Pease"

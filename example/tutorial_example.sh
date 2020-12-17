@@ -9,10 +9,10 @@
 set -euo pipefail
 
 # installing haystac
-python -m pip install git+https://github.com/antonisdim/haystack.git
+python -m pip install git+https://github.com/antonisdim/haystac.git
 
 # configure haystac by providing a pth for the cache folder
-haystac config --cache ./haystack_cache_example/
+haystac config --cache ./haystac_cache_example/
 
 # create an example database for the genus yersinia
 haystac database --mode build \

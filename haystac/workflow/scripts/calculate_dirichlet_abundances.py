@@ -25,7 +25,7 @@ def calculate_dirichlet_abundances(ts_tv_file, p_values_file, total_fastq_reads,
 
     # I calculate the coverage of each taxon from reads in its bam/pileup file. Let's go there
 
-    t_test_vector = (
+    chi2_vector = (
         pd.read_csv(p_values_file, sep="\t", names=["species", "pvalue"])
         .fillna(value=1)
         .groupby("species")
@@ -33,8 +33,8 @@ def calculate_dirichlet_abundances(ts_tv_file, p_values_file, total_fastq_reads,
         .astype("float64")
         .rename("Taxon")
     )
-    t_test_vector["Dark_Matter"] = np.nan
-    t_test_vector["Grey_Matter"] = np.nan
+    chi2_vector["Dark_Matter"] = np.nan
+    chi2_vector["Grey_Matter"] = np.nan
 
     ts_tv_matrix = pd.read_csv(ts_tv_file, sep=",", usecols=["Taxon", "Read_ID", "Dirichlet_Assignment"])
 
@@ -73,7 +73,7 @@ def calculate_dirichlet_abundances(ts_tv_file, p_values_file, total_fastq_reads,
     posterior_abundance["Dirichlet_Read_Num"] = np.nan
     posterior_abundance["Fisher_Exact_Pvalue"] = np.nan
 
-    print(t_test_vector.index, file=sys.stderr)
+    print(chi2_vector.index, file=sys.stderr)
 
     for idx, row in posterior_abundance.iterrows():
         ai = a.loc[posterior_abundance.iloc[idx, 0]]
@@ -89,7 +89,7 @@ def calculate_dirichlet_abundances(ts_tv_file, p_values_file, total_fastq_reads,
         posterior_abundance.iloc[idx, 4] = round(ci[0] * b)
         posterior_abundance.iloc[idx, 5] = round(ci[1] * b)
         posterior_abundance.iloc[idx, 6] = a.loc[posterior_abundance.iloc[idx, 0]]
-        posterior_abundance.iloc[idx, 7] = t_test_vector.loc[posterior_abundance.iloc[idx, 0]]
+        posterior_abundance.iloc[idx, 7] = chi2_vector.loc[posterior_abundance.iloc[idx, 0]]
 
     with open(sample_abundance, "w") as output_handle:
         posterior_abundance.to_csv(path_or_buf=output_handle, sep="\t", index=False, header=True)

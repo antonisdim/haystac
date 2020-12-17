@@ -125,7 +125,7 @@ rule coverage_counts:
         "2> {log}"
 
 
-rule coverage_t_test:
+rule coverage_chi2_:
     input:
         config["analysis_output_dir"] + "/probabilities/{sample}/{orgname}_cov_count_{accession}_{reads}.txt",
         config["cache"] + "/ncbi/{orgname}/{accession}.fasta.gz.fai",
@@ -135,7 +135,7 @@ rule coverage_t_test:
         config["analysis_output_dir"] + "/probabilities/{sample}/{orgname}_chi2_test_pvalue_{accession}_{reads}.log",
     benchmark:
         repeat(
-            "benchmarks/coverage_t_test_{sample}_{orgname}_{accession}_{reads}.benchmark.txt", 1,
+            "benchmarks/coverage_chi2_{sample}_{orgname}_{accession}_{reads}.benchmark.txt", 1,
         )
     message:
         "Performing a chi square contingency test to assess if reads from sample {wildcards.sample} "
