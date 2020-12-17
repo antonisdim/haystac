@@ -76,10 +76,11 @@ Note: Building a database this big is not recommended on a laptop computer.
 
 The second step in using `haystac` is to prepare a sample for analysis.
 
-In this example, we will download a sample containing *Yersinia enterocolitica* directly from the [SRA](
-https://www.ncbi.nlm.nih.gov/sra) by supplying its accession code `ERR1018966`. Most published papers include SRA 
-accessions, making it simple to reanalyse published data with `haystac`.
-
+In this example, we will download a sample from [Rasmussen *et al.* (2015)](https://doi.org/10.1016/j.cell.2015.10.009), 
+directly from the SRA, by giving `haystac` its accession code [ERR1018966](https://www.ncbi.nlm.nih.gov/sra/?term=ERR1018966). 
+Most published genomics papers include a BioProject code (e.g. [PRJEB10885](
+https://www.ncbi.nlm.nih.gov/bioproject/PRJEB10885)), from which you can obtain SRA accessions for each sequencing 
+library.
 ``` 
 haystac sample \
     --sra ERR1018966 \
