@@ -24,9 +24,7 @@ rule count_accession_ts_tv:
     input:
         get_bams_for_ts_tv_count,
     output:
-        config["analysis_output_dir"] + "/ts_tv_counts/{sample}/{orgname}_count_{accession}.csv",
-    log:
-        config["analysis_output_dir"] + "/ts_tv_counts/{sample}/{orgname}_count_{accession}.log",
+        temp(config["analysis_output_dir"] + "/ts_tv_counts/{sample}/{orgname}_count_{accession}.csv"),
     params:
         pairs=config["read_mode"] == PE,
     message:
@@ -99,26 +97,25 @@ rule coverage_counts:
     input:
         config["analysis_output_dir"] + "/alignments/{sample}/{reads}/{orgname}/{orgname}_{accession}.bam",
     output:
-        config["analysis_output_dir"] + "/probabilities/{sample}/{orgname}_cov_count_{accession}_{reads}.txt",
-    log:
-        config["analysis_output_dir"] + "/probabilities/{sample}/{orgname}_cov_count_{accession}_{reads}.log",
+        temp(config["analysis_output_dir"] + "/probabilities/{sample}/{orgname}_cov_count_{accession}_{reads}.txt"),
     message:
         "Counting coverage stats for sample {wildcards.sample} and taxon {wildcards.orgname}."
     conda:
         "../envs/samtools.yaml"
     shell:
-        "(samtools mpileup {input} | awk 'NR>1 {{rows++; sum += $4}} END {{print rows, sum}}' OFS='\t') 1> {output} "
-        "2> {log}"
+        "(samtools mpileup {input} | "
+        " awk 'NR>1 {{rows++; sum += $4}} END {{print rows, sum}}' OFS='\t'"
+        ") 1> {output} 2> /dev/null"
 
 
-rule coverage_chi2_:
+rule coverage_chi2_contingency_test:
     input:
         config["analysis_output_dir"] + "/probabilities/{sample}/{orgname}_cov_count_{accession}_{reads}.txt",
         config["cache"] + "/ncbi/{orgname}/{accession}.fasta.gz.fai",
     output:
-        config["analysis_output_dir"] + "/probabilities/{sample}/{orgname}_chi2_test_pvalue_{accession}_{reads}.txt",
-    log:
-        config["analysis_output_dir"] + "/probabilities/{sample}/{orgname}_chi2_test_pvalue_{accession}_{reads}.log",
+        temp(
+            config["analysis_output_dir"] + "/probabilities/{sample}/{orgname}_chi2_test_pvalue_{accession}_{reads}.txt"
+        ),
     message:
         "Performing a chi square contingency test to assess if reads from sample {wildcards.sample} "
         "represent a random genome sample of taxon {wildcards.orgname}."
@@ -142,7 +139,7 @@ rule cat_pvalues:
     input:
         get_p_values,
     output:
-        config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_chi2_test_pvalues.txt",
+        config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_chi2_test_pvalues.tsv",
     log:
         config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_chi2_test_pvalues.log",
     message:
@@ -154,7 +151,7 @@ rule cat_pvalues:
 rule calculate_dirichlet_abundances:
     input:
         config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_likelihood_ts_tv_matrix.csv",
-        config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_chi2_test_pvalues.txt",
+        config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_chi2_test_pvalues.tsv",
         config["sample_output_dir"] + "/fastq_inputs/meta/{sample}.size",
     output:
         config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_posterior_abundance.tsv",

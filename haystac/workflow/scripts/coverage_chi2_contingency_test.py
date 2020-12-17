@@ -22,22 +22,17 @@ def coverage_chi2_contingency_test(cov_file, taxon_fasta_idx, taxon, outfile):
 
     assert os.stat(cov_file).st_size, f"The file with the coverage stats {cov_file} is empty."
 
-    taxon_seqlen = genome_sizes(taxon_fasta_idx)
-
     cov_stats = pd.read_csv(cov_file, sep="\t", names=["observed", "expected"])
 
     expected_coverage = cov_stats['expected'].iloc[0]
     observed_coverage = cov_stats['observed'].iloc[0]
 
-    contingency_first_row = [observed_coverage, expected_coverage]
-    print("Observed and expected coverage are ", contingency_first_row, file=sys.stderr)
+    contingency = [observed_coverage, expected_coverage]
 
-    # oddsratio, pvalue = fisher_exact([contingency_first_row, contingency_second_row])
-
-    chi2, pvalue, dof, expected = chi2_contingency(contingency_first_row)
+    chi2, pvalue, dof, expected = chi2_contingency(contingency)
 
     with open(outfile, "w") as outhandle:
-        print(taxon, pvalue, file=outhandle, sep="\t")
+        print(taxon, pvalue, observed_coverage, expected_coverage, file=outhandle, sep="\t")
 
 
 def genome_sizes(taxon_fasta_idx):
@@ -53,9 +48,6 @@ def genome_sizes(taxon_fasta_idx):
 
 
 if __name__ == "__main__":
-    # noinspection PyUnresolvedReferences
-    sys.stderr = open(snakemake.log[0], "w")
-
     # noinspection PyUnresolvedReferences
     coverage_chi2_contingency_test(
         cov_file=snakemake.input[0],

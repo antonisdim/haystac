@@ -26,7 +26,9 @@ def calculate_dirichlet_abundances(ts_tv_file, p_values_file, total_fastq_reads,
     # I calculate the coverage of each taxon from reads in its bam/pileup file. Let's go there
 
     chi2_vector = (
-        pd.read_csv(p_values_file, sep="\t", names=["species", "pvalue"])
+        pd.read_csv(
+            p_values_file, sep="\t", names=["species", "pvalue", "observed", "expected"], usecols=["species", "pvalue"]
+        )
         .fillna(value=1)
         .groupby("species")
         .apply(hmean)
@@ -71,7 +73,7 @@ def calculate_dirichlet_abundances(ts_tv_file, p_values_file, total_fastq_reads,
     posterior_abundance["Minimum_Read_Num"] = np.nan
     posterior_abundance["Maximum_Read_Num"] = np.nan
     posterior_abundance["Dirichlet_Read_Num"] = np.nan
-    posterior_abundance["Fisher_Exact_Pvalue"] = np.nan
+    posterior_abundance["Chi2_Contingency_Pvalue"] = np.nan
 
     print(chi2_vector.index, file=sys.stderr)
 
