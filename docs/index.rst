@@ -421,12 +421,6 @@ Evan K. Irving-Pease,
 Alberto Carmagnini
 
 
-Credits
-=======
-
-Don't know who to credit
-
-
 Change Log 
 ==========
 
