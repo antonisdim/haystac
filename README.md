@@ -111,14 +111,10 @@ haystac analyse \
     --output yersinia_SRR12157896
 ```
 
-`haystac` has many features and potential uses, and we encourage you to use the CLI interface to explore these options.
-The full user documentation are available here: https://haystac.readthedocs.io/en/latest/
-
 ## User documentation
 
-`haystac` contains four modules (`config`, `database`, `sample` and `analyse`) and many configurable flags. We 
-encourage you to explore the available options via the help menu (e.g. `haystac database --help`) or consult the user 
-documentation at https://haystac.readthedocs.io/en/latest/
+`haystac` has many features and potential uses, and we encourage you to use module help menus (e.g. `haystac database --help`) 
+to explore these options. The full user documentation is available here: https://haystac.readthedocs.io/en/latest/
 
 ## Reporting errors
 
