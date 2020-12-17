@@ -77,13 +77,13 @@ Note: Building a database this big is not recommended on a laptop computer.
 The second step in using `haystac` is to prepare a sample for analysis.
 
 In this example, we will download a sample containing *Yersinia enterocolitica* directly from the [SRA](
-https://www.ncbi.nlm.nih.gov/sra) by supplying its accession code `SRR12157896`. Most published papers include SRA 
+https://www.ncbi.nlm.nih.gov/sra) by supplying its accession code `ERR1018966`. Most published papers include SRA 
 accessions, making it simple to reanalyse published data with `haystac`.
 
 ``` 
 haystac sample \
-    --sra SRR12157896 \
-    --output SRR12157896
+    --sra ERR1018966 \
+    --output ERR1018966
 ```
 
 To prepare a sample of your own, you will need either single-end or paired-end short read sequencing data in 
@@ -106,13 +106,13 @@ By default, `haystac` will scan the supplied library, identify adapter sequences
 The third step in using `haystac` is to peform an analysis of a sample against a database.
 
 Here, we will use `haystac` to calculate the mean posterior abundance of all species in the *Yersinia* genus found within
-the sample `SRR12157896`.
+the sample `ERR1018966`.
 ```
 haystac analyse \
     --mode abundances \
     --database yersinia_db\
-    --sample SRR12157896 \
-    --output yersinia_SRR12157896
+    --sample ERR1018966 \
+    --output yersinia_ERR1018966
 ```
 
 ## User documentation
