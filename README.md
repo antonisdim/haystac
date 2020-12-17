@@ -1,3 +1,5 @@
+[![Documentation Status](https://readthedocs.org/projects/haystac/badge/?version=latest)](https://haystac.readthedocs.io/en/latest/?badge=latest)
+
 # HAYSTAC: A Bayesian framework for robust and rapid species identification in high-throughput sequencing data 
 
 ## Introduction 
