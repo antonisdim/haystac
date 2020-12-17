@@ -7,5 +7,4 @@ dependencies:
   - r-RcppGSL=0.3.8
   - r-ggplot2=3.3.0
   - r-Rcpp=1.0.4.6
-  - pip:
-      - git+git://github.com/ginolhac/mapDamage.git@470506a5a21a02bbd7706618685d215c6e9e5d73
+  - mapdamage2=2.2.1

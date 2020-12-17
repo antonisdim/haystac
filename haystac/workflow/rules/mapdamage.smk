@@ -6,7 +6,7 @@ __copyright__ = "Copyright 2020, University of Oxford"
 __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
-from haystac.workflow.scripts.utilities import get_total_paths, PE, print_warning
+from haystac.workflow.scripts.utilities import get_total_paths, PE, print_warning, print_error
 
 
 rule dedup_merged_mapdamage:
@@ -68,7 +68,7 @@ def get_mapdamage_out_dir_paths(wildcards):
 
     if config["read_mode"] == PE:
         print_warning("dedup treats uncollapsed PE reads as SE. PCR deduplication might not have been done correctly.")
-        print_warning("mapDamage has not been optimised to analyse paired end alignment data.")
+        print_error("mapDamage has not been optimised to analyse paired end alignment data.")
 
     return inputs
 
