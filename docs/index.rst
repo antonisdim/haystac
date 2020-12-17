@@ -22,10 +22,10 @@ Pip
 
 Conda
 
-    conda install -c bioconda haystac
+    conda install -c antonisdim haystac
 
 Git 
-    git clone haystac
+    git clone https://github.com/antonisdim/haystac.git
 
 
 Workflow
@@ -111,7 +111,7 @@ Representative RefSeq species
 
 When constructing a database there is always the option to include the species of the representative RefSeq database as well. All you need to do is include the corresponding flag in your command. 
 
-    haystac database --mode build --query '("Yersinia"[Organism] OR "Yersinia"[Organism]) AND "complete genome"[All Fields]' --output yersinia_example --refseq-rep
+    haystac database --mode build --query '"Yersinia"[Organism] AND "complete genome"[All Fields]' --output yersinia_example --refseq-rep
 
 Providing custom accessions 
 ---------------------------
@@ -407,10 +407,10 @@ Common arguments:
 Citations
 ========= 
 
-bowtie2
-mapdamage 
-adaperremoval
-snakemake 
+bowtie2: https://doi.org/10.1038/nmeth.1923
+mapdamage2: https://doi.org/10.1093/bioinformatics/btt193
+adapterremoval: https://doi.org/10.1186/s13104-016-1900-2
+snakemake: https://doi.org/10.1093/bioinformatics/bts480
 
 
 FAQs 

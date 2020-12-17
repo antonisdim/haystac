@@ -13,7 +13,7 @@ dependencies:
   - pandas=1.0.3
   - pip=19.3.1
   - psutil=5.7.2
-  - pysam=0.15.3
+  - pysam=0.16
   - python=3.6.7
   - pyyaml=5.3.1
   - r-Rcpp=1.0.4.6
