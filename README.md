@@ -27,8 +27,8 @@ Quick Start
 Four commands/modules that allow you to run the method from start to finish 
 
 ```
-# install haystac from conda
-conda install -c bioconda haystac
+# install haystack from conda
+conda install -c antonisdim haystac
 ```
 
 ```
@@ -55,7 +55,7 @@ haystac analyse \
     --output yersinia_SRR12157896
 ```
 
-```example commmands when I got them```
+
 
 
 License 
