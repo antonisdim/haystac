@@ -117,7 +117,7 @@ haystac analyse \
 
 ## User documentation
 
-`haystac` has many features and potential uses, and we encourage you to use module help menus (e.g. `haystac database --help`) 
+`haystac` has many features and potential uses, and we encourage you to use the module help menus (e.g. `haystac database --help`) 
 to explore these options. The full user documentation is available here: https://haystac.readthedocs.io/en/latest/
 
 
@@ -126,10 +126,6 @@ to explore these options. The full user documentation is available here: https:/
 `haystac` is under active development and we encourage you to report any issues you encounter via the [GitHub issue 
 tracker](https://github.com/antonisdim/haystac/issues).  
 
-
-## Documentation
-
-https://haystac.readthedocs.io/en/master/
  
 ## Citation
 
