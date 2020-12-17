@@ -7,7 +7,7 @@ Introduction
 Alignment based metagenomics
 ----------------------------
 
-`haystack` is an easy to use pipeline for metagenomic identifications 
+`haystac` is an easy to use pipeline for metagenomic identifications 
 
 You can easily:
 
@@ -27,7 +27,7 @@ Quick Start
 Four commands/modules that allow you to run the method from start to finish 
 
 ```
-# install haystack from conda
+# install haystac from conda
 conda install -c bioconda haystac
 ```
 
