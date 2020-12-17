@@ -6,7 +6,7 @@ mismatch_probability:
 bowtie2_scaling:
   25.0
 use_conda:
-  True
+  False  # turn off by default, as dependencies will be installed by the conda package
 
 # `haystac database` defaults
 rank:
