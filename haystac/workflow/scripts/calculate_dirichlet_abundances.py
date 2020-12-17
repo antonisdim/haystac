@@ -75,6 +75,7 @@ def calculate_dirichlet_abundances(ts_tv_file, p_values_file, total_fastq_reads,
     posterior_abundance["Dirichlet_Read_Num"] = np.nan
     posterior_abundance["Chi2_Contingency_Pvalue"] = np.nan
 
+    # TODO is this necessary? if not, please remove and delete the log file redirection
     print(chi2_vector.index, file=sys.stderr)
 
     for idx, row in posterior_abundance.iterrows():
