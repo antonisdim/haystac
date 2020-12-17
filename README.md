@@ -118,10 +118,21 @@ haystac analyse \
 
 When the analysis is complete, there will be several new sub-folders in the output directory `yersinia_ERR1018966/`. To 
 determine if sample `ERR1018966` contains *Yersinia pestis* (i.e. the plague) we can consult the spreadsheet containing
-the mean posterior abundance estimates for all *Yersinia* species (i.e., 
+the mean posterior abundance estimates for all species in the *Yersinia* database (i.e., 
 `yersinia_ERR1018966/probabilities/ERR1018966/ERR1018966_posterior_abundance.tsv`). From this, we can see that 3,266 
 reads were uniquely assigned to *Yersinia pestis*, with an overall abundance of 0.047%, and that the chi-squared test 
 indicates that the reads are spread evenly across the genome.
+
+Before we can confidently conclude that `ERR1018966` contains ancient *Yersinia pestis*, we may want to perform a 
+damage pattern analysis.
+```
+haystac analyse \
+    --mode mapdamage \
+    --database yersinia_db\
+    --sample ERR1018966 \
+    --output yersinia_ERR1018966
+```
+
 
 ## User documentation
 
