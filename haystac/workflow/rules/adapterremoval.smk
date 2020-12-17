@@ -18,6 +18,7 @@ rule adapterremoval_single_end:
         "Trimming sequencing adapters from file {input.fastq}."
     conda:
         "../envs/adapterremoval.yaml"
+    threads: config["cores"]
     params:
         basename=config["sample_output_dir"] + "/fastq_inputs/SE/{accession}",
     shell:
@@ -26,6 +27,7 @@ rule adapterremoval_single_end:
         "   --basename {params.basename} "
         "   --gzip "
         "   --minlength 15 "
+        "   --threads {threads}"
         "   --trimns && "
         " mv {params.basename}.truncated.gz {output}"
         ") 2> {log}"
@@ -43,6 +45,7 @@ rule adapterremoval_collapsed:
         "Trimming sequencing adapters and collapsing reads from files {input.fastq_r1} and {input.fastq_r2}."
     conda:
         "../envs/adapterremoval.yaml"
+    threads: config["cores"]
     params:
         basename=config["sample_output_dir"] + "/fastq_inputs/COLLAPSED/{accession}",
     shell:
@@ -53,6 +56,7 @@ rule adapterremoval_collapsed:
         "   --gzip "
         "   --collapse-deterministic "
         "   --minlength 15 "
+        "   --threads {threads}"
         "   --trimns && "
         " cat {params.basename}.collapsed.gz {params.basename}.collapsed.truncated.gz 1> {output} && "
         " unlink {params.basename}.collapsed.gz && "
@@ -73,6 +77,7 @@ rule adapterremoval_paired_end:
         "Trimming sequencing adapters from files {input.fastq_r1} and {input.fastq_r2}."
     conda:
         "../envs/adapterremoval.yaml"
+    threads: config["cores"]
     params:
         basename=config["sample_output_dir"] + "/fastq_inputs/PE/{accession}",
     shell:
@@ -82,6 +87,7 @@ rule adapterremoval_paired_end:
         "   --basename {params.basename}"
         "   --gzip "
         "   --minlength 15 "
+        "   --threads {threads}"
         "   --trimns &&"
         " mv {params.basename}.pair1.truncated.gz {output.fastq_r1} && "
         " mv {params.basename}.pair2.truncated.gz {output.fastq_r2} "

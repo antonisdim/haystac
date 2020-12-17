@@ -16,14 +16,14 @@ rule entrez_custom_sequences:
         config["cache"] + "/ncbi/{orgname}/custom_seq-{accession}.fasta.gz",
     message:
         "Adding the user provided fasta sequence {wildcards.accession} for taxon {wildcards.orgname} to the database."
-    threads: 4
+    threads: 8
     conda:
         "../envs/samtools.yaml"
     shell:
         "path=$(awk -F'\t' '$1 == \"{wildcards.orgname}\" {{print $3}}' {input}); "
         'type=$(htsfile "$path"); '
         'if [[ "$type" == *"gzip-compressed"* ]]; then'
-        '   bgzip --decompress --stdout --threads 8 "$path" | bgzip --stdout --threads 8 1> {output}; '
+        '   bgzip --decompress --stdout --threads {threads} "$path" | bgzip --stdout --threads {threads} 1> {output}; '
         'elif [[ "$type" == *"BGZF-compressed"* ]]; then'
         '   cp "$path" {output}; '
         "else "
