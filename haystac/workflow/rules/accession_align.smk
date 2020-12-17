@@ -49,6 +49,8 @@ rule bowtie_align_accession_single_end:
             ).st_size
             * 5
         ),
+    wildcard_constraints:
+        read_mode="(SE|COLLAPSED)",
     message:
         "Aligning the filtered reads from sample {wildcards.sample} against taxon {wildcards.orgname}."
     conda:
@@ -68,10 +70,14 @@ rule bowtie_align_accession_paired_end:
         db_idx=config["cache"] + "/ncbi/{orgname}/{accession}.1.bt2l",
         readlen=config["analysis_output_dir"] + "/fastq/PE/{sample}_mapq_pair.readlen",
     log:
-        config["analysis_output_dir"] + "/alignments/{sample}/PE/{orgname}/{accession}.log",
+        config["analysis_output_dir"] + "/alignments/{sample}/{read_mode}/{orgname}/{accession}.log",
     output:
-        bam_file=config["analysis_output_dir"] + "/alignments/{sample}/PE/{orgname}/{orgname}_{accession}.bam",
-        bai_file=config["analysis_output_dir"] + "/alignments/{sample}/PE/{orgname}/{orgname}_{accession}.bam.bai",
+        bam_file=(
+            config["analysis_output_dir"] + "/alignments/{sample}/{read_mode}/{orgname}/{orgname}_{accession}.bam"
+        ),
+        bai_file=(
+            config["analysis_output_dir"] + "/alignments/{sample}/{read_mode}/{orgname}/{orgname}_{accession}.bam.bai"
+        ),
     params:
         min_score=get_min_score,
         basename=config["cache"] + "/ncbi/{orgname}/{accession}",
@@ -83,6 +89,8 @@ rule bowtie_align_accession_paired_end:
             ).st_size
             * 5
         ),
+    wildcard_constraints:
+        read_mode="(PE)",
     message:
         "Aligning the filtered reads from sample {wildcards.sample} against taxon {wildcards.orgname}."
     conda:

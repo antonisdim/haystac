@@ -33,6 +33,8 @@ rule bowtie_align_db_single_end:
         mem_mb=(
             lambda wildcards: os.stat(config["db_output"] + f"/bowtie/chunk{wildcards.chunk_num}.fasta.gz").st_size * 5
         ),
+    wildcard_constraints:
+        read_mode="(SE|COLLAPSED)",
     message:
         "The filtering alignment for sample {wildcards.sample}, for index chunk number {wildcards.chunk_num} "
         "is being executed."
@@ -57,9 +59,9 @@ rule bowtie_align_db_paired_end:
         ),
         bt2idx=config["db_output"] + "/bowtie/chunk{chunk_num}.1.bt2l",
     log:
-        config["analysis_output_dir"] + "/bam/PE_{sample}_chunk{chunk_num}.log",
+        config["analysis_output_dir"] + "/bam/{read_mode}_{sample}_chunk{chunk_num}.log",
     output:
-        bam_file=temp(config["analysis_output_dir"] + "/bam/PE_{sample}_sorted_chunk{chunk_num}.bam"),
+        bam_file=temp(config["analysis_output_dir"] + "/bam/{read_mode}_{sample}_sorted_chunk{chunk_num}.bam"),
     params:
         index=config["db_output"] + "/bowtie/chunk{chunk_num}",
     threads: config["cores"]
@@ -67,6 +69,8 @@ rule bowtie_align_db_paired_end:
         mem_mb=(
             lambda wildcards: os.stat(config["db_output"] + f"/bowtie/chunk{wildcards.chunk_num}.fasta.gz").st_size * 5
         ),
+    wildcard_constraints:
+        read_mode="(PE)",
     message:
         "The filtering alignment for sample {wildcards.sample}, for index chunk number {wildcards.chunk_num} "
         "is being executed."
