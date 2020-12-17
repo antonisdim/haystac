@@ -70,7 +70,7 @@ rule compress_sra_fastq_se:
         config["sample_output_dir"] + "/sra_data/SE/{accession}.fastq.gz",
     message:
         "Compressing the raw fastq file {input}."
-    threads: config["cores"]
+    threads: 8
     conda:
         "../envs/samtools.yaml"
     shell:
@@ -86,7 +86,7 @@ rule compress_sra_fastq_pe:
         r2=config["sample_output_dir"] + "/sra_data/PE/{accession}_R2.fastq.gz",
     message:
         "Compressing the raw fastq files {input.r1} and {input.r2}."
-    threads: config["cores"]
+    threads: 8
     conda:
         "../envs/samtools.yaml"
     shell:
