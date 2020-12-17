@@ -17,8 +17,6 @@ rule samtools_index_accession:
         config["cache"] + "/ncbi/{orgname}/{accession}.fasta.gz",
     output:
         config["cache"] + "/ncbi/{orgname}/{accession}.fasta.gz.fai",
-    benchmark:
-        repeat("benchmarks/fasta_idx_{orgname}_{accession}.benchmark.txt", 1)
     message:
         "Indexing fasta file with accession {wildcards.accession} for taxon {wildcards.orgname}."
     conda:
@@ -39,8 +37,6 @@ rule bowtie_index_accession:
         config["cache"] + "/ncbi/{orgname}/{accession}.4.bt2l",
         config["cache"] + "/ncbi/{orgname}/{accession}.rev.1.bt2l",
         config["cache"] + "/ncbi/{orgname}/{accession}.rev.2.bt2l",
-    benchmark:
-        repeat("benchmarks/index_database_{orgname}_{accession}.benchmark.txt", 1)
     message:
         "Preparing the bowtie2 index for genome {wildcards.accession} of taxon {wildcards.orgname}."
     threads: lambda wildcards, input: 1 if os.stat(input[0]).st_size / (1024 ** 2) < 100 else config["cores"]

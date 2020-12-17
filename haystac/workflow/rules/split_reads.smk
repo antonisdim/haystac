@@ -20,10 +20,6 @@ rule get_dirichlet_reads:
         config[
             "analysis_output_dir"
         ] + "/dirichlet_reads/{sample}/{orgname}/{orgname}_{accession}_dirichlet_{reads}.bam",
-    benchmark:
-        repeat(
-            "benchmarks/get_dirichlet_reads_{sample}_{reads}_{orgname}_{accession}.benchmark.txt", 1,
-        )
     message:
         "Preparing bam files with the Dirichlet assigned reads for taxon {wildcards.orgname} "
         "for sample {wildcards.sample} "
@@ -39,8 +35,6 @@ rule get_grey_matter_reads_se:
         ),
     output:
         config["analysis_output_dir"] + "/dirichlet_reads/{sample}/Grey_Matter/Grey_Matter_dirichlet.fastq.gz",
-    benchmark:
-        repeat("benchmarks/get_{sample}_Grey_Matter.benchmark.txt", 1)
     message:
         "Preparing fastq files with all the reads that got assigned to the Grey Matter for sample {wildcards.sample}."
     shell:
@@ -62,8 +56,6 @@ rule get_grey_matter_reads_pe:
         out_r2=(
             config["analysis_output_dir"] + "/dirichlet_reads/{sample}/Grey_Matter/Grey_Matter_dirichlet_R2.fastq.gz"
         ),
-    benchmark:
-        repeat("benchmarks/get_{sample}_Grey_Matter.benchmark.txt", 1)
     message:
         "Preparing fastq files with all the reads that got assigned to the Grey Matter for sample {wildcards.sample}."
     shell:
@@ -82,8 +74,6 @@ rule get_dark_matter_reads_se:
         ),
     output:
         config["analysis_output_dir"] + "/dirichlet_reads/{sample}/Dark_Matter/Dark_Matter_dirichlet.fastq.gz",
-    benchmark:
-        repeat("benchmarks/get_{sample}_Dark_Matter.benchmark.txt", 1)
     message:
         "Preparing fastq files with all the reads that got assigned to the Dark Matter for sample {wildcards.sample}."
     shell:
@@ -106,8 +96,6 @@ rule get_dark_matter_reads_pe:
         out_r2=(
             config["analysis_output_dir"] + "/dirichlet_reads/{sample}/Dark_Matter/Dark_Matter_dirichlet_R2.fastq.gz"
         ),
-    benchmark:
-        repeat("benchmarks/get_{sample}_Dark_Matter.benchmark.txt", 1)
     message:
         "Preparing fastq files with all the reads that got assigned to the Dark Matter for sample {wildcards.sample}."
     shell:
@@ -145,8 +133,6 @@ rule all_dirichlet:
         ],
     output:
         config["analysis_output_dir"] + "/dirichlet_reads/{sample}_dirichlet_reads.done",
-    benchmark:
-        repeat("benchmarks/all_dirichlet_reads_{sample}.benchmark.txt", 1)
     message:
         "All the dirichlet assigned reads have been put in bam files for {wildcards.sample}."
     shell:

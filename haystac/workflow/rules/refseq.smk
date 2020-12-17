@@ -14,8 +14,6 @@ rule download_refseq_representative_table:
         config["db_output"] + "/database_inputs/prok_representative_genomes.txt",
     log:
         config["db_output"] + "/database_inputs/prok_representative_genomes.log",
-    benchmark:
-        repeat("benchmarks/prok_report_download.benchmark.txt", 3)
     message:
         "Downloading the list of representative species from RefSeq."
     conda:
@@ -35,8 +33,6 @@ checkpoint entrez_refseq_accessions:
         assemblies=config["db_output"] + "/entrez/assemblies.tsv",
         refseq_plasmids=config["db_output"] + "/entrez/refseq-plasmids.tsv",
         genbank_plasmids=config["db_output"] + "/entrez/genbank-plasmids.tsv",
-    benchmark:
-        repeat("benchmarks/entrez_refseq_rep_accessions.benchmark.txt", 1)
     resources:
         entrez_api=1,
     message:
@@ -50,8 +46,6 @@ checkpoint entrez_invalid_assemblies:
         config["db_output"] + "/entrez/assemblies.tsv",
     output:
         config["db_output"] + "/entrez/invalid-assemblies.tsv",
-    benchmark:
-        repeat("benchmarks/entrez_valid_assemblies.benchmark.txt", 1)
     message:
         "Finding if assemblies are not part of the RefSeq database."
     resources:

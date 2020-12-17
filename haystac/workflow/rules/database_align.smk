@@ -26,8 +26,6 @@ rule bowtie_align_db_single_end:
         config["analysis_output_dir"] + "/bam/{read_mode}_{sample}_chunk{chunk_num}.log",
     output:
         bam_file=temp(config["analysis_output_dir"] + "/bam/{read_mode}_{sample}_sorted_chunk{chunk_num}.bam"),
-    benchmark:
-        repeat("benchmarks/bowtie_alignment_{read_mode}_{sample}_chunk{chunk_num}.benchmark.txt", 1)
     params:
         index=config["db_output"] + "/bowtie/chunk{chunk_num}",
     threads: config["cores"]
@@ -62,8 +60,6 @@ rule bowtie_align_db_paired_end:
         config["analysis_output_dir"] + "/bam/PE_{sample}_chunk{chunk_num}.log",
     output:
         bam_file=temp(config["analysis_output_dir"] + "/bam/PE_{sample}_sorted_chunk{chunk_num}.bam"),
-    benchmark:
-        repeat("benchmarks/bowtie_alignment_{sample}_chunk{chunk_num}_PE.benchmark.txt", 1)
     params:
         index=config["db_output"] + "/bowtie/chunk{chunk_num}",
     threads: config["cores"]
@@ -118,8 +114,6 @@ rule extract_db_fastq_single_end:
         config["analysis_output_dir"] + "/fastq/{read_mode}/{sample}_mapq.log",
     output:
         config["analysis_output_dir"] + "/fastq/{read_mode}/{sample}_mapq.fastq.gz",
-    benchmark:
-        repeat("benchmarks/extract_fastq_single_end_{sample}_{read_mode}.benchmark.txt", 1)
     message:
         "Extracting all the aligned reads for sample {wildcards.sample} and storing them in {output}. "
         "The log file can be found in {log}."
@@ -139,8 +133,6 @@ rule extract_db_fastq_paired_end:
         fastq_r2=config["analysis_output_dir"] + "/fastq/{read_mode}/{sample}_mapq_R2.fastq.gz",
         temp_r1=temp(config["analysis_output_dir"] + "/fastq/{read_mode}/{sample}_temp_R1_mapq.fastq.gz"),
         temp_r2=temp(config["analysis_output_dir"] + "/fastq/{read_mode}/{sample}_temp_R2_mapq.fastq.gz"),
-    benchmark:
-        repeat("benchmarks/extract_fastq_paired_end_{sample}_{read_mode}.benchmark.txt", 1)
     message:
         "Extracting the aligned reads for sample {wildcards.sample}."
     conda:
@@ -175,8 +167,6 @@ rule average_fastq_read_len_single_end:
         config["analysis_output_dir"] + "/fastq/{read_mode}/{sample}_mapq_readlen.log",
     output:
         config["analysis_output_dir"] + "/fastq/{read_mode}/{sample}_mapq.readlen",
-    benchmark:
-        repeat("benchmarks/average_fastq_read_len_single_end_{sample}_{read_mode}.benchmark.txt", 1)
     message:
         "Calculating the average read length for sample {wildcards.sample}."
     conda:
@@ -196,8 +186,6 @@ rule average_fastq_read_len_paired_end:
         mate1=temp(config["analysis_output_dir"] + "/fastq/{read_mode}/{sample}_mapq_R1.readlen"),
         mate2=temp(config["analysis_output_dir"] + "/fastq/{read_mode}/{sample}_mapq_R2.readlen"),
         pair=config["analysis_output_dir"] + "/fastq/{read_mode}/{sample}_mapq_pair.readlen",
-    benchmark:
-        repeat("benchmarks/average_fastq_read_len_paired_end_{sample}_{read_mode}.benchmark.txt", 1)
     message:
         "Calculating the average read length for sample {wildcards.sample}."
     conda:

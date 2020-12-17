@@ -79,8 +79,6 @@ rule bowtie_index_db_chunk:
         config["db_output"] + "/bowtie/chunk{chunk_num}.4.bt2l",
         config["db_output"] + "/bowtie/chunk{chunk_num}.rev.1.bt2l",
         config["db_output"] + "/bowtie/chunk{chunk_num}.rev.2.bt2l",
-    benchmark:
-        repeat("benchmarks/bowtie_index_chunk{chunk_num}.benchmark.txt", 1)
     message:
         "Bowtie2 index for chunk {input.fasta_chunk} is being built."
     threads: config["cores"]
@@ -115,8 +113,6 @@ rule index_all_db_chunks:
         get_index_db_chunks,
     output:
         config["db_output"] + "/bowtie/bowtie_index.done",
-    benchmark:
-        repeat("benchmarks/bowtie_index_done", 1)
     message:
         "The bowtie2 indices of the genome database have been built."
     shell:

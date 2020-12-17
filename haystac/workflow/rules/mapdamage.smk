@@ -23,10 +23,6 @@ rule dedup_merged_mapdamage:
         config[
             "analysis_output_dir"
         ] + "/rmdup_bam/{sample}/{reads}/{orgname}/{orgname}_{accession}_dirichlet_{reads}_rmdup.bam",
-    benchmark:
-        repeat(
-            "benchmarks/dedup_merged_{sample}_{reads}_{orgname}_{accession}.benchmark.txt", 1,
-        )
     params:
         output=config["analysis_output_dir"] + "/rmdup_bam/{sample}/{reads}/{orgname}/",
     message:
@@ -82,8 +78,6 @@ rule all_mapdamage:
         get_mapdamage_out_dir_paths,
     output:
         config["analysis_output_dir"] + "/mapdamage/{sample}_mapdamage.done",
-    benchmark:
-        repeat("benchmarks/all_alignments_{sample}.benchmark.txt", 1)
     message:
         "A mapDamage analysis has been performed for all the taxa in the database for sample {wildcards.sample}."
     shell:

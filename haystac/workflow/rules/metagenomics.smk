@@ -27,10 +27,6 @@ rule count_accession_ts_tv:
         config["analysis_output_dir"] + "/ts_tv_counts/{sample}/{orgname}_count_{accession}.csv",
     log:
         config["analysis_output_dir"] + "/ts_tv_counts/{sample}/{orgname}_count_{accession}.log",
-    benchmark:
-        repeat(
-            "benchmarks/count_accession_ts_tv_{sample}_{orgname}_{accession}.benchmark.txt", 1,
-        )
     params:
         pairs=config["read_mode"] == PE,
     message:
@@ -54,8 +50,6 @@ rule initial_ts_tv:
         config["analysis_output_dir"] + "/ts_tv_counts/{sample}/all_ts_tv_counts.csv",
     log:
         config["analysis_output_dir"] + "/ts_tv_counts/{sample}/all_ts_tv_counts.log",
-    benchmark:
-        repeat("benchmarks/initial_ts_tv_{sample}.benchmark.txt", 1)
     message:
         "Concatenating all the Ts and Tv count files for sample {wildcards.sample}."
     script:
@@ -79,8 +73,6 @@ rule calculate_likelihoods:
         config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_probability_model_params.json",
     log:
         config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_likelihood_ts_tv_matrix.log",
-    benchmark:
-        repeat("benchmarks/calculate_likelihoods_{sample}.benchmark.txt", 1)
     message:
         "Calculating the likelihoods and performing the Dirichlet assignment of the reads in sample "
         "{wildcards.sample} to the taxa in our database."
@@ -97,8 +89,6 @@ rule calculate_taxa_probabilities:
         config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_posterior_probabilities.tsv",
     log:
         config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_posterior_probabilities.log",
-    benchmark:
-        repeat("benchmarks/calculate_taxa_probabilities_{sample}.benchmark.txt", 1)
     message:
         "Calculating the taxonomic assignment posterior probabilities for sample {wildcards.sample}."
     script:
@@ -112,10 +102,6 @@ rule coverage_counts:
         config["analysis_output_dir"] + "/probabilities/{sample}/{orgname}_cov_count_{accession}_{reads}.txt",
     log:
         config["analysis_output_dir"] + "/probabilities/{sample}/{orgname}_cov_count_{accession}_{reads}.log",
-    benchmark:
-        repeat(
-            "benchmarks/coverage_counts_{sample}_{orgname}_{accession}_{reads}.benchmark.txt", 1,
-        )
     message:
         "Counting coverage stats for sample {wildcards.sample} and taxon {wildcards.orgname}."
     conda:
@@ -133,10 +119,6 @@ rule coverage_chi2_:
         config["analysis_output_dir"] + "/probabilities/{sample}/{orgname}_chi2_test_pvalue_{accession}_{reads}.txt",
     log:
         config["analysis_output_dir"] + "/probabilities/{sample}/{orgname}_chi2_test_pvalue_{accession}_{reads}.log",
-    benchmark:
-        repeat(
-            "benchmarks/coverage_chi2_{sample}_{orgname}_{accession}_{reads}.benchmark.txt", 1,
-        )
     message:
         "Performing a chi square contingency test to assess if reads from sample {wildcards.sample} "
         "represent a random genome sample of taxon {wildcards.orgname}."
@@ -163,8 +145,6 @@ rule cat_pvalues:
         config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_chi2_test_pvalues.txt",
     log:
         config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_chi2_test_pvalues.log",
-    benchmark:
-        repeat("benchmarks/cat_pvalues_{sample}.benchmark.txt", 1)
     message:
         "Concatenating all the chi square contingency test p-value outputs for sample {wildcards.sample}."
     script:
@@ -180,8 +160,6 @@ rule calculate_dirichlet_abundances:
         config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_posterior_abundance.tsv",
     log:
         config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_posterior_abundance.log",
-    benchmark:
-        repeat("benchmarks/calculate_dirichlet_abundances_{sample}.benchmark.txt", 1)
     message:
         "Calculating the mean posterior abundance for sample {wildcards.sample}."
     script:

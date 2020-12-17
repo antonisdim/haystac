@@ -12,8 +12,6 @@ from haystac.workflow.scripts.utilities import get_total_paths
 rule entrez_nuccore_query:
     output:
         config["db_output"] + "/entrez/entrez-nuccore.tsv",
-    benchmark:
-        repeat("benchmarks/entrez_nuccore_query.benchmark.txt", 1)
     message:
         "Fetching sequence metadata from the NCBI Nucleotide database for the query."
     script:
@@ -25,8 +23,6 @@ rule entrez_taxa_query:
         config["db_output"] + "/entrez/entrez-nuccore.tsv",
     output:
         config["db_output"] + "/entrez/entrez-taxa.tsv",
-    benchmark:
-        repeat("benchmarks/entrez_taxa_query_entrez.benchmark.txt", 1)
     message:
         "Querying the NCBI Taxonomy database and fetching taxonomic metadata."
     resources:
@@ -49,8 +45,6 @@ checkpoint entrez_pick_sequences:
         priority=pick_after_refseq_prok,
     output:
         config["db_output"] + "/entrez/entrez-selected-seqs.tsv",
-    benchmark:
-        repeat("benchmarks/entrez_pick_sequences_entrez.benchmark.txt", 1)
     message:
         "Selecting the longest sequence per taxon in the entrez query."
     script:
@@ -60,8 +54,6 @@ checkpoint entrez_pick_sequences:
 rule entrez_download_sequence:
     output:
         config["cache"] + "/ncbi/{orgname}/{accession}.fasta.gz",
-    benchmark:
-        repeat("benchmarks/entrez_download_sequence_{orgname}_{accession}.benchmark.txt", 1)
     message:
         "Downloading accession {wildcards.accession} for taxon {wildcards.orgname}."
     wildcard_constraints:
@@ -87,8 +79,6 @@ rule entrez_db_list:
         config["db_output"] + "/db_taxa_accessions.log",
     output:
         config["db_output"] + "/db_taxa_accessions.tsv",
-    benchmark:
-        repeat("benchmarks/entrez_multifasta_entrez_query.benchmark.txt", 1)
     message:
         "Aggregating all the species/accession pairs that exist in the database."
     script:

@@ -27,8 +27,6 @@ rule count_fastq_length:
         fastq=get_inputs_for_count_fastq_len,
     output:
         config["sample_output_dir"] + "/fastq_inputs/meta/{sample}.size",
-    benchmark:
-        repeat("benchmarks/count_fastq_length_{sample}.benchmark.txt", 1)
     message:
         "Counting the number of reads in sample {wildcards.sample}."
     conda:

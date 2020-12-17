@@ -38,10 +38,6 @@ rule bowtie_align_accession_single_end:
         bai_file=(
             config["analysis_output_dir"] + "/alignments/{sample}/{read_mode}/{orgname}/{orgname}_{accession}.bam.bai"
         ),
-    benchmark:
-        repeat(
-            "benchmarks/align_taxon_{read_mode}_{sample}_{orgname}_{accession}.benchmark.txt", 1,
-        )
     params:
         min_score=get_min_score,
         basename=config["cache"] + "/ncbi/{orgname}/{accession}",
@@ -115,8 +111,6 @@ rule align_all_accessions:
         get_accession_alignments,
     output:
         config["analysis_output_dir"] + "/alignments/{sample}_{read_mode}_alignments.done",
-    benchmark:
-        repeat("benchmarks/all_alignments_{sample}_{read_mode}.benchmark.txt", 1)
     message:
         "All metagenomic alignments are done."
     shell:
