@@ -51,6 +51,7 @@ In this example, we will build a database containing all species in the *Yersini
 simple NBCI search query.
 ```
 haystac database \
+    --mode build \
     --query '"Yersinia"[Organism] AND "complete genome"[All Fields]' \
     --output yersinia_db
 ```
@@ -64,9 +65,12 @@ For more exhaustive analyses, you can build a database containing the 5,681 spec
 representative](https://ftp.ncbi.nlm.nih.gov/genomes/GENOME_REPORTS/) database of prokaryotic species by running:
 ```
 haystac database \
+    --mode build \
     --refseq-rep \
     --output refseq_db
 ```
+
+Note: Building a database this big is not recommended on a laptop computer. 
 
 ### 2. Prepare a sample for analysis
 
