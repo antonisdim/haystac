@@ -286,9 +286,6 @@ haystac config
                         https://www.ncbi.nlm.nih.gov/account/register/)
   --mismatch-probability <float>
                         Base mismatch probability (default: 0.05)
-  --bowtie2-threads <int>
-                        Number of threads to use for each bowtie2 alignment
-                        (default: 15)
   --bowtie2-scaling <float>
                         Rescaling factor to keep the bowtie2 mutlifasta index
                         below the maximum memory limit (default: 5.0)
