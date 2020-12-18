@@ -117,7 +117,7 @@ rule coverage_chi2_contingency_test:
             config["analysis_output_dir"] + "/probabilities/{sample}/{orgname}_chi2_test_pvalue_{accession}_{reads}.txt"
         ),
     message:
-        "Performing a chi square contingency test to assess if reads from sample {wildcards.sample} "
+        "Performing a chi-squared contingency test to assess if reads from sample {wildcards.sample} "
         "represent a random genome sample of taxon {wildcards.orgname}."
     script:
         "../scripts/coverage_chi2_contingency_test.py"
@@ -143,7 +143,7 @@ rule cat_pvalues:
     log:
         config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_chi2_test_pvalues.log",
     message:
-        "Concatenating all the chi square contingency test p-value outputs for sample {wildcards.sample}."
+        "Concatenating all the chi-squared contingency test p-value outputs for sample {wildcards.sample}."
     script:
         "../scripts/concat_files.py"
 
