@@ -815,7 +815,7 @@ The haystac commands are:
         """
         Helper function for running the snakemake workflow
         """
-        print("HAYSTAC v 0.1\n")
+        print("HAYSTAC v 0.2\n")
         print(f"Date: {datetime.datetime.now()}\n")
 
         config["module"] = module
