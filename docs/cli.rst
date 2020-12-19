@@ -1,8 +1,10 @@
 Command Line Interface
 ======================
 
-haystac config
---------------
+``haystac config``
+------------------
+
+ ::
 
   -h, --help            Show this help message and exit
   --cache <path>        Cache folder for storing genomes downloaded from NCBI
@@ -19,15 +21,18 @@ haystac config
                         below the maximum memory limit (default: 5.0)
   --use-conda <bool>    Use conda as a package manger (default: True)
 
-haystac database
-----------------
 
-Required arguments:
+``haystac database``
+--------------------
+
+Required arguments:::
+
   --mode <mode>         Database creation mode for haystac [fetch, index,
                         build]
   --output <path>       Path to the database output directory
 
-Required choice:
+Required choice:::
+
   --query <query>       Database query in the NCBI query language. Please
                         refer to the documentation for assistance with
                         constructing a valid query.
@@ -44,7 +49,8 @@ Required choice:
   --refseq-rep          Include all prokaryotic species (excluding strains)
                         from the representative RefSeq DB (default: False)
 
-Optional arguments:
+Optional arguments:::
+
   --force-accessions    Disable validation checks for 'anomalous' assembly
                         flags in NCBI (default: False)
   --exclude-accessions <accession> [<accession> ...]
@@ -62,47 +68,53 @@ Optional arguments:
                         prokaryotes (default: False)
   --seed <int>          Random seed for database indexing
 
-Common arguments:
+Common arguments:::
+
   -h, --help            Show this help message and exit
   --cores <int>         Maximum number of CPU cores to use (default: 4)
   --mem <int>           Maximum memory (MB) to use (default: 8192)
   --unlock              Unlock the output directory following a crash or hard
                         restart (default: False)
   --debug               Enable debugging mode (default: False)
-  --snakemake '<json>'  Pass additional flags to the `snakemake` scheduler.
+  --snakemake '<json>'  Pass additional flags to the ``snakemake`` scheduler.
 
-haystac sample
---------------
+``haystac sample``
+------------------
 
-Required arguments:
+Required arguments:::
+
   --output <path>       Path to the sample output directory
 
-Required choice:
+Required choice:::
+
   --fastq <path>        Single-end fastq input file (optionally compressed).
   --fastq-r1 <path>     Paired-end forward strand (R1) fastq input file.
   --fastq-r2 <path>     Paired-end reverse strand (R2) fastq input file.
   --sra <accession>     Download fastq input from the SRA database
 
-Optional arguments:
+Optional arguments:::
+
   --collapse <bool>     Collapse overlapping paired-end reads, e.g. for aDNA
                         (default: False)
   --trim-adapters <bool>
                         Automatically trim sequencing adapters from fastq
                         input (default: True)
 
-Common arguments:
+Common arguments:::
+
   -h, --help            Show this help message and exit
   --cores <int>         Maximum number of CPU cores to use (default: 4)
   --mem <int>           Maximum memory (MB) to use (default: 8192)
   --unlock              Unlock the output directory following a crash or hard
                         restart (default: False)
   --debug               Enable debugging mode (default: False)
-  --snakemake '<json>'  Pass additional flags to the `snakemake` scheduler.
+  --snakemake '<json>'  Pass additional flags to the ``snakemake`` scheduler.
 
-haystac analyse
----------------
+``haystac analyse``
+-------------------
 
-Required arguments:
+Required arguments:::
+
   --mode <mode>         Analysis mode for the selected sample [filter, align,
                         likelihoods, probabilities, abundances, reads,
                         mapdamage]
@@ -110,18 +122,20 @@ Required arguments:
   --sample <path>       Path to the sample output directory
   --output <path>       Path to the analysis output directory
 
-Optional arguments:
+Optional arguments:::
+
   --genera <genus> [<genus> ...]
                         List of genera to restrict the abundance calculations.
                         (default: [])
   --min-prob <float>    Minimum posterior probability to assign an aligned
                         read to a given species (default: 0.75)
 
-Common arguments:
+Common arguments:::
+
   -h, --help            Show this help message and exit
   --cores <int>         Maximum number of CPU cores to use (default: 4)
   --mem <int>           Maximum memory (MB) to use (default: 8192)
   --unlock              Unlock the output directory following a crash or hard
                         restart (default: False)
   --debug               Enable debugging mode (default: False)
-  --snakemake '<json>'  Pass additional flags to the `snakemake` scheduler.
+  --snakemake '<json>'  Pass additional flags to the ``snakemake`` scheduler.

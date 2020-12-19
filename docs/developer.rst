@@ -1,4 +1,6 @@
 Developer documentation
 =======================
 
-todo: Write developer documentation.
+.. todo::
+
+    Write developer documentation.
