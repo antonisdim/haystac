@@ -33,7 +33,7 @@ bash ~/miniconda.sh
 <!-- Then use `conda` to install `haystac` from the [bioconda](https://bioconda.github.io/) channel: -->
 Then use `conda` to install `haystac`:
 ```
-conda install -c antonisdim haystac
+conda install -c bioconda haystac
 ```
 
 ## Quick Start

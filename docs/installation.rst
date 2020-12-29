@@ -5,7 +5,7 @@ HAYSTAC can be installed though pip, bioconda, and you can download the source f
 
 Conda::
 
-    conda install -c antonisdim haystac
+    conda install -c bioconda haystac
 
 Git::
 
