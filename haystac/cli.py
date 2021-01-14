@@ -190,23 +190,6 @@ The haystac commands are:
         )
 
         optional.add_argument(
-            "--mismatch-probability",
-            help=f"Base mismatch probability (default: {self.config_default['mismatch_probability']})",
-            type=FloatRangeType(0.01, 0.10),
-            metavar="<float>",
-            default=argparse.SUPPRESS,
-        )
-
-        optional.add_argument(
-            "--bowtie2-scaling",
-            help=f"Rescaling factor to keep the bowtie2 mutlifasta index below the maximum memory limit "
-            f"(default: {self.config_default['bowtie2_scaling']})",
-            type=FloatRangeType(0, 100),
-            metavar="<float>",
-            default=argparse.SUPPRESS,
-        )
-
-        optional.add_argument(
             "--use-conda",
             help=f"Use conda as a package manger (default: {self.config_default['use_conda']})",
             type=BoolType(),
@@ -330,6 +313,15 @@ The haystac commands are:
             "--resolve-accessions",
             help="Pick the first accession when two accessions for a taxon can be found in user provided input files",
             action="store_true",
+        )
+
+        optional.add_argument(
+            "--bowtie2-scaling",
+            help=f"Rescaling factor to keep the bowtie2 mutlifasta index below the maximum memory limit "
+                 f"(default: {self.config_default['bowtie2_scaling']})",
+            type=FloatRangeType(0, 100),
+            metavar="<float>",
+            default=argparse.SUPPRESS,
         )
 
         optional.add_argument(
@@ -685,6 +677,14 @@ The haystac commands are:
             type=FloatRangeType(0, 100),
             metavar="<float>",
             default=self.config_default["min_prob"],
+        )
+
+        optional.add_argument(
+            "--mismatch-probability",
+            help=f"Base mismatch probability (default: {self.config_default['mismatch_probability']})",
+            type=FloatRangeType(0.01, 0.10),
+            metavar="<float>",
+            default=argparse.SUPPRESS,
         )
 
         # add the common arguments
