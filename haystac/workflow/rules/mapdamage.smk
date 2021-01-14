@@ -49,7 +49,7 @@ rule run_mapdamage:
     conda:
         "../envs/mapdamage.yaml"
     shell:
-        "mapDamage -i {input.bam} -r {input.ref_genome} -d {output} --merge-libraries 2> {log}"
+        "mapDamage -i {input.bam} -r {input.ref_genome} -d {output} 2> {log}"
 
 
 # noinspection PyUnresolvedReferences

@@ -868,7 +868,7 @@ The haystac commands are:
         )
 
         # tidy up all the snakemake metadata
-        if success:
+        if success and (len(os.listdir(os.path.join(SNAKE_DIR, 'locks'))) == 0):
             shutil.rmtree(SNAKE_DIR)
 
         # translate "success" into shell exit code of 0
