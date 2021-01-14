@@ -318,7 +318,7 @@ The haystac commands are:
         optional.add_argument(
             "--bowtie2-scaling",
             help=f"Rescaling factor to keep the bowtie2 mutlifasta index below the maximum memory limit "
-                 f"(default: {self.config_default['bowtie2_scaling']})",
+            f"(default: {self.config_default['bowtie2_scaling']})",
             type=FloatRangeType(0, 100),
             metavar="<float>",
             default=argparse.SUPPRESS,
@@ -868,7 +868,7 @@ The haystac commands are:
         )
 
         # tidy up all the snakemake metadata
-        if success and (len(os.listdir(os.path.join(SNAKE_DIR, 'locks'))) == 0):
+        if success and (len(os.listdir(os.path.join(SNAKE_DIR, "locks"))) == 0):
             shutil.rmtree(SNAKE_DIR)
 
         # translate "success" into shell exit code of 0

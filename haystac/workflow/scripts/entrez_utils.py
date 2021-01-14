@@ -68,7 +68,11 @@ def entrez_request(action, params=None, attempt=1):
 
     if config.get("debug"):
         # turn into a get request
-        get = dict((key, value if isinstance(value, (str, int)) else ",".join(value)) for key, value in params.items())
+        print(params.items())
+        get = dict(
+            (key, value if isinstance(value, (str, int)) else ",".join(str(val) for val in value))
+            for key, value in params.items()
+        )
         print(f"{url}?{urlencode(get)}")
 
     # make the request
@@ -127,7 +131,7 @@ def entrez_assembly_ftp(accession, force=False):
     """
 
     # query the assembly database to get the latest assembly for this accession code
-    key, webenv, id_list = entrez_esearch("assembly", accession + ' AND "latest"[filter]')
+    key, webenv, id_list = entrez_esearch("assembly", accession + ' AND "latest"[filter] NOT suppressed*',)
 
     if len(id_list) > 1:
         # should never happen, but...
