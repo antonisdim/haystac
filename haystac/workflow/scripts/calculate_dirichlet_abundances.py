@@ -24,11 +24,15 @@ def calculate_dirichlet_abundances(ts_tv_file, p_values_file, total_fastq_reads,
     assert os.stat(total_fastq_reads).st_size, f"The total fastq reads file is empty {total_fastq_reads}"
 
     # I calculate the coverage of each taxon from reads in its bam/pileup file. Let's go there
+    cov_p_val = pd.read_csv(
+        p_values_file,
+        sep="\t",
+        names=["species", "pvalue", "observed", "expected", "fraction_cov"],
+        usecols=["species", "pvalue", "fraction_cov"],
+    )
 
     chi2_vector = (
-        pd.read_csv(
-            p_values_file, sep="\t", names=["species", "pvalue", "observed", "expected"], usecols=["species", "pvalue"]
-        )
+        cov_p_val[["species", "pvalue"]]
         .fillna(value=1)
         .groupby("species")
         .apply(hmean)
@@ -38,7 +42,22 @@ def calculate_dirichlet_abundances(ts_tv_file, p_values_file, total_fastq_reads,
     chi2_vector["Dark_Matter"] = np.nan
     chi2_vector["Grey_Matter"] = np.nan
 
+    fraction_vector = (
+        cov_p_val[["species", "fraction_cov"]]
+        .fillna(value=0)
+        .groupby("species")
+        .apply(hmean)
+        .astype("float64")
+        .rename("Taxon")
+    )
+    fraction_vector["Dark_Matter"] = np.nan
+    fraction_vector["Grey_Matter"] = np.nan
+
     ts_tv_matrix = pd.read_csv(ts_tv_file, sep=",", usecols=["Taxon", "Read_ID", "Dirichlet_Assignment"])
+
+    aln_reads_vector = ts_tv_matrix[["Taxon", "Read_ID"]].groupby("Taxon").count().squeeze().rename("Taxon")
+    aln_reads_vector["Dark_Matter"] = 0
+    aln_reads_vector["Grey_Matter"] = 0
 
     # Sum the Dirichlet Assignments per taxon and calculate the Dark Matter reads from the Dirichlet Assignment column
     ts_tv_group = ts_tv_matrix.groupby("Read_ID").sum().squeeze()
@@ -74,9 +93,8 @@ def calculate_dirichlet_abundances(ts_tv_file, p_values_file, total_fastq_reads,
     posterior_abundance["Maximum_Read_Num"] = np.nan
     posterior_abundance["Dirichlet_Read_Num"] = np.nan
     posterior_abundance["Chi2_Contingency_Pvalue"] = np.nan
-
-    # TODO is this necessary? if not, please remove and delete the log file redirection
-    print(chi2_vector.index, file=sys.stderr)
+    posterior_abundance["Genome_Coverage_Fraction"] = np.nan
+    posterior_abundance["Aligned_Read_Num"] = np.nan
 
     for idx, row in posterior_abundance.iterrows():
         ai = a.loc[posterior_abundance.iloc[idx, 0]]
@@ -93,6 +111,8 @@ def calculate_dirichlet_abundances(ts_tv_file, p_values_file, total_fastq_reads,
         posterior_abundance.iloc[idx, 5] = round(ci[1] * b)
         posterior_abundance.iloc[idx, 6] = a.loc[posterior_abundance.iloc[idx, 0]]
         posterior_abundance.iloc[idx, 7] = chi2_vector.loc[posterior_abundance.iloc[idx, 0]]
+        posterior_abundance.iloc[idx, 8] = fraction_vector.loc[posterior_abundance.iloc[idx, 0]]
+        posterior_abundance.iloc[idx, 9] = aln_reads_vector.loc[posterior_abundance.iloc[idx, 0]]
 
     with open(sample_abundance, "w") as output_handle:
         posterior_abundance.to_csv(path_or_buf=output_handle, sep="\t", index=False, header=True)

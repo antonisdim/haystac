@@ -31,8 +31,11 @@ def coverage_chi2_contingency_test(cov_file, taxon_fasta_idx, taxon, outfile):
 
     chi2, pvalue, dof, expected = chi2_contingency(contingency)
 
+    taxon_seqlen = genome_sizes(taxon_fasta_idx)
+    ref_cov_fraction = observed_coverage / taxon_seqlen
+
     with open(outfile, "w") as outhandle:
-        print(taxon, pvalue, observed_coverage, expected_coverage, file=outhandle, sep="\t")
+        print(taxon, pvalue, observed_coverage, expected_coverage, ref_cov_fraction, file=outhandle, sep="\t")
 
 
 def genome_sizes(taxon_fasta_idx):

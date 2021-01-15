@@ -543,9 +543,7 @@ The haystac commands are:
                 "Any combination of these flags is not valid"
             )
 
-        if args.collapse and (
-            not (args.fastq_r1 and args.fastq_r2) and (bool(args.sra) and args.sra[1] != "paired")
-        ):
+        if args.collapse and (not (args.fastq_r1 and args.fastq_r2) and (bool(args.sra) and args.sra[1] != "paired")):
             raise ValidationError("Collapse can only be used with --fastq-r1 and --fastq-r2 or sra PE data.")
 
         if args.collapse and not args.trim_adapters:
