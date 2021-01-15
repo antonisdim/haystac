@@ -13,24 +13,44 @@ rule dedup_merged_mapdamage:
     input:
         bam=(
             config["analysis_output_dir"]
-            + "/dirichlet_reads/{sample}/{orgname}/{orgname}_{accession}_dirichlet_{reads}.bam"
+            + "/dirichlet_reads/{sample}/{orgname}/{orgname}_{accession}_dirichlet_COLLAPSED.bam"
         ),
     log:
         config[
             "analysis_output_dir"
-        ] + "/rmdup_bam/{sample}/{reads}/{orgname}/{orgname}_{accession}_dirichlet_{reads}_rmdup.log",
+        ] + "/rmdup_bam/{sample}/COLLAPSED/{orgname}/{orgname}_{accession}_dirichlet_COLLAPSED_rmdup.log",
     output:
         config[
             "analysis_output_dir"
-        ] + "/rmdup_bam/{sample}/{reads}/{orgname}/{orgname}_{accession}_dirichlet_{reads}_rmdup.bam",
+        ] + "/rmdup_bam/{sample}/COLLAPSED/{orgname}/{orgname}_{accession}_dirichlet_COLLAPSED_rmdup.bam",
     params:
-        output=config["analysis_output_dir"] + "/rmdup_bam/{sample}/{reads}/{orgname}/",
+        output=config["analysis_output_dir"] + "/rmdup_bam/{sample}/COLLAPSED/{orgname}/",
     message:
         "Removing duplicate reads that were aligned to taxon {wildcards.orgname}, for sample {wildcards.sample}."
     conda:
         "../envs/dedup.yaml"
     shell:
         "dedup --merged --input {input.bam} --output {params.output} &> {log}"
+
+
+rule picard_single_mapdamage:
+    input:
+        bam=(
+            config["analysis_output_dir"] + "/dirichlet_reads/{sample}/{orgname}/{orgname}_{accession}_dirichlet_SE.bam"
+        ),
+    log:
+        config["analysis_output_dir"] + "/rmdup_bam/{sample}/SE/{orgname}/{orgname}_{accession}_dirichlet_SE_rmdup.log",
+    output:
+        config["analysis_output_dir"] + "/rmdup_bam/{sample}/SE/{orgname}/{orgname}_{accession}_dirichlet_SE_rmdup.bam",
+    params:
+        output=config["analysis_output_dir"] + "/rmdup_bam/{sample}/SE/{orgname}/{orgname}_{accession}_dirichlet_SE",
+    message:
+        "Removing duplicate reads that were aligned to taxon {wildcards.orgname}, for sample {wildcards.sample}."
+    conda:
+        "../envs/picard.yaml"
+    shell:
+        "picard MarkDuplicates --INPUT {input.bam} --OUTPUT {params.output}_rmdup.bam "
+        "--METRICS_FILE {params.output}_metrics.txt --REMOVE_DUPLICATES True &> {log}"
 
 
 rule run_mapdamage:
