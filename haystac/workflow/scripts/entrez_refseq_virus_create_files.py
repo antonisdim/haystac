@@ -60,6 +60,10 @@ def entrez_refseq_virus_create_files(
     viruses = viruses_simple[["#Organism/Name", "Accession"]]
     viruses.rename(columns={"#Organism/Name": "species", "Accession": "AccessionVersion"}, inplace=True)
 
+    # drop rows that have no accessions
+
+    viruses = viruses[viruses["AccessionVersion"] != ""]
+
     # regex for species name
 
     viruses["species"] = viruses["species"].replace(REGEX_BLACKLIST, "_", regex=True)
