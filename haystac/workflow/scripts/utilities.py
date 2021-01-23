@@ -424,8 +424,8 @@ def get_total_paths(
 
         assert len(sequences_df) > 0, f"The entrez pick sequences file is empty {pick_sequences.output[0]}"
 
-    if config["refseq_rep"]:
-        refseq_rep_prok = checkpoints.entrez_refseq_accessions.get()
+    if config["refseq_rep"] == "prokaryote_rep":
+        refseq_rep_prok = checkpoints.entrez_refseq_rep_prok_accessions.get()
         refseq_genomes = pd.read_csv(refseq_rep_prok.output.refseq_genomes, sep="\t")
         genbank_genomes = pd.read_csv(refseq_rep_prok.output.genbank_genomes, sep="\t")
         assemblies = pd.read_csv(refseq_rep_prok.output.assemblies, sep="\t")
@@ -447,6 +447,17 @@ def get_total_paths(
             refseq_plasmids,
             genbank_plasmids,
         ]
+
+        if config["query"]:
+            sources.append(sequences_df)
+
+        sequences_df = pd.concat(sources)
+
+    if config["refseq_rep"] == "viruses":
+        refseq_viruses = checkpoints.entrez_refseq_viruses_accessions.get()
+        refseq_viral_genomes = pd.read_csv(refseq_viruses.output.refseq_viruses, sep="\t")
+
+        sources = [refseq_viral_genomes]
 
         if config["query"]:
             sources.append(sequences_df)
@@ -569,3 +580,15 @@ def print_warning(message):
     """Function to print warnings"""
     message = f"WARNING: {message}"
     print(f"{WARNING}{message}{END}" if is_tty else message, file=sys.stderr)
+
+
+def get_smk_config():
+    """Function to read the smk config and return a dictionary"""
+
+    try:
+        with open(".snakemake/config.yaml") as fin:
+            config = yaml.safe_load(fin)
+    except FileNotFoundError:
+        config = {}
+
+    return config

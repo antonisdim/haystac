@@ -14,7 +14,7 @@ from xml.etree import ElementTree
 import requests
 import yaml
 
-from haystac.workflow.scripts.utilities import print_warning, print_error
+from haystac.workflow.scripts.utilities import print_warning, print_error, get_smk_config
 
 # base url of the Entrez web service
 ENTREZ_URL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/"
@@ -51,11 +51,7 @@ def entrez_request(action, params=None, attempt=1):
     params["tool"] = ENTREZ_TOOL
     params["email"] = ENTREZ_EMAIL
 
-    try:
-        with open(".snakemake/config.yaml") as fin:
-            config = yaml.safe_load(fin)
-    except FileNotFoundError:
-        config = {}
+    config = get_smk_config()
 
     if config.get("api_key"):
         # append the user specified api_key
@@ -130,8 +126,17 @@ def entrez_assembly_ftp(accession, force=False):
     Get an NCBI ftp url from the assembly database.
     """
 
+    # find out if we are looking for a virus to apply the correct filter
+    filter_condition = ' AND "latest"[filter] NOT suppressed*'
+
+    config = get_smk_config()
+
+    if config.get("refseq_rep") and config["refseq_rep"] == "viruses":
+        # append the virus filter
+        filter_condition = ' AND viruses[filter] AND "latest"[filter] NOT suppressed*'
+
     # query the assembly database to get the latest assembly for this accession code
-    key, webenv, id_list = entrez_esearch("assembly", accession + ' AND "latest"[filter] NOT suppressed*',)
+    key, webenv, id_list = entrez_esearch("assembly", accession + filter_condition,)
 
     if len(id_list) > 1:
         # should never happen, but...

@@ -64,6 +64,7 @@ COMMANDS = ["config", "database", "sample", "analyse"]
 DATABASE_MODES = ["fetch", "index", "build"]
 ANALYSIS_MODES = ["filter", "align", "likelihoods", "probabilities", "abundances", "reads", "mapdamage"]
 TAXONOMIC_RANKS = ["genus", "species", "subspecies", "serotype"]
+REFSEQ_TABLES = ["prokaryote_rep", "viruses", "eukaryotes"]
 
 # number to times to retry a rule that failed the first time
 RESTART_TIMES = 2
@@ -288,9 +289,12 @@ The haystac commands are:
         #      prokaryotes, viruses) see https://ftp.ncbi.nlm.nih.gov/genomes/GENOME_REPORTS/
         choice.add_argument(
             "--refseq-rep",
-            help="Include all prokaryotic species (excluding strains) from the representative RefSeq DB. "
-            "If multiple accessions exist for a given species, the first pair of species/accession is kept.",
-            action="store_true",
+            help="Use one of the RefSeq curated tables to construct a DB. Include all prokaryotic species "
+            "(excluding strains) from the representative RefSeq DB, or viruses, or eukaryotes. "
+            "If multiple accessions exist for a given species, the first pair of species/accession is kept. "
+            "Available RefSeq tables to use [%(choices)s].",
+            choices=REFSEQ_TABLES,
+            default="",
         )
 
         optional = parser.add_argument_group("Optional arguments")

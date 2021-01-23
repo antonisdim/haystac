@@ -6,23 +6,27 @@ __copyright__ = "Copyright 2020, University of Oxford"
 __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
-REFSEQ_REP_URL = "https://ftp.ncbi.nlm.nih.gov/genomes/GENOME_REPORTS/prok_representative_genomes.txt"
+GENOME_REPORTS = "https://ftp.ncbi.nlm.nih.gov/genomes/GENOME_REPORTS/"
+PROK_REFSEQ_REP = "prok_representative_genomes.txt"
+EUKARYOTES = "eukaryotes.txt"
 
 
 rule download_refseq_representative_table:
     output:
-        config["db_output"] + "/database_inputs/prok_representative_genomes.txt",
+        config["db_output"] + "/database_inputs/{table}.txt",
     log:
-        config["db_output"] + "/database_inputs/prok_representative_genomes.log",
+        config["db_output"] + "/database_inputs/{table}.log",
     message:
         "Downloading the list of representative species from RefSeq."
     conda:
         "../envs/wget.yaml"
+    params:
+        REFSEQ_REP_URL=GENOME_REPORTS + "{table}.txt",
     shell:
-        "wget -O {output} {REFSEQ_REP_URL} 2> {log}"
+        "wget -O {output} {params.REFSEQ_REP_URL} 2> {log}"
 
 
-checkpoint entrez_refseq_accessions:
+checkpoint entrez_refseq_rep_prok_accessions:
     input:
         config["db_output"] + "/database_inputs/prok_representative_genomes.txt",
     log:
@@ -52,3 +56,16 @@ checkpoint entrez_invalid_assemblies:
         entrez_api=1,
     script:
         "../scripts/entrez_invalid_assemblies.py"
+
+
+checkpoint entrez_refseq_viruses_accessions:
+    input:
+        config["db_output"] + "/database_inputs/viruses.txt",
+    log:
+        config["db_output"] + "/entrez/refseq-viruses-seqs.log",
+    output:
+        refseq_viruses=config["db_output"] + "/entrez/refseq-viruses-seqs.tsv",
+    message:
+        "Converting the RefSeq table for viruses in smaller table."
+    script:
+        "../scripts/entrez_refseq_virus_create_files.py"
