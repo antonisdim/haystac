@@ -285,8 +285,6 @@ The haystac commands are:
             type=SequenceFileType(),
         )
 
-        # TODO add extra options for all the other refseq curated lists (eukaryotes, plasmids, prok_reference_genomes,
-        #      prokaryotes, viruses) see https://ftp.ncbi.nlm.nih.gov/genomes/GENOME_REPORTS/
         choice.add_argument(
             "--refseq-rep",
             help="Use one of the RefSeq curated tables to construct a DB. Include all prokaryotic species "
