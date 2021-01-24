@@ -424,40 +424,48 @@ def get_total_paths(
 
         assert len(sequences_df) > 0, f"The entrez pick sequences file is empty {pick_sequences.output[0]}"
 
-    if config["refseq_rep"] == "prokaryote_rep":
-        refseq_rep_prok = checkpoints.entrez_refseq_rep_prok_accessions.get()
-        refseq_genomes = pd.read_csv(refseq_rep_prok.output.refseq_genomes, sep="\t")
-        genbank_genomes = pd.read_csv(refseq_rep_prok.output.genbank_genomes, sep="\t")
-        assemblies = pd.read_csv(refseq_rep_prok.output.assemblies, sep="\t")
-        refseq_plasmids = pd.read_csv(refseq_rep_prok.output.refseq_plasmids, sep="\t")
-        genbank_plasmids = pd.read_csv(refseq_rep_prok.output.genbank_plasmids, sep="\t")
+    if config["refseq_rep"]:
 
-        if not config["force_accessions"]:
-            invalid_assemblies = checkpoints.entrez_invalid_assemblies.get()
-            invalid_assembly_sequences = pd.read_csv(invalid_assemblies.output[0], sep="\t")
+        sources = []
 
-            assemblies = assemblies[
-                ~assemblies["AccessionVersion"].isin(invalid_assembly_sequences["AccessionVersion"])
+        # refseq rep prok
+        if config["refseq_rep"] == "prokaryote_rep":
+            refseq_rep_prok = checkpoints.entrez_refseq_rep_prok_accessions.get()
+            refseq_genomes = pd.read_csv(refseq_rep_prok.output.refseq_genomes, sep="\t")
+            genbank_genomes = pd.read_csv(refseq_rep_prok.output.genbank_genomes, sep="\t")
+            assemblies = pd.read_csv(refseq_rep_prok.output.assemblies, sep="\t")
+            refseq_plasmids = pd.read_csv(refseq_rep_prok.output.refseq_plasmids, sep="\t")
+            genbank_plasmids = pd.read_csv(refseq_rep_prok.output.genbank_plasmids, sep="\t")
+
+            if not config["force_accessions"]:
+                invalid_assemblies = checkpoints.entrez_invalid_assemblies.get()
+                invalid_assembly_sequences = pd.read_csv(invalid_assemblies.output[0], sep="\t")
+
+                assemblies = assemblies[
+                    ~assemblies["AccessionVersion"].isin(invalid_assembly_sequences["AccessionVersion"])
+                ]
+
+            sources = [
+                refseq_genomes,
+                genbank_genomes,
+                assemblies,
+                refseq_plasmids,
+                genbank_plasmids,
             ]
 
-        sources = [
-            refseq_genomes,
-            genbank_genomes,
-            assemblies,
-            refseq_plasmids,
-            genbank_plasmids,
-        ]
+        # refseq viruses
+        elif config["refseq_rep"] == "viruses":
+            refseq_viruses = checkpoints.entrez_refseq_viruses_accessions.get()
+            refseq_viral_genomes = pd.read_csv(refseq_viruses.output.refseq_viruses, sep="\t")
 
-        if config["query"]:
-            sources.append(sequences_df)
+            sources = [refseq_viral_genomes]
 
-        sequences_df = pd.concat(sources)
+        # refseq eukaryotes
+        elif config["refseq_rep"] == "eukaryotes":
+            refseq_eukaryotes = checkpoints.entrez_refseq_eukaryotes_accessions.get()
+            refseq_euk_genomes = pd.read_csv(refseq_eukaryotes.output.refseq_euk, sep="\t")
 
-    if config["refseq_rep"] == "viruses":
-        refseq_viruses = checkpoints.entrez_refseq_viruses_accessions.get()
-        refseq_viral_genomes = pd.read_csv(refseq_viruses.output.refseq_viruses, sep="\t")
-
-        sources = [refseq_viral_genomes]
+            sources = [refseq_euk_genomes]
 
         if config["query"]:
             sources.append(sequences_df)

@@ -69,3 +69,16 @@ checkpoint entrez_refseq_viruses_accessions:
         "Converting the RefSeq table for viruses in smaller table."
     script:
         "../scripts/entrez_refseq_virus_create_files.py"
+
+
+checkpoint entrez_refseq_eukaryotes_accessions:
+    input:
+        config["db_output"] + "/database_inputs/eukaryotes.txt",
+    log:
+        config["db_output"] + "/entrez/refseq-eukaryotes-seqs.log",
+    output:
+        refseq_euk=config["db_output"] + "/entrez/refseq-eukaryotes-seqs.tsv",
+    message:
+        "Converting the RefSeq table for eukaryotes in a smaller table."
+    script:
+        "../scripts/entrez_refseq_eukaryotes_create_files.py"

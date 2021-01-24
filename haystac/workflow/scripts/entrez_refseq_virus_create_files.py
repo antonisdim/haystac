@@ -27,13 +27,13 @@ def entrez_refseq_virus_create_files(
 
     refseq_viruses_rmdup = refseq_viruses[~refseq_viruses["#Organism/Name"].duplicated(keep="first")]
 
-    viruses_simple = refseq_viruses_rmdup[["#Organism/Name", "Segmemts"]].copy()
-    viruses_simple["Accession"] = ""
+    viruses_unique = refseq_viruses_rmdup[["#Organism/Name", "Segmemts"]].copy()
+    viruses_unique["Accession"] = ""
 
     # assign a segment accession code to a species.
     # 1 segment acc should be enough as all of them will be fetched through the assembly database.
 
-    for index, row in viruses_simple.iterrows():
+    for index, row in viruses_unique.iterrows():
 
         seq_list = row["Segmemts"].split("; ")
 
@@ -57,7 +57,7 @@ def entrez_refseq_virus_create_files(
 
     # rename columns
 
-    viruses = viruses_simple[["#Organism/Name", "Accession"]]
+    viruses = viruses_unique[["#Organism/Name", "Accession"]]
     viruses.rename(columns={"#Organism/Name": "species", "Accession": "AccessionVersion"}, inplace=True)
 
     # drop rows that have no accessions
