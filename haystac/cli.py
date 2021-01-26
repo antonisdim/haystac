@@ -682,9 +682,9 @@ The haystac commands are:
         optional.add_argument(
             "--mismatch-probability",
             help=f"Base mismatch probability (default: {self.config_default['mismatch_probability']})",
-            type=FloatRangeType(0.01, 0.10),
+            type=FloatRangeType(0.01, 0.25),
             metavar="<float>",
-            default=argparse.SUPPRESS,
+            default=self.config_default["mismatch_probability"],
         )
 
         # add the common arguments
