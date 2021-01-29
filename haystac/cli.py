@@ -287,12 +287,14 @@ The haystac commands are:
 
         choice.add_argument(
             "--refseq-rep",
-            help="Use one of the RefSeq curated tables to construct a DB. Include all prokaryotic species "
-            "(excluding strains) from the representative RefSeq DB, or viruses, or eukaryotes. "
-            "If multiple accessions exist for a given species, the first pair of species/accession is kept. "
+            help="Use one of the RefSeq curated tables to construct a DB. Includes all prokaryotic species "
+            "(excluding strains) from the representative RefSeq DB, or all the species and strains from the "
+            "viruses DB, or all the species and subspecies from the eukaryotes DB. "
+            "If multiple accessions exist for a given species/strain, the first pair of species/accession is kept. "
             "Available RefSeq tables to use [%(choices)s].",
             choices=REFSEQ_TABLES,
-            default="",
+            metavar="<table>",
+            default=None,
         )
 
         optional = parser.add_argument_group("Optional arguments")
@@ -319,11 +321,10 @@ The haystac commands are:
 
         optional.add_argument(
             "--bowtie2-scaling",
-            help=f"Rescaling factor to keep the bowtie2 mutlifasta index below the maximum memory limit "
-            f"(default: {self.config_default['bowtie2_scaling']})",
+            help="Rescaling factor to keep the bowtie2 mutlifasta index below the maximum memory limit",
             type=FloatRangeType(0, 100),
             metavar="<float>",
-            default=argparse.SUPPRESS,
+            default=self.config_default["bowtie2_scaling"],
         )
 
         optional.add_argument(
@@ -665,7 +666,7 @@ The haystac commands are:
 
         optional.add_argument(
             "--genera",
-            help="List of genera to restrict the abundance calculations.",
+            help="List of genera to restrict the abundance calculations",
             metavar="<genus>",
             nargs="+",
             default=[],
@@ -681,7 +682,7 @@ The haystac commands are:
 
         optional.add_argument(
             "--mismatch-probability",
-            help=f"Base mismatch probability (default: {self.config_default['mismatch_probability']})",
+            help="Base mismatch probability",
             type=FloatRangeType(0.01, 0.25),
             metavar="<float>",
             default=self.config_default["mismatch_probability"],
@@ -726,6 +727,13 @@ The haystac commands are:
 
         # add all command line options to the merged config
         config = {**self.config_merged, **database_config, **sample_config, **vars(args)}
+
+        # check if a db is built from an older version of haystac
+        if isinstance(config["refseq_rep"], bool):
+            raise ValidationError(
+                "You are trying to use a database that was built with an older version of HAYSTAC. "
+                "Please rebuild your database with the latest version."
+            )
 
         target_list = list()
 

@@ -10,8 +10,6 @@ Here is an example command that allows the configuration of using conda as a pac
 
     haystac config --use-conda True
 
-Unless the user has a deep understanding of their dataset we advise to be cautious when changing the base mismatch probability that is used later on in the method's probabilistic model. We also advise caution when changing the bowtie2 file size scaling factor.
-
 Building the database
 ---------------------
 
@@ -34,14 +32,19 @@ For each species (or any other user defined taxonomic rank), the longest sequenc
 Representative RefSeq species
 -----------------------------
 
-When constructing a database there is always the option to include the species of the representative RefSeq database as well. All you need to do is include the corresponding flag in your command.::
+When constructing a database there is always the option to include the species of the prokaryotic representative RefSeq database as well. All you need to do is include the corresponding flag in your command.::
 
     haystac database --mode build \
         --query '"Yersinia"[Organism] AND "complete genome"[All Fields]' \
         --output yersinia_example \
-        --refseq-rep
+        --refseq-rep prokaryote_rep
 
-Providing custom accessions 
+Important note on RefSeq databases
+----------------------------------
+
+``haystac database`` currently can build databases from three RefSeq tables, the prokaryotic representative RefSeq table, the eukaryotes RefSeq table and the viruses RefSeq table. When the prokaryotic representative the database is built, only species of microorganisms are included (strains are excluded), whereas in the eukaryotes and viruses databases subspecies and strains are included respectively. To build any of the above databases, specify the desired RefSeq table to be used by the ``--refseq-rep`` flag (``prokaryote_rep`` for the prokaryotic representative, ``eukaryotes`` for the eukaryotes and ``viruses`` for the viruses table).
+
+Providing custom accessions
 ---------------------------
 
 It is also possible to provide your own accessions for a selected species/taxon. For that you will need to prepare a tab delimited file with two columns. The first column is the name of the taxon, that cannot contain any special characters, other than an underscore ('_'), and the second column is a valid NCBI accession code. 
@@ -81,7 +84,7 @@ All of the previous options can be combined into one command. It is important to
 Index building 
 --------------
 
-For the first part of the analysis an index out of all the genomes that are included in our database needs to be build. This is a process that can take big amounts of memory depending on the number and the complexity of sequences that our database includes. For that reason the user can specify the desired amount of memory resources available to haystac and the program will try to build the required index. This can be specified through the ``--mem`` flag, that can be appended to the any of the commands shown above. Memory resources need to be specified in MB. If the memory resources provided are less than the size of the files that need to be indexed an error will be raised.
+For the first part of the analysis an index out of all the genomes that are included in our database needs to be build. This is a process that can take big amounts of memory depending on the number and the complexity of sequences that our database includes. For that reason the user can specify the desired amount of memory resources available to ``haystac`` and the program will try to build the required index. This can be specified through the ``--mem`` flag, that can be appended to the any of the commands shown above. Memory resources need to be specified in MB. If the memory resources provided are less than the size of the files that need to be indexed an error will be raised. We also advise caution when changing the bowtie2 file size scaling factor.
 
 Database building modes
 -----------------------
@@ -148,6 +151,8 @@ For example:::
         --database yersinia_example \
         --sample sample_example \
         --output analysis_output
+
+Unless the user has a deep understanding of their dataset we advise to be cautious when changing the base mismatch probability that is used later on in the method's probabilistic model.
 
 Likelihood calculation
 ----------------------
