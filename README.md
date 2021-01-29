@@ -68,7 +68,7 @@ representative](https://ftp.ncbi.nlm.nih.gov/genomes/GENOME_REPORTS/) database o
 ```
 haystac database \
     --mode build \
-    --refseq-rep \
+    --refseq-rep prokaryote_rep \
     --output refseq_db
 ```
 
