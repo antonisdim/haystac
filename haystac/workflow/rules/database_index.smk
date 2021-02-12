@@ -64,7 +64,12 @@ rule create_db_chunk:
     message:
         "Creating chunk {wildcards.chunk_num} of the genome database index."
     shell:
-        "awk '$1=={wildcards.chunk_num} {{print $2}}' {input} | xargs cat > {output}"
+        # "awk '$1=={wildcards.chunk_num} {{print $2}}' {input} | xargs cat > {output}"
+        "awk '$1=={wildcards.chunk_num} {{print $2}}' {input} | xargs -I {{}} "
+        "sh -c \"gzip -cd {{}} | awk -v file={{}} "
+        "'function basename(file) {{sub(\\\".*/\\\", \\\"\\\", file);return file}} "
+        "/>/{{sub(\\\">\\\",\\\"&\\\"basename(file)\\\"_\\\");sub(/\.fasta.gz/,x)}}1'\" | "
+        "gzip > {output}"
 
 
 rule bowtie_index_db_chunk:
