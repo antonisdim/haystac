@@ -479,7 +479,7 @@ def get_total_paths(
         custom_fasta_paths = pd.read_csv(
             config["sequences"], sep="\t", header=None, names=["species", "AccessionVersion", "path"],
         )
-        check_unique_taxa_in_user_file(custom_fasta_paths, config)
+        custom_fasta_paths = check_unique_taxa_accs(custom_fasta_paths, config, config["sequences"], "user_file")
 
         custom_seqs = custom_fasta_paths[["species", "AccessionVersion"]].copy()
         custom_seqs["AccessionVersion"] = "custom_seq-" + custom_seqs["AccessionVersion"].astype(str)
@@ -490,7 +490,7 @@ def get_total_paths(
         custom_accessions = pd.read_csv(
             config["accessions"], sep="\t", header=None, names=["species", "AccessionVersion"],
         )
-        check_unique_taxa_in_user_file(custom_accessions, config)
+        custom_accessions = check_unique_taxa_accs(custom_accessions, config, config["accessions"], "user_file")
 
         sequences_df = sequences_df.append(custom_accessions)
 
@@ -499,6 +499,9 @@ def get_total_paths(
 
     if config["exclude_accessions"]:
         sequences_df = sequences_df[~sequences_df["AccessionVersion"].isin(config["exclude_accessions"])]
+
+    # check that db accessions are unique
+    sequences_df = check_unique_taxa_accs(sequences_df, config, "", "db")
 
     inputs = []
 
@@ -518,9 +521,6 @@ def normalise_name(taxon):
     return re.sub(REGEX_BLACKLIST, "_", taxon)
 
 
-# return taxon.replace(" ", "_").replace("[", "").replace("]", "").replace("/", "_")
-
-
 def check_unique_taxa_in_custom_inputs(accessions, sequences):
     """Checks that custom input files have only one entry per taxon"""
 
@@ -528,6 +528,7 @@ def check_unique_taxa_in_custom_inputs(accessions, sequences):
         custom_fasta_paths = pd.read_csv(sequences, sep="\t", header=None, names=["species", "accession", "path"])
         custom_accessions = pd.read_csv(accessions, sep="\t", header=None, names=["species", "accession"])
 
+        # check if any taxa in common
         taxon_acc = custom_accessions["species"].tolist()
         taxon_seq = custom_fasta_paths["species"].tolist()
 
@@ -539,30 +540,98 @@ def check_unique_taxa_in_custom_inputs(accessions, sequences):
                 "per chosen taxon in your database."
             )
 
+        # check if any accessions in common
+        accession_acc = custom_accessions["accession"].tolist()
+        accession_seq = custom_fasta_paths["accession"].tolist()
+
+        if bool(set(accession_acc) & set(accession_seq)):
+            print_error(
+                "You have provided the same accession both in your custom sequences "
+                "file and your custom accessions file. Please pick and keep ONLY "
+                "one entry from both of these files, or change the accession entry "
+                "appropriately in your custom sequences file. You can only have 1 accession name "
+                "per chosen taxon in your database."
+            )
+
+
+def check_unique_taxa_accs(df, config, user_input, to_check):
+    """Checks that there are only unique inputs for taxa and accessions"""
+
+    # if we are checking the user files
+    if to_check == "user_file":
+
+        # if duplicate accession in user file raise error
+        if df["AccessionVersion"].duplicated().any():
+            dup_acc = [i for i in df[df["AccessionVersion"].duplicated()]["AccessionVersion"].to_list()]
+            message = (
+                f"{user_input} contains multiple taxa for {', '.join(dup_acc)}. "
+                f"Please remove/fix all duplicates. Picking automatically a taxon/accession pair in "
+                f"this case is not possible."
+            )
+            print_error(message)
+
+        # if duplicate species in user file either raise error, or --resolve-accessions
+        elif df["species"].duplicated().any():
+            dup_taxa = [i for i in df[df["species"].duplicated()]["species"].to_list()]
+            message = f"{user_input} contains multiple sequences for {', '.join(dup_taxa)}. "
+
+            if not config["resolve_accessions"]:
+                message += (
+                    "Either remove all duplicates, or set the `--resolve-accessions` flag to automatically choose one. "
+                    "It is the first accession that will be chosen."
+                )
+                print_error(message)
+            else:
+                for idx, val in df[df["species"].duplicated(keep="first")].iterrows():
+                    message += f"Accession {val['AccessionVersion']} for {val['species']} was omitted."
+                    print_warning(message)
+                df = df[~df["species"].duplicated(keep="first")]
+                return df
+
+        # if all good return df as is
+        else:
+            return df
+
+    # if we are checking the database in total
+    elif to_check == "db":
+
+        # if duplicate accessions in db either raise error, or --resolve-accessions
+        if df["AccessionVersion"].duplicated().any():
+            dup_acc = [i for i in df[df["AccessionVersion"].duplicated()]["AccessionVersion"].to_list()]
+            dup_tax = [i for i in df[df["AccessionVersion"].duplicated()]["species"].to_list()]
+            message = (
+                f"The database contains multiple taxa for accession(s) {', '.join(dup_acc)} for "
+                f"taxa {', '.join(dup_tax)}. "
+            )
+
+            if not config["resolve_accessions"]:
+                message += (
+                    f"Please remove/fix all duplicate accessions if possible. "
+                    f"If multiple taxa have the same accession, "
+                    f"that is possibly due to a recent change in NCBI's taxonomy, and it is strongly "
+                    f"advised you check the latest information for these accessions. "
+                    f"Either specify unique pairs of taxa and accessions using the `--accessions-file` or "
+                    f"`--sequences-file` flags, or set the `--resolve-accessions` flag to automatically "
+                    f"choose the first one. "
+                )
+                print_error(message)
+            else:
+                for idx, val in df[df["AccessionVersion"].duplicated(keep="first")].iterrows():
+                    message += (
+                        f"Taxon {val['species']} for {val['AccessionVersion']} was omitted. "
+                        f"It is strongly advised to check the latest taxonomy info on NCBI."
+                    )
+                    print_warning(message)
+                df = df[~df["AccessionVersion"].duplicated(keep="first")]
+                return df
+
+        # if all good return df as id
+        else:
+            return df
+
 
 def chunker(seq, size):
     return (seq[pos : pos + size] for pos in range(0, len(seq), size))
-
-
-def check_unique_taxa_in_user_file(df, config):
-    """Checks that there are only unique inputs for taxa"""
-
-    if df["species"].duplicated().any():
-        dup_taxa = [i for i in df[df["species"].duplicated()]["species"].to_list()]
-        message = f"{config['sequences']} contains multiple sequences for {', '.join(dup_taxa)}. "
-
-        if not config["resolve_accessions"]:
-            message += (
-                "Either remove all duplicates, or set the `--resolve-accessions` flag to automatically choose one. "
-                "It is the first accession that will be chosen."
-            )
-            print_error(message)
-        else:
-            df = df[~df["species"].duplicated(keep="first")]
-            for idx, val in df[df["species"].duplicated()].iterrows():
-                message += f"Accession {val['accession']} for {val['species']} was omitted."
-                print_warning(message)
-            return df
 
 
 def md5(filename):
