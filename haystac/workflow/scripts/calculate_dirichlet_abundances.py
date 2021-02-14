@@ -55,12 +55,12 @@ def calculate_dirichlet_abundances(ts_tv_file, p_values_file, total_fastq_reads,
 
     ts_tv_matrix = pd.read_csv(ts_tv_file, sep=",", usecols=["Taxon", "Read_ID", "Dirichlet_Assignment"])
 
-    aln_reads_vector = ts_tv_matrix[["Taxon", "Read_ID"]].groupby("Taxon").count().squeeze().rename("Taxon")
+    aln_reads_vector = ts_tv_matrix[["Taxon", "Read_ID"]].groupby("Taxon").count().squeeze(axis=1).rename("Taxon")
     aln_reads_vector["Dark_Matter"] = 0
     aln_reads_vector["Grey_Matter"] = 0
 
     # Sum the Dirichlet Assignments per taxon and calculate the Dark Matter reads from the Dirichlet Assignment column
-    ts_tv_group = ts_tv_matrix.groupby("Read_ID").sum().squeeze()
+    ts_tv_group = ts_tv_matrix.groupby("Read_ID").sum().squeeze(axis=1)
     grey_matter = ts_tv_group.where(ts_tv_group == 0).replace(0, 1).fillna(0)
 
     if len(ts_tv_matrix.Taxon.unique()) > 1:
