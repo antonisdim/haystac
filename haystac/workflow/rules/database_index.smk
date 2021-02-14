@@ -63,13 +63,14 @@ rule create_db_chunk:
         config["db_output"] + "/bowtie/chunk{chunk_num}.fasta.gz",
     message:
         "Creating chunk {wildcards.chunk_num} of the genome database index."
+    threads: 8
     shell:
-        # "awk '$1=={wildcards.chunk_num} {{print $2}}' {input} | xargs cat > {output}"
-        "awk '$1=={wildcards.chunk_num} {{print $2}}' {input} | xargs -I {{}} "
-        "sh -c \"gzip -cd {{}} | awk -v file={{}} "
-        "'function basename(file) {{sub(\\\".*/\\\", \\\"\\\", file);return file}} "
-        "/>/{{sub(\\\">\\\",\\\"&\\\"basename(file)\\\"_\\\");sub(/\.fasta.gz/,x)}}1'\" | "
-        "gzip > {output}"
+        "while IFS=$'\t' read -r -a p; "
+        "do if [ ${{p[0]}} -eq {wildcards.chunk_num} ]; "
+        "then prefix=$(basename ${{p[1]}} .fasta.gz); "
+        "bgzip --decompress --stdout --threads 8 ${{p[1]}} | "
+        'sed "s/^>/>"${{prefix}}"_/g" | '
+        "bgzip --stdout --threads {threads}; fi; done < {input} > {output}"
 
 
 rule bowtie_index_db_chunk:
