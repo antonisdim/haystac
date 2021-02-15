@@ -859,6 +859,7 @@ The haystac commands are:
             cores=int(args.cores),
             resources={"entrez_api": self.max_entrez_requests, "mem_mb": int(args.mem)},
             force_incomplete=True,
+            scheduler="greedy",
             # handle the rule-specific conda environments
             use_conda=config["use_conda"],
             conda_prefix=os.path.join(config["cache"], "conda") if config["use_conda"] else None,
