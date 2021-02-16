@@ -166,14 +166,19 @@ def entrez_assembly_ftp(accession, force=False):
         else:
             print_error(message)
 
-    # preference RefSeq URLs over GenBank URLs
-    ftp_stub = etree.find(".//FtpPath_RefSeq") or etree.find(".//FtpPath_GenBank")
+    refseq = etree.find(".//FtpPath_RefSeq")
+    genbank = etree.find(".//FtpPath_GenBank")
 
-    if ftp_stub is None:
+    # preference RefSeq URLs over GenBank URLs
+    if refseq is not None and refseq.text != "":
+        ftp_stub = refseq.text
+    elif genbank is not None and genbank.text != "":
+        ftp_stub = genbank.text
+    else:
         return ""
 
     # append the fasta filename
-    ftp_url = os.path.join(ftp_stub.text, os.path.basename(ftp_stub.text) + "_genomic.fna.gz")
+    ftp_url = os.path.join(ftp_stub, os.path.basename(ftp_stub) + "_genomic.fna.gz")
 
     return ftp_url
 
