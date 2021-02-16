@@ -26,6 +26,9 @@ WARNING = "\x1b[33m"
 FAIL = "\x1b[31m"
 END = "\033[0m"
 
+WARNING_DB = 0
+WARNING_USER = 0
+
 is_tty = sys.stdout.isatty()
 
 
@@ -582,9 +585,12 @@ def check_unique_taxa_accs(df, config, user_input, to_check):
                 )
                 print_error(message)
             else:
+                global WARNING_USER
                 for idx, val in df[df["species"].duplicated(keep="first")].iterrows():
                     message += f"Accession {val['AccessionVersion']} for {val['species']} was omitted."
-                    print_warning(message)
+                    if WARNING_USER == 0:
+                        print_warning(message)
+                WARNING_USER += 1
                 df = df[~df["species"].duplicated(keep="first")]
                 return df
 
@@ -598,10 +604,10 @@ def check_unique_taxa_accs(df, config, user_input, to_check):
         # if duplicate accessions in db either raise error, or --resolve-accessions
         if df["AccessionVersion"].duplicated().any():
             dup_acc = [i for i in df[df["AccessionVersion"].duplicated()]["AccessionVersion"].to_list()]
-            dup_tax = [i for i in df[df["AccessionVersion"].duplicated()]["species"].to_list()]
+            dup_tax = [i for i in df[df["AccessionVersion"].duplicated(keep=False)]["species"].to_list()]
             message = (
-                f"The database contains multiple taxa for accession(s) {', '.join(dup_acc)} for "
-                f"taxa {', '.join(dup_tax)}. "
+                f"Accession {', '.join(dup_acc)} appears multiple times in the database "
+                f"with different taxa names ({', '.join(dup_tax)}). "
             )
 
             if not config["resolve_accessions"]:
@@ -616,12 +622,15 @@ def check_unique_taxa_accs(df, config, user_input, to_check):
                 )
                 print_error(message)
             else:
+                global WARNING_DB
                 for idx, val in df[df["AccessionVersion"].duplicated(keep="first")].iterrows():
                     message += (
-                        f"Taxon {val['species']} for {val['AccessionVersion']} was omitted. "
-                        f"It is strongly advised to check the latest taxonomy info on NCBI."
+                        f"{val['species']} has been excluded. It is strongly advised to "
+                        f"check the latest taxonomy info on NCBI."
                     )
-                    print_warning(message)
+                    if WARNING_DB == 0:
+                        print_warning(message)
+                WARNING_DB += 1
                 df = df[~df["AccessionVersion"].duplicated(keep="first")]
                 return df
 

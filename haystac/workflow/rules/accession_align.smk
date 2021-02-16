@@ -11,7 +11,7 @@ import os
 
 MIN_FRAG_LEN = 0
 MAX_FRAG_LEN = 1000
-META_ALN_MIN_SCORE_CONSTANT = -6 # bowtie2 default base mismatch penalty value
+META_ALN_MIN_SCORE_CONSTANT = -6  # bowtie2 default base mismatch penalty value
 
 from haystac.workflow.scripts.utilities import get_total_paths
 
