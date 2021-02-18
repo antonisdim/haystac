@@ -170,9 +170,9 @@ def entrez_assembly_ftp(accession, force=False):
     genbank = etree.find(".//FtpPath_GenBank")
 
     # preference RefSeq URLs over GenBank URLs
-    if refseq is not None and refseq.text != "":
+    if refseq is not None and refseq.text not in ["", None]:
         ftp_stub = refseq.text
-    elif genbank is not None and genbank.text != "":
+    elif genbank is not None and genbank.text not in ["", None]:
         ftp_stub = genbank.text
     else:
         return ""
