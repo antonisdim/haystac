@@ -92,7 +92,7 @@ haystac sample \
 To prepare a sample of your own, you will need either single-end or paired-end short read sequencing data in 
 `fastq` format. 
 
-For a paired-end library, you specify the name of the sample, the location of the `fastq` files, and the name of
+For a paired-end library, you specify the location of the `fastq` files and the name of
 the output directory. You may also choose to collapse overlapping mate pairs (e.g. for an aDNA library).
 ```
 haystac sample \
