@@ -19,6 +19,7 @@ import snakemake
 import yaml
 from psutil import virtual_memory
 
+from haystac import __version__
 from haystac.workflow.scripts.entrez_utils import (
     ENTREZ_RATE_LOW,
     ENTREZ_RATE_HIGH,
@@ -114,6 +115,10 @@ The haystac commands are:
             parser.print_help()
             parser.exit()
 
+        if {"-v", "--version"}.intersection(sys.argv):
+            print(__version__)
+            parser.exit()
+
         # slice the CLI arguments
         argv = sys.argv[1:2] if level == 1 else sys.argv[level:]
 
@@ -166,6 +171,7 @@ The haystac commands are:
 
         # add the help option manually so we can control where it is shown in the menu
         optional.add_argument("-h", "--help", action="help", help="Show this help message and exit")
+        optional.add_argument("-v", "--version", action="help", help="Print the version number and exit")
 
         optional.add_argument(
             "--cache",
@@ -787,6 +793,7 @@ The haystac commands are:
 
         # add the help option manually so we can control where it is shown in the menu
         common.add_argument("-h", "--help", action="help", help="Show this help message and exit")
+        common.add_argument("-v", "--version", action="help", help="Print the version number and exit")
 
         common.add_argument(
             "--cores",
@@ -823,7 +830,7 @@ The haystac commands are:
         """
         Helper function for running the snakemake workflow
         """
-        print("HAYSTAC v 0.3.2\n")
+        print(f"HAYSTAC v {__version__}\n")
         print(f"Date: {datetime.datetime.now()}\n")
 
         config["module"] = module

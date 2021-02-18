@@ -1,5 +1,7 @@
 import setuptools
 
+from haystac import __version__
+
 with open("README.md", "r") as f:
     long_description = f.read()
 
@@ -8,7 +10,7 @@ with open("requirements.txt") as f:
 
 setuptools.setup(
     name="haystac",
-    version="0.3.2",
+    version=__version__,
     author="Evangelos A. Dimopoulos, Evan K. Irving-Pease",
     author_email="antonisdim41@gmail.com",
     description="Species identification pipeline for both single species and metagenomic samples.",
