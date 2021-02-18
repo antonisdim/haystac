@@ -27,7 +27,6 @@ from haystac.workflow.scripts.entrez_utils import (
 from haystac.workflow.scripts.utilities import (
     ValidationError,
     ArgumentCustomFormatter,
-    FileType,
     WritablePathType,
     FloatRangeType,
     IntRangeType,

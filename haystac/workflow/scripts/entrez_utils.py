@@ -12,7 +12,6 @@ from urllib.parse import urlencode
 from xml.etree import ElementTree
 
 import requests
-import yaml
 
 from haystac.workflow.scripts.utilities import print_warning, print_error, get_smk_config
 

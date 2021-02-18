@@ -8,7 +8,6 @@ __license__ = "MIT"
 
 import argparse
 import gzip
-import sys
 
 import pandas as pd
 from Bio import SeqIO

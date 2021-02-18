@@ -8,10 +8,11 @@ __license__ = "MIT"
 
 import os
 import sys
-import pandas as pd
-import numpy as np
 
-from haystac.workflow.scripts.utilities import REGEX_BLACKLIST, print_error
+import numpy as np
+import pandas as pd
+
+from haystac.workflow.scripts.utilities import REGEX_BLACKLIST
 
 
 def entrez_refseq_eukaryotes_create_files(

@@ -7,7 +7,6 @@ __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
 import os
-import sys
 
 import pandas as pd
 

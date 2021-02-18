@@ -51,15 +51,6 @@ class ArgumentCustomFormatter(argparse.HelpFormatter):
         return message
 
 
-class FileType(argparse.FileType):
-    """
-    Override argparse.FileType to return the filename, rather than an open file handle.
-    """
-
-    def __call__(self, string):
-        return super().__call__(string).name
-
-
 class WritablePathType(object):
     """
     Is this a writable path.

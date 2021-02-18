@@ -8,6 +8,7 @@ __license__ = "MIT"
 
 import os
 import sys
+
 import pandas as pd
 
 from haystac.workflow.scripts.utilities import REGEX_BLACKLIST, print_error
