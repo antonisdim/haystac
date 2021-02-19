@@ -6,7 +6,7 @@ __copyright__ = "Copyright 2020, University of Oxford"
 __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
-import gzip
+import subprocess
 import urllib.error
 import urllib.request
 from xml.etree import ElementTree
@@ -22,32 +22,32 @@ from haystac.workflow.scripts.entrez_utils import (
     ENTREZ_MAX_UID,
     ENTREZ_MAX_ATTEMPTS,
 )
-from haystac.workflow.scripts.utilities import chunker, print_error
+from haystac.workflow.scripts.utilities import chunker, print_error, get_smk_config
 
 
 def download_entrez_ftp(ftp_url, output_file, attempt=1):
     """
     Read the FTP stream, unzip the contents and write them one line at a time to our bgzip file
     """
-    try:
-        # download the assembly file to a temp location
-        temp_file, _ = urllib.request.urlretrieve(ftp_url)
+    if get_smk_config().get("debug"):
+        print(ftp_url)
 
-        # stream the gzip file and recode as bgzip
-        with gzip.open(temp_file) as fin, bgzf.open(output_file, "w") as fout:
-            for line in fin:
-                print(line.strip().decode("utf-8"), file=fout)
+    # stream the file from the remote FTP server and recode on the fly into bgzip format
+    cmd = f"bgzip -cd '{ftp_url}' | bgzip -c > {output_file}"
 
-    except urllib.error.URLError as error:
+    # run the command
+    proc = subprocess.Popen(cmd, shell=True)
+
+    # fetch any output and error
+    (out, err) = proc.communicate()
+
+    # bail if something went wrong
+    if proc.returncode != 0:
         if attempt < ENTREZ_MAX_ATTEMPTS:
             # try downloading it again
             download_entrez_ftp(ftp_url, output_file, attempt + 1)
         else:
-            raise error
-
-    finally:
-        # delete any temp files which are left behind by urlretrieve, and may fill up the `/tmp` folder
-        urllib.request.urlcleanup()
+            print_error(f"Unable to download assembly {ftp_url}\n{err}")
 
 
 def entrez_download_sequence(accession, output_file, force=False, mtdna=False):
