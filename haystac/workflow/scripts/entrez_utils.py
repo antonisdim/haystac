@@ -132,7 +132,7 @@ def entrez_assembly_ftp(accession, force=False):
 
     if config.get("refseq_rep") and config["refseq_rep"] == "viruses":
         # append the virus filter
-        filter_condition = ' AND viruses[filter] AND "latest"[filter] NOT suppressed*'
+        filter_condition += " AND viruses[filter] "
 
     # query the assembly database to get the latest assembly for this accession code
     key, webenv, id_list = entrez_esearch("assembly", accession + filter_condition,)
