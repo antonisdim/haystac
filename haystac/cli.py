@@ -13,6 +13,7 @@ import os
 import shutil
 import sys
 from multiprocessing import cpu_count
+from snakemake.dag import Batch
 
 import argcomplete
 import snakemake
@@ -846,6 +847,16 @@ The haystac commands are:
         )
 
         common.add_argument(
+            "--batch",
+            help="Batch number, mostly for large `haystac database` and `haystac analyse` workflows "
+            "(e.g. --batch index_all_accessions=1/3, --batch align_all_accessions=1/3). "
+            "You will need to execute all batches before haystac is able to finish its workflow to the end.",
+            metavar="<str>",
+            type=str,
+            default=None,
+        )
+
+        common.add_argument(
             "--snakemake",
             help="Pass additional flags to the `snakemake` scheduler.",
             metavar="'<json>'",
@@ -885,10 +896,21 @@ The haystac commands are:
         # get any extra snakemake params
         smk_params = config.pop("snakemake") or {}
 
+        # get any rule targets for batching and convert them into a compatible object
+        batch_cli = config.pop("batch") or None
+        if batch_cli is not None:
+            rulename, batch, batches = (
+                batch_cli.split("=")[0],
+                int(batch_cli.split("=")[1].split("/")[0]),
+                int(batch_cli.split("=")[1].split("/")[1]),
+            )
+            batch_cli = Batch(rulename, batch, batches)
+
         success = snakemake.snakemake(
             snakefile=os.path.join(CODE_DIR, "workflow/workflow.smk"),
             config=config,
             targets=target_list,
+            batch=batch_cli,
             cores=int(args.cores),
             resources={"entrez_api": self.max_entrez_requests, "mem_mb": int(args.mem)},
             force_incomplete=True,
