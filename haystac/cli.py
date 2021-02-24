@@ -711,6 +711,15 @@ The haystac commands are:
             default=self.config_default["mismatch_probability"],
         )
 
+        optional.add_argument(
+            "--bowtie2-threads",
+            help="Number of threads bowtie2 will use to align a sample against every individual genome in the database",
+            type=IntRangeType(1, MAX_CPU),
+            metavar="<int>",
+            dest="bowtie2_threads_aln",
+            default=self.config_default["bowtie2_threads_aln"],
+        )
+
         # add the common arguments
         self._common_arguments(parser)
 

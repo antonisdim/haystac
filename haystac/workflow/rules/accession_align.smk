@@ -41,7 +41,7 @@ rule bowtie_align_accession_single_end:
     params:
         min_score=get_min_score,
         basename=config["cache"] + "/ncbi/{orgname}/{accession}",
-    threads: max(1, floor(config["cores"] / 4))
+    threads: config["bowtie2_threads_aln"]
     resources:
         mem_mb=(
             lambda wildcards: os.stat(
@@ -81,7 +81,7 @@ rule bowtie_align_accession_paired_end:
     params:
         min_score=get_min_score,
         basename=config["cache"] + "/ncbi/{orgname}/{accession}",
-    threads: max(1, floor(config["cores"] / 4))
+    threads: config["bowtie2_threads_aln"]
     resources:
         mem_mb=(
             lambda wildcards: os.stat(

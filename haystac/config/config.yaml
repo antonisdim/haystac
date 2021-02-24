@@ -27,3 +27,5 @@ trim_adapters:
   True
 min_prob:
   0.5
+bowtie2_threads_aln:
+  4
