@@ -39,7 +39,7 @@ rule bowtie_index_accession:
         config["cache"] + "/ncbi/{orgname}/{accession}.rev.2.bt2l",
     message:
         "Preparing the bowtie2 index for genome {wildcards.accession} of taxon {wildcards.orgname}."
-    threads: lambda wildcards, input: 1 if os.stat(input[0]).st_size / (1024 ** 2) < 100 else config["cores"]
+    threads: config["bowtie2_threads_db"]
     resources:
         mem_mb=lambda wildcards, input: int(os.stat(input[0]).st_size * config["bowtie2_scaling"] / 1024 ** 2), # TODO report memory usage as a function of threads
     params:

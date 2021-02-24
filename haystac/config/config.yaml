@@ -17,6 +17,8 @@ cores:
   all
 mem:
   all
+bowtie2_threads_db:
+  4
 
 # `haystac sample` defaults
 collapse:

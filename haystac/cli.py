@@ -333,6 +333,15 @@ The haystac commands are:
         )
 
         optional.add_argument(
+            "--bowtie2-threads",
+            help="Number of threads bowtie2 will use to index every individual genome in the database",
+            type=IntRangeType(1, MAX_CPU),
+            metavar="<int>",
+            dest="bowtie2_threads_db",
+            default=self.config_default["bowtie2_threads_db"],
+        )
+
+        optional.add_argument(
             "--rank",
             help="Taxonomic rank to perform the identifications on [%(choices)s]",
             metavar="<rank>",
@@ -387,6 +396,15 @@ The haystac commands are:
             # load the query file
             with open(args.query_file) as fin:
                 args.query = fin.read().strip()
+
+        # warn the user in case he is selecting only one thread for bt2 accession indexing
+        if args.bowtie2_threads_db == 1:
+            print_warning(
+                "Please note that when bowtie2 uses only 1 thread for indexing its memory usage tends "
+                "to be higher than when it is multithreaded. That means that HAYSTAC could end up using "
+                "more memory than it is desired. Please be cautious when using only 1 thread "
+                "for indexing individual genomes."
+            )
 
         db_original = args.db_output
 
