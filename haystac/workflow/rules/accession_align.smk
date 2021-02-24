@@ -7,7 +7,7 @@ __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
 import os
-from math import floor
+from math import ceil
 
 MIN_FRAG_LEN = 0
 MAX_FRAG_LEN = 1000
@@ -19,9 +19,7 @@ from haystac.workflow.scripts.utilities import get_total_paths
 # noinspection PyUnusedLocal,PyShadowingBuiltins,PyShadowingNames
 def get_min_score(wildcards, input):
     """Get the min score dor the edit distance of the alignment."""
-    return (
-        round(float(open(input.readlen).read()) * float(config["mismatch_probability"])) * META_ALN_MIN_SCORE_CONSTANT
-    )
+    return ceil(float(open(input.readlen).read()) * float(config["mismatch_probability"])) * META_ALN_MIN_SCORE_CONSTANT
 
 
 rule bowtie_align_accession_single_end:

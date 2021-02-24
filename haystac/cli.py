@@ -907,6 +907,7 @@ The haystac commands are:
 
         # get any rule targets for batching and convert them into a compatible object
         exec_batch = Batch(config["batch"][0], config["batch"][1], config["batch"][2]) if config["batch"] else None
+        config.pop("batch")
 
         success = snakemake.snakemake(
             snakefile=os.path.join(CODE_DIR, "workflow/workflow.smk"),

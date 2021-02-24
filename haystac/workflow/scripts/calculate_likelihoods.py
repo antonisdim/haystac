@@ -13,6 +13,7 @@ import sys
 import numpy as np
 import pandas as pd
 
+from math import ceil
 from haystac.workflow.scripts.utilities import PE
 
 
@@ -37,7 +38,7 @@ def calculate_likelihoods(ts_tv_file, readlen_file, taxa_file_paths, config, out
     aligned_read_count = len(init_ts_tv["Read_ID"].unique())
     average_read_length = float(open(readlen_file, "r").read())
 
-    max_mismatch = round(config["mismatch_probability"] * float(average_read_length))
+    max_mismatch = ceil(config["mismatch_probability"] * float(average_read_length))
 
     # calculate the parameters for the analytical framework
     if ts_sum == 0 and tv_sum != 0:
