@@ -33,7 +33,7 @@ def download_entrez_ftp(ftp_url, output_file, attempt=1):
         print(ftp_url)
 
     # stream the file from the remote FTP server and recode on the fly into bgzip format
-    cmd = f"bgzip -cd '{ftp_url}' | bgzip -c > {output_file}"
+    cmd = f"wget --quiet -O - '{ftp_url}' | bgzip -cd | bgzip -c > {output_file}"
 
     # run the command
     proc = subprocess.Popen(cmd, shell=True)
