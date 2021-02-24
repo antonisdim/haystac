@@ -403,6 +403,24 @@ class FastqFile(object):
         return value
 
 
+class BatchType(object):
+    """
+    Is this a valid smk batch string
+    """
+
+    def __call__(self, value):
+
+        try:
+            rulename, batch, batches = (
+                value.split("=")[0],
+                int(value.split("=")[1].split("/")[0]),
+                int(value.split("=")[1].split("/")[1]),
+            )
+            return rulename, batch, batches
+        except IndexError as error:
+            raise argparse.ArgumentTypeError(f"'{value}' is not a valid snakemake batch string\n {error}")
+
+
 def get_total_paths(
     checkpoints, config,
 ):
