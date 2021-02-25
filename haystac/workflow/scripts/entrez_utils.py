@@ -139,7 +139,21 @@ def entrez_assembly_ftp(accession, force=False):
 
     if len(id_list) > 1:
         # should never happen, but...
-        print_error(f"Multiple assembly accessions found for '{accession}': {id_list}")
+        msg = f"Multiple assembly accessions found for '{accession}': {id_list}. "
+
+        # if force-accessions is true pick the largest int value, assuming it is also the altest
+        if force:
+            msg += f"Using assembly: id pair '{accession}': '{max([int(id) for id in id_list])}'"
+            id_list = [str(max([int(id) for id in id_list]))]
+            print_warning(msg)
+
+        # if not raise an error
+        else:
+            msg += (
+                f"Either consider using the `--force-accessions` flag for the largest ID to be picked, "
+                f"or the `--exclude-accessions` flag to remove accession '{accession}' from this query."
+            )
+            print_error(msg)
 
     elif len(id_list) == 0:
         # no entry in the assembly database for this accession code
