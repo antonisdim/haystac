@@ -64,7 +64,7 @@ CONFIG_RUNTIME = f"{SNAKE_DIR}/config.yaml"
 COMMANDS = ["config", "database", "sample", "analyse"]
 
 DATABASE_MODES = ["fetch", "index", "build"]
-ANALYSIS_MODES = ["filter", "align", "likelihoods", "probabilities", "abundances", "reads", "mapdamage"]
+ANALYSIS_MODES = ["filter", "align", "likelihoods", "probabilities", "abundances", "reads"]
 TAXONOMIC_RANKS = ["genus", "species", "subspecies", "serotype"]
 REFSEQ_TABLES = ["prokaryote_rep", "viruses", "eukaryotes"]
 
@@ -740,6 +740,10 @@ The haystac commands are:
             default=None,
         )
 
+        optional.add_argument(
+            "--mapdamage", help="Perform mapdamage analysis for ancient samples", action="store_true",
+        )
+
         # add the common arguments
         self._common_arguments(parser)
 
@@ -816,7 +820,7 @@ The haystac commands are:
         elif args.mode == "reads":
             target_list.append(f"dirichlet_reads/{config['sample_prefix']}_dirichlet_reads.done")
 
-        elif args.mode == "mapdamage":
+        if args.mapdamage:
             target_list.append(f"mapdamage/{config['sample_prefix']}_mapdamage.done")
 
         config_analysis = os.path.join(args.analysis_output_dir, config["sample_prefix"] + "_config.yaml")
