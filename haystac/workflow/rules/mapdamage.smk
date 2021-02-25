@@ -36,14 +36,21 @@ rule dedup_merged_mapdamage:
 rule picard_single_mapdamage:
     input:
         bam=(
-            config["analysis_output_dir"] + "/dirichlet_reads/{sample}/{orgname}/{orgname}_{accession}_dirichlet_SE.bam"
+            config["analysis_output_dir"]
+            + "/dirichlet_reads/{sample}/{orgname}/{orgname}_{accession}_dirichlet_{reads}.bam"
         ),
     log:
-        config["analysis_output_dir"] + "/rmdup_bam/{sample}/SE/{orgname}/{orgname}_{accession}_dirichlet_SE_rmdup.log",
+        config[
+            "analysis_output_dir"
+        ] + "/rmdup_bam/{sample}/SE/{orgname}/{orgname}_{accession}_dirichlet_{reads}_rmdup.log",
     output:
-        config["analysis_output_dir"] + "/rmdup_bam/{sample}/SE/{orgname}/{orgname}_{accession}_dirichlet_SE_rmdup.bam",
+        config[
+            "analysis_output_dir"
+        ] + "/rmdup_bam/{sample}/SE/{orgname}/{orgname}_{accession}_dirichlet_{reads}_rmdup.bam",
     params:
-        output=config["analysis_output_dir"] + "/rmdup_bam/{sample}/SE/{orgname}/{orgname}_{accession}_dirichlet_SE",
+        output=(
+            config["analysis_output_dir"] + "/rmdup_bam/{sample}/SE/{orgname}/{orgname}_{accession}_dirichlet_{reads}"
+        ),
     message:
         "Removing duplicate reads that were aligned to taxon {wildcards.orgname}, for sample {wildcards.sample}."
     conda:
@@ -87,7 +94,6 @@ def get_mapdamage_out_dir_paths(wildcards):
         )
 
     if config["read_mode"] == PE:
-        print_warning("dedup treats uncollapsed PE reads as SE. PCR deduplication might not have been done correctly.")
         print_error("mapDamage has not been optimised to analyse paired end alignment data.")
 
     return inputs

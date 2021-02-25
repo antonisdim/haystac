@@ -95,7 +95,9 @@ rule calculate_taxa_probabilities:
 
 rule coverage_counts:
     input:
-        config["analysis_output_dir"] + "/alignments/{sample}/{reads}/{orgname}/{orgname}_{accession}.bam",
+        config[
+            "analysis_output_dir"
+        ] + "/rmdup_bam/{sample}/SE/{orgname}/{orgname}_{accession}_dirichlet_{reads}_rmdup.bam",
     output:
         temp(config["analysis_output_dir"] + "/probabilities/{sample}/{orgname}_cov_count_{accession}_{reads}.txt"),
     message:
@@ -103,12 +105,12 @@ rule coverage_counts:
     conda:
         "../envs/samtools.yaml"
     shell:
-        "(samtools mpileup {input} | "
-        " awk 'NR>1 {{rows++; sum += $4}} END {{print rows, sum}}' OFS='\t'"
+        "(samtools mpileup -a {input} | "
+        " awk '$4 != \"0\" {{rows++; sum += $4}} END {{print NR, rows, sum}}' OFS='\t'"
         ") 1> {output} 2> /dev/null"
 
 
-rule coverage_chi2_contingency_test:
+rule coverage_stats:
     input:
         config["analysis_output_dir"] + "/probabilities/{sample}/{orgname}_cov_count_{accession}_{reads}.txt",
         config["cache"] + "/ncbi/{orgname}/{accession}.fasta.gz.fai",
@@ -117,10 +119,10 @@ rule coverage_chi2_contingency_test:
             config["analysis_output_dir"] + "/probabilities/{sample}/{orgname}_chi2_test_pvalue_{accession}_{reads}.txt"
         ),
     message:
-        "Performing a chi-squared contingency test to assess if reads from sample {wildcards.sample} "
+        "Calculating coverage statistics to assess if reads from sample {wildcards.sample} "
         "represent a random genome sample of taxon {wildcards.orgname}."
     script:
-        "../scripts/coverage_chi2_contingency_test.py"
+        "../scripts/coverage_stats.py"
 
 
 def get_p_values(_):

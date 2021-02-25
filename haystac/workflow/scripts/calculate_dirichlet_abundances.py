@@ -23,27 +23,28 @@ def calculate_dirichlet_abundances(ts_tv_file, p_values_file, total_fastq_reads,
     assert os.stat(p_values_file).st_size, f"The chi-square p values file is empty {p_values_file}"
     assert os.stat(total_fastq_reads).st_size, f"The total fastq reads file is empty {total_fastq_reads}"
 
-    # I calculate the coverage of each taxon from reads in its bam/pileup file. Let's go there
-    cov_p_val = pd.read_csv(
+    # I calculate the coverage, fraction of the covered genome and evenness of coverage of each taxon
+    # from reads in its bam/pileup file. Let's go there
+    cov_val = pd.read_csv(
         p_values_file,
         sep="\t",
-        names=["species", "pvalue", "observed", "expected", "fraction_cov"],
-        usecols=["species", "pvalue", "fraction_cov"],
+        names=["species", "ref_bases_cov", "total_bases_cov", "coverage", "fraction_ref_cov", "cov_evenness"],
+        usecols=["species", "coverage", "fraction_ref_cov", "cov_evenness"],
     )
 
-    chi2_vector = (
-        cov_p_val[["species", "pvalue"]]
-        .fillna(value=1)
+    evenness_vector = (
+        cov_val[["species", "cov_evenness"]]
+        .fillna(value=0)
         .groupby("species")
         .apply(hmean)
         .astype("float64")
         .rename("Taxon")
     )
-    chi2_vector["Dark_Matter"] = np.nan
-    chi2_vector["Grey_Matter"] = np.nan
+    evenness_vector["Dark_Matter"] = np.nan
+    evenness_vector["Grey_Matter"] = np.nan
 
     fraction_vector = (
-        cov_p_val[["species", "fraction_cov"]]
+        cov_val[["species", "fraction_ref_cov"]]
         .fillna(value=0)
         .groupby("species")
         .apply(hmean)
@@ -52,6 +53,17 @@ def calculate_dirichlet_abundances(ts_tv_file, p_values_file, total_fastq_reads,
     )
     fraction_vector["Dark_Matter"] = np.nan
     fraction_vector["Grey_Matter"] = np.nan
+
+    coverage_vector = (
+        cov_val[["species", "coverage"]]
+        .fillna(value=0)
+        .groupby("species")
+        .apply(hmean)
+        .astype("float64")
+        .rename("Taxon")
+    )
+    coverage_vector["Dark_Matter"] = np.nan
+    coverage_vector["Grey_Matter"] = np.nan
 
     ts_tv_matrix = pd.read_csv(ts_tv_file, sep=",", usecols=["Taxon", "Read_ID", "Dirichlet_Assignment"])
 
@@ -92,8 +104,9 @@ def calculate_dirichlet_abundances(ts_tv_file, p_values_file, total_fastq_reads,
     posterior_abundance["Minimum_Read_Num"] = np.nan
     posterior_abundance["Maximum_Read_Num"] = np.nan
     posterior_abundance["Dirichlet_Read_Num"] = np.nan
-    posterior_abundance["Chi2_Contingency_Pvalue"] = np.nan
-    posterior_abundance["Genome_Coverage_Fraction"] = np.nan
+    posterior_abundance["Evenness_of_Coverage_Ratio"] = np.nan
+    posterior_abundance["Fraction_of_Genome_Covered"] = np.nan
+    posterior_abundance["Coverage"] = np.nan
     posterior_abundance["Aligned_Read_Num"] = np.nan
 
     for idx, row in posterior_abundance.iterrows():
@@ -110,9 +123,10 @@ def calculate_dirichlet_abundances(ts_tv_file, p_values_file, total_fastq_reads,
         posterior_abundance.iloc[idx, 4] = round(ci[0] * b)
         posterior_abundance.iloc[idx, 5] = round(ci[1] * b)
         posterior_abundance.iloc[idx, 6] = a.loc[posterior_abundance.iloc[idx, 0]]
-        posterior_abundance.iloc[idx, 7] = chi2_vector.loc[posterior_abundance.iloc[idx, 0]]
+        posterior_abundance.iloc[idx, 7] = evenness_vector.loc[posterior_abundance.iloc[idx, 0]]
         posterior_abundance.iloc[idx, 8] = fraction_vector.loc[posterior_abundance.iloc[idx, 0]]
-        posterior_abundance.iloc[idx, 9] = aln_reads_vector.loc[posterior_abundance.iloc[idx, 0]]
+        posterior_abundance.iloc[idx, 9] = coverage_vector.loc[posterior_abundance.iloc[idx, 0]]
+        posterior_abundance.iloc[idx, 10] = aln_reads_vector.loc[posterior_abundance.iloc[idx, 0]]
 
     with open(sample_abundance, "w") as output_handle:
         posterior_abundance.to_csv(path_or_buf=output_handle, sep="\t", index=False, header=True)
