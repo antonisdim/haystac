@@ -708,18 +708,18 @@ The haystac commands are:
 
         optional.add_argument(
             "--min-prob",
-            help="Minimum posterior probability to assign an aligned read to a given species",
+            help="Minimum posterior probability to assign an aligned read to a given species (default: 0.50)",
             type=FloatRangeType(0, 100),
             metavar="<float>",
-            default=self.config_default["min_prob"],
+            default=argparse.SUPPRESS,
         )
 
         optional.add_argument(
             "--mismatch-probability",
-            help="Base mismatch probability",
+            help="Base mismatch probability (default: 0.15)",
             type=FloatRangeType(0.01, 0.5),
             metavar="<float>",
-            default=self.config_default["mismatch_probability"],
+            default=argparse.SUPPRESS,
         )
 
         optional.add_argument(
@@ -741,7 +741,18 @@ The haystac commands are:
         )
 
         optional.add_argument(
-            "--mapdamage", help="Perform mapdamage analysis for ancient samples", action="store_true",
+            "--mapdamage",
+            help="Perform mapdamage analysis for ancient samples (default: False)",
+            type=BoolType(),
+            metavar="<bool>",
+            default=argparse.SUPPRESS,
+        )
+
+        optional.add_argument(
+            "--aDNA",
+            help="Set new flag defaults for aDNA sample analysis: "
+            "mismatch-probability=0.20, min-prob=0.5, mapdamage=True",
+            action="store_true",
         )
 
         # add the common arguments
@@ -781,8 +792,11 @@ The haystac commands are:
         # Check that the db and sample config params match
         CheckExistingConfig(database_config_file, config_sample)
 
+        # if aDNA set new defaults
+        anc_def = {"mapdamage": True, "min_prob": 0.50, "mismatch_probability": 0.20} if args.aDNA else {}
+
         # add all command line options to the merged config
-        config = {**self.config_merged, **database_config, **sample_config, **vars(args)}
+        config = {**self.config_merged, **database_config, **sample_config, **anc_def, **vars(args)}
 
         # check if a db is built from an older version of haystac
         if isinstance(config["refseq_rep"], bool):
@@ -820,7 +834,8 @@ The haystac commands are:
         elif args.mode == "reads":
             target_list.append(f"dirichlet_reads/{config['sample_prefix']}_dirichlet_reads.done")
 
-        if args.mapdamage:
+        # if mapdamage is true add it to the target list
+        if config["mapdamage"]:
             target_list.append(f"mapdamage/{config['sample_prefix']}_mapdamage.done")
 
         config_analysis = os.path.join(args.analysis_output_dir, config["sample_prefix"] + "_config.yaml")

@@ -349,6 +349,7 @@ class CheckExistingConfig(object):
                         # "resolve_accessions",
                         "rank",
                         "mtDNA",
+                        "aDNA",
                         "seed",
                         "fastq",
                         "fastq_r1",

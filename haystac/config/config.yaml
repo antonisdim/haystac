@@ -29,3 +29,5 @@ min_prob:
   0.5
 bowtie2_threads_aln:
   4
+mapdamage:
+  False
