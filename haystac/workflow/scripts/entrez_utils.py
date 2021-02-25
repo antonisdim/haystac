@@ -243,4 +243,7 @@ def entrez_find_replacement_accession(accession):
         print_warning(f"Replacing the superseded WGS accession '{accession}' with '{replacement.text}'")
         return replacement.text
     else:
-        print_error(f"Could not find either the GenBank record for '{accession}' or a valid alternative accession")
+        print_error(
+            f"Could not find either the GenBank record for '{accession}' or a valid alternative accession. "
+            f"Please consider using the `--exclude-accessions` flag to remove accession '{accession}' from this query."
+        )

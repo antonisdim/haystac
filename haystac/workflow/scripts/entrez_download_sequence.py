@@ -101,7 +101,10 @@ def entrez_download_sequence(accession, output_file, force=False, mtdna=False):
     last = etree.find(".//GBAltSeqItem_last-accn")
 
     if first is None or last is None:
-        print_error(f"Could not download the fasta file for {accession}")
+        print_error(
+            f"Could not download the fasta file for {accession}. Please consider using the `--exclude-accessions` "
+            f"flag to remove accession '{accession}' from this query."
+        )
 
     # get all the related accession codes
     accessions = entrez_range_accessions(accession, first.text, last.text)
@@ -119,7 +122,8 @@ def entrez_download_sequence(accession, output_file, force=False, mtdna=False):
 
     except requests.exceptions.HTTPError:
         print_error(
-            f"Could not download the accession range '{first.text}-{last.text}' for master record '{accession}'"
+            f"Could not download the accession range '{first.text}-{last.text}' for master record '{accession}'. "
+            f"Please consider using the `--exclude-accessions` flag to remove accession '{accession}' from this query."
         )
 
 
