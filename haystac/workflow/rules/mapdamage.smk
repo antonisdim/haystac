@@ -6,7 +6,7 @@ __copyright__ = "Copyright 2020, University of Oxford"
 __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
-from haystac.workflow.scripts.utilities import get_total_paths, PE, print_warning, print_error
+from haystac.workflow.scripts.utilities import get_final_db_paths, PE, print_warning, print_error
 
 
 rule dedup_merged_mapdamage:
@@ -78,7 +78,7 @@ def get_mapdamage_out_dir_paths(wildcards):
     Get all the individual cav file paths for the taxa in our database.
     """
 
-    sequences = get_total_paths(checkpoints, config)
+    sequences = get_final_db_paths(checkpoints)
     inputs = []
 
     for orgname, accession in sequences:

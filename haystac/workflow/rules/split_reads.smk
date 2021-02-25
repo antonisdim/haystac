@@ -7,7 +7,7 @@ __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
 from haystac.cli import CODE_DIR
-from haystac.workflow.scripts.utilities import get_total_paths, PE
+from haystac.workflow.scripts.utilities import get_final_db_paths, PE
 
 
 rule get_dirichlet_reads:
@@ -114,7 +114,7 @@ def get_dirichlet_bams(_):
         + f"{orgname}/{orgname}_{accession}_dirichlet_"
         + config["read_mode"]
         + ".bam"
-        for orgname, accession in get_total_paths(checkpoints, config)
+        for orgname, accession in get_final_db_paths(checkpoints)
     ]
 
 

@@ -13,7 +13,7 @@ MIN_FRAG_LEN = 0
 MAX_FRAG_LEN = 1000
 META_ALN_MIN_SCORE_CONSTANT = -6  # bowtie2 default base mismatch penalty value
 
-from haystac.workflow.scripts.utilities import get_total_paths
+from haystac.workflow.scripts.utilities import get_final_db_paths
 
 
 # noinspection PyUnusedLocal,PyShadowingBuiltins,PyShadowingNames
@@ -108,7 +108,7 @@ def get_accession_alignments(_):
         + "/alignments/{sample}/"
         + config["read_mode"]
         + f"/{orgname}/{orgname}_{accession}.bam"
-        for orgname, accession in get_total_paths(checkpoints, config)
+        for orgname, accession in get_final_db_paths(checkpoints)
     ]
 
 

@@ -9,7 +9,7 @@ __license__ = "MIT"
 import os
 from itertools import chain
 
-from haystac.workflow.scripts.utilities import get_total_paths
+from haystac.workflow.scripts.utilities import get_final_db_paths
 
 
 rule samtools_index_accession:
@@ -58,7 +58,7 @@ def get_index_paths(_):
                 config["cache"] + f"/ncbi/{orgname}/{accession}.1.bt2l",
                 config["cache"] + f"/ncbi/{orgname}/{accession}.fasta.gz.fai",
             )
-            for orgname, accession in get_total_paths(checkpoints, config)
+            for orgname, accession in get_final_db_paths(checkpoints)
         )
     )
 

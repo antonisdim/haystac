@@ -14,14 +14,14 @@ from psutil import virtual_memory
 MEGABYTE = float(1024 ** 2)
 MAX_MEM_MB = virtual_memory().total / MEGABYTE
 
-from haystac.workflow.scripts.utilities import get_total_paths
+from haystac.workflow.scripts.utilities import get_final_db_paths
 
 
 def get_db_accessions(_):
     """Get fasta paths in our db"""
     return [
         config["cache"] + f"/ncbi/{orgname}/{accession}.fasta.gz"
-        for orgname, accession in get_total_paths(checkpoints, config)
+        for orgname, accession in get_final_db_paths(checkpoints)
     ]
 
 

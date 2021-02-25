@@ -72,7 +72,7 @@ def get_all_accessions(_):
     ]
 
 
-rule entrez_db_list:
+checkpoint entrez_db_list:
     input:
         get_all_accessions,
     log:

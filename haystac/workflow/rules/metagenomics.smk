@@ -6,7 +6,7 @@ __copyright__ = "Copyright 2020, University of Oxford"
 __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
-from haystac.workflow.scripts.utilities import get_total_paths, PE
+from haystac.workflow.scripts.utilities import get_final_db_paths, PE
 
 
 def get_bams_for_ts_tv_count(wildcards):
@@ -37,7 +37,7 @@ def get_counts(_):
     """Get ts and tv count file paths"""
     return [
         config["analysis_output_dir"] + "/ts_tv_counts/{sample}/" + f"{orgname}_count_{accession}.csv"
-        for orgname, accession in get_total_paths(checkpoints, config)
+        for orgname, accession in get_final_db_paths(checkpoints)
     ]
 
 
@@ -131,7 +131,7 @@ def get_p_values(_):
         + f"{orgname}_chi2_test_pvalue_{accession}_"
         + config["read_mode"]
         + ".txt"
-        for orgname, accession in get_total_paths(checkpoints, config)
+        for orgname, accession in get_final_db_paths(checkpoints)
     ]
 
 

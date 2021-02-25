@@ -594,12 +594,12 @@ def check_unique_taxa_accs(df, config, user_input, to_check):
                 )
                 print_error(message)
             else:
-                global WARNING_USER
+                # global WARNING_USER
                 for idx, val in df[df["species"].duplicated(keep="first")].iterrows():
                     message += f"Accession {val['AccessionVersion']} for {val['species']} was omitted."
-                    if WARNING_USER == 0:
-                        print_warning(message)
-                WARNING_USER += 1
+                    # if WARNING_USER == 0:
+                    print_warning(message)
+                # WARNING_USER += 1
                 df = df[~df["species"].duplicated(keep="first")]
                 return df
 
@@ -631,21 +631,44 @@ def check_unique_taxa_accs(df, config, user_input, to_check):
                 )
                 print_error(message)
             else:
-                global WARNING_DB
+                # global WARNING_DB
                 for idx, val in df[df["AccessionVersion"].duplicated(keep="first")].iterrows():
                     message += (
                         f"{val['species']} has been excluded. It is strongly advised to "
                         f"check the latest taxonomy info on NCBI."
                     )
-                    if WARNING_DB == 0:
-                        print_warning(message)
-                WARNING_DB += 1
+                    # if WARNING_DB == 0:
+                    print_warning(message)
+                # WARNING_DB += 1
                 df = df[~df["AccessionVersion"].duplicated(keep="first")]
                 return df
 
         # if all good return df as id
         else:
             return df
+
+
+def get_final_db_paths(checkpoints):
+    """Get all the taxon/acc pairs for the taxa in our database."""
+
+    db_sequences = checkpoints.entrez_db_list.get()
+    sequences_df = pd.read_csv(db_sequences.output[0], sep="\t", names=["species", "AccessionVersion"])
+
+    assert len(sequences_df) > 0, (
+        f"The db file containing the taxon/accession pairs is empty {db_sequences.output[0]}. "
+        f"Please rebuild the database."
+    )
+
+    inputs = []
+
+    for key, seq in sequences_df.iterrows():
+        orgname, accession = (
+            normalise_name(seq["species"]),
+            seq["AccessionVersion"],
+        )
+        inputs.append((orgname, accession))
+
+    return inputs
 
 
 def chunker(seq, size):
