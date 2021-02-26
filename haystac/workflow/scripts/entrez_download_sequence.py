@@ -32,11 +32,14 @@ def download_entrez_ftp(ftp_url, output_file, attempt=1):
     if get_smk_config().get("debug"):
         print(ftp_url)
 
+    # set bash strict mode in case the bgzip command fails
+    strict_mode = "set -euo pipefail; "
+
     # stream the file from the remote FTP server and recode on the fly into bgzip format
     cmd = f"bgzip -cd '{ftp_url}' | bgzip -c > {output_file}"
 
     # run the command
-    proc = subprocess.Popen(cmd, shell=True)
+    proc = subprocess.Popen(strict_mode + cmd, shell=True)
 
     # fetch any output and error
     (out, err) = proc.communicate()
