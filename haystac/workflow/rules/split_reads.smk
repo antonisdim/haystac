@@ -16,101 +16,91 @@ rule get_dirichlet_reads:
         dirichlet_matrix=(
             config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_likelihood_ts_tv_matrix.csv"
         ),
+    log:
+        config["analysis_output_dir"]
+        +"/dirichlet_reads/{sample}/{orgname}/{orgname}_{accession}_dirichlet_{reads}.log",
     output:
-        config[
-            "analysis_output_dir"
-        ] + "/dirichlet_reads/{sample}/{orgname}/{orgname}_{accession}_dirichlet_{reads}.bam",
+        bam_out=(
+            config["analysis_output_dir"]
+            + "/dirichlet_reads/{sample}/{orgname}/{orgname}_{accession}_dirichlet_{reads}.bam"
+        ),
+        read_list=temp(
+            config["analysis_output_dir"]
+            + "/dirichlet_reads/{sample}/{orgname}/{orgname}_{accession}_dirichlet_{reads}_list.txt"
+        ),
     message:
         "Preparing bam files with the Dirichlet assigned reads for taxon {wildcards.orgname} "
-        "for sample {wildcards.sample} "
-    script:
-        "../scripts/get_dirichlet_reads.py"
+        "for sample {wildcards.sample}"
+    conda:
+        "../envs/picard.yaml"
+    shell:
+        "awk -F, '$1 == \"{wildcards.orgname}\"' {input.dirichlet_matrix} | "
+        "awk -F, '$7 == \"1.0\" {{print $2}}' > {output.read_list};  "
+        "if [ $(cat {output.read_list}  | wc -l) == '0' ]; "
+        "then samtools view -b {input.bam_file} -H -o {output.bam_out}; "
+        "else (picard FilterSamReads --INPUT {input.bam_file} --OUTPUT {output.bam_out} "
+        "--READ_LIST_FILE {output.read_list} --SORT_ORDER coordinate --FILTER includeReadList) 2> {log}; "
+        "fi"
 
 
-rule get_grey_matter_reads_se:
+def get_sample_bam(wildcards):
+    """Function to get the correct bam file for matters"""
+
+    return config["analysis_output_dir"] + "/bam/" + config["read_mode"] + f"_{wildcards.sample}_sorted.bam"
+
+
+rule get_grey_matter_reads:
     input:
-        fastq=config["analysis_output_dir"] + "/fastq/SE/{sample}_mapq.fastq.gz",
+        bam=get_sample_bam,
         dirichlet_matrix=(
             config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_likelihood_ts_tv_matrix.csv"
         ),
+    log:
+        config["analysis_output_dir"] + "/dirichlet_reads/{sample}/Grey_Matter/Grey_Matter_dirichlet_list.log",
     output:
-        config["analysis_output_dir"] + "/dirichlet_reads/{sample}/Grey_Matter/Grey_Matter_dirichlet.fastq.gz",
+        read_list=temp(
+            config["analysis_output_dir"] + "/dirichlet_reads/{sample}/Grey_Matter/Grey_Matter_dirichlet_list.txt"
+        ),
+        bam_out=config["analysis_output_dir"] + "/dirichlet_reads/{sample}/Grey_Matter/Grey_Matter_dirichlet.bam",
     message:
         "Preparing fastq files with all the reads that got assigned to the Grey Matter for sample {wildcards.sample}."
+    conda:
+        "../envs/picard.yaml"
     shell:
-        "python {CODE_DIR}/workflow/scripts/get_matter_reads.py --input_fastq {input.fastq} "
-        "--matrix_file {input.dirichlet_matrix} --output_fastq {output} --matter grey"
+        "awk -F, 'NR>1 {{arr[$2]+=$7}} END {{for (a in arr) print a, arr[a]}}' {input.dirichlet_matrix} | "
+        "awk '$2 == 0 {{print $1}}' > {output.read_list};"
+        "if [ $(cat {output.read_list}  | wc -l) == '0' ]; "
+        "then samtools view -b {input.bam} -H -o {output.bam_out}; "
+        "else (picard FilterSamReads --INPUT {input.bam} --OUTPUT {output.bam_out} "
+        "--READ_LIST_FILE {output.read_list} --SORT_ORDER coordinate --FILTER includeReadList) 2> {log}; "
+        "fi"
 
 
-rule get_grey_matter_reads_pe:
+rule get_dark_matter_reads:
     input:
-        fastq_r1=config["analysis_output_dir"] + "/fastq/PE/{sample}_R1_mapq.fastq.gz",
-        fastq_r2=config["analysis_output_dir"] + "/fastq/PE/{sample}_R2_mapq.fastq.gz",
-        dirichlet_matrix=(
-            config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_likelihood_ts_tv_matrix.csv"
-        ),
+        bam=get_sample_bam,
+    log:
+        config["analysis_output_dir"] + "/dirichlet_reads/{sample}/Dark_Matter/Dark_Matter_dirichlet.log",
     output:
-        out_r1=(
-            config["analysis_output_dir"] + "/dirichlet_reads/{sample}/Grey_Matter/Grey_Matter_dirichlet_R1.fastq.gz"
+        temp_sample_bam=temp(
+            config["analysis_output_dir"] + "/dirichlet_reads/{sample}/Dark_Matter/{sample}_pic_sort.bam"
         ),
-        out_r2=(
-            config["analysis_output_dir"] + "/dirichlet_reads/{sample}/Grey_Matter/Grey_Matter_dirichlet_R2.fastq.gz"
-        ),
-    message:
-        "Preparing fastq files with all the reads that got assigned to the Grey Matter for sample {wildcards.sample}."
-    shell:
-        "python {CODE_DIR}/workflow/scripts/get_matter_reads.py --input_fastq {input.fastq_r1} "
-        "--matrix_file {input.dirichlet_matrix} "
-        "--output_fastq {output.out_r1} --matter grey; python ../scripts/get_matter_reads.py "
-        "--input_fastq {input.fastq_r2} --matrix_file {input.dirichlet_matrix} --output_fastq {output.out_r2} "
-        "--matter grey"
-
-
-rule get_dark_matter_reads_se:
-    input:
-        fastq=config["fastq"] if config["fastq"] else config["fastq_r1"],
-        dirichlet_matrix=(
-            config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_likelihood_ts_tv_matrix.csv"
-        ),
-    output:
-        config["analysis_output_dir"] + "/dirichlet_reads/{sample}/Dark_Matter/Dark_Matter_dirichlet.fastq.gz",
+        dark_bam=config["analysis_output_dir"] + "/dirichlet_reads/{sample}/Dark_Matter/Dark_Matter_dirichlet.bam",
     message:
         "Preparing fastq files with all the reads that got assigned to the Dark Matter for sample {wildcards.sample}."
+    conda:
+        "../envs/picard.yaml"
     shell:
-        "python {CODE_DIR}/workflow/scripts/get_matter_reads.py --input_fastq {input.fastq} "
-        "--matrix_file {input.dirichlet_matrix} "
-        "--output_fastq {output} --matter dark"
+        "(picard SortSam --INPUT {input.bam} --OUTPUT {output.temp_sample_bam} --SORT_ORDER queryname; "
+        "picard FilterSamReads --INPUT {output.temp_sample_bam} --OUTPUT {output.dark_bam} "
+        "--SORT_ORDER coordinate --FILTER excludeAligned) 2> {log}"
 
 
-rule get_dark_matter_reads_pe:
-    input:
-        fastq_r1=config["fastq_r1"] if config["fastq_r1"] else config["fastq"],
-        fastq_r2=config["fastq_r2"],
-        dirichlet_matrix=(
-            config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_likelihood_ts_tv_matrix.csv"
-        ),
-    output:
-        out_r1=(
-            config["analysis_output_dir"] + "/dirichlet_reads/{sample}/Dark_Matter/Dark_Matter_dirichlet_R1.fastq.gz"
-        ),
-        out_r2=(
-            config["analysis_output_dir"] + "/dirichlet_reads/{sample}/Dark_Matter/Dark_Matter_dirichlet_R2.fastq.gz"
-        ),
-    message:
-        "Preparing fastq files with all the reads that got assigned to the Dark Matter for sample {wildcards.sample}."
-    shell:
-        "python {CODE_DIR}/workflow/scripts/get_matter_reads.py --input_fastq {input.fastq_r1} "
-        "--matrix_file {input.dirichlet_matrix} "
-        "--output_fastq {output.out_r1} --matter dark; python ../scripts/get_matter_reads.py "
-        "--input_fastq {input.fastq_r2} --matrix_file {input.dirichlet_matrix} --output_fastq {output.out_r2} "
-        "--matter dark"
-
-
-def get_dirichlet_bams(_):
+def get_dirichlet_bams(wildcards):
     """Get paths for dirichlet assigned reads in bams"""
     return [
         config["analysis_output_dir"]
-        + "/dirichlet_reads/{sample}/"
+        + f"/dirichlet_reads/{wildcards.sample}/"
         + f"{orgname}/{orgname}_{accession}_dirichlet_"
         + config["read_mode"]
         + ".bam"
@@ -121,16 +111,8 @@ def get_dirichlet_bams(_):
 rule all_dirichlet:
     input:
         get_dirichlet_bams,
-        [
-            config["analysis_output_dir"] + "/dirichlet_reads/{sample}/Grey_Matter/Grey_Matter_dirichlet_R1.fastq.gz"
-            if config["read_mode"] == PE
-            else config["analysis_output_dir"] + "/dirichlet_reads/{sample}/Grey_Matter/Grey_Matter_dirichlet.fastq.gz"
-        ],
-        [
-            config["analysis_output_dir"] + "/dirichlet_reads/{sample}/Dark_Matter/Dark_Matter_dirichlet_R1.fastq.gz"
-            if config["read_mode"] == PE
-            else config["analysis_output_dir"] + "/dirichlet_reads/{sample}/Dark_Matter/Dark_Matter_dirichlet.fastq.gz"
-        ],
+        config["analysis_output_dir"] + "/dirichlet_reads/{sample}/Grey_Matter/Grey_Matter_dirichlet.bam",
+        config["analysis_output_dir"] + "/dirichlet_reads/{sample}/Dark_Matter/Dark_Matter_dirichlet.bam",
     output:
         config["analysis_output_dir"] + "/dirichlet_reads/{sample}_dirichlet_reads.done",
     message:
