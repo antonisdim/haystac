@@ -21,7 +21,8 @@ def entrez_pick_sequences(config, nuccore_file, taxa_file, output_file):
     sequences = sequences[~sequences[rank].isnull()]
 
     selected_sequences = sequences.loc[
-        sequences.groupby(rank)["Length"].idxmax(), ["species", "AccessionVersion"],
+        sequences.groupby(rank)["Length"].idxmax(),
+        ["species", "AccessionVersion"],
     ]
 
     if config["refseq_rep"]:
@@ -53,13 +54,21 @@ def entrez_pick_sequences(config, nuccore_file, taxa_file, output_file):
 
     if config["sequences"]:
         custom_fasta_paths = pd.read_csv(
-            config["sequences"], sep="\t", header=None, names=["species", "accession", "path"],
+            config["sequences"],
+            sep="\t",
+            header=None,
+            names=["species", "accession", "path"],
         )
 
         selected_sequences = selected_sequences[(~selected_sequences["species"].isin(custom_fasta_paths["species"]))]
 
     if config["accessions"]:
-        custom_accessions = pd.read_csv(config["accessions"], sep="\t", header=None, names=["species", "accession"],)
+        custom_accessions = pd.read_csv(
+            config["accessions"],
+            sep="\t",
+            header=None,
+            names=["species", "accession"],
+        )
 
         selected_sequences = selected_sequences[(~selected_sequences["species"].isin(custom_accessions["species"]))]
 

@@ -15,7 +15,9 @@ from haystac.workflow.scripts.utilities import REGEX_BLACKLIST, print_error
 
 
 def entrez_refseq_virus_create_files(
-    config, input_file, viral_genomes_out,
+    config,
+    input_file,
+    viral_genomes_out,
 ):
 
     """Function to parse the refseq genomes report for viruses."""
@@ -75,12 +77,18 @@ def entrez_refseq_virus_create_files(
         user_inputs = []
         if os.path.isfile(config["sequences"]):
             custom_fasta_paths = pd.read_csv(
-                config["sequences"], sep="\t", header=None, names=["species", "accession", "path"],
+                config["sequences"],
+                sep="\t",
+                header=None,
+                names=["species", "accession", "path"],
             )
             user_inputs.append(custom_fasta_paths)
         if os.path.isfile(config["accessions"]):
             custom_accessions = pd.read_csv(
-                config["accessions"], sep="\t", header=None, names=["species", "accession"],
+                config["accessions"],
+                sep="\t",
+                header=None,
+                names=["species", "accession"],
             )
             user_inputs.append(custom_accessions)
 
@@ -99,5 +107,7 @@ if __name__ == "__main__":
 
     # noinspection PyUnresolvedReferences
     entrez_refseq_virus_create_files(
-        config=snakemake.config, input_file=snakemake.input[0], viral_genomes_out=snakemake.output[0],
+        config=snakemake.config,
+        input_file=snakemake.input[0],
+        viral_genomes_out=snakemake.output[0],
     )

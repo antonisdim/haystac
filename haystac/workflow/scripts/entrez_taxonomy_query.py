@@ -81,5 +81,6 @@ def entrez_taxonomy_query(nuccore_file, output_file):
 if __name__ == "__main__":
     # noinspection PyUnresolvedReferences
     entrez_taxonomy_query(
-        nuccore_file=snakemake.input[0], output_file=snakemake.output[0],
+        nuccore_file=snakemake.input[0],
+        output_file=snakemake.output[0],
     )

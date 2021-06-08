@@ -15,10 +15,10 @@ rule get_dirichlet_reads:
         bam_file=config["analysis_output_dir"] + "/alignments/{sample}/{reads}/{orgname}/{orgname}_{accession}.bam",
         dirichlet_matrix=(
             config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_likelihood_ts_tv_matrix.csv"
-        ),
+        )
     log:
         config["analysis_output_dir"]
-        +"/dirichlet_reads/{sample}/{orgname}/{orgname}_{accession}_dirichlet_{reads}.log",
+        +"/dirichlet_reads/{sample}/{orgname}/{orgname}_{accession}_dirichlet_{reads}.log"
     output:
         bam_out=(
             config["analysis_output_dir"]
@@ -27,7 +27,7 @@ rule get_dirichlet_reads:
         read_list=temp(
             config["analysis_output_dir"]
             + "/dirichlet_reads/{sample}/{orgname}/{orgname}_{accession}_dirichlet_{reads}_list.txt"
-        ),
+        )
     message:
         "Preparing bam files with the Dirichlet assigned reads for taxon {wildcards.orgname} "
         "for sample {wildcards.sample}"
@@ -54,14 +54,14 @@ rule get_grey_matter_reads:
         bam=get_sample_bam,
         dirichlet_matrix=(
             config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_likelihood_ts_tv_matrix.csv"
-        ),
+        )
     log:
-        config["analysis_output_dir"] + "/dirichlet_reads/{sample}/Grey_Matter/Grey_Matter_dirichlet_list.log",
+        config["analysis_output_dir"] + "/dirichlet_reads/{sample}/Grey_Matter/Grey_Matter_dirichlet_list.log"
     output:
         read_list=temp(
             config["analysis_output_dir"] + "/dirichlet_reads/{sample}/Grey_Matter/Grey_Matter_dirichlet_list.txt"
         ),
-        bam_out=config["analysis_output_dir"] + "/dirichlet_reads/{sample}/Grey_Matter/Grey_Matter_dirichlet.bam",
+        bam_out=config["analysis_output_dir"] + "/dirichlet_reads/{sample}/Grey_Matter/Grey_Matter_dirichlet.bam"
     message:
         "Preparing fastq files with all the reads that got assigned to the Grey Matter for sample {wildcards.sample}."
     conda:
@@ -78,14 +78,14 @@ rule get_grey_matter_reads:
 
 rule get_dark_matter_reads:
     input:
-        bam=get_sample_bam,
+        bam=get_sample_bam
     log:
-        config["analysis_output_dir"] + "/dirichlet_reads/{sample}/Dark_Matter/Dark_Matter_dirichlet.log",
+        config["analysis_output_dir"] + "/dirichlet_reads/{sample}/Dark_Matter/Dark_Matter_dirichlet.log"
     output:
         temp_sample_bam=temp(
             config["analysis_output_dir"] + "/dirichlet_reads/{sample}/Dark_Matter/{sample}_pic_sort.bam"
         ),
-        dark_bam=config["analysis_output_dir"] + "/dirichlet_reads/{sample}/Dark_Matter/Dark_Matter_dirichlet.bam",
+        dark_bam=config["analysis_output_dir"] + "/dirichlet_reads/{sample}/Dark_Matter/Dark_Matter_dirichlet.bam"
     message:
         "Preparing fastq files with all the reads that got assigned to the Dark Matter for sample {wildcards.sample}."
     conda:
@@ -112,9 +112,9 @@ rule all_dirichlet:
     input:
         get_dirichlet_bams,
         config["analysis_output_dir"] + "/dirichlet_reads/{sample}/Grey_Matter/Grey_Matter_dirichlet.bam",
-        config["analysis_output_dir"] + "/dirichlet_reads/{sample}/Dark_Matter/Dark_Matter_dirichlet.bam",
+        config["analysis_output_dir"] + "/dirichlet_reads/{sample}/Dark_Matter/Dark_Matter_dirichlet.bam"
     output:
-        config["analysis_output_dir"] + "/dirichlet_reads/{sample}_dirichlet_reads.done",
+        config["analysis_output_dir"] + "/dirichlet_reads/{sample}_dirichlet_reads.done"
     message:
         "All the dirichlet assigned reads have been put in bam files for {wildcards.sample}."
     shell:

@@ -11,7 +11,7 @@ from haystac.workflow.scripts.utilities import get_total_paths
 
 rule entrez_nuccore_query:
     output:
-        config["db_output"] + "/entrez/entrez-nuccore.tsv",
+        config["db_output"] + "/entrez/entrez-nuccore.tsv"
     message:
         "Fetching sequence metadata from the NCBI Nucleotide database for the query."
     script:
@@ -20,13 +20,13 @@ rule entrez_nuccore_query:
 
 rule entrez_taxa_query:
     input:
-        config["db_output"] + "/entrez/entrez-nuccore.tsv",
+        config["db_output"] + "/entrez/entrez-nuccore.tsv"
     output:
-        config["db_output"] + "/entrez/entrez-taxa.tsv",
+        config["db_output"] + "/entrez/entrez-taxa.tsv"
     message:
         "Querying the NCBI Taxonomy database and fetching taxonomic metadata."
     resources:
-        entrez_api=1,
+        entrez_api=1
     script:
         "../scripts/entrez_taxonomy_query.py"
 
@@ -42,9 +42,9 @@ checkpoint entrez_pick_sequences:
     input:
         nuccore=config["db_output"] + "/entrez/entrez-nuccore.tsv",
         taxonomy=config["db_output"] + "/entrez/entrez-taxa.tsv",
-        priority=pick_after_refseq_prok,
+        priority=pick_after_refseq_prok
     output:
-        config["db_output"] + "/entrez/entrez-selected-seqs.tsv",
+        config["db_output"] + "/entrez/entrez-selected-seqs.tsv"
     message:
         "Selecting the longest sequence per taxon in the entrez query."
     script:
@@ -53,13 +53,13 @@ checkpoint entrez_pick_sequences:
 
 rule entrez_download_sequence:
     output:
-        config["cache"] + "/ncbi/{orgname}/{accession}.fasta.gz",
+        config["cache"] + "/ncbi/{orgname}/{accession}.fasta.gz"
     message:
         "Downloading accession {wildcards.accession} for taxon {wildcards.orgname}."
     wildcard_constraints:
-        accession="[^-]+",
+        accession="[^-]+"
     resources:
-        entrez_api=1,
+        entrez_api=1
     script:
         "../scripts/entrez_download_sequence.py"
 
@@ -74,11 +74,11 @@ def get_all_accessions(_):
 
 checkpoint entrez_db_list:
     input:
-        get_all_accessions,
+        get_all_accessions
     log:
-        config["db_output"] + "/db_taxa_accessions.log",
+        config["db_output"] + "/db_taxa_accessions.log"
     output:
-        config["db_output"] + "/db_taxa_accessions.tsv",
+        config["db_output"] + "/db_taxa_accessions.tsv"
     message:
         "Aggregating all the species/accession pairs that exist in the database."
     script:

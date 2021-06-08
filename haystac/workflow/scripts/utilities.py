@@ -169,7 +169,12 @@ class SpreadsheetFileType(object):
             raise argparse.ArgumentTypeError(f"'{value}' is empty")
 
         try:
-            self.data = pd.read_table(value, sep="\t", header=None, index_col=False,)
+            self.data = pd.read_table(
+                value,
+                sep="\t",
+                header=None,
+                index_col=False,
+            )
         except Exception:
             raise argparse.ArgumentTypeError(f"'{value}' unknown error parsing file")
 
@@ -423,7 +428,8 @@ class BatchType(object):
 
 
 def get_total_paths(
-    checkpoints, config,
+    checkpoints,
+    config,
 ):
     """
     Get all the individual fasta file paths for the taxa in our database.
@@ -490,7 +496,10 @@ def get_total_paths(
 
     if config["sequences"]:
         custom_fasta_paths = pd.read_csv(
-            config["sequences"], sep="\t", header=None, names=["species", "AccessionVersion", "path"],
+            config["sequences"],
+            sep="\t",
+            header=None,
+            names=["species", "AccessionVersion", "path"],
         )
         custom_fasta_paths = check_unique_taxa_accs(custom_fasta_paths, config, config["sequences"], "user_file")
 
@@ -501,7 +510,10 @@ def get_total_paths(
 
     if config["accessions"]:
         custom_accessions = pd.read_csv(
-            config["accessions"], sep="\t", header=None, names=["species", "AccessionVersion"],
+            config["accessions"],
+            sep="\t",
+            header=None,
+            names=["species", "AccessionVersion"],
         )
         custom_accessions = check_unique_taxa_accs(custom_accessions, config, config["accessions"], "user_file")
 
@@ -673,7 +685,7 @@ def get_final_db_paths(checkpoints):
 
 
 def chunker(seq, size):
-    return (seq[pos : pos + size] for pos in range(0, len(seq), size))
+    return (seq[pos: pos + size] for pos in range(0, len(seq), size))
 
 
 def md5(filename):

@@ -26,12 +26,22 @@ def calculate_taxa_probabilities(ts_tv_matrix_file, params_file, sample_name, to
     print("all taxa", "\t", sample_name, file=sys.stderr)
 
     calculate_probabilities(
-        ts_tv_matrix_file, params_file, sample_name, total_fastq_reads, output_file, submatrix="all taxa",
+        ts_tv_matrix_file,
+        params_file,
+        sample_name,
+        total_fastq_reads,
+        output_file,
+        submatrix="all taxa",
     )
 
 
 def calculate_probabilities(
-    ts_tv_matrix_file, params_file, sample_name, total_fastq_reads, output_file, submatrix,
+    ts_tv_matrix_file,
+    params_file,
+    sample_name,
+    total_fastq_reads,
+    output_file,
+    submatrix,
 ):
     total_fastq_reads = float(open(total_fastq_reads, "r").read())
 

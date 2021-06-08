@@ -525,19 +525,31 @@ The haystac commands are:
         choice = parser.add_argument_group("Required choice")
 
         choice.add_argument(
-            "--fastq", help="Single-end fastq input file (optionally compressed).", metavar="<path>", type=FastqFile(),
+            "--fastq",
+            help="Single-end fastq input file (optionally compressed).",
+            metavar="<path>",
+            type=FastqFile(),
         )
 
         choice.add_argument(
-            "--fastq-r1", help="Paired-end forward strand (R1) fastq input file.", metavar="<path>", type=FastqFile(),
+            "--fastq-r1",
+            help="Paired-end forward strand (R1) fastq input file.",
+            metavar="<path>",
+            type=FastqFile(),
         )
 
         choice.add_argument(
-            "--fastq-r2", help="Paired-end reverse strand (R2) fastq input file.", metavar="<path>", type=FastqFile(),
+            "--fastq-r2",
+            help="Paired-end reverse strand (R2) fastq input file.",
+            metavar="<path>",
+            type=FastqFile(),
         )
 
         choice.add_argument(
-            "--sra", help="Download fastq input from the SRA database", type=SraAccessionType(), metavar="<accession>",
+            "--sra",
+            help="Download fastq input from the SRA database",
+            type=SraAccessionType(),
+            metavar="<accession>",
         )
 
         optional = parser.add_argument_group("Optional arguments")
@@ -877,11 +889,15 @@ The haystac commands are:
         )
 
         common.add_argument(
-            "--unlock", help="Unlock the output directory following a crash or hard restart", action="store_true",
+            "--unlock",
+            help="Unlock the output directory following a crash or hard restart",
+            action="store_true",
         )
 
         common.add_argument(
-            "--debug", help="Enable debugging mode", action="store_true",
+            "--debug",
+            help="Enable debugging mode",
+            action="store_true",
         )
 
         common.add_argument(

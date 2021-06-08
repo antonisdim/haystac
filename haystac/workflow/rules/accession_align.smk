@@ -26,19 +26,19 @@ rule bowtie_align_accession_single_end:
     input:
         fastq=config["analysis_output_dir"] + "/fastq/{read_mode}/{sample}_mapq.fastq.gz",
         db_idx=config["cache"] + "/ncbi/{orgname}/{accession}.1.bt2l",
-        readlen=config["analysis_output_dir"] + "/fastq/{read_mode}/{sample}_mapq.readlen",
+        readlen=config["analysis_output_dir"] + "/fastq/{read_mode}/{sample}_mapq.readlen"
     log:
-        config["analysis_output_dir"] + "/alignments/{sample}/{read_mode}/{orgname}/{accession}.log",
+        config["analysis_output_dir"] + "/alignments/{sample}/{read_mode}/{orgname}/{accession}.log"
     output:
         bam_file=(
             config["analysis_output_dir"] + "/alignments/{sample}/{read_mode}/{orgname}/{orgname}_{accession}.bam"
         ),
         bai_file=(
             config["analysis_output_dir"] + "/alignments/{sample}/{read_mode}/{orgname}/{orgname}_{accession}.bam.bai"
-        ),
+        )
     params:
         min_score=get_min_score,
-        basename=config["cache"] + "/ncbi/{orgname}/{accession}",
+        basename=config["cache"] + "/ncbi/{orgname}/{accession}"
     threads: config["bowtie2_threads_aln"]
     resources:
         mem_mb=(
@@ -46,9 +46,9 @@ rule bowtie_align_accession_single_end:
                 config["cache"] + f"/ncbi/{wildcards.orgname}/{wildcards.accession}.fasta.gz"
             ).st_size
             * 5
-        ),
+        )
     wildcard_constraints:
-        read_mode="(SE|COLLAPSED)",
+        read_mode="(SE|COLLAPSED)"
     message:
         "Aligning the filtered reads from sample {wildcards.sample} against taxon {wildcards.orgname}."
     conda:
@@ -66,19 +66,19 @@ rule bowtie_align_accession_paired_end:
         fastq_r1=config["analysis_output_dir"] + "/fastq/PE/{sample}_mapq_R1.fastq.gz",
         fastq_r2=config["analysis_output_dir"] + "/fastq/PE/{sample}_mapq_R2.fastq.gz",
         db_idx=config["cache"] + "/ncbi/{orgname}/{accession}.1.bt2l",
-        readlen=config["analysis_output_dir"] + "/fastq/PE/{sample}_mapq_pair.readlen",
+        readlen=config["analysis_output_dir"] + "/fastq/PE/{sample}_mapq_pair.readlen"
     log:
-        config["analysis_output_dir"] + "/alignments/{sample}/{read_mode}/{orgname}/{accession}.log",
+        config["analysis_output_dir"] + "/alignments/{sample}/{read_mode}/{orgname}/{accession}.log"
     output:
         bam_file=(
             config["analysis_output_dir"] + "/alignments/{sample}/{read_mode}/{orgname}/{orgname}_{accession}.bam"
         ),
         bai_file=(
             config["analysis_output_dir"] + "/alignments/{sample}/{read_mode}/{orgname}/{orgname}_{accession}.bam.bai"
-        ),
+        )
     params:
         min_score=get_min_score,
-        basename=config["cache"] + "/ncbi/{orgname}/{accession}",
+        basename=config["cache"] + "/ncbi/{orgname}/{accession}"
     threads: config["bowtie2_threads_aln"]
     resources:
         mem_mb=(
@@ -86,9 +86,9 @@ rule bowtie_align_accession_paired_end:
                 config["cache"] + f"/ncbi/{wildcards.orgname}/{wildcards.accession}.fasta.gz"
             ).st_size
             * 5
-        ),
+        )
     wildcard_constraints:
-        read_mode="(PE)",
+        read_mode="(PE)"
     message:
         "Aligning the filtered reads from sample {wildcards.sample} against taxon {wildcards.orgname}."
     conda:
@@ -114,9 +114,9 @@ def get_accession_alignments(_):
 
 rule align_all_accessions:
     input:
-        get_accession_alignments,
+        get_accession_alignments
     output:
-        config["analysis_output_dir"] + "/alignments/{sample}_{read_mode}_alignments.done",
+        config["analysis_output_dir"] + "/alignments/{sample}_{read_mode}_alignments.done"
     message:
         "All metagenomic alignments are done."
     shell:

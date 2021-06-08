@@ -21,20 +21,20 @@ rule bowtie_align_db_single_end:
             if config["trim_adapters"]
             else config["fastq"]
         ),
-        bt2idx=config["db_output"] + "/bowtie/chunk{chunk_num}.1.bt2l",
+        bt2idx=config["db_output"] + "/bowtie/chunk{chunk_num}.1.bt2l"
     log:
-        config["analysis_output_dir"] + "/bam/{read_mode}_{sample}_chunk{chunk_num}.log",
+        config["analysis_output_dir"] + "/bam/{read_mode}_{sample}_chunk{chunk_num}.log"
     output:
-        bam_file=temp(config["analysis_output_dir"] + "/bam/{read_mode}_{sample}_sorted_chunk{chunk_num}.bam"),
+        bam_file=temp(config["analysis_output_dir"] + "/bam/{read_mode}_{sample}_sorted_chunk{chunk_num}.bam")
     params:
-        index=config["db_output"] + "/bowtie/chunk{chunk_num}",
+        index=config["db_output"] + "/bowtie/chunk{chunk_num}"
     threads: config["cores"]
     resources:
         mem_mb=(
             lambda wildcards: os.stat(config["db_output"] + f"/bowtie/chunk{wildcards.chunk_num}.fasta.gz").st_size * 5
-        ),
+        )
     wildcard_constraints:
-        read_mode="(SE|COLLAPSED)",
+        read_mode="(SE|COLLAPSED)"
     message:
         "The filtering alignment for sample {wildcards.sample}, for index chunk number {wildcards.chunk_num} "
         "is being executed."
@@ -57,20 +57,20 @@ rule bowtie_align_db_paired_end:
             if config["trim_adapters"]
             else config["fastq_r2"]
         ),
-        bt2idx=config["db_output"] + "/bowtie/chunk{chunk_num}.1.bt2l",
+        bt2idx=config["db_output"] + "/bowtie/chunk{chunk_num}.1.bt2l"
     log:
-        config["analysis_output_dir"] + "/bam/{read_mode}_{sample}_chunk{chunk_num}.log",
+        config["analysis_output_dir"] + "/bam/{read_mode}_{sample}_chunk{chunk_num}.log"
     output:
-        bam_file=temp(config["analysis_output_dir"] + "/bam/{read_mode}_{sample}_sorted_chunk{chunk_num}.bam"),
+        bam_file=temp(config["analysis_output_dir"] + "/bam/{read_mode}_{sample}_sorted_chunk{chunk_num}.bam")
     params:
-        index=config["db_output"] + "/bowtie/chunk{chunk_num}",
+        index=config["db_output"] + "/bowtie/chunk{chunk_num}"
     threads: config["cores"]
     resources:
         mem_mb=(
             lambda wildcards: os.stat(config["db_output"] + f"/bowtie/chunk{wildcards.chunk_num}.fasta.gz").st_size * 5
-        ),
+        )
     wildcard_constraints:
-        read_mode="(PE)",
+        read_mode="(PE)"
     message:
         "The filtering alignment for sample {wildcards.sample}, for index chunk number {wildcards.chunk_num} "
         "is being executed."
@@ -96,15 +96,15 @@ def get_db_chunk_alignments(wildcards):
 
 rule merge_db_alignments:
     input:
-        aln_path=get_db_chunk_alignments,
+        aln_path=get_db_chunk_alignments
     log:
-        config["analysis_output_dir"] + "/bam/{read_mode}_{sample}_merge_bams.log",
+        config["analysis_output_dir"] + "/bam/{read_mode}_{sample}_merge_bams.log"
     output:
-        config["analysis_output_dir"] + "/bam/{read_mode}_{sample}_sorted.bam",
+        config["analysis_output_dir"] + "/bam/{read_mode}_{sample}_sorted.bam"
     message:
         "Merging the bam files produced by the filtering alignment stage for sample {wildcards.sample}."
     wildcard_constraints:
-        read_mode="[^-_]+",
+        read_mode="[^-_]+"
     conda:
         "../envs/samtools.yaml"
     shell:
@@ -113,11 +113,11 @@ rule merge_db_alignments:
 
 rule extract_db_fastq_single_end:
     input:
-        config["analysis_output_dir"] + "/bam/{read_mode}_{sample}_sorted.bam",
+        config["analysis_output_dir"] + "/bam/{read_mode}_{sample}_sorted.bam"
     log:
-        config["analysis_output_dir"] + "/fastq/{read_mode}/{sample}_mapq.log",
+        config["analysis_output_dir"] + "/fastq/{read_mode}/{sample}_mapq.log"
     output:
-        config["analysis_output_dir"] + "/fastq/{read_mode}/{sample}_mapq.fastq.gz",
+        config["analysis_output_dir"] + "/fastq/{read_mode}/{sample}_mapq.fastq.gz"
     message:
         "Extracting all the aligned reads for sample {wildcards.sample} and storing them in {output}. "
         "The log file can be found in {log}."
@@ -129,14 +129,14 @@ rule extract_db_fastq_single_end:
 
 rule extract_db_fastq_paired_end:
     input:
-        config["analysis_output_dir"] + "/bam/{read_mode}_{sample}_sorted.bam",
+        config["analysis_output_dir"] + "/bam/{read_mode}_{sample}_sorted.bam"
     log:
-        config["analysis_output_dir"] + "/fastq/{read_mode}/{sample}_mapq.log",
+        config["analysis_output_dir"] + "/fastq/{read_mode}/{sample}_mapq.log"
     output:
         fastq_r1=config["analysis_output_dir"] + "/fastq/{read_mode}/{sample}_mapq_R1.fastq.gz",
         fastq_r2=config["analysis_output_dir"] + "/fastq/{read_mode}/{sample}_mapq_R2.fastq.gz",
         temp_r1=temp(config["analysis_output_dir"] + "/fastq/{read_mode}/{sample}_temp_R1_mapq.fastq.gz"),
-        temp_r2=temp(config["analysis_output_dir"] + "/fastq/{read_mode}/{sample}_temp_R2_mapq.fastq.gz"),
+        temp_r2=temp(config["analysis_output_dir"] + "/fastq/{read_mode}/{sample}_temp_R2_mapq.fastq.gz")
     message:
         "Extracting the aligned reads for sample {wildcards.sample}."
     conda:
@@ -166,11 +166,11 @@ def get_extracted_db_fastq(wildcards):
 
 rule average_fastq_read_len_single_end:
     input:
-        get_extracted_db_fastq,
+        get_extracted_db_fastq
     log:
-        config["analysis_output_dir"] + "/fastq/{read_mode}/{sample}_mapq_readlen.log",
+        config["analysis_output_dir"] + "/fastq/{read_mode}/{sample}_mapq_readlen.log"
     output:
-        config["analysis_output_dir"] + "/fastq/{read_mode}/{sample}_mapq.readlen",
+        config["analysis_output_dir"] + "/fastq/{read_mode}/{sample}_mapq.readlen"
     message:
         "Calculating the average read length for sample {wildcards.sample}."
     conda:
@@ -183,13 +183,13 @@ rule average_fastq_read_len_single_end:
 rule average_fastq_read_len_paired_end:
     input:
         mate1=get_extracted_db_fastq,
-        mate2=config["analysis_output_dir"] + "/fastq/{read_mode}/{sample}_mapq_R2.fastq.gz",
+        mate2=config["analysis_output_dir"] + "/fastq/{read_mode}/{sample}_mapq_R2.fastq.gz"
     log:
-        config["analysis_output_dir"] + "/fastq/{read_mode}/{sample}_mapq_readlen.log",
+        config["analysis_output_dir"] + "/fastq/{read_mode}/{sample}_mapq_readlen.log"
     output:
         mate1=temp(config["analysis_output_dir"] + "/fastq/{read_mode}/{sample}_mapq_R1.readlen"),
         mate2=temp(config["analysis_output_dir"] + "/fastq/{read_mode}/{sample}_mapq_R2.readlen"),
-        pair=config["analysis_output_dir"] + "/fastq/{read_mode}/{sample}_mapq_pair.readlen",
+        pair=config["analysis_output_dir"] + "/fastq/{read_mode}/{sample}_mapq_pair.readlen"
     message:
         "Calculating the average read length for sample {wildcards.sample}."
     conda:

@@ -33,13 +33,15 @@ def entrez_refseq_create_files(
     assemblies["#Species/genus"] = assemblies["#Species/genus"].replace(REGEX_BLACKLIST, "_", regex=True)
 
     nuccore = prok_refseq_rep_rmdup.loc[
-        prok_refseq_rep_rmdup["Chromosome RefSeq"].notna(), ["#Species/genus", "Chromosome RefSeq"],
+        prok_refseq_rep_rmdup["Chromosome RefSeq"].notna(),
+        ["#Species/genus", "Chromosome RefSeq"],
     ]
 
     nuccore["#Species/genus"] = nuccore["#Species/genus"].replace(REGEX_BLACKLIST, "_", regex=True)
 
     genbank = prok_refseq_rep_rmdup.loc[
-        prok_refseq_rep_rmdup["Chromosome GenBank"].notna(), ["#Species/genus", "Chromosome GenBank"],
+        prok_refseq_rep_rmdup["Chromosome GenBank"].notna(),
+        ["#Species/genus", "Chromosome GenBank"],
     ]
 
     genbank["#Species/genus"] = genbank["#Species/genus"].replace(REGEX_BLACKLIST, "_", regex=True)
@@ -99,12 +101,18 @@ def entrez_refseq_create_files(
         user_inputs = []
         if os.path.isfile(config["sequences"]):
             custom_fasta_paths = pd.read_csv(
-                config["sequences"], sep="\t", header=None, names=["species", "accession", "path"],
+                config["sequences"],
+                sep="\t",
+                header=None,
+                names=["species", "accession", "path"],
             )
             user_inputs.append(custom_fasta_paths)
         if os.path.isfile(config["accessions"]):
             custom_accessions = pd.read_csv(
-                config["accessions"], sep="\t", header=None, names=["species", "accession"],
+                config["accessions"],
+                sep="\t",
+                header=None,
+                names=["species", "accession"],
             )
             user_inputs.append(custom_accessions)
 

@@ -117,7 +117,8 @@ def entrez_download_sequence(accession, output_file, force=False, mtdna=False):
             # fetch all the accessions in batches
             for id_list in chunker(accessions, ENTREZ_MAX_UID):
                 r = entrez_request(
-                    "efetch.fcgi", {"db": "nuccore", "id": id_list, "rettype": "fasta", "retmode": "text"},
+                    "efetch.fcgi",
+                    {"db": "nuccore", "id": id_list, "rettype": "fasta", "retmode": "text"},
                 )
 
                 # write the fasta data to our bgzip file

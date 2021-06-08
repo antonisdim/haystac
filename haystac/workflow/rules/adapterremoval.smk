@@ -9,18 +9,18 @@ __license__ = "MIT"
 
 rule adapterremoval_single_end:
     input:
-        fastq=config["fastq"],
+        fastq=config["fastq"]
     log:
-        config["sample_output_dir"] + "/fastq_inputs/SE/{accession}_adRm.log",
+        config["sample_output_dir"] + "/fastq_inputs/SE/{accession}_adRm.log"
     output:
-        config["sample_output_dir"] + "/fastq_inputs/SE/{accession}_adRm.fastq.gz",
+        config["sample_output_dir"] + "/fastq_inputs/SE/{accession}_adRm.fastq.gz"
     message:
         "Trimming sequencing adapters from file {input.fastq}."
     conda:
         "../envs/adapterremoval.yaml"
     threads: config["cores"]
     params:
-        basename=config["sample_output_dir"] + "/fastq_inputs/SE/{accession}",
+        basename=config["sample_output_dir"] + "/fastq_inputs/SE/{accession}"
     shell:
         "(AdapterRemoval"
         "   --file1 {input}"
@@ -36,18 +36,18 @@ rule adapterremoval_single_end:
 rule adapterremoval_collapsed:
     input:
         fastq_r1=config["fastq_r1"],
-        fastq_r2=config["fastq_r2"],
+        fastq_r2=config["fastq_r2"]
     log:
-        config["sample_output_dir"] + "/fastq_inputs/COLLAPSED/{accession}_adRm.log",
+        config["sample_output_dir"] + "/fastq_inputs/COLLAPSED/{accession}_adRm.log"
     output:
-        config["sample_output_dir"] + "/fastq_inputs/COLLAPSED/{accession}_adRm.fastq.gz",
+        config["sample_output_dir"] + "/fastq_inputs/COLLAPSED/{accession}_adRm.fastq.gz"
     message:
         "Trimming sequencing adapters and collapsing reads from files {input.fastq_r1} and {input.fastq_r2}."
     conda:
         "../envs/adapterremoval.yaml"
     threads: config["cores"]
     params:
-        basename=config["sample_output_dir"] + "/fastq_inputs/COLLAPSED/{accession}",
+        basename=config["sample_output_dir"] + "/fastq_inputs/COLLAPSED/{accession}"
     shell:
         "(AdapterRemoval"
         "   --file1 {input.fastq_r1} "
@@ -67,19 +67,19 @@ rule adapterremoval_collapsed:
 rule adapterremoval_paired_end:
     input:
         fastq_r1=config["fastq_r1"],
-        fastq_r2=config["fastq_r2"],
+        fastq_r2=config["fastq_r2"]
     log:
-        config["sample_output_dir"] + "/fastq_inputs/PE/{accession}_adRm.log",
+        config["sample_output_dir"] + "/fastq_inputs/PE/{accession}_adRm.log"
     output:
         fastq_r1=config["sample_output_dir"] + "/fastq_inputs/PE/{accession}_R1_adRm.fastq.gz",
-        fastq_r2=config["sample_output_dir"] + "/fastq_inputs/PE/{accession}_R2_adRm.fastq.gz",
+        fastq_r2=config["sample_output_dir"] + "/fastq_inputs/PE/{accession}_R2_adRm.fastq.gz"
     message:
         "Trimming sequencing adapters from files {input.fastq_r1} and {input.fastq_r2}."
     conda:
         "../envs/adapterremoval.yaml"
     threads: config["cores"]
     params:
-        basename=config["sample_output_dir"] + "/fastq_inputs/PE/{accession}",
+        basename=config["sample_output_dir"] + "/fastq_inputs/PE/{accession}"
     shell:
         "(AdapterRemoval"
         "   --file1 {input.fastq_r1}"

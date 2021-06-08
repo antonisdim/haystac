@@ -135,7 +135,10 @@ def entrez_assembly_ftp(accession, force=False):
         filter_condition += " AND viruses[filter] "
 
     # query the assembly database to get the latest assembly for this accession code
-    key, webenv, id_list = entrez_esearch("assembly", accession + filter_condition,)
+    key, webenv, id_list = entrez_esearch(
+        "assembly",
+        accession + filter_condition,
+    )
 
     if len(id_list) > 1:
         # should never happen, but...
@@ -143,8 +146,8 @@ def entrez_assembly_ftp(accession, force=False):
 
         # if force-accessions is true pick the largest int value, assuming it is also the altest
         if force:
-            msg += f"Using assembly: id pair '{accession}': '{max([int(id) for id in id_list])}'"
-            id_list = [str(max([int(id) for id in id_list]))]
+            msg += f"Using assembly: id pair '{accession}': '{max([int(id_num) for id_num in id_list])}'"
+            id_list = [str(max([int(id_num) for id_num in id_list]))]
             print_warning(msg)
 
         # if not raise an error
@@ -241,7 +244,10 @@ def entrez_find_replacement_accession(accession):
 
     try:
         # send a request and see if we get back an xml result
-        r = entrez_request("efetch.fcgi", {"db": "nuccore", "id": accession_new, "rettype": "gb", "retmode": "xml"},)
+        r = entrez_request(
+            "efetch.fcgi",
+            {"db": "nuccore", "id": accession_new, "rettype": "gb", "retmode": "xml"},
+        )
 
     except requests.exceptions.HTTPError:
         print_error(f"Could not find either the GenBank record for '{accession}' or an alternative accession")
