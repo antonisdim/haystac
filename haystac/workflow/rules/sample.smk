@@ -24,9 +24,9 @@ def get_inputs_for_count_fastq_len(wildcards):
 
 rule count_fastq_length:
     input:
-        fastq=get_inputs_for_count_fastq_len
+        fastq=get_inputs_for_count_fastq_len,
     output:
-        config["sample_output_dir"] + "/fastq_inputs/meta/{sample}.size"
+        config["sample_output_dir"] + "/fastq_inputs/meta/{sample}.size",
     message:
         "Counting the number of reads in sample {wildcards.sample}."
     conda:

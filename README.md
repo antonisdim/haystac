@@ -128,10 +128,11 @@ Before we can confidently conclude that `ERR1018966` contains ancient *Yersinia 
 damage pattern analysis.
 ```
 haystac analyse \
-    --mode mapdamage \
+    --mode abundances \
     --database yersinia_db\
     --sample ERR1018966 \
-    --output yersinia_ERR1018966
+    --output yersinia_ERR1018966 \
+    --mapdamage True
 ```
 
 

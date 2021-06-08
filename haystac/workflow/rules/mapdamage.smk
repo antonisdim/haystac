@@ -14,17 +14,17 @@ rule dedup_merged_mapdamage:
         bam=(
             config["analysis_output_dir"]
             + "/dirichlet_reads/{sample}/{orgname}/{orgname}_{accession}_dirichlet_COLLAPSED.bam"
-        )
+        ),
     log:
         config[
             "analysis_output_dir"
-        ] + "/rmdup_bam/{sample}/COLLAPSED/{orgname}/{orgname}_{accession}_dirichlet_COLLAPSED_rmdup.log"
+        ] + "/rmdup_bam/{sample}/COLLAPSED/{orgname}/{orgname}_{accession}_dirichlet_COLLAPSED_rmdup.log",
     output:
         config[
             "analysis_output_dir"
-        ] + "/rmdup_bam/{sample}/COLLAPSED/{orgname}/{orgname}_{accession}_dirichlet_COLLAPSED_rmdup.bam"
+        ] + "/rmdup_bam/{sample}/COLLAPSED/{orgname}/{orgname}_{accession}_dirichlet_COLLAPSED_rmdup.bam",
     params:
-        output=config["analysis_output_dir"] + "/rmdup_bam/{sample}/COLLAPSED/{orgname}/"
+        output=config["analysis_output_dir"] + "/rmdup_bam/{sample}/COLLAPSED/{orgname}/",
     message:
         "Removing duplicate reads that were aligned to taxon {wildcards.orgname}, for sample {wildcards.sample}."
     conda:
@@ -38,19 +38,19 @@ rule picard_single_mapdamage:
         bam=(
             config["analysis_output_dir"]
             + "/dirichlet_reads/{sample}/{orgname}/{orgname}_{accession}_dirichlet_{reads}.bam"
-        )
+        ),
     log:
         config[
             "analysis_output_dir"
-        ] + "/rmdup_bam/{sample}/SE/{orgname}/{orgname}_{accession}_dirichlet_{reads}_rmdup.log"
+        ] + "/rmdup_bam/{sample}/SE/{orgname}/{orgname}_{accession}_dirichlet_{reads}_rmdup.log",
     output:
         config[
             "analysis_output_dir"
-        ] + "/rmdup_bam/{sample}/SE/{orgname}/{orgname}_{accession}_dirichlet_{reads}_rmdup.bam"
+        ] + "/rmdup_bam/{sample}/SE/{orgname}/{orgname}_{accession}_dirichlet_{reads}_rmdup.bam",
     params:
         output=(
             config["analysis_output_dir"] + "/rmdup_bam/{sample}/SE/{orgname}/{orgname}_{accession}_dirichlet_{reads}"
-        )
+        ),
     message:
         "Removing duplicate reads that were aligned to taxon {wildcards.orgname}, for sample {wildcards.sample}."
     conda:
@@ -66,11 +66,11 @@ rule run_mapdamage:
             config["analysis_output_dir"]
             + "/rmdup_bam/{sample}/{reads}/{orgname}/{orgname}_{accession}_dirichlet_{reads}_rmdup.bam"
         ),
-        ref_genome=config["cache"] + "/ncbi/{orgname}/{accession}.fasta.gz"
+        ref_genome=config["cache"] + "/ncbi/{orgname}/{accession}.fasta.gz",
     log:
-        config["analysis_output_dir"] + "/mapdamage/{sample}/{reads}/{orgname}_{accession}.log"
+        config["analysis_output_dir"] + "/mapdamage/{sample}/{reads}/{orgname}_{accession}.log",
     output:
-        directory(config["analysis_output_dir"] + "/mapdamage/{sample}/{reads}/{orgname}/{accession}")
+        directory(config["analysis_output_dir"] + "/mapdamage/{sample}/{reads}/{orgname}/{accession}"),
     message:
         "Performing a mapDamage analysis for taxon {wildcards.orgname}, for sample {wildcards.sample}."
     conda:
@@ -101,9 +101,9 @@ def get_mapdamage_out_dir_paths(wildcards):
 
 rule all_mapdamage:
     input:
-        get_mapdamage_out_dir_paths
+        get_mapdamage_out_dir_paths,
     output:
-        config["analysis_output_dir"] + "/mapdamage/{sample}_mapdamage.done"
+        config["analysis_output_dir"] + "/mapdamage/{sample}_mapdamage.done",
     message:
         "A mapDamage analysis has been performed for all the taxa in the database for sample {wildcards.sample}."
     shell:

@@ -11,7 +11,7 @@ import os
 
 rule sra_tools_disable_cache:
     output:
-        os.path.expanduser("~/.ncbi/user-settings.mkfg")
+        os.path.expanduser("~/.ncbi/user-settings.mkfg"),
     message:
         "Disabling the SRA toolkit cache."
     shell:
@@ -20,18 +20,18 @@ rule sra_tools_disable_cache:
 
 rule get_sra_fastq_se:
     input:
-        os.path.expanduser("~/.ncbi/user-settings.mkfg")
+        os.path.expanduser("~/.ncbi/user-settings.mkfg"),
     output:
-        temp(config["sample_output_dir"] + "/sra_data/SE/{accession}.fastq")
+        temp(config["sample_output_dir"] + "/sra_data/SE/{accession}.fastq"),
     log:
-        config["sample_output_dir"] + "/sra_data/SE/{accession}.log"
+        config["sample_output_dir"] + "/sra_data/SE/{accession}.log",
     threads: min(6, config["cores"])
     message:
         "Download SRA file for accession {wildcards.accession}."
     conda:
         "../envs/sra_tools.yaml"
     params:
-        basename=config["sample_output_dir"] + "/sra_data/SE/"
+        basename=config["sample_output_dir"] + "/sra_data/SE/",
     shell:
         "fasterq-dump {wildcards.accession}"
         " --split-files"
@@ -42,19 +42,19 @@ rule get_sra_fastq_se:
 
 rule get_sra_fastq_pe:
     input:
-        os.path.expanduser("~/.ncbi/user-settings.mkfg")
+        os.path.expanduser("~/.ncbi/user-settings.mkfg"),
     output:
         temp(config["sample_output_dir"] + "/sra_data/PE/{accession}_1.fastq"),
-        temp(config["sample_output_dir"] + "/sra_data/PE/{accession}_2.fastq")
+        temp(config["sample_output_dir"] + "/sra_data/PE/{accession}_2.fastq"),
     log:
-        config["sample_output_dir"] + "/sra_data/PE/{accession}.log"
+        config["sample_output_dir"] + "/sra_data/PE/{accession}.log",
     threads: min(6, config["cores"])
     message:
         "Download SRA files for accession {wildcards.accession}."
     conda:
         "../envs/sra_tools.yaml"
     params:
-        basename=config["sample_output_dir"] + "/sra_data/PE/"
+        basename=config["sample_output_dir"] + "/sra_data/PE/",
     shell:
         "fasterq-dump {wildcards.accession}"
         " --split-files"
@@ -65,9 +65,9 @@ rule get_sra_fastq_pe:
 
 rule compress_sra_fastq_se:
     input:
-        config["sample_output_dir"] + "/sra_data/SE/{accession}.fastq"
+        config["sample_output_dir"] + "/sra_data/SE/{accession}.fastq",
     output:
-        config["sample_output_dir"] + "/sra_data/SE/{accession}.fastq.gz"
+        config["sample_output_dir"] + "/sra_data/SE/{accession}.fastq.gz",
     message:
         "Compressing the raw fastq file {input}."
     threads: 8
@@ -80,10 +80,10 @@ rule compress_sra_fastq_se:
 rule compress_sra_fastq_pe:
     input:
         r1=config["sample_output_dir"] + "/sra_data/PE/{accession}_1.fastq",
-        r2=config["sample_output_dir"] + "/sra_data/PE/{accession}_2.fastq"
+        r2=config["sample_output_dir"] + "/sra_data/PE/{accession}_2.fastq",
     output:
         r1=config["sample_output_dir"] + "/sra_data/PE/{accession}_R1.fastq.gz",
-        r2=config["sample_output_dir"] + "/sra_data/PE/{accession}_R2.fastq.gz"
+        r2=config["sample_output_dir"] + "/sra_data/PE/{accession}_R2.fastq.gz",
     message:
         "Compressing the raw fastq files {input.r1} and {input.r2}."
     threads: 8

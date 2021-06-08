@@ -22,11 +22,11 @@ def get_bams_for_ts_tv_count(wildcards):
 
 rule count_accession_ts_tv:
     input:
-        get_bams_for_ts_tv_count
+        get_bams_for_ts_tv_count,
     output:
-        temp(config["analysis_output_dir"] + "/ts_tv_counts/{sample}/{orgname}_count_{accession}.csv")
+        temp(config["analysis_output_dir"] + "/ts_tv_counts/{sample}/{orgname}_count_{accession}.csv"),
     params:
-        pairs=config["read_mode"] == PE
+        pairs=config["read_mode"] == PE,
     message:
         "Counting the number of transitions and transversions per read for taxon {wildcards.orgname}."
     script:
@@ -43,11 +43,11 @@ def get_counts(_):
 
 rule initial_ts_tv:
     input:
-        get_counts
+        get_counts,
     output:
-        config["analysis_output_dir"] + "/ts_tv_counts/{sample}/all_ts_tv_counts.csv"
+        config["analysis_output_dir"] + "/ts_tv_counts/{sample}/all_ts_tv_counts.csv",
     log:
-        config["analysis_output_dir"] + "/ts_tv_counts/{sample}/all_ts_tv_counts.log"
+        config["analysis_output_dir"] + "/ts_tv_counts/{sample}/all_ts_tv_counts.log",
     message:
         "Concatenating all the Ts and Tv count files for sample {wildcards.sample}."
     script:
@@ -65,12 +65,12 @@ rule calculate_likelihoods:
     input:
         config["analysis_output_dir"] + "/ts_tv_counts/{sample}/all_ts_tv_counts.csv",
         get_right_readlen,
-        get_counts
+        get_counts,
     output:
         config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_likelihood_ts_tv_matrix.csv",
-        config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_probability_model_params.json"
+        config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_probability_model_params.json",
     log:
-        config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_likelihood_ts_tv_matrix.log"
+        config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_likelihood_ts_tv_matrix.log",
     message:
         "Calculating the likelihoods and performing the Dirichlet assignment of the reads in sample "
         "{wildcards.sample} to the taxa in our database."
@@ -82,11 +82,11 @@ rule calculate_taxa_probabilities:
     input:
         config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_likelihood_ts_tv_matrix.csv",
         config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_probability_model_params.json",
-        config["sample_output_dir"] + "/fastq_inputs/meta/{sample}.size"
+        config["sample_output_dir"] + "/fastq_inputs/meta/{sample}.size",
     output:
-        config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_posterior_probabilities.tsv"
+        config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_posterior_probabilities.tsv",
     log:
-        config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_posterior_probabilities.log"
+        config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_posterior_probabilities.log",
     message:
         "Calculating the taxonomic assignment posterior probabilities for sample {wildcards.sample}."
     script:
@@ -97,9 +97,9 @@ rule coverage_counts:
     input:
         config[
             "analysis_output_dir"
-        ] + "/rmdup_bam/{sample}/SE/{orgname}/{orgname}_{accession}_dirichlet_{reads}_rmdup.bam"
+        ] + "/rmdup_bam/{sample}/SE/{orgname}/{orgname}_{accession}_dirichlet_{reads}_rmdup.bam",
     output:
-        temp(config["analysis_output_dir"] + "/probabilities/{sample}/{orgname}_cov_count_{accession}_{reads}.txt")
+        temp(config["analysis_output_dir"] + "/probabilities/{sample}/{orgname}_cov_count_{accession}_{reads}.txt"),
     message:
         "Counting coverage stats for sample {wildcards.sample} and taxon {wildcards.orgname}."
     conda:
@@ -113,11 +113,11 @@ rule coverage_counts:
 rule coverage_stats:
     input:
         config["analysis_output_dir"] + "/probabilities/{sample}/{orgname}_cov_count_{accession}_{reads}.txt",
-        config["cache"] + "/ncbi/{orgname}/{accession}.fasta.gz.fai"
+        config["cache"] + "/ncbi/{orgname}/{accession}.fasta.gz.fai",
     output:
         temp(
             config["analysis_output_dir"] + "/probabilities/{sample}/{orgname}_chi2_test_pvalue_{accession}_{reads}.txt"
-        )
+        ),
     message:
         "Calculating coverage statistics to assess if reads from sample {wildcards.sample} "
         "represent a random genome sample of taxon {wildcards.orgname}."
@@ -139,11 +139,11 @@ def get_p_values(_):
 
 rule cat_pvalues:
     input:
-        get_p_values
+        get_p_values,
     output:
-        config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_chi2_test_pvalues.tsv"
+        config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_chi2_test_pvalues.tsv",
     log:
-        config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_chi2_test_pvalues.log"
+        config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_chi2_test_pvalues.log",
     message:
         "Concatenating all the chi-squared contingency test p-value outputs for sample {wildcards.sample}."
     script:
@@ -154,11 +154,11 @@ rule calculate_dirichlet_abundances:
     input:
         config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_likelihood_ts_tv_matrix.csv",
         config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_chi2_test_pvalues.tsv",
-        config["sample_output_dir"] + "/fastq_inputs/meta/{sample}.size"
+        config["sample_output_dir"] + "/fastq_inputs/meta/{sample}.size",
     output:
-        config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_posterior_abundance.tsv"
+        config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_posterior_abundance.tsv",
     log:
-        config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_posterior_abundance.log"
+        config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_posterior_abundance.log",
     message:
         "Calculating the mean posterior abundance for sample {wildcards.sample}."
     script:

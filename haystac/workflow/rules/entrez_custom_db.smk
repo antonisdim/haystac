@@ -9,11 +9,11 @@ __license__ = "MIT"
 
 rule entrez_custom_sequences:
     input:
-        config["sequences"]
+        config["sequences"],
     log:
-        config["cache"] + "/ncbi/{orgname}/custom_seq-{accession}.log"
+        config["cache"] + "/ncbi/{orgname}/custom_seq-{accession}.log",
     output:
-        config["cache"] + "/ncbi/{orgname}/custom_seq-{accession}.fasta.gz"
+        config["cache"] + "/ncbi/{orgname}/custom_seq-{accession}.fasta.gz",
     message:
         "Adding the user provided fasta sequence {wildcards.accession} for taxon {wildcards.orgname} to the database."
     threads: 8
