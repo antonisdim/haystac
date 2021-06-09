@@ -956,6 +956,7 @@ The haystac commands are:
             scheduler="greedy",
             # handle the rule-specific conda environments
             use_conda=config["use_conda"],
+            conda_frontend="mamba",
             conda_prefix=os.path.join(config["cache"], "conda") if config["use_conda"] else None,
             # set all the debugging flags
             printreason=args.debug,
