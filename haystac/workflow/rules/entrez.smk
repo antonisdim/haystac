@@ -60,6 +60,8 @@ rule entrez_download_sequence:
         accession="[^-]+",
     resources:
         entrez_api=1,
+    conda:
+        "../envs/samtools.yaml",
     script:
         "../scripts/entrez_download_sequence.py"
 

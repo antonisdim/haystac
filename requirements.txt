@@ -1,6 +1,7 @@
 argcomplete>=1.12.1
 argparse>=1.4.0
 biopython>=1.77
+mamba>=0.11.2
 numpy>=1.19.2
 pandas>=1.0.3
 psutil>=5.7.2

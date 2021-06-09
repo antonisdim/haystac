@@ -1,6 +1,7 @@
 channels:
   - r
   - conda-forge
+  - bioconda
 dependencies:
   - mapdamage2 >=2.2.1
   - r-gam >=1.16.1
