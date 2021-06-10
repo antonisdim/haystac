@@ -274,6 +274,15 @@ class SraAccessionType(object):
         except Exception:
             raise argparse.ArgumentTypeError(f"Invalid SRA accession '{value}'")
 
+        run_code = etree.find('.//RUN').attrib['accession']
+
+        if len(id_list) > 1 or value != run_code:
+            raise argparse.ArgumentTypeError(
+                f"The SRA accession you have provided {value} does not refer to a sequencing run. "
+                f"Please visit https://www.ncbi.nlm.nih.gov/sra/ and chose a valid "
+                f"sequencing run accession for the SRA accession {value}."
+            )
+
         try:
             # now get the library layout
             layout = etree.find(".//LIBRARY_LAYOUT/*").tag.lower()
