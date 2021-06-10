@@ -80,5 +80,7 @@ checkpoint entrez_refseq_eukaryotes_accessions:
         refseq_euk=config["db_output"] + "/entrez/refseq-eukaryotes-seqs.tsv",
     message:
         "Converting the RefSeq table for eukaryotes in a smaller table."
+    conda:
+        "../envs/pandas.yaml"
     script:
         "../scripts/entrez_refseq_eukaryotes_create_files.py"

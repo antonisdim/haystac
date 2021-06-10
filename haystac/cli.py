@@ -15,7 +15,6 @@ import sys
 from multiprocessing import cpu_count
 from snakemake.dag import Batch
 
-import argcomplete
 import snakemake
 import yaml
 from psutil import virtual_memory
@@ -123,8 +122,6 @@ The haystac commands are:
         # slice the CLI arguments
         argv = sys.argv[1:2] if level == 1 else sys.argv[level:]
 
-        # get the command
-        argcomplete.autocomplete(parser)  # TODO autocomplete does not work
         return parser.parse_args(argv)
 
     def _load_config(self):
