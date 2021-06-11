@@ -20,6 +20,7 @@ requirements:
   host:
     - argparse ==1.4.0
     - mamba ==0.13.0
+    - numpy >=1.19.2
     - pandas ==1.0.3
     - pip ==19.3.1
     - psutil ==5.7.2
@@ -31,6 +32,7 @@ requirements:
   run:
     - argparse ==1.4.0
     - mamba ==0.13.0
+    - numpy >=1.19.2
     - pandas ==1.0.3
     - pip ==19.3.1
     - psutil ==5.7.2
