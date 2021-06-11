@@ -8,7 +8,7 @@ dependencies:
   - biopython >=1.77
   - bowtie2 >=2.3.5.1
   - dedup >=0.12.5
-  - mamba>=0.11.2
+  - mamba>=0.13.0
   - mapdamage2 >=2.2.1
   - numpy >=1.19.2
   - pandas >=1.0.3

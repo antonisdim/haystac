@@ -1,5 +1,5 @@
 argparse>=1.4.0
-mamba>=0.11.2
+mamba>=0.13.0
 pandas>=1.0.3
 psutil>=5.7.2
 pyyaml>=5.3.1
