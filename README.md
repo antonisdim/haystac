@@ -28,12 +28,22 @@ or for Linux:
 wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh
 bash ~/miniconda.sh
 ```
-
+To install `mamba`"
+```bash
+conda install mamba -n base -c conda-forge
+```
 ### Install haystac
 <!-- Then use `conda` to install `haystac` from the [bioconda](https://bioconda.github.io/) channel: -->
 Then use `conda` to install `haystac`:
 ```
 conda install -c bioconda haystac
+```
+We suggest you install `haystac` into a new environment, as you may encounter install delays if you try to install 
+into an existing environment. 
+
+We also advise using `mamba` for the faster installation of `haystac`:
+```
+mamba install -c bioconda haystac
 ```
 
 ## Quick Start
