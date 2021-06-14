@@ -22,7 +22,8 @@ rule get_sra_fastq_se:
     input:
         os.path.expanduser("~/.ncbi/user-settings.mkfg"),
     output:
-        temp(config["sample_output_dir"] + "/sra_data/SE/{accession}.fastq"),
+        sra_file=temp(config["sample_output_dir"] + "/sra_data/{accession}.sra"),
+        fastq=temp(config["sample_output_dir"] + "/sra_data/SE/{accession}.fastq"),
     log:
         config["sample_output_dir"] + "/sra_data/SE/{accession}.log",
     threads: min(6, config["cores"])
@@ -33,19 +34,23 @@ rule get_sra_fastq_se:
     params:
         basename=config["sample_output_dir"] + "/sra_data/SE/",
     shell:
-        "fasterq-dump {wildcards.accession}"
+        "(prefetch {wildcards.accession}"
+        " --output-file {output.sra_file}"
+        " --force yes;"
+        "fasterq-dump {output.sra_file}"
         " --split-files"
         " --threads {threads}"
         " --temp {params.basename}"
-        " --outdir {params.basename} &> {log}"
+        " --outdir {params.basename}) &> {log}"
 
 
 rule get_sra_fastq_pe:
     input:
         os.path.expanduser("~/.ncbi/user-settings.mkfg"),
     output:
-        temp(config["sample_output_dir"] + "/sra_data/PE/{accession}_1.fastq"),
-        temp(config["sample_output_dir"] + "/sra_data/PE/{accession}_2.fastq"),
+        sra_file=temp(config["sample_output_dir"] + "/sra_data/{accession}.sra"),
+        fastq_1=temp(config["sample_output_dir"] + "/sra_data/PE/{accession}_1.fastq"),
+        fastq_2=temp(config["sample_output_dir"] + "/sra_data/PE/{accession}_2.fastq"),
     log:
         config["sample_output_dir"] + "/sra_data/PE/{accession}.log",
     threads: min(6, config["cores"])
@@ -56,11 +61,14 @@ rule get_sra_fastq_pe:
     params:
         basename=config["sample_output_dir"] + "/sra_data/PE/",
     shell:
-        "fasterq-dump {wildcards.accession}"
+        "(prefetch {wildcards.accession}"
+        " --output-file {output.sra_file}"
+        " --force yes;"
+        "fasterq-dump {output.sra_file}"
         " --split-files"
         " --threads {threads}"
         " --temp {params.basename}"
-        " --outdir {params.basename} &> {log}"
+        " --outdir {params.basename}) &> {log}"
 
 
 rule compress_sra_fastq_se:
