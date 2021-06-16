@@ -2,11 +2,11 @@
 cache:
   ~/haystac/cache/
 mismatch_probability:
-  0.15
+  0.05
 bowtie2_scaling:
   25.0
 use_conda:
-  False  # turn off by default, as dependencies will be installed by the conda package
+  True  # turn on by default
 
 # `haystac database` defaults
 rank:
@@ -26,7 +26,7 @@ collapse:
 trim_adapters:
   True
 min_prob:
-  0.5
+  0.75
 bowtie2_threads_aln:
   4
 mapdamage:
