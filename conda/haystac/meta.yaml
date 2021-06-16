@@ -48,7 +48,7 @@ about:
   license: MIT
   license_family: MIT
   summary: "Species identification pipeline for both single species and metagenomic samples."
-  doc_url:
+  doc_url: "https://haystac.readthedocs.io/en/master/"
 
 extra:
   recipe-maintainers:
