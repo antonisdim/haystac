@@ -1,5 +1,5 @@
 {% set name = "haystac" %}
-{% set version = "0.4.2" %}
+{% set version = "0.4.3" %}
 
 package:
   name: "{{ name|lower }}"
@@ -7,7 +7,7 @@ package:
 
 source:
   url: "https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz"
-  sha256: 788c2bfabb770853d1a6dea9413a0faf420d5ab66f27e5497c74c099ca143feb
+  sha256: 1dc52b79163da7ea7fc1fa999f58f7344b1bcc66a167f8a9bd9d0a17646c585f
 
 build:
   number: 0
