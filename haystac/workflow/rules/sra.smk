@@ -9,57 +9,64 @@ __license__ = "MIT"
 import os
 
 
+rule sra_prefetch:
+    output:
+        temp(config["sample_output_dir"] + "/sra_data/{accession}.sra"),
+    log:
+        config["sample_output_dir"] + "/sra_data/SE/{accession}_prefect.log",
+    message:
+        "Download SRA file for accession {wildcards.accession}."
+    conda:
+        "../envs/sra_tools.yaml"
+    shell:
+        "prefetch {wildcards.accession}"
+        " --output-file {output}"
+        " --force yes &> {log}"
+
+
 rule get_sra_fastq_se:
     input:
-        os.path.expanduser("~/.ncbi/user-settings.mkfg"),
+        config["sample_output_dir"] + "/sra_data/{accession}.sra",
     output:
-        sra_file=temp(config["sample_output_dir"] + "/sra_data/{accession}.sra"),
-        fastq=temp(config["sample_output_dir"] + "/sra_data/SE/{accession}.fastq"),
+        temp(config["sample_output_dir"] + "/sra_data/SE/{accession}.fastq"),
     log:
         config["sample_output_dir"] + "/sra_data/SE/{accession}.log",
     threads: min(6, config["cores"])
     message:
-        "Download SRA file for accession {wildcards.accession}."
+        "Creating the fastq file for SRA accession {wildcards.accession}."
     conda:
         "../envs/sra_tools.yaml"
     params:
         basename=config["sample_output_dir"] + "/sra_data/SE/",
     shell:
-        "(prefetch {wildcards.accession}"
-        " --output-file {output.sra_file}"
-        " --force yes && "
-        "fasterq-dump {output.sra_file}"
+        "fasterq-dump {input}"
         " --split-files"
         " --threads {threads}"
         " --temp {params.basename}"
-        " --outdir {params.basename}) &> {log}"
+        " --outdir {params.basename} &> {log}"
 
 
 rule get_sra_fastq_pe:
     input:
-        os.path.expanduser("~/.ncbi/user-settings.mkfg"),
+        config["sample_output_dir"] + "/sra_data/{accession}.sra",
     output:
-        sra_file=temp(config["sample_output_dir"] + "/sra_data/{accession}.sra"),
-        fastq_1=temp(config["sample_output_dir"] + "/sra_data/PE/{accession}_1.fastq"),
-        fastq_2=temp(config["sample_output_dir"] + "/sra_data/PE/{accession}_2.fastq"),
+        temp(config["sample_output_dir"] + "/sra_data/PE/{accession}_1.fastq"),
+        temp(config["sample_output_dir"] + "/sra_data/PE/{accession}_2.fastq"),
     log:
         config["sample_output_dir"] + "/sra_data/PE/{accession}.log",
     threads: min(6, config["cores"])
     message:
-        "Download SRA files for accession {wildcards.accession}."
+        "Creating the fastq files for SRA accession {wildcards.accession}."
     conda:
         "../envs/sra_tools.yaml"
     params:
         basename=config["sample_output_dir"] + "/sra_data/PE/",
     shell:
-        "(prefetch {wildcards.accession}"
-        " --output-file {output.sra_file}"
-        " --force yes && "
-        "fasterq-dump {output.sra_file}"
+        "fasterq-dump {input}"
         " --split-files"
         " --threads {threads}"
         " --temp {params.basename}"
-        " --outdir {params.basename}) &> {log}"
+        " --outdir {params.basename} &> {log}"
 
 
 rule compress_sra_fastq_se:
