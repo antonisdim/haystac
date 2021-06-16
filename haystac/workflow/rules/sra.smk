@@ -9,15 +9,6 @@ __license__ = "MIT"
 import os
 
 
-rule sra_tools_disable_cache:
-    output:
-        os.path.expanduser("~/.ncbi/user-settings.mkfg"),
-    message:
-        "Disabling the SRA toolkit cache."
-    shell:
-        "mkdir -p ~/.ncbi && echo '/repository/user/main/public/cache-disabled = \"true\"' > {output}"
-
-
 rule get_sra_fastq_se:
     input:
         os.path.expanduser("~/.ncbi/user-settings.mkfg"),
@@ -36,7 +27,7 @@ rule get_sra_fastq_se:
     shell:
         "(prefetch {wildcards.accession}"
         " --output-file {output.sra_file}"
-        " --force yes;"
+        " --force yes && "
         "fasterq-dump {output.sra_file}"
         " --split-files"
         " --threads {threads}"
@@ -63,7 +54,7 @@ rule get_sra_fastq_pe:
     shell:
         "(prefetch {wildcards.accession}"
         " --output-file {output.sra_file}"
-        " --force yes;"
+        " --force yes && "
         "fasterq-dump {output.sra_file}"
         " --split-files"
         " --threads {threads}"

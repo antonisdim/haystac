@@ -274,7 +274,7 @@ class SraAccessionType(object):
         except Exception:
             raise argparse.ArgumentTypeError(f"Invalid SRA accession '{value}'")
 
-        run_code = etree.find('.//RUN').attrib['accession']
+        run_code = etree.find(".//RUN").attrib["accession"]
 
         if len(id_list) > 1 or value != run_code:
             raise argparse.ArgumentTypeError(

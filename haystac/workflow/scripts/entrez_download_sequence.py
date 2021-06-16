@@ -39,7 +39,7 @@ def download_entrez_ftp(ftp_url, output_file, attempt=1):
     cmd = f"bgzip -cd '{ftp_url}' | bgzip -c > {output_file}"
 
     # run the command
-    proc = subprocess.Popen(strict_mode + cmd, shell=True, executable='/bin/bash')
+    proc = subprocess.Popen(strict_mode + cmd, shell=True, executable="/bin/bash")
 
     # fetch any output and error
     (out, err) = proc.communicate()
