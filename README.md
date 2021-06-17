@@ -14,37 +14,30 @@ data.
 
 `haystac` can be run on either macOS or Linux based systems.
 
-The easiest way to install `haystac` and all its dependencies is via the [conda package manager](
-https://docs.conda.io/projects/conda/en/latest/index.html).
+The recommended way to install `haystac`, and all if its dependencies, is via the [mamba](https://mamba.readthedocs.io/en/latest/installation.html)
+package manager (a fast replacement for [conda](https://docs.conda.io/projects/conda/en/latest/index.html)).
 
-### Install conda
-To install `miniconda3` for macOS:
+You can install `haystac` using `conda`, however, it will take significantly longer to install and analyses will run slower.
+
+### Install mamba
+
+If you do not have either `mamba` or `conda` already installed, please refer to the [install instructions](
+https://mamba.readthedocs.io/en/latest/installation.html) for `mambaforge`.
+
+If you have `conda` installed, but not `mamba`, then install `mamba` into the base environment:
 ```bash
-wget https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -O ~/miniconda.sh
-bash ~/miniconda.sh
-```
-or for Linux:
-```bash
-wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh
-bash ~/miniconda.sh
-```
-To install `mamba`"
-```bash
-conda install mamba -n base -c conda-forge
+conda install -n base -c conda-forge mamba
 ```
 ### Install haystac
-<!-- Then use `conda` to install `haystac` from the [bioconda](https://bioconda.github.io/) channel: -->
-Then use `conda` to install `haystac`:
+Then use `mamba` to install `haystac` into a new environment:
+```bash
+mamba create -c bioconda -n haystac haystac
 ```
-conda install -c bioconda haystac
+And activate the environment:
+```bash
+mamba activate haystac
 ```
-We suggest you install `haystac` into a new environment, as you may encounter install delays if you try to install 
-into an existing environment. 
-
-We also advise using `mamba` for the faster installation of `haystac`:
-```
-mamba install -c bioconda haystac
-```
+We recommend that you install `haystac` into a new environment to avoid dependency conflicts with other software.
 
 ## Quick Start
 

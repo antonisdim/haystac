@@ -1,21 +1,39 @@
 Installation
 ============
 
-HAYSTAC can be installed though ``pip``, ``bioconda``, and you can download the source from ``git`` as well.
+HAYSTAC can be run on either macOS or Linux based systems, and the source code is available on ``github``.
 
-Conda::
+The recommended way to install ``haystac``, and all if its dependencies, is via the [mamba](https://mamba.readthedocs.io/en/latest/installation.html)
+package manager (a fast replacement for [conda](https://docs.conda.io/projects/conda/en/latest/index.html)).
 
-    conda install -c bioconda haystac
+You can install ``haystac`` using ``conda``, however, it will take significantly longer to install and analyses will run slower.
 
-For a quicker installation you can also use ``mamba``
+Install mamba
+---------------------
+If you do not have either ``mamba`` or ``conda`` already installed, please refer to the [install instructions](
+https://mamba.readthedocs.io/en/latest/installation.html) for ``mambaforge``.
 
-Mamba::
+If you have ``conda`` installed, but not ``mamba``, then install ``mamba`` into the base environment::
 
-    mamba install -c bioconda haystac
+    conda install -n base -c conda-forge mamba
 
-Git::
+Install haystac
+---------------------
+Then use ``mamba`` to install ``haystac`` into a new environment::
+
+    mamba create -c bioconda -n haystac haystac
+
+And activate the environment::
+
+    mamba activate haystac
+
+We recommend that you install ``haystac`` into a new environment to avoid dependency conflicts with other software.
+
+Git
+---------------------
+
+Clone from ``github``::
 
     git clone https://github.com/antonisdim/haystac.git
 
-It would be advisable to create a new environment to install ``haystac`` into, as you may experience installation
-delays if you try and install ``haystac`` into an existing environment.
+
