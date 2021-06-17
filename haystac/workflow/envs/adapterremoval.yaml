@@ -1,4 +1,4 @@
 channels:
   - bioconda
 dependencies:
-  - adapterremoval >=2.3.1
+  - adapterremoval=2.3.1
