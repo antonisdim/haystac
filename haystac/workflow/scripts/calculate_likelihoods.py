@@ -9,11 +9,11 @@ __license__ = "MIT"
 import json
 import os
 import sys
+from math import ceil
 
 import numpy as np
 import pandas as pd
 
-from math import ceil
 from haystac.workflow.scripts.utilities import PE
 
 

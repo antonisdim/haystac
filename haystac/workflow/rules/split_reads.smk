@@ -6,8 +6,7 @@ __copyright__ = "Copyright 2020, University of Oxford"
 __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
-from haystac.cli import CODE_DIR
-from haystac.workflow.scripts.utilities import get_final_db_paths, PE
+from haystac.workflow.scripts.utilities import get_final_db_paths
 
 
 rule get_dirichlet_reads:

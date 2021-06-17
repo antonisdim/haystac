@@ -13,11 +13,11 @@ import os
 import shutil
 import sys
 from multiprocessing import cpu_count
-from snakemake.dag import Batch
 
 import snakemake
 import yaml
 from psutil import virtual_memory
+from snakemake.dag import Batch
 
 from haystac import __version__
 from haystac.workflow.scripts.entrez_utils import (

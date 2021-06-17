@@ -6,7 +6,7 @@ __copyright__ = "Copyright 2020, University of Oxford"
 __email__ = "antonisdim41@gmail.com"
 __license__ = "MIT"
 
-from haystac.workflow.scripts.utilities import get_final_db_paths, PE, print_warning, print_error
+from haystac.workflow.scripts.utilities import get_final_db_paths, PE, print_error
 
 
 rule dedup_merged_mapdamage:
