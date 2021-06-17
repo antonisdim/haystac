@@ -73,8 +73,6 @@ rule calculate_likelihoods:
         config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_probability_model_params.json",
     log:
         config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_likelihood_ts_tv_matrix.log",
-    conda:
-        "../envs/pandas.yaml"
     message:
         "Calculating the likelihoods and performing the Dirichlet assignment of the reads in sample "
         "{wildcards.sample} to the taxa in our database."
@@ -93,8 +91,6 @@ rule calculate_taxa_probabilities:
         config["analysis_output_dir"] + "/probabilities/{sample}/{sample}_posterior_probabilities.log",
     message:
         "Calculating the taxonomic assignment posterior probabilities for sample {wildcards.sample}."
-    conda:
-        "../envs/pandas.yaml"
     script:
         "../scripts/calculate_taxa_probabilities.py"
 
