@@ -3,7 +3,7 @@ mamba==0.13.0
 numpy==1.19.2
 pandas==1.0.3
 psutil==5.7.2
-pyyaml==5.3.1
+pyyaml==5.4
 requests==2.24.0
 setuptools==49.6.0
 snakemake==6.3.0
