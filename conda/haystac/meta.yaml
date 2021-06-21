@@ -29,7 +29,7 @@ requirements:
     - pandas ==1.0.3
     - psutil ==5.7.2
     - python ==3.6.7
-    - pyyaml ==5.3.1
+    - pyyaml ==5.4.1
     - requests ==2.24.0
     - setuptools ==49.6.0
     - snakemake ==6.3.0
