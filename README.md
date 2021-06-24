@@ -35,7 +35,7 @@ mamba create -c bioconda -n haystac haystac
 ```
 And activate the environment:
 ```bash
-mamba activate haystac
+conda activate haystac
 ```
 We recommend that you install `haystac` into a new environment to avoid dependency conflicts with other software.
 

@@ -25,7 +25,7 @@ Then use ``mamba`` to install ``haystac`` into a new environment::
 
 And activate the environment::
 
-    mamba activate haystac
+    conda activate haystac
 
 We recommend that you install ``haystac`` into a new environment to avoid dependency conflicts with other software.
 
