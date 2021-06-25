@@ -928,7 +928,10 @@ The haystac commands are:
                 print(" " + target)
             print("\n")
 
-        os.makedirs(SNAKE_DIR, exist_ok=True)
+        try:
+            os.makedirs(SNAKE_DIR, exist_ok=True)
+        except PermissionError:
+            print_error("Cannot write to the current working directory.")
 
         # save the run-time config file
         with open(CONFIG_RUNTIME, "w") as fout:
