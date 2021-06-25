@@ -61,7 +61,7 @@ rule entrez_download_sequence:
     resources:
         entrez_api=1,
     conda:
-        "../envs/biopython.yaml"
+        "../envs/download_seq.yaml"
     script:
         "../scripts/entrez_download_sequence.py"
 
