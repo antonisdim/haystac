@@ -3,3 +3,4 @@ channels:
 dependencies:
   - bowtie2=2.3.5.1
   - samtools=1.11
+  - tbb=2020.2
