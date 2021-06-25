@@ -42,7 +42,8 @@ rule get_sra_fastq_se:
         " --split-files"
         " --threads {threads}"
         " --temp {params.basename}"
-        " --outdir {params.basename} &> {log}"
+        " --outdir {params.basename}"
+        " --outfile {output} &> {log}"
 
 
 rule get_sra_fastq_pe:
@@ -66,7 +67,8 @@ rule get_sra_fastq_pe:
         " --split-files"
         " --threads {threads}"
         " --temp {params.basename}"
-        " --outdir {params.basename} &> {log}"
+        " --outdir {params.basename}"
+        " --outfile {output} &> {log}"
 
 
 rule compress_sra_fastq_se:
