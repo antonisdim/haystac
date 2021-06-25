@@ -38,6 +38,7 @@ rule get_sra_fastq_se:
         basename=config["sample_output_dir"] + "/sra_data/SE/",
     shell:
         "fasterq-dump {input}"
+        " --force"
         " --split-files"
         " --threads {threads}"
         " --temp {params.basename}"
@@ -61,6 +62,7 @@ rule get_sra_fastq_pe:
         basename=config["sample_output_dir"] + "/sra_data/PE/",
     shell:
         "fasterq-dump {input}"
+        " --force"
         " --split-files"
         " --threads {threads}"
         " --temp {params.basename}"
