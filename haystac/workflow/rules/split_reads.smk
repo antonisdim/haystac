@@ -31,7 +31,7 @@ rule get_dirichlet_reads:
         "Preparing bam files with the Dirichlet assigned reads for taxon {wildcards.orgname} "
         "for sample {wildcards.sample}"
     conda:
-        "../envs/picard.yaml"
+        "../envs/dirichlet_reads.yaml"
     shell:
         "awk -F, '$1 == \"{wildcards.orgname}\"' {input.dirichlet_matrix} | "
         "awk -F, '$7 == \"1.0\" {{print $2}}' > {output.read_list};  "
@@ -64,7 +64,7 @@ rule get_grey_matter_reads:
     message:
         "Preparing fastq files with all the reads that got assigned to the Grey Matter for sample {wildcards.sample}."
     conda:
-        "../envs/picard.yaml"
+        "../envs/dirichlet_reads.yaml"
     shell:
         "awk -F, 'NR>1 {{arr[$2]+=$7}} END {{for (a in arr) print a, arr[a]}}' {input.dirichlet_matrix} | "
         "awk '$2 == 0 {{print $1}}' > {output.read_list};"
