@@ -103,7 +103,7 @@ def get_dirichlet_bams(wildcards):
         + f"{orgname}/{orgname}_{accession}_dirichlet_"
         + config["read_mode"]
         + ".bam"
-        for orgname, accession in get_final_db_paths(checkpoints)
+        for orgname, accession in get_final_db_paths(checkpoints, config)
     ]
 
 

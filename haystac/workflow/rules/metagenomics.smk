@@ -39,7 +39,7 @@ def get_counts(_):
     """Get ts and tv count file paths"""
     return [
         config["analysis_output_dir"] + "/ts_tv_counts/{sample}/" + f"{orgname}_count_{accession}.csv"
-        for orgname, accession in get_final_db_paths(checkpoints)
+        for orgname, accession in get_final_db_paths(checkpoints, config)
     ]
 
 
@@ -135,7 +135,7 @@ def get_p_values(_):
         + f"{orgname}_chi2_test_pvalue_{accession}_"
         + config["read_mode"]
         + ".txt"
-        for orgname, accession in get_final_db_paths(checkpoints)
+        for orgname, accession in get_final_db_paths(checkpoints, config)
     ]
 
 

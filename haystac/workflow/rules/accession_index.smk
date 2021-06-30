@@ -58,7 +58,7 @@ def get_index_paths(_):
                 config["cache"] + f"/ncbi/{orgname}/{accession}.1.bt2l",
                 config["cache"] + f"/ncbi/{orgname}/{accession}.fasta.gz.fai",
             )
-            for orgname, accession in get_final_db_paths(checkpoints)
+            for orgname, accession in get_final_db_paths(checkpoints, config)
         )
     )
 

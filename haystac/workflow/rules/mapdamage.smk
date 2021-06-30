@@ -85,7 +85,7 @@ def get_mapdamage_out_dir_paths(wildcards):
     Get all the individual cav file paths for the taxa in our database.
     """
 
-    sequences = get_final_db_paths(checkpoints)
+    sequences = get_final_db_paths(checkpoints, config)
     inputs = []
 
     for orgname, accession in sequences:

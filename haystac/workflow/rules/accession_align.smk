@@ -108,7 +108,7 @@ def get_accession_alignments(_):
         + "/alignments/{sample}/"
         + config["read_mode"]
         + f"/{orgname}/{orgname}_{accession}.bam"
-        for orgname, accession in get_final_db_paths(checkpoints)
+        for orgname, accession in get_final_db_paths(checkpoints, config)
     ]
 
 

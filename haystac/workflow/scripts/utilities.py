@@ -670,11 +670,14 @@ def check_unique_taxa_accs(df, config, user_input, to_check):
             return df
 
 
-def get_final_db_paths(checkpoints):
+def get_final_db_paths(checkpoints, config):
     """Get all the taxon/acc pairs for the taxa in our database."""
 
     db_sequences = checkpoints.entrez_db_list.get()
     sequences_df = pd.read_csv(db_sequences.output[0], sep="\t", names=["species", "AccessionVersion"])
+
+    if config["genera"]:
+        sequences_df = sequences_df[sequences_df["species"].str.contains("|".join(config["genera"]))]
 
     assert len(sequences_df) > 0, (
         f"The db file containing the taxon/accession pairs is empty {db_sequences.output[0]}. "

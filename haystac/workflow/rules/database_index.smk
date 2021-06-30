@@ -21,7 +21,7 @@ def get_db_accessions(_):
     """Get fasta paths in our db"""
     return [
         config["cache"] + f"/ncbi/{orgname}/{accession}.fasta.gz"
-        for orgname, accession in get_final_db_paths(checkpoints)
+        for orgname, accession in get_final_db_paths(checkpoints, config)
     ]
 
 
