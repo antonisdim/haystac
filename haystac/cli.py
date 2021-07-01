@@ -717,7 +717,7 @@ The haystac commands are:
 
         optional.add_argument(
             "--min-prob",
-            help="Minimum posterior probability to assign an aligned read to a given species (default: 0.50)",
+            help="Minimum posterior probability to assign an aligned read to a given species (default: 0.75)",
             type=FloatRangeType(0, 100),
             metavar="<float>",
             default=argparse.SUPPRESS,
@@ -725,7 +725,7 @@ The haystac commands are:
 
         optional.add_argument(
             "--mismatch-probability",
-            help="Base mismatch probability (default: 0.15)",
+            help="Base mismatch probability (default: 0.05)",
             type=FloatRangeType(0.01, 0.5),
             metavar="<float>",
             default=argparse.SUPPRESS,
