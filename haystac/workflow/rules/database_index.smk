@@ -64,6 +64,8 @@ rule create_db_chunk:
     message:
         "Creating chunk {wildcards.chunk_num} of the genome database index."
     threads: 8
+    conda:
+        "../envs/samtools.yaml"
     shell:
         "while IFS=$'\t' read -r -a p; "
         "do if [ ${{p[0]}} -eq {wildcards.chunk_num} ]; "
