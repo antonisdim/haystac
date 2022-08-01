@@ -1,5 +1,5 @@
 {% set name = "haystac" %}
-{% set version = "0.4.4" %}
+{% set version = "0.4.8" %}
 
 package:
   name: "{{ name|lower }}"
@@ -7,32 +7,31 @@ package:
 
 source:
   url: "https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz"
-  sha256: 72b97a496dfec919c837b4c0621e9f0196c9e81d24a629f03b403f6eafff4684
+  sha256: d221302e2258536c83fc2c206b5383f0c83ca0b43a02470b34fccdf11a8ba87a
 
 build:
   number: 0
-  noarch: generic
+  noarch: python
   entry_points:
     - haystac = haystac.cli:Haystac
   script: "{{ PYTHON }} -m pip install . -vv --ignore-installed --no-deps"
 
 requirements:
   host:
-    - numpy ==1.19.2
-    - pandas ==1.0.3
-    - pip ==19.3.1
-    - python ==3.6.7
-    - setuptools ==49.6.0
+    - numpy
+    - pandas
+    - pip
+    - python
+    - setuptools
   run:
-    - argparse ==1.4.0
-    - numpy ==1.19.2
-    - pandas ==1.0.3
-    - psutil ==5.7.2
-    - python ==3.6.7
-    - pyyaml ==5.4.1
-    - requests ==2.24.0
-    - setuptools ==49.6.0
-    - snakemake ==6.3.0
+    - argparse=1.4.0
+    - numpy=1.19.2
+    - pandas=1.0.3
+    - psutil=5.7.2
+    - python=3.6.7
+    - pyyaml=5.4.1
+    - requests=2.24.0
+    - snakemake-minimal=6.3.0
 
 test:
   imports:
