@@ -4,5 +4,5 @@ channels:
 dependencies:
   - biopython=1.77
   - pandas=1.0.3
-  - samtools=1.11
+  - samtools=1.15
   - pyyaml=5.4.1
