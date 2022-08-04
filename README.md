@@ -31,7 +31,7 @@ conda install -n base -c conda-forge mamba
 ### Install haystac
 Then use `mamba` to install `haystac` into a new environment:
 ```bash
-mamba create -c bioconda -n haystac haystac
+mamba create -c conda-forge -c bioconda -n haystac haystac
 ```
 And activate the environment:
 ```bash

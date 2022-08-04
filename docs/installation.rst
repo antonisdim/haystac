@@ -21,7 +21,7 @@ Install haystac
 ---------------------
 Then use ``mamba`` to install ``haystac`` into a new environment::
 
-    mamba create -c bioconda -n haystac haystac
+    mamba create -c conda-forge -c bioconda -n haystac haystac
 
 And activate the environment::
 
