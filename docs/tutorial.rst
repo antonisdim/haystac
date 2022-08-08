@@ -58,7 +58,7 @@ The we can simply run the following command:::
     haystac database --mode build \
         --query '"Yersinia"[Organism] AND "complete genome"[All Fields]' \
         --output yersinia_example \
-        --accessions acc_example.txt
+        --accessions-file acc_example.txt
 
 Providing custom sequences
 --------------------------
@@ -74,7 +74,7 @@ The we can simply run the following command:::
     haystac database --mode build \
         --query '"Yersinia"[Organism] AND "complete genome"[All Fields]' \
         --db-output yersinia_example \
-        --sequences seq_example.txt
+        --sequences-file seq_example.txt
 
 Combinations
 ------------
