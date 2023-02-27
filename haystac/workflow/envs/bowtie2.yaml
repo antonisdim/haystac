@@ -1,6 +1,7 @@
 channels:
+  - conda-forge
   - bioconda
 dependencies:
   - bowtie2=2.3.5.1
-  - samtools=1.15
+  - samtools=1.16
   - tbb=2020.2

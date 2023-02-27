@@ -1,5 +1,6 @@
 channels:
+  - conda-forge
   - bioconda
 dependencies:
-  - samtools=1.15
+  - samtools=1.16
   - seqkit=0.13.2
