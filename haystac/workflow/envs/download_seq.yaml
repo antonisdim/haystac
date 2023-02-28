@@ -3,7 +3,7 @@ channels:
   - conda-forge
 dependencies:
   - biopython=1.77
-  - pandas=1.5.3
-  - numpy=1.23.1
+  - pandas=1.0.3
+  - numpy=1.19.2
   - samtools=1.15
   - pyyaml=5.4.1
