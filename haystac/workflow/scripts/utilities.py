@@ -515,7 +515,7 @@ def get_total_paths(
         custom_seqs = custom_fasta_paths[["species", "AccessionVersion"]].copy()
         custom_seqs["AccessionVersion"] = "custom_seq-" + custom_seqs["AccessionVersion"].astype(str)
 
-        sequences_df = sequences_df.append(custom_seqs)
+        sequences_df = pd.concat([sequences_df, custom_seqs])
 
     if config["accessions"]:
         custom_accessions = pd.read_csv(
@@ -526,7 +526,7 @@ def get_total_paths(
         )
         custom_accessions = check_unique_taxa_accs(custom_accessions, config, config["accessions"], "user_file")
 
-        sequences_df = sequences_df.append(custom_accessions)
+        sequences_df = pd.concat([sequences_df, custom_accessions])
 
     if config["genera"]:
         sequences_df = sequences_df[sequences_df["species"].str.contains("|".join(config["genera"]))]

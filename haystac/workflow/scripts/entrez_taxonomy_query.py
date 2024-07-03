@@ -23,7 +23,7 @@ def entrez_taxonomy_query(nuccore_file, output_file):
     assert os.stat(nuccore_file).st_size, f"The nuccore_query count file is empty {nuccore_file}"
 
     # load the unique list of taxa from the nuccore resultset
-    accessions = [tax_id for tax_id in pd.read_csv(nuccore_file, sep="\t", usecols=["TaxId"], squeeze=True).unique()]
+    accessions = [tax_id for tax_id in pd.read_csv(nuccore_file, sep="\t", usecols=["TaxId"]).squeeze('columns').unique()]
 
     with open(output_file, "w") as fout:
         columns = [
