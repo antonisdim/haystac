@@ -72,13 +72,13 @@ def calculate_dirichlet_abundances(ts_tv_file, p_values_file, total_fastq_reads,
     aln_reads_vector["Grey_Matter"] = 0
 
     # Sum the Dirichlet Assignments per taxon and calculate the Dark Matter reads from the Dirichlet Assignment column
-    ts_tv_group = ts_tv_matrix.groupby("Read_ID").sum().squeeze(axis=1)
+    ts_tv_group = ts_tv_matrix.groupby("Read_ID")["Dirichlet_Assignment"].sum()
     grey_matter = ts_tv_group.where(ts_tv_group == 0).replace(0, 1).fillna(0)
 
     if len(ts_tv_matrix.Taxon.unique()) > 1:
-        a = ts_tv_matrix.groupby("Taxon").sum().squeeze().astype(float)
+        a = ts_tv_matrix.groupby("Taxon")["Dirichlet_Assignment"].sum().astype(float)
     else:
-        a = ts_tv_matrix.groupby("Taxon").sum().iloc[:, 0].astype(float)
+        a = ts_tv_matrix.groupby("Taxon")["Dirichlet_Assignment"].sum().astype(float)
     a.loc["Grey_Matter"] = grey_matter.sum()
 
     # Add the non aligned filtered reads count in the Dark Matter category
