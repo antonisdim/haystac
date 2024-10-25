@@ -2,7 +2,7 @@ channels:
   - bioconda
   - conda-forge
 dependencies:
-  - biopython=1.77
+  - biopython=1.84
   - pandas=2.2.2
   - numpy=2.0.0
   - samtools=1.16
